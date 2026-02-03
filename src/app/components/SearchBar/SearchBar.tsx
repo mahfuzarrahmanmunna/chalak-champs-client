@@ -21,7 +21,7 @@ const SearchBar = () => {
         type="text"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder={t.searchPlaceholder || "Search..."}
+        placeholder={String(t.searchPlaceholder ?? "Search...")}
         className="px-4 py-2 rounded-full text-sm focus:outline-none transition-colors duration-200"
         style={{
           backgroundColor: "var(--color-card)",

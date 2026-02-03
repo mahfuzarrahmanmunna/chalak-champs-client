@@ -5,8 +5,9 @@ import React, { useState } from "react";
 import ThemeToggle from "../ThemeToggle/ThemeToggle";
 import SearchBar from "../SearchBar/SearchBar";
 import CategoryModal from "../CategoryModal/CategoryModal";
-import { useLanguage } from "@/app/context/LanguageContext";
+// import { useLanguage } from "@/app/context/LanguageContext";
 import { useTheme } from "@/app/context/ThemeContext";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -44,7 +45,7 @@ const Navbar = () => {
                 className="text-2xl font-bold"
                 style={{ color: "var(--color-primary)" }}
               >
-                {t.logo}
+                {String(t.logo)}
               </Link>
             </div>
 
@@ -58,7 +59,7 @@ const Navbar = () => {
                     color: "var(--color-foreground)",
                   }}
                 >
-                  {t.courses}
+                  {String(t.courses)}
                   <svg
                     className={`ml-1 h-4 w-4 transition-transform ${isDropdownOpen ? "transform rotate-180" : ""}`}
                     fill="currentColor"
@@ -96,7 +97,7 @@ const Navbar = () => {
                           e.currentTarget.style.opacity = "1";
                         }}
                       >
-                        {t.liveCourses}
+                        {String(t.liveCourses)}
                       </a>
                       <a
                         href="#"
@@ -114,7 +115,7 @@ const Navbar = () => {
                           e.currentTarget.style.opacity = "1";
                         }}
                       >
-                        {t.recordedCourses}
+                        {String(t.recordedCourses)}
                       </a>
                       <a
                         href="#"
@@ -132,7 +133,7 @@ const Navbar = () => {
                           e.currentTarget.style.opacity = "1";
                         }}
                       >
-                        {t.skillDev}
+                        {String(t.skillDev)}
                       </a>
                     </div>
                   </div>
@@ -146,7 +147,7 @@ const Navbar = () => {
                   color: "var(--color-foreground)",
                 }}
               >
-                {t.categories}
+                {String(t.categories)}
               </button>
 
               <a
@@ -156,7 +157,16 @@ const Navbar = () => {
                   color: "var(--color-foreground)",
                 }}
               >
-                {t.modelTest}
+                {String(t.modelTest)}
+              </a>
+              <a
+                href="/blog"
+                className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                style={{
+                  color: "var(--color-foreground)",
+                }}
+              >
+                {String(t.blog)}
               </a>
               <a
                 href="#"
@@ -165,16 +175,7 @@ const Navbar = () => {
                   color: "var(--color-foreground)",
                 }}
               >
-                {t.blog}
-              </a>
-              <a
-                href="#"
-                className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
-              >
-                {t.store}
+                {String(t.store)}
               </a>
             </div>
 
@@ -211,7 +212,7 @@ const Navbar = () => {
                   color: "var(--color-foreground)",
                 }}
               >
-                {t.login}
+                {String(t.login)}
               </Link>
               <Link
                 href="/register"
@@ -221,7 +222,7 @@ const Navbar = () => {
                   color: "var(--color-background)",
                 }}
               >
-                {t.signUp}
+                {String(t.signUp)}
               </Link>
             </div>
 
@@ -345,7 +346,7 @@ const Navbar = () => {
                 e.currentTarget.style.opacity = "1";
               }}
             >
-              {t.courses}
+              {String(t.courses)}
             </a>
             <button
               onClick={openCategoryModal}
@@ -354,7 +355,7 @@ const Navbar = () => {
                 color: "var(--color-foreground)",
               }}
             >
-              {t.categories}
+              {String(t.categories)}
             </button>
             <a
               href="#"
@@ -371,7 +372,7 @@ const Navbar = () => {
                 e.currentTarget.style.opacity = "1";
               }}
             >
-              {t.modelTest}
+              {String(t.modelTest)}
             </a>
             <a
               href="#"
@@ -388,7 +389,7 @@ const Navbar = () => {
                 e.currentTarget.style.opacity = "1";
               }}
             >
-              {t.blog}
+              {String(t.blog)}
             </a>
             <Link
               href="#"
@@ -397,7 +398,7 @@ const Navbar = () => {
                 color: "var(--color-foreground)",
               }}
             >
-              {t.store}
+              {String(t.store)}
             </Link>
             <div
               className="pt-4 pb-3"
@@ -411,7 +412,7 @@ const Navbar = () => {
                     color: "var(--color-foreground)",
                   }}
                 >
-                  {t.login}
+                  {String(t.login)}
                 </Link>
                 <Link
                   href="/register"
@@ -421,7 +422,7 @@ const Navbar = () => {
                     color: "var(--color-background)",
                   }}
                 >
-                  {t.signUp}
+                  {String(t.signUp)}
                 </Link>
               </div>
             </div>

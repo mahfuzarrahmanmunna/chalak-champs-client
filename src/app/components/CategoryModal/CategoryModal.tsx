@@ -58,7 +58,7 @@ const CategoryModal = ({ isOpen, onClose }: CategoryModalProps) => {
             color: "var(--color-primary)",
           }}
         >
-          {t.categories}
+          {String(t.categories)}
         </h2>
 
         <div className="grid grid-cols-2 gap-4">
