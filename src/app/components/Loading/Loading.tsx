@@ -11,6 +11,12 @@ interface LoadingProps {
   text?: string;
 }
 
+export const metadata = {
+  title: "Loading Component",
+  description:
+    "A reusable loading spinner component with optional full-screen mode and customizable text.",
+};
+
 const Loading: React.FC<LoadingProps> = ({ fullScreen = false, text }) => {
   const { colors } = useTheme();
   const { isBangla } = useLanguage();

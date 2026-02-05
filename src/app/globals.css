@@ -29,8 +29,8 @@ body {
 
 :root {
   /* Basic colors */
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #d8cccce8;
+  --foreground: #8b7878;
 
   /* Your theme colors */
   --color-primary: #ff69b4; /* Pink (60%) */
