@@ -317,7 +317,7 @@ export default function AllCoursesPage() {
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-80"></div>
+        <div className="absolute inset-0  bg-gradient-to-r from-[rgb(243,6,110)] to-[rgb(33,65,135)] opacity-80"></div>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white p-8">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">All Courses</h1>

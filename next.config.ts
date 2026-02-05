@@ -8,6 +8,16 @@ const nextConfig = {
       "images.unsplash.com",
       "plus.unsplash.com", // Sometimes Unsplash uses this CDN
     ],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+    ],
   },
 };
 

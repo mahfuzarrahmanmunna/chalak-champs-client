@@ -1,3 +1,5 @@
+// src/app/context/LanguageContext.tsx
+
 "use client";
 
 import React, { createContext, useState, useContext, ReactNode } from "react";
@@ -7,11 +9,35 @@ type Translations = {
   [key: string]: string | Translations;
 };
 
+// Define specific types for hero data
+interface HeroFeature {
+  title: string;
+  description: string;
+}
+
+interface HeroStats {
+  students: string;
+  courses: string;
+  instructors: string;
+  languages: string;
+}
+
+interface HeroData {
+  title: string;
+  subtitle: string;
+  description: string;
+  ctaButton: string;
+  features: HeroFeature[];
+  stats: HeroStats;
+}
+
 // Define the context type
 type LanguageContextType = {
   isBangla: boolean;
   toggleLanguage: () => void;
   t: Translations;
+  heroData: HeroData | null;
+  isLoading: boolean;
 };
 
 // Create the context
@@ -22,6 +48,9 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 // Provider component
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [isBangla, setIsBangla] = useState(false);
+  const [translations, setTranslations] = useState<Translations>({});
+  const [heroData, setHeroData] = useState<HeroData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Function to toggle language
   const toggleLanguage = () => {
@@ -34,11 +63,16 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       // Import all translation files
+      const hero = await import(`../data/translations/hero-${lang}.json`);
       const navbar = await import(`../data/translations/navbar-${lang}.json`);
       const common = await import(`../data/translations/common-${lang}.json`);
 
+      // Set hero data separately
+      setHeroData(hero.default as HeroData);
+
       // Merge all translations
       return {
+        ...hero.default,
         ...navbar.default,
         ...common.default,
       };
@@ -48,17 +82,21 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // We'll use a state to store translations
-  const [translations, setTranslations] = useState<Translations>({});
-
   // Load translations when language changes
   React.useEffect(() => {
-    loadTranslations().then(setTranslations);
+    const fetchTranslations = async () => {
+      setIsLoading(true);
+      const translationsData = await loadTranslations();
+      setTranslations(translationsData);
+      setIsLoading(false);
+    };
+
+    fetchTranslations();
   }, [isBangla]);
 
   return (
     <LanguageContext.Provider
-      value={{ isBangla, toggleLanguage, t: translations }}
+      value={{ isBangla, toggleLanguage, t: translations, heroData, isLoading }}
     >
       {children}
     </LanguageContext.Provider>

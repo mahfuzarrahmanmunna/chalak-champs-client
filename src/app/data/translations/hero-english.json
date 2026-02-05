@@ -1,0 +1,26 @@
+{
+  "title": "Welcome to Chalak Champs",
+  "subtitle": "Master new languages with expert instructors from around the world",
+  "description": "Join thousands of students who are already learning with us. Our comprehensive courses are designed to help you achieve fluency in your target language.",
+  "ctaButton": "Get Started",
+  "features": [
+    {
+      "title": "Expert Instructors",
+      "description": "Learn from native speakers and language experts"
+    },
+    {
+      "title": "Interactive Learning",
+      "description": "Engage with immersive lessons and real-world practice"
+    },
+    {
+      "title": "Flexible Schedule",
+      "description": "Study at your own pace with 24/7 access to materials"
+    }
+  ],
+  "stats": {
+    "students": "10,000+",
+    "courses": "50+",
+    "instructors": "30+",
+    "languages": "15+"
+  }
+}

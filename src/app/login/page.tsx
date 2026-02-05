@@ -50,11 +50,11 @@ export default function LoginPage() {
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-80"></div>
+        <div className="absolute inset-0  bg-gradient-to-r from-[rgb(243,6,110)] to-[rgb(33,65,135)] opacity-80"></div>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white p-8">
             <h1 className="text-4xl font-bold mb-4">
-              Welcome to Lingual Academy
+              Welcome to Chalak Champs
             </h1>
             <p className="text-xl max-w-md">
               Learn new languages with expert instructors from around the world
