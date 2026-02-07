@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-arp="" data-arp-theme="light">
+    <html lang="en" data-arp="" data-arp-theme="light" data-theme="cupcake">
       <body
         cz-shortcut-listen="true"
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

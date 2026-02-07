@@ -1,4 +1,3 @@
-// app/register/page.tsx
 "use client";
 
 import { useState, useEffect, useRef, FormEvent, ChangeEvent } from "react";
@@ -13,9 +12,13 @@ import {
   User,
   UserCredential,
   RecaptchaVerifier,
+  updateProfile,
+  deleteUser,
 } from "firebase/auth";
 import { auth, setupRecaptcha } from "@/lib/firebase";
 import api from "@/lib/api";
+import useAxiosSecure from "../hooks/useAxiosSecure";
+// import useAxiosSecure from "@/hooks/useAxiosSecure";
 
 // Define interfaces for TypeScript
 interface FormData {
@@ -70,6 +73,7 @@ export default function RegisterPage() {
     useState<RecaptchaVerifier | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const axiosSecure = useAxiosSecure();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, () => {
@@ -198,7 +202,9 @@ export default function RegisterPage() {
         }
       } else {
         errorMessage =
-          error.message || "Failed to send email verification code";
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to send email verification code";
       }
 
       setErrors({ verification: errorMessage });
@@ -245,6 +251,8 @@ export default function RegisterPage() {
         error.code === "auth/invalid-verification-code"
       ) {
         errorMessage = "Invalid verification code. Please try again.";
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -281,75 +289,120 @@ export default function RegisterPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  // In your handleFinalSubmit function
   const handleFinalSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsRegistering(true);
+    setErrors({}); // Clear previous errors
+
+    let userCredential: UserCredential | null = null;
+    let registrationSuccessful = false;
 
     try {
-      let userCredential: UserCredential;
-
+      // Step 1: Create user in Firebase
       if (authMethod === "phone") {
-        // For phone auth, the user is already authenticated after verification
         const currentUser = auth.currentUser;
         if (!currentUser) {
           throw new Error("No authenticated user found");
         }
-
-        // Update the user's profile with name
-        await currentUser.updateProfile({
-          displayName: `${formData.firstName} ${formData.lastName}`,
-        });
-
         userCredential = { user: currentUser } as UserCredential;
       } else {
-        // For email auth, create the user with email and password
         userCredential = await createUserWithEmailAndPassword(
           auth,
           email,
           formData.password,
         );
-
-        // Update the user's profile with name
-        await userCredential.user.updateProfile({
-          displayName: `${formData.firstName} ${formData.lastName}`,
-        });
       }
 
+      // Step 2: Update user profile in Firebase (optional)
+      try {
+        await updateProfile(userCredential.user, {
+          displayName: `${formData.firstName} ${formData.lastName}`,
+        });
+      } catch (profileError) {
+        console.warn("Could not update profile in Firebase:", profileError);
+      }
+
+      // Step 3: Get ID token
       const idToken = await userCredential.user.getIdToken();
 
+      // Step 4: Prepare user data for backend
       const userData = {
         uid: userCredential.user.uid,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: authMethod === "email" ? email : null,
-        phoneNumber: authMethod === "phone" ? phoneNumber : null,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: authMethod === "email" ? email.toLowerCase().trim() : null,
+        phoneNumber: authMethod === "phone" ? phoneNumber.trim() : null,
         role: "student",
       };
 
-      const response = await api.post<ApiResponse>("/auth/register", userData, {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      });
+      // Step 5: Register user with backend with retry logic
+      let response;
+      try {
+        response = await axiosSecure.post<ApiResponse>(
+          "/auth/register",
+          userData,
+        );
+      } catch (error: any) {
+        // If it's a network error, try once more
+        if (
+          error.code === "NETWORK_ERROR" ||
+          error.message === "Network Error"
+        ) {
+          console.log("Network error, retrying...");
+          response = await axiosSecure.post<ApiResponse>(
+            "/auth/register",
+            userData,
+          );
+        } else {
+          throw error;
+        }
+      }
 
       if (response.data.success && response.data.token) {
         localStorage.setItem("token", response.data.token);
+        registrationSuccessful = true;
         router.push("/dashboard");
       } else {
-        setErrors({
-          registration: response.data.message || "Registration failed",
-        });
+        throw new Error(response.data.message || "Registration failed");
       }
     } catch (error: any) {
       console.error("Error during registration:", error);
+
+      // If registration failed, clean up the Firebase user
+      if (userCredential && !registrationSuccessful) {
+        try {
+          await deleteUser(userCredential.user);
+          console.log("Cleaned up Firebase user due to registration failure");
+        } catch (deleteError) {
+          console.error("Failed to clean up Firebase user:", deleteError);
+        }
+      }
+
       let errorMessage = "Registration failed";
 
+      // Handle specific Firebase errors
       if (error.code === "auth/email-already-in-use") {
         errorMessage = "Email is already in use";
       } else if (error.code === "auth/weak-password") {
         errorMessage = "Password is too weak";
+      } else if (error.code === "auth/quota-exceeded") {
+        errorMessage = "Too many registration attempts. Please try again later";
+      } else if (
+        error.response?.status === 400 &&
+        error.response?.data?.message
+      ) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 401) {
+        errorMessage = "Authentication failed. Please try again.";
+      } else if (
+        error.code === "NETWORK_ERROR" ||
+        error.message === "Network Error"
+      ) {
+        errorMessage =
+          "Network error. Please check your connection and try again.";
       } else if (error.message) {
         errorMessage = error.message;
       }

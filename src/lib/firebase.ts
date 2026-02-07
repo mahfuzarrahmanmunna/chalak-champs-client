@@ -1,8 +1,8 @@
 // lib/firebase.ts
-import { initializeApp, FirebaseApp } from "firebase/app";
-import { getAuth, Auth, RecaptchaVerifier } from "firebase/auth";
-import { getFirestore, Firestore } from "firebase/firestore";
-import { getAnalytics, Analytics } from "firebase/analytics";
+import { initializeApp } from "firebase/app";
+import { getAuth, Auth, RecaptchaVerifier, updateProfile } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getAnalytics, Analytics } from "firebase/analytics"; // Import Analytics type
 
 // Define the Firebase configuration interface
 interface FirebaseConfig {
@@ -34,12 +34,13 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
 }
 
 // Initialize Firebase
-const app: FirebaseApp = initializeApp(firebaseConfig);
-export const auth: Auth = getAuth(app);
-export const db: Firestore = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
 
 // Initialize Analytics (only in browser environment)
-export let analytics: Analytics | undefined;
+// Fix: Add type annotation and handle the undefined case
+export let analytics: Analytics | undefined = undefined;
 if (typeof window !== "undefined") {
   analytics = getAnalytics(app);
 }
@@ -64,17 +65,12 @@ export const setupRecaptcha = (
   }
 
   try {
-    // The 'container' parameter is already typed as 'string | HTMLElement',
-    // which is exactly what the RecaptchaVerifier constructor expects.
-    // No type assertion is needed.
     window.recaptchaVerifier = new RecaptchaVerifier(auth, container, {
       size: "invisible",
       callback: (response: string) => {
-        // reCAPTCHA solved, allow signInWithPhoneNumber.
         console.log("reCAPTCHA solved, can proceed with sign in.");
       },
       "expired-callback": () => {
-        // Response expired. Ask user to solve reCAPTCHA again.
         console.error("reCAPTCHA expired. Please try again.");
       },
     });
@@ -86,5 +82,7 @@ export const setupRecaptcha = (
   }
 };
 
-// Export the app instance
+// Export the updateProfile function for use in components
+export { updateProfile };
+
 export default app;
