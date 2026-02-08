@@ -1,22 +1,31 @@
+// src/components/Navbar/Navbar.tsx
 "use client";
-
 import Link from "next/link";
-import React, { useState } from "react";
+// import React, { useState } from "react";
 import ThemeToggle from "../ThemeToggle/ThemeToggle";
 import SearchBar from "../SearchBar/SearchBar";
 import CategoryModal from "../CategoryModal/CategoryModal";
-// import { useLanguage } from "@/app/context/LanguageContext";
+// import ProfileModal from "../ProfileModal/ProfileModal";
+// import ProfileButton from "../ProfileButton/ProfileButton";
 import { useTheme } from "@/app/context/ThemeContext";
 import { useLanguage } from "@/app/context/LanguageContext";
+import useAuth from "@/app/hooks/useAuth";
+import ProfileModal from "./ProfileModal";
+import ProfileButton from "./ProfileButton";
+import { useState } from "react";
+import { useCurrentUser } from "@/app/hooks/useCurrentUser";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { isBangla, toggleLanguage, t } = useLanguage();
   const { colors } = useTheme();
+  const { user } = useAuth();
+  const { currentUser } = useCurrentUser();
 
   const openCategoryModal = () => {
     setIsCategoryModalOpen(true);
@@ -26,6 +35,14 @@ const Navbar = () => {
   const closeCategoryModal = () => {
     setIsCategoryModalOpen(false);
     setSelectedCategory(null);
+  };
+
+  const openProfileModal = () => {
+    setIsProfileModalOpen(true);
+  };
+
+  const closeProfileModal = () => {
+    setIsProfileModalOpen(false);
   };
 
   return (
@@ -205,25 +222,32 @@ const Navbar = () => {
 
               <ThemeToggle />
 
-              <Link
-                href="/login"
-                className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
-              >
-                {String(t.login)}
-              </Link>
-              <Link
-                href="/register"
-                className="px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  color: "var(--color-background)",
-                }}
-              >
-                {String(t.signUp)}
-              </Link>
+              {/* Show either login/register buttons or profile button */}
+              {user ? (
+                <ProfileButton onClick={openProfileModal} />
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                    style={{
+                      color: "var(--color-foreground)",
+                    }}
+                  >
+                    {String(t.login)}
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-background)",
+                    }}
+                  >
+                    {String(t.signUp)}
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -400,31 +424,84 @@ const Navbar = () => {
             >
               {String(t.store)}
             </Link>
+
+            {/* Mobile authentication section */}
             <div
               className="pt-4 pb-3"
               style={{ borderTop: `1px solid var(--color-border)` }}
             >
-              <div className="flex items-center px-4 space-x-3">
-                <Link
-                  href="/login"
-                  className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-                  style={{
-                    color: "var(--color-foreground)",
-                  }}
-                >
-                  {String(t.login)}
-                </Link>
-                <Link
-                  href="/register"
-                  className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-                  style={{
-                    backgroundColor: "var(--color-primary)",
-                    color: "var(--color-background)",
-                  }}
-                >
-                  {String(t.signUp)}
-                </Link>
-              </div>
+              {user ? (
+                <div className="px-4 space-y-3">
+                  <div className="flex items-center">
+                    <div
+                      className="h-10 w-10 rounded-full flex items-center justify-center mr-3"
+                      style={{
+                        backgroundColor: "var(--color-primary)",
+                      }}
+                    >
+                      <span
+                        className="text-lg font-medium"
+                        style={{
+                          color: "var(--color-background)",
+                        }}
+                      >
+                        {user?.displayName?.charAt(0) ||
+                          user?.email?.charAt(0) ||
+                          "U"}
+                      </span>
+                    </div>
+                    <div>
+                      <p
+                        className="text-sm font-medium"
+                        style={{
+                          color: "var(--color-foreground)",
+                        }}
+                      >
+                        {user?.displayName || "User"}
+                      </p>
+                      <p
+                        className="text-xs"
+                        style={{
+                          color: "var(--color-muted-foreground)",
+                        }}
+                      >
+                        {user?.email}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={openProfileModal}
+                    className="w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                    style={{
+                      color: "var(--color-foreground)",
+                    }}
+                  >
+                    {t.viewProfile || "View Profile"}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center px-4 space-x-3">
+                  <Link
+                    href="/login"
+                    className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                    style={{
+                      color: "var(--color-foreground)",
+                    }}
+                  >
+                    {String(t.login)}
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-background)",
+                    }}
+                  >
+                    {String(t.signUp)}
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -436,6 +513,8 @@ const Navbar = () => {
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
       />
+
+      <ProfileModal isOpen={isProfileModalOpen} onClose={closeProfileModal} />
     </>
   );
 };

@@ -1,13 +1,18 @@
+// src/lib/api.ts
+
 import axios from "axios";
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Add a request interceptor to include the auth token
+// Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -16,17 +21,16 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error),
 );
 
-// Add a response interceptor to handle errors
+// Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Redirect to login if unauthorized
+    if (error.response?.status === 401) {
+      // Token expired or invalid
+      localStorage.removeItem("token");
       window.location.href = "/login";
     }
     return Promise.reject(error);
