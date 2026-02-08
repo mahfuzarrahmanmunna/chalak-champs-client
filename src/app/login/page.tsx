@@ -117,9 +117,9 @@ export default function LoginPage() {
       } else {
         setError(response.data.message || "Invalid verification code");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Verification failed:", error);
-      setError(error.response?.data?.message || "Verification failed");
+      setError(error instanceof Error ? error.message : "Verification failed");
     } finally {
       setIsLoading(false);
     }
@@ -137,9 +137,11 @@ export default function LoginPage() {
       if (!response.data.success) {
         setError(response.data.message || "Failed to resend verification code");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to resend code:", error);
-      setError(error.response?.data?.message || "Failed to resend code");
+      setError(
+        error instanceof Error ? error.message : "Failed to resend code",
+      );
     } finally {
       setIsLoading(false);
     }

@@ -1,0 +1,39 @@
+{
+  "newsletterTitle": "Stay Updated with Our Latest Courses",
+  "newsletterSubtitle": "Subscribe to our newsletter and be the first to know about new courses, special offers, and learning resources.",
+  "enterEmail": "Enter your email",
+  "subscribe": "Subscribe",
+  "subscribing": "Subscribing...",
+  "subscriptionSuccess": "Thank you for subscribing!",
+  "subscriptionError": "Failed to subscribe. Please try again.",
+  "subscribeAnother": "Subscribe Another Email",
+  "pleaseEnterEmail": "Please enter your email address",
+  "validEmailRequired": "Please enter a valid email address",
+  "privacyNote": "We respect your privacy. Unsubscribe at any time.",
+  "success": "Success!",
+  "hero": {
+    "title": "Learn New Skills with Expert Instructors",
+    "subtitle": "Join thousands of students learning online with our comprehensive courses",
+    "ctaButton": "Browse Courses",
+    "features": [
+      {
+        "title": "Expert Instructors",
+        "description": "Learn from industry experts with years of experience"
+      },
+      {
+        "title": "Flexible Learning",
+        "description": "Study at your own pace with our self-paced courses"
+      },
+      {
+        "title": "Certification",
+        "description": "Get certified upon completion of your courses"
+      }
+    ],
+    "stats": {
+      "students": "10,000+",
+      "courses": "500+",
+      "instructors": "100+",
+      "languages": "5+"
+    }
+  }
+}

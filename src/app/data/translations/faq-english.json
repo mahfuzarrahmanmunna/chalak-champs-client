@@ -1,0 +1,96 @@
+{
+  "title": "Frequently Asked Questions",
+  "subtitle": "Find answers to common questions about Chalak Champs",
+  "searchPlaceholder": "Search for questions...",
+  "noResults": "No results found for your search. Try different keywords.",
+  "categories": {
+    "all": "All Categories",
+    "general": "General",
+    "account": "Account & Profile",
+    "courses": "Courses",
+    "payment": "Payment & Billing",
+    "technical": "Technical Support"
+  },
+  "contactUs": "Still have questions?",
+  "contactUsText": "Can't find the answer you're looking for? Our customer support team is here to help.",
+  "contactButton": "Contact Support",
+  "expand": "Expand",
+  "collapse": "Collapse",
+  "relatedQuestions": "Related Questions",
+  "helpful": "Was this helpful?",
+  "yes": "Yes",
+  "no": "No",
+  "thankYou": "Thank you for your feedback!",
+  "faqs": [
+    {
+      "id": 1,
+      "category": "general",
+      "question": "What is Chalak Champs?",
+      "answer": "Chalak Champs is an online learning platform that offers a wide range of courses in various subjects. We provide high-quality educational content taught by expert instructors to help students achieve their learning goals.",
+      "related": [2, 3]
+    },
+    {
+      "id": 2,
+      "category": "general",
+      "question": "How do I get started with Chalak Champs?",
+      "answer": "Getting started is easy! Simply create an account by clicking on the Sign Up button, choose a course that interests you, and enroll. You can start learning immediately after enrollment.",
+      "related": [1, 4]
+    },
+    {
+      "id": 3,
+      "category": "courses",
+      "question": "What types of courses are available?",
+      "answer": "We offer a variety of courses including programming, design, business, marketing, photography, music, language learning, and science. Our courses range from beginner to advanced levels to suit all learners.",
+      "related": [4, 7]
+    },
+    {
+      "id": 4,
+      "category": "courses",
+      "question": "Are the courses self-paced or scheduled?",
+      "answer": "We offer both self-paced and scheduled courses. Self-paced courses allow you to learn at your own convenience, while scheduled courses have specific start and end dates with live sessions and deadlines.",
+      "related": [3, 5]
+    },
+    {
+      "id": 5,
+      "category": "courses",
+      "question": "Do I get a certificate after completing a course?",
+      "answer": "Yes, upon successful completion of a course, you will receive a certificate of completion. This certificate can be downloaded and shared on your professional networks.",
+      "related": [4, 6]
+    },
+    {
+      "id": 6,
+      "category": "payment",
+      "question": "What payment methods do you accept?",
+      "answer": "We accept various payment methods including credit/debit cards, net banking, UPI, and mobile wallets. All transactions are secured with industry-standard encryption.",
+      "related": [5, 7]
+    },
+    {
+      "id": 7,
+      "category": "payment",
+      "question": "Is there a refund policy?",
+      "answer": "Yes, we offer a 7-day refund policy for most courses. If you're not satisfied with a course, you can request a refund within 7 days of purchase, provided you haven't completed more than 30% of the course content.",
+      "related": [6, 8]
+    },
+    {
+      "id": 8,
+      "category": "account",
+      "question": "How do I reset my password?",
+      "answer": "To reset your password, click on the 'Forgot Password' link on the login page. Enter your registered email address, and we'll send you instructions to reset your password.",
+      "related": [7, 9]
+    },
+    {
+      "id": 9,
+      "category": "account",
+      "question": "Can I change my email address?",
+      "answer": "Yes, you can change your email address by going to your profile settings. Click on 'Edit Profile', update your email address, and save the changes. You'll need to verify your new email address.",
+      "related": [8, 10]
+    },
+    {
+      "id": 10,
+      "category": "technical",
+      "question": "What are the system requirements for taking courses?",
+      "answer": "Our platform works on most modern browsers (Chrome, Firefox, Safari, Edge) with a stable internet connection. For mobile devices, we support both iOS and Android. For the best experience, we recommend using the latest browser version.",
+      "related": [9]
+    }
+  ]
+}

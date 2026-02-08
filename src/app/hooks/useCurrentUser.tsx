@@ -61,12 +61,10 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
       } else {
         throw new Error(response.data.message || "Failed to fetch user data");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching user data:", err);
       setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to fetch user data",
+        err instanceof Error ? err.message : "Failed to fetch user data",
       );
       setCurrentUser(null);
     } finally {
@@ -83,7 +81,7 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
     try {
       const token = await getIdToken(firebaseUser, true); // Force refresh
       return token;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error refreshing token:", err);
       throw new Error("Failed to refresh token");
     }
@@ -115,12 +113,10 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
         } else {
           throw new Error(response.data.message || "Failed to update profile");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error updating profile:", err);
         setError(
-          err.response?.data?.message ||
-            err.message ||
-            "Failed to update profile",
+          err instanceof Error ? err.message : "Failed to update profile",
         );
         throw err;
       }

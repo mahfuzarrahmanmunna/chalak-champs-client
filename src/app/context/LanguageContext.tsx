@@ -66,6 +66,10 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       const hero = await import(`../data/translations/hero-${lang}.json`);
       const navbar = await import(`../data/translations/navbar-${lang}.json`);
       const common = await import(`../data/translations/common-${lang}.json`);
+      const faq = await import(`../data/translations/faq-${lang}.json`);
+      const mailchimp = await import(
+        `../data/translations/mailchimp-${lang}.json`
+      );
 
       // Set hero data separately
       setHeroData(hero.default as HeroData);
@@ -75,6 +79,8 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
         ...hero.default,
         ...navbar.default,
         ...common.default,
+        ...faq.default,
+        ...mailchimp.default,
       };
     } catch (error) {
       console.error(`Failed to load translations for ${lang}:`, error);
