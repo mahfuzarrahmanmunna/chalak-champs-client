@@ -98,7 +98,7 @@ const Navbar = () => {
                     }}
                   >
                     <div className="py-1">
-                      <a
+                      <Link
                         href="#"
                         className="block px-4 py-2 text-sm transition-colors duration-200"
                         style={{
@@ -115,8 +115,8 @@ const Navbar = () => {
                         }}
                       >
                         {String(t.liveCourses)}
-                      </a>
-                      <a
+                      </Link>
+                      <Link
                         href="#"
                         className="block px-4 py-2 text-sm transition-colors duration-200"
                         style={{
@@ -133,8 +133,8 @@ const Navbar = () => {
                         }}
                       >
                         {String(t.recordedCourses)}
-                      </a>
-                      <a
+                      </Link>
+                      <Link
                         href="#"
                         className="block px-4 py-2 text-sm transition-colors duration-200"
                         style={{
@@ -151,7 +151,7 @@ const Navbar = () => {
                         }}
                       >
                         {String(t.skillDev)}
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -167,7 +167,7 @@ const Navbar = () => {
                 {String(t.categories)}
               </button>
 
-              <a
+              <Link
                 href="#"
                 className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                 style={{
@@ -175,8 +175,8 @@ const Navbar = () => {
                 }}
               >
                 {String(t.modelTest)}
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/blog"
                 className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                 style={{
@@ -184,8 +184,8 @@ const Navbar = () => {
                 }}
               >
                 {String(t.blog)}
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#"
                 className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                 style={{
@@ -193,7 +193,7 @@ const Navbar = () => {
                 }}
               >
                 {String(t.store)}
-              </a>
+              </Link>
             </div>
 
             {/* Search Bar (Desktop) */}
@@ -355,7 +355,7 @@ const Navbar = () => {
               backgroundColor: "var(--color-card)",
             }}
           >
-            <a
+            <Link
               href="#"
               className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
               style={{
@@ -371,7 +371,7 @@ const Navbar = () => {
               }}
             >
               {String(t.courses)}
-            </a>
+            </Link>
             <button
               onClick={openCategoryModal}
               className="block text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
@@ -381,7 +381,7 @@ const Navbar = () => {
             >
               {String(t.categories)}
             </button>
-            <a
+            <Link
               href="#"
               className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
               style={{
@@ -397,8 +397,8 @@ const Navbar = () => {
               }}
             >
               {String(t.modelTest)}
-            </a>
-            <a
+            </Link>
+            <Link
               href="#"
               className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
               style={{
@@ -414,7 +414,7 @@ const Navbar = () => {
               }}
             >
               {String(t.blog)}
-            </a>
+            </Link>
             <Link
               href="#"
               className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
@@ -476,7 +476,7 @@ const Navbar = () => {
                       color: "var(--color-foreground)",
                     }}
                   >
-                    {t.viewProfile || "View Profile"}
+                    {String(t.viewProfile || "View Profile")}
                   </button>
                 </div>
               ) : (
