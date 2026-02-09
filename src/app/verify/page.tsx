@@ -178,7 +178,7 @@ export default function VerifyPage() {
                 type="text"
                 value={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value)}
-                className="block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter 6-digit code"
               />
             </div>

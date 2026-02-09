@@ -173,7 +173,7 @@ export default function VerifyOtpPage() {
                 required
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                className={`block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-center text-lg tracking-widest ${
+                className={`block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-center text-lg tracking-widest ${
                   error ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="000000"

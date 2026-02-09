@@ -48,9 +48,7 @@ const EmailSignup: React.FC = () => {
       if (response.ok) {
         setStatus("success");
         setMessage(
-          String(
-            data.message || t.subscriptionSuccess || "Subscribed successfully!",
-          ),
+          data.message || t.subscriptionSuccess || "Subscribed successfully!",
         );
         setEmail("");
       } else {
@@ -69,7 +67,7 @@ const EmailSignup: React.FC = () => {
   return (
     <section
       className="py-16 px-4 sm:px-6 lg:px-8"
-      style={{ backgroundColor: "var(--color-accent)" }}
+      style={{ backgroundColor: "var(--color-background)" }}
     >
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
@@ -81,7 +79,7 @@ const EmailSignup: React.FC = () => {
           </h2>
           <p
             className="text-lg max-w-2xl mx-auto mb-8"
-            style={{ color: "var(--color-muted-foreground)" }}
+            style={{ color: "var(--color-mutedForeground)" }}
           >
             {String(
               t.newsletterSubtitle ||
@@ -120,7 +118,7 @@ const EmailSignup: React.FC = () => {
               </h3>
               <p
                 className="mb-4"
-                style={{ color: "var(--color-muted-foreground)" }}
+                style={{ color: "var(--color-mutedForeground)" }}
               >
                 {message}
               </p>
@@ -132,10 +130,10 @@ const EmailSignup: React.FC = () => {
                 className="px-4 py-2 rounded-lg font-medium transition-colors"
                 style={{
                   backgroundColor: "var(--color-primary)",
-                  color: "var(--color-primary-foreground)",
+                  color: "var(--color-primaryForeground)",
                 }}
               >
-                {String(t.subscribeAnother || "Subscribe Another Email")}
+                {String(t.subscribeAnother || "Subscribe another email")}
               </button>
             </div>
           ) : (
@@ -146,7 +144,9 @@ const EmailSignup: React.FC = () => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={String(t.enterEmail || "Enter your email")}
+                    placeholder={String(
+                      t.emailPlaceholder || "Enter your email",
+                    )}
                     className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2"
                     style={{
                       borderColor:
@@ -165,7 +165,7 @@ const EmailSignup: React.FC = () => {
                   className="px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center min-w-[120px]"
                   style={{
                     backgroundColor: "var(--color-primary)",
-                    color: "var(--color-primary-foreground)",
+                    color: "var(--color-primaryForeground)",
                   }}
                 >
                   {Boolean(
@@ -222,10 +222,10 @@ const EmailSignup: React.FC = () => {
 
               <p
                 className="text-xs mt-2"
-                style={{ color: "var(--color-muted-foreground)" }}
+                style={{ color: "var(--color-mutedForeground)" }}
               >
                 {String(
-                  t.privacyNote ||
+                  t.newsletterDisclaimer ||
                     "We respect your privacy. Unsubscribe at any time.",
                 )}
               </p>

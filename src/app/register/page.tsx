@@ -566,7 +566,7 @@ export default function RegisterPage() {
                         required
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                        className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                           errors.phone ? "border-red-500" : "border-gray-300"
                         }`}
                         placeholder="+880 1XXX XXXXXX"
@@ -609,7 +609,7 @@ export default function RegisterPage() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                        className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                           errors.email ? "border-red-500" : "border-gray-300"
                         }`}
                         placeholder="you@example.com"
@@ -775,7 +775,7 @@ export default function RegisterPage() {
                   required
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
-                  className={`block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                  className={`block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                     errors.verification ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Enter 6-digit code"
@@ -862,7 +862,7 @@ export default function RegisterPage() {
                     required
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                    className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                       errors.firstName ? "border-red-500" : "border-gray-300"
                     }`}
                   />
@@ -887,7 +887,7 @@ export default function RegisterPage() {
                     required
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                    className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                       errors.lastName ? "border-red-500" : "border-gray-300"
                     }`}
                   />
@@ -916,7 +916,7 @@ export default function RegisterPage() {
                       required
                       value={formData.password}
                       onChange={handleInputChange}
-                      className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                         errors.password ? "border-red-500" : "border-gray-300"
                       }`}
                     />
@@ -941,7 +941,7 @@ export default function RegisterPage() {
                       required
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
-                      className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                         errors.confirmPassword
                           ? "border-red-500"
                           : "border-gray-300"

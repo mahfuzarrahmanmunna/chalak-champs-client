@@ -18,7 +18,13 @@ const CategoryModal = ({ isOpen, onClose }: CategoryModalProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-auto flex items-center justify-center">
+    <div
+      style={{
+        backgroundColor: "var(--color-background)",
+        borderBottom: `1px solid var(--color-border)`,
+      }}
+      className="fixed inset-0 z-50 overflow-auto flex items-center justify-center"
+    >
       <div
         className="fixed inset-0 bg-black opacity-50"
         onClick={onClose}

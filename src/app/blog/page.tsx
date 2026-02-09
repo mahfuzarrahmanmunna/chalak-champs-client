@@ -331,7 +331,7 @@ export default function BlogPage() {
               placeholder="Search blog posts..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="block w-full pl-10 pr-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               style={{
                 backgroundColor: "var(--color-card)",
                 borderColor: "var(--color-border)",

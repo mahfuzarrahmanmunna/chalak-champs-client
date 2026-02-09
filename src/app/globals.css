@@ -1,39 +1,12 @@
-/* @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-} */
-
 @import "tailwindcss";
-/* @plugin "daisyui"; */
-
+@plugin "daisyui";
 @plugin "daisyui" {
   themes:
     light --default,
     dark --prefersdark;
-  themes: light --default;
 }
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @plugin "daisyui/theme" {
   name: "mytheme";
@@ -82,6 +55,7 @@ body {
   /* Basic colors */
   --background: #d8cccce8;
   --foreground: #8b7878;
+  --muted: #666666;
 
   /* Your theme colors */
   --color-primary: #ff69b4; /* Pink (60%) */
@@ -104,7 +78,7 @@ body {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-muted-foreground: var(--muted) --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
   /* Add your theme colors to Tailwind */

@@ -14,6 +14,7 @@ import ProfileModal from "./ProfileModal";
 import ProfileButton from "./ProfileButton";
 import { useState } from "react";
 import { useCurrentUser } from "@/app/hooks/useCurrentUser";
+import ThemeSwitch from "../ThemeSwitch/ThemeSwitch";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -299,6 +300,7 @@ const Navbar = () => {
               </button>
 
               <ThemeToggle />
+              {/* <ThemeSwitch /> */}
 
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}

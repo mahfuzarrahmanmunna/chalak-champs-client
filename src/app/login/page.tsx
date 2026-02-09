@@ -247,7 +247,7 @@ export default function LoginPage() {
                           required
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                          className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                             error ? "border-red-500" : "border-gray-300"
                           }`}
                           placeholder="you@example.com"
@@ -285,7 +285,7 @@ export default function LoginPage() {
                           required
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                          className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                             error ? "border-red-500" : "border-gray-300"
                           }`}
                           placeholder="••••••••"
@@ -320,7 +320,7 @@ export default function LoginPage() {
                         required
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                        className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                           error ? "border-red-500" : "border-gray-300"
                         }`}
                         placeholder="+880 1XXX XXXXXX"
@@ -394,7 +394,7 @@ export default function LoginPage() {
                   required
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
-                  className={`block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                  className={`block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                     error ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Enter 6-digit code"

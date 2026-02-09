@@ -41,7 +41,9 @@ const HeroBanner: React.FC = () => {
   return (
     <div
       className="relative overflow-hidden"
-      style={{ backgroundColor: "var(--color-background)" }}
+      style={{
+        backgroundColor: "var(--color-background)",
+      }}
     >
       {/* Background Image/Video with gradient overlay matching blog design */}
       <div className="absolute inset-0">
