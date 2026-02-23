@@ -13,6 +13,7 @@ import { GrDocumentText } from "react-icons/gr";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { HiArrowRightOnRectangle } from "react-icons/hi2";
 import { FaBars } from "react-icons/fa";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 // import {
 //   HomeIcon,
 //   UserGroupIcon,
@@ -39,6 +40,7 @@ export default function AdminDashboardLayout({
   const { user, signOut } = useAuth();
   const { colors, isDarkMode } = useTheme();
   const { t, isBangla } = useLanguage();
+  const { currentUser } = useCurrentUser();
 
   const handleLogout = async () => {
     try {
@@ -64,9 +66,9 @@ export default function AdminDashboardLayout({
     },
     {
       name: t.courses || "Courses",
-      href: "/admin-dashboard/courses",
+      href: "/admin-dashboard/manage-courses",
       icon: HiAcademicCap,
-      current: pathname === "/admin-dashboard/courses",
+      current: pathname === "/admin-dashboard/manage-courses",
     },
     {
       name: t.analytics || "Analytics",
@@ -107,10 +109,12 @@ export default function AdminDashboardLayout({
   ];
 
   // Check if user is admin
-  if (user && user.role !== "admin") {
-    router.push("/dashboard");
+  if (currentUser && currentUser.role !== "admin") {
+    router.push("/admin-dashboard");
     return null;
   }
+
+  console.log("AdminDashboardLayout rendered with user:", currentUser);
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">
