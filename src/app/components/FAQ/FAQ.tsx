@@ -1,6 +1,6 @@
 // src/components/FAQ/FAQ.tsx
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useTheme } from "@/app/context/ThemeContext";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,7 @@ interface FAQItem {
 }
 
 const FAQ: React.FC = () => {
-  const { t, isBangla } = useLanguage();
+  const { t } = useLanguage();
   const { colors } = useTheme();
   const router = useRouter();
 
@@ -30,8 +30,10 @@ const FAQ: React.FC = () => {
 
   // Get FAQ data from translations
   const faqData = useMemo(() => {
-    const faqs = (t.faqs as FAQItem[]) || [];
-    const categories = (t.categories as { [key: string]: string }) || {};
+    // FIX: Cast to 'unknown' first, then to the specific type
+    const faqs = (t.faqs as unknown as FAQItem[]) || [];
+    const categories =
+      (t.categories as unknown as { [key: string]: string }) || {};
 
     return {
       faqs,
@@ -115,7 +117,7 @@ const FAQ: React.FC = () => {
     <div
       className="min-h-screen py-12 px-4 sm:px-6 lg:px-8"
       style={{
-        backgroundColor: "var(--color-background)",
+        backgroundColor: colors.background, // Updated to use colors object directly
       }}
     >
       <div className="max-w-4xl mx-auto">
@@ -123,13 +125,13 @@ const FAQ: React.FC = () => {
         <div className="text-center mb-12">
           <h1
             className="text-4xl font-bold mb-4"
-            style={{ color: "var(--color-foreground)" }}
+            style={{ color: colors.foreground }}
           >
             {faqData.title}
           </h1>
           <p
             className="text-xl max-w-2xl mx-auto"
-            style={{ color: "var(--color-muted-foreground)" }}
+            style={{ color: colors.muted }}
           >
             {faqData.subtitle}
           </p>
@@ -141,7 +143,7 @@ const FAQ: React.FC = () => {
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
                 className="h-5 w-5"
-                style={{ color: "var(--color-muted-foreground)" }}
+                style={{ color: colors.muted }}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -159,11 +161,11 @@ const FAQ: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder={faqData.searchPlaceholder}
-              className="block w-full pl-10 pr-3 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="block w-full pl-10 pr-3 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2"
               style={{
-                borderColor: "var(--color-border)",
-                backgroundColor: "var(--color-background)",
-                color: "var(--color-foreground)",
+                borderColor: colors.border,
+                backgroundColor: colors.card,
+                color: colors.foreground,
               }}
             />
           </div>
@@ -182,12 +184,10 @@ const FAQ: React.FC = () => {
                 style={{
                   backgroundColor:
                     selectedCategory === key
-                      ? "var(--color-primary)"
-                      : "var(--color-secondary)",
+                      ? colors.primary
+                      : colors.secondary,
                   color:
-                    selectedCategory === key
-                      ? "var(--color-primary-foreground)"
-                      : "var(--color-secondary-foreground)",
+                    selectedCategory === key ? "#ffffff" : colors.foreground,
                 }}
               >
                 {value}
@@ -202,7 +202,7 @@ const FAQ: React.FC = () => {
             onClick={expandAll}
             className="text-sm font-medium py-1 px-3 rounded transition-colors"
             style={{
-              color: "var(--color-primary)",
+              color: colors.primary,
               backgroundColor: "transparent",
             }}
           >
@@ -212,7 +212,7 @@ const FAQ: React.FC = () => {
             onClick={collapseAll}
             className="text-sm font-medium py-1 px-3 rounded transition-colors"
             style={{
-              color: "var(--color-primary)",
+              color: colors.primary,
               backgroundColor: "transparent",
             }}
           >
@@ -228,8 +228,8 @@ const FAQ: React.FC = () => {
                 key={faq.id}
                 className="border rounded-lg overflow-hidden transition-all duration-200"
                 style={{
-                  borderColor: "var(--color-border)",
-                  backgroundColor: "var(--color-card)",
+                  borderColor: colors.border,
+                  backgroundColor: colors.card,
                 }}
               >
                 <button
@@ -237,13 +237,13 @@ const FAQ: React.FC = () => {
                   className="w-full px-6 py-4 text-left flex items-center justify-between transition-colors"
                   style={{
                     backgroundColor: expandedItems.includes(faq.id)
-                      ? "var(--color-accent)"
+                      ? colors.accent
                       : "transparent",
                   }}
                 >
                   <h3
                     className="text-lg font-medium pr-4"
-                    style={{ color: "var(--color-foreground)" }}
+                    style={{ color: colors.foreground }}
                   >
                     {faq.question}
                   </h3>
@@ -253,7 +253,7 @@ const FAQ: React.FC = () => {
                         ? "transform rotate-180"
                         : ""
                     }`}
-                    style={{ color: "var(--color-muted-foreground)" }}
+                    style={{ color: colors.muted }}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -271,7 +271,7 @@ const FAQ: React.FC = () => {
                   <div className="px-6 pb-4">
                     <div
                       className="prose max-w-none"
-                      style={{ color: "var(--color-foreground)" }}
+                      style={{ color: colors.foreground }}
                       dangerouslySetInnerHTML={{ __html: faq.answer }}
                     />
 
@@ -279,46 +279,38 @@ const FAQ: React.FC = () => {
                     <div className="mt-4 flex items-center">
                       <span
                         className="mr-3 text-sm"
-                        style={{ color: "var(--color-muted-foreground)" }}
+                        style={{ color: colors.muted }}
                       >
                         {faqData.helpful}
                       </span>
                       <button
                         onClick={() => handleHelpful(faq.id, true)}
-                        className={`mr-2 text-sm font-medium py-1 px-3 rounded transition-colors ${
-                          helpfulFeedback[faq.id] === true
-                            ? "bg-blue-100 text-blue-800"
-                            : ""
-                        }`}
+                        className={`mr-2 text-sm font-medium py-1 px-3 rounded transition-colors`}
                         style={{
                           backgroundColor:
                             helpfulFeedback[faq.id] === true
-                              ? "var(--color-primary)"
-                              : "var(--color-secondary)",
+                              ? colors.primary
+                              : colors.secondary,
                           color:
                             helpfulFeedback[faq.id] === true
-                              ? "var(--color-primary-foreground)"
-                              : "var(--color-secondary-foreground)",
+                              ? "#ffffff"
+                              : colors.foreground,
                         }}
                       >
                         {faqData.yes}
                       </button>
                       <button
                         onClick={() => handleHelpful(faq.id, false)}
-                        className={`text-sm font-medium py-1 px-3 rounded transition-colors ${
-                          helpfulFeedback[faq.id] === false
-                            ? "bg-red-100 text-red-800"
-                            : ""
-                        }`}
+                        className={`text-sm font-medium py-1 px-3 rounded transition-colors`}
                         style={{
                           backgroundColor:
                             helpfulFeedback[faq.id] === false
-                              ? "#ef4444"
-                              : "var(--color-secondary)",
+                              ? colors.destructive
+                              : colors.secondary,
                           color:
                             helpfulFeedback[faq.id] === false
-                              ? "white"
-                              : "var(--color-secondary-foreground)",
+                              ? "#ffffff"
+                              : colors.foreground,
                         }}
                       >
                         {faqData.no}
@@ -326,7 +318,7 @@ const FAQ: React.FC = () => {
                       {showThankYou[faq.id] && (
                         <span
                           className="ml-3 text-sm"
-                          style={{ color: "var(--color-primary)" }}
+                          style={{ color: colors.primary }}
                         >
                           {faqData.thankYou}
                         </span>
@@ -338,7 +330,7 @@ const FAQ: React.FC = () => {
                       <div className="mt-6">
                         <h4
                           className="text-sm font-medium mb-2"
-                          style={{ color: "var(--color-foreground)" }}
+                          style={{ color: colors.foreground }}
                         >
                           {faqData.relatedQuestions}
                         </h4>
@@ -347,7 +339,6 @@ const FAQ: React.FC = () => {
                             <li key={related.id}>
                               <button
                                 onClick={() => {
-                                  // Collapse current item and expand related item
                                   setExpandedItems((prev) =>
                                     prev.filter((item) => item !== faq.id),
                                   );
@@ -359,7 +350,7 @@ const FAQ: React.FC = () => {
                                   }, 100);
                                 }}
                                 className="text-left text-sm hover:underline transition-colors"
-                                style={{ color: "var(--color-primary)" }}
+                                style={{ color: colors.primary }}
                               >
                                 {related.question}
                               </button>
@@ -378,7 +369,7 @@ const FAQ: React.FC = () => {
             <div className="mb-4">
               <svg
                 className="h-12 w-12 mx-auto"
-                style={{ color: "var(--color-muted-foreground)" }}
+                style={{ color: colors.muted }}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -393,7 +384,7 @@ const FAQ: React.FC = () => {
             </div>
             <h3
               className="text-lg font-medium mb-2"
-              style={{ color: "var(--color-foreground)" }}
+              style={{ color: colors.foreground }}
             >
               {faqData.noResults}
             </h3>
@@ -404,8 +395,8 @@ const FAQ: React.FC = () => {
               }}
               className="mt-4 px-4 py-2 rounded-lg font-medium transition-colors"
               style={{
-                backgroundColor: "var(--color-primary)",
-                color: "var(--color-primary-foreground)",
+                backgroundColor: colors.primary,
+                color: "#ffffff",
               }}
             >
               {String(t.close || "Reset Filters")}
@@ -416,26 +407,23 @@ const FAQ: React.FC = () => {
         {/* Contact Support */}
         <div
           className="mt-16 p-8 rounded-lg text-center"
-          style={{ backgroundColor: "var(--color-accent)" }}
+          style={{ backgroundColor: colors.accent }}
         >
           <h2
             className="text-2xl font-bold mb-4"
-            style={{ color: "var(--color-foreground)" }}
+            style={{ color: colors.foreground }}
           >
             {faqData.contactUs}
           </h2>
-          <p
-            className="mb-6 max-w-2xl mx-auto"
-            style={{ color: "var(--color-muted-foreground)" }}
-          >
+          <p className="mb-6 max-w-2xl mx-auto" style={{ color: colors.muted }}>
             {faqData.contactUsText}
           </p>
           <button
             onClick={() => router.push("/contact")}
             className="px-6 py-3 rounded-lg font-medium transition-colors"
             style={{
-              backgroundColor: "var(--color-primary)",
-              color: "var(--color-primary-foreground)",
+              backgroundColor: colors.primary,
+              color: "#ffffff",
             }}
           >
             {faqData.contactButton}

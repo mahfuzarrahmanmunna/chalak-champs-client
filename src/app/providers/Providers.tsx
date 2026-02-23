@@ -10,7 +10,7 @@ import { LoadingProvider } from "../context/LoadingContext";
 import Navbar from "../components/Navbar/Navbar";
 import { usePathname } from "next/navigation";
 import Footer from "../components/Footer/Footer";
-import { ThemeProvider2 } from "../context/ThemeContext2";
+// import { ThemeProvider2 } from "../context/ThemeContext2";
 
 const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
@@ -20,17 +20,15 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // <DataLoadedWrapper>
     //   <DataProvider>
     <AuthProvider>
-      <ThemeProvider2>
-        <LoadingProvider>
-          <ThemeProvider>
-            <LanguageProvider>
-              {!isDashboard && <Navbar />}
-              {children}
-              {!isDashboard && <Footer />}
-            </LanguageProvider>
-          </ThemeProvider>
-        </LoadingProvider>
-      </ThemeProvider2>
+      <LoadingProvider>
+        <ThemeProvider>
+          <LanguageProvider>
+            {!isDashboard && <Navbar />}
+            {children}
+            {!isDashboard && <Footer />}
+          </LanguageProvider>
+        </ThemeProvider>
+      </LoadingProvider>
     </AuthProvider>
     //   </DataProvider>
     // </DataLoadedWrapper>

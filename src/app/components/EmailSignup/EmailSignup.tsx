@@ -153,8 +153,6 @@ const EmailSignup: React.FC = () => {
                         status === "error" ? "#ef4444" : "var(--color-border)",
                       backgroundColor: "var(--color-background)",
                       color: "var(--color-foreground)",
-                      ringColor:
-                        status === "error" ? "#ef4444" : "var(--color-primary)",
                     }}
                     disabled={status === "loading"}
                   />

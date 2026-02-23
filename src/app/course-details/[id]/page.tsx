@@ -434,34 +434,34 @@ const enrollmentSchema = yup.object().shape({
   paymentMethod: yup.string().required("Payment method is required"),
   cardNumber: yup
     .string()
-    .when("paymentMethod", (paymentMethod, schema) =>
-      paymentMethod === "card"
-        ? schema
-            .required("Card number is required")
-            .matches(/^[0-9]{16}$/, "Card number must be 16 digits")
-        : schema,
-    ),
+    .when("paymentMethod", {
+      is: "card",
+      then: (schema) =>
+        schema
+          .required("Card number is required")
+          .matches(/^[0-9]{16}$/, "Card number must be 16 digits"),
+    }),
   expiryDate: yup
     .string()
-    .when("paymentMethod", (paymentMethod, schema) =>
-      paymentMethod === "card"
-        ? schema
-            .required("Expiry date is required")
-            .matches(
-              /^(0[1-9]|1[0-2])\/\d{2}$/,
-              "Expiry date must be in MM/YY format",
-            )
-        : schema,
-    ),
+    .when("paymentMethod", {
+      is: "card",
+      then: (schema) =>
+        schema
+          .required("Expiry date is required")
+          .matches(
+            /^(0[1-9]|1[0-2])\/\d{2}$/,
+            "Expiry date must be in MM/YY format",
+          ),
+    }),
   cvv: yup
     .string()
-    .when("paymentMethod", (paymentMethod, schema) =>
-      paymentMethod === "card"
-        ? schema
-            .required("CVV is required")
-            .matches(/^[0-9]{3,4}$/, "CVV must be 3 or 4 digits")
-        : schema,
-    ),
+    .when("paymentMethod", {
+      is: "card",
+      then: (schema) =>
+        schema
+          .required("CVV is required")
+          .matches(/^[0-9]{3,4}$/, "CVV must be 3 or 4 digits"),
+    }),
   agreeToTerms: yup
     .boolean()
     .oneOf([true], "You must agree to the terms and conditions"),
@@ -491,6 +491,7 @@ export default function CourseDetailsPage() {
     formState: { errors: commentErrors },
     reset: resetCommentForm,
     setValue: setCommentValue,
+    watch: watchComment,
   } = useForm({
     resolver: yupResolver(commentSchema),
     defaultValues: {
@@ -505,6 +506,7 @@ export default function CourseDetailsPage() {
     handleSubmit: handleEnrollmentSubmit,
     formState: { errors: enrollmentErrors },
     reset: resetEnrollmentForm,
+    watch: watchEnrollment,
   } = useForm({
     resolver: yupResolver(enrollmentSchema),
     defaultValues: {
@@ -1478,14 +1480,13 @@ export default function CourseDetailsPage() {
                           >
                             <Star
                               className={`h-6 w-6 ${
-                                rating <= (registerComment("rating").value || 0)
+                                rating <= (watchComment("rating") || 0)
                                   ? "fill-current"
                                   : ""
                               }`}
                               style={{
                                 color:
-                                  rating <=
-                                  (registerComment("rating").value || 0)
+                                  rating <= (watchComment("rating") || 0)
                                     ? "#f59e0b"
                                     : "var(--color-border)",
                               }}
@@ -1984,7 +1985,7 @@ export default function CourseDetailsPage() {
                 )}
               </div>
 
-              {registerEnrollment("paymentMethod").value === "card" && (
+              {watchEnrollment("paymentMethod") === "card" && (
                 <>
                   <div className="mb-4">
                     <label

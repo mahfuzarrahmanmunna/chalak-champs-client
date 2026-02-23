@@ -323,9 +323,7 @@ function UsersPageContent() {
                     key={user._id}
                     className="transition-colors hover:bg-opacity-50"
                     style={{
-                      hover: {
-                        backgroundColor: isDark ? "#334155" : "#f3f4f6",
-                      },
+                      backgroundColor: isDark ? "#334155" : "#f3f4f6",
                     }}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">

@@ -1,3 +1,4 @@
+// src/app/context/ThemeContext.tsx
 "use client";
 
 import React, {
@@ -20,6 +21,9 @@ const lightTheme = {
   foreground: "#000000",
   card: "#f8f9fa",
   border: "#e9ecef",
+  muted: "#6b7280", // Gray for secondary text
+  success: "#10b981", // Green
+  destructive: "#ef4444", // Red
 };
 
 const darkTheme = {
@@ -30,6 +34,9 @@ const darkTheme = {
   foreground: "#ffffff",
   card: "#1e1e1e",
   border: "#333333",
+  muted: "#9ca3af", // Lighter gray for dark mode
+  success: "#10b981", // Green
+  destructive: "#ef4444", // Red
 };
 
 // Define the context type
@@ -37,6 +44,7 @@ type ThemeContextType = {
   theme: Theme;
   toggleTheme: () => void;
   colors: typeof lightTheme;
+  isDarkMode: boolean;
 };
 
 // Create the context
@@ -68,6 +76,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   // Get theme colors based on current theme
   const colors = theme === "light" ? lightTheme : darkTheme;
 
+  // Derive isDarkMode from the current theme
+  const isDarkMode = theme === "dark";
+
   // Apply CSS custom properties
   useEffect(() => {
     const root = document.documentElement;
@@ -77,7 +88,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   }, [colors]);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, colors }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, colors, isDarkMode }}>
       {children}
     </ThemeContext.Provider>
   );
