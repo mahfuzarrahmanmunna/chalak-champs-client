@@ -1,26 +1,21 @@
 "use client";
 
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import api from "@/lib/api";
-import useAxiosSecure from "../hooks/useAxiosSecure";
 
 export default function LoginPage() {
-  const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email");
-  const [email, setEmail] = useState<string>("");
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [identifier, setIdentifier] = useState<string>(""); // email or phone
   const [password, setPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [step, setStep] = useState<number>(1); // 1: enter credentials, 2: verify OTP
   const [verificationCode, setVerificationCode] = useState<string>("");
-  const [confirmationResult, setConfirmationResult] = useState<any>(null);
   const router = useRouter();
-  const axiosSecure = useAxiosSecure();
 
   const validateEmail = (email: string): boolean => {
     return /\S+@\S+\.\S+/.test(email);
@@ -33,31 +28,36 @@ export default function LoginPage() {
   const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (loginMethod === "email") {
-      if (!validateEmail(email)) {
-        setError("Please enter a valid email address");
-        return;
-      }
-      if (!password) {
-        setError("Please enter your password");
-        return;
-      }
-    } else {
-      if (!validatePhoneNumber(phoneNumber)) {
-        setError("Please enter a valid phone number");
-        return;
-      }
+    if (!identifier) {
+      setError("Please enter your email address or phone number");
+      return;
+    }
+
+    const isEmail = validateEmail(identifier);
+    const isPhone = validatePhoneNumber(identifier);
+
+    if (!isEmail && !isPhone) {
+      setError("Please enter a valid email address or phone number");
+      return;
+    }
+
+    if (isEmail && !password) {
+      setError("Please enter your password");
+      return;
     }
 
     setError("");
     setIsLoading(true);
 
     try {
-      if (loginMethod === "email") {
+      const isEmail = validateEmail(identifier);
+      const isPhone = validatePhoneNumber(identifier);
+
+      if (isEmail) {
         // Email login with Firebase
         const userCredential = await signInWithEmailAndPassword(
           auth,
-          email,
+          identifier,
           password,
         );
 
@@ -69,10 +69,10 @@ export default function LoginPage() {
 
         // Redirect to dashboard
         router.push("/dashboard");
-      } else {
+      } else if (isPhone) {
         // Phone login - send verification code
         const response = await api.post("/auth/send-phone-verification", {
-          phoneNumber,
+          phoneNumber: identifier,
         });
 
         if (response.data.success) {
@@ -106,7 +106,7 @@ export default function LoginPage() {
 
     try {
       const response = await api.post("/auth/verify-phone-code", {
-        phoneNumber,
+        phoneNumber: identifier,
         code: verificationCode,
       });
 
@@ -131,7 +131,7 @@ export default function LoginPage() {
 
     try {
       const response = await api.post("/auth/send-phone-verification", {
-        phoneNumber,
+        phoneNumber: identifier,
       });
 
       if (!response.data.success) {
@@ -179,7 +179,7 @@ export default function LoginPage() {
             <h2 className="text-3xl font-bold text-gray-900">Sign In</h2>
             <p className="mt-2 text-gray-600">
               {step === 1
-                ? "Enter your credentials to continue"
+                ? "Enter your email or phone number to continue"
                 : "Enter the verification code sent to your phone"}
             </p>
           </div>
@@ -192,145 +192,82 @@ export default function LoginPage() {
 
           {step === 1 ? (
             <form onSubmit={handleLoginSubmit} className="space-y-6">
-              <div>
-                <div className="flex mb-4">
-                  <button
-                    type="button"
-                    onClick={() => setLoginMethod("email")}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-l-md ${
-                      loginMethod === "email"
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="identifier"
+                    className="block text-sm font-medium text-gray-700 mb-2"
                   >
-                    Email
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLoginMethod("phone")}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-r-md ${
-                      loginMethod === "phone"
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
-                  >
-                    Phone Number
-                  </button>
+                    Email address or phone number
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg
+                        className="h-5 w-5 text-gray-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                      </svg>
+                    </div>
+                    <input
+                      id="identifier"
+                      name="identifier"
+                      type="text"
+                      autoComplete="email"
+                      required
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                        error ? "border-red-500" : "border-gray-300"
+                      }`}
+                      placeholder="you@example.com or +8801XXXXXXX"
+                    />
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    You can sign in using either your email address or your
+                    phone number (include country code, e.g., +880).
+                  </p>
                 </div>
 
-                {loginMethod === "email" ? (
-                  <div className="space-y-4">
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm font-medium text-gray-700 mb-2"
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Password (for email login)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg
+                        className="h-5 w-5 text-gray-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
                       >
-                        Email Address
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <svg
-                            className="h-5 w-5 text-gray-400"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                          </svg>
-                        </div>
-                        <input
-                          id="email"
-                          name="email"
-                          type="email"
-                          autoComplete="email"
-                          required
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                            error ? "border-red-500" : "border-gray-300"
-                          }`}
-                          placeholder="you@example.com"
+                        <path
+                          fillRule="evenodd"
+                          d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                          clipRule="evenodd"
                         />
-                      </div>
+                      </svg>
                     </div>
-
-                    <div>
-                      <label
-                        htmlFor="password"
-                        className="block text-sm font-medium text-gray-700 mb-2"
-                      >
-                        Password
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <svg
-                            className="h-5 w-5 text-gray-400"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                        <input
-                          id="password"
-                          name="password"
-                          type="password"
-                          autoComplete="current-password"
-                          required
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                            error ? "border-red-500" : "border-gray-300"
-                          }`}
-                          placeholder="••••••••"
-                        />
-                      </div>
-                    </div>
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                        error ? "border-red-500" : "border-gray-300"
+                      }`}
+                      placeholder="••••••••"
+                    />
                   </div>
-                ) : (
-                  <div>
-                    <label
-                      htmlFor="phone"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Phone Number
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg
-                          className="h-5 w-5 text-gray-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                        </svg>
-                      </div>
-                      <input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        autoComplete="tel"
-                        required
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                          error ? "border-red-500" : "border-gray-300"
-                        }`}
-                        placeholder="+880 1XXX XXXXXX"
-                      />
-                    </div>
-                    <p className="mt-2 text-xs text-gray-500">
-                      Include country code (e.g., +880 for Bangladesh)
-                    </p>
-                  </div>
-                )}
+                </div>
               </div>
 
               <div>

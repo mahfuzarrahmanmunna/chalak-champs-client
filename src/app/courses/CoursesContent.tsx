@@ -197,7 +197,7 @@ const categories = [
 ];
 const levels = ["All", "Beginner", "Intermediate", "Advanced"];
 
-export default function AllCoursesPage() {
+export default function CoursesContent() {
   const { theme, colors } = useTheme();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");

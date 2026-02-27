@@ -432,36 +432,30 @@ const enrollmentSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
   phone: yup.string().required("Phone number is required"),
   paymentMethod: yup.string().required("Payment method is required"),
-  cardNumber: yup
-    .string()
-    .when("paymentMethod", {
-      is: "card",
-      then: (schema) =>
-        schema
-          .required("Card number is required")
-          .matches(/^[0-9]{16}$/, "Card number must be 16 digits"),
-    }),
-  expiryDate: yup
-    .string()
-    .when("paymentMethod", {
-      is: "card",
-      then: (schema) =>
-        schema
-          .required("Expiry date is required")
-          .matches(
-            /^(0[1-9]|1[0-2])\/\d{2}$/,
-            "Expiry date must be in MM/YY format",
-          ),
-    }),
-  cvv: yup
-    .string()
-    .when("paymentMethod", {
-      is: "card",
-      then: (schema) =>
-        schema
-          .required("CVV is required")
-          .matches(/^[0-9]{3,4}$/, "CVV must be 3 or 4 digits"),
-    }),
+  cardNumber: yup.string().when("paymentMethod", {
+    is: "card",
+    then: (schema) =>
+      schema
+        .required("Card number is required")
+        .matches(/^[0-9]{16}$/, "Card number must be 16 digits"),
+  }),
+  expiryDate: yup.string().when("paymentMethod", {
+    is: "card",
+    then: (schema) =>
+      schema
+        .required("Expiry date is required")
+        .matches(
+          /^(0[1-9]|1[0-2])\/\d{2}$/,
+          "Expiry date must be in MM/YY format",
+        ),
+  }),
+  cvv: yup.string().when("paymentMethod", {
+    is: "card",
+    then: (schema) =>
+      schema
+        .required("CVV is required")
+        .matches(/^[0-9]{3,4}$/, "CVV must be 3 or 4 digits"),
+  }),
   agreeToTerms: yup
     .boolean()
     .oneOf([true], "You must agree to the terms and conditions"),
@@ -478,11 +472,12 @@ export default function CourseDetailsPage() {
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("#overview");
   const [expandedSections, setExpandedSections] = useState<string[]>(["1"]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const tabs = ["overview", "curriculum", "instructor", "reviews"];
 
   // React Hook Form for comment
   const {
@@ -645,6 +640,8 @@ export default function CourseDetailsPage() {
       </div>
     );
   }
+
+  const handleChangeTab = () => {};
 
   return (
     <div
@@ -933,702 +930,700 @@ export default function CourseDetailsPage() {
               style={{ borderColor: "var(--color-border)" }}
             >
               <nav className="-mb-px flex space-x-8">
-                {["overview", "curriculum", "instructor", "reviews"].map(
-                  (tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`py-4 px-1 border-b-2 font-medium text-sm capitalize ${
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(`${tab}`)}
+                    className={`py-4 px-1 border-b-2 font-medium text-sm capitalize ${
+                      activeTab === tab
+                        ? "border-indigo-500 text-indigo-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }`}
+                    style={{
+                      borderColor:
                         activeTab === tab
-                          ? "border-indigo-500 text-indigo-600"
-                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                      }`}
-                      style={{
-                        borderColor:
-                          activeTab === tab
-                            ? "var(--color-primary)"
-                            : "transparent",
-                        color:
-                          activeTab === tab
-                            ? "var(--color-primary)"
-                            : "var(--color-foreground)",
-                      }}
-                    >
-                      {tab}
-                    </button>
-                  ),
-                )}
+                          ? "var(--color-primary)"
+                          : "transparent",
+                      color:
+                        activeTab === tab
+                          ? "var(--color-primary)"
+                          : "var(--color-foreground)",
+                    }}
+                  >
+                    {tab}
+                  </button>
+                ))}
               </nav>
             </div>
 
             {/* Tab Content */}
-            {activeTab === "overview" && (
-              <div className="space-y-8">
-                <div>
-                  <h2
-                    className="text-2xl font-bold mb-4"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    Description
-                  </h2>
-                  <p style={{ color: "var(--color-foreground)", opacity: 0.8 }}>
-                    {course.fullDescription}
-                  </p>
-                </div>
+            {/* {activeTab === "overview" && ( */}
+            <div id="overview" className="space-y-8">
+              <div>
+                <h2
+                  className="text-2xl font-bold mb-4"
+                  style={{ color: "var(--color-foreground)" }}
+                >
+                  Description
+                </h2>
+                <p style={{ color: "var(--color-foreground)", opacity: 0.8 }}>
+                  {course.fullDescription}
+                </p>
+              </div>
 
-                <div>
-                  <h2
-                    className="text-2xl font-bold mb-4"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    What you'll learn
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {course.whatYouLearn.map((item, index) => (
-                      <div key={index} className="flex items-start">
-                        <CheckCircle className="h-5 w-5 mr-2 text-green-500 flex-shrink-0 mt-0.5" />
-                        <span
-                          style={{
-                            color: "var(--color-foreground)",
-                            opacity: 0.8,
-                          }}
-                        >
-                          {item}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h2
-                    className="text-2xl font-bold mb-4"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    Requirements
-                  </h2>
-                  <ul className="space-y-2">
-                    {course.requirements.map((requirement, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start"
+              <div>
+                <h2
+                  className="text-2xl font-bold mb-4"
+                  style={{ color: "var(--color-foreground)" }}
+                >
+                  What you'll learn
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {course.whatYouLearn.map((item, index) => (
+                    <div key={index} className="flex items-start">
+                      <CheckCircle className="h-5 w-5 mr-2 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span
                         style={{
                           color: "var(--color-foreground)",
                           opacity: 0.8,
                         }}
                       >
-                        <span className="mr-2">•</span>
-                        <span>{requirement}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h2
-                    className="text-2xl font-bold mb-4"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    Course Features
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div
-                      className="flex items-center p-4 rounded-lg"
-                      style={{ backgroundColor: "var(--color-card)" }}
-                    >
-                      <Target
-                        className="h-8 w-8 mr-3"
-                        style={{ color: "var(--color-primary)" }}
-                      />
-                      <div>
-                        <h3
-                          className="font-medium"
-                          style={{ color: "var(--color-foreground)" }}
-                        >
-                          Practical Learning
-                        </h3>
-                        <p
-                          className="text-sm"
-                          style={{
-                            color: "var(--color-foreground)",
-                            opacity: 0.7,
-                          }}
-                        >
-                          Hands-on exercises and real-world examples
-                        </p>
-                      </div>
-                    </div>
-
-                    <div
-                      className="flex items-center p-4 rounded-lg"
-                      style={{ backgroundColor: "var(--color-card)" }}
-                    >
-                      <Zap
-                        className="h-8 w-8 mr-3"
-                        style={{ color: "var(--color-primary)" }}
-                      />
-                      <div>
-                        <h3
-                          className="font-medium"
-                          style={{ color: "var(--color-foreground)" }}
-                        >
-                          Self-Paced
-                        </h3>
-                        <p
-                          className="text-sm"
-                          style={{
-                            color: "var(--color-foreground)",
-                            opacity: 0.7,
-                          }}
-                        >
-                          Learn at your own pace with lifetime access
-                        </p>
-                      </div>
-                    </div>
-
-                    <div
-                      className="flex items-center p-4 rounded-lg"
-                      style={{ backgroundColor: "var(--color-card)" }}
-                    >
-                      <Award
-                        className="h-8 w-8 mr-3"
-                        style={{ color: "var(--color-primary)" }}
-                      />
-                      <div>
-                        <h3
-                          className="font-medium"
-                          style={{ color: "var(--color-foreground)" }}
-                        >
-                          Certificate
-                        </h3>
-                        <p
-                          className="text-sm"
-                          style={{
-                            color: "var(--color-foreground)",
-                            opacity: 0.7,
-                          }}
-                        >
-                          Receive a certificate upon completion
-                        </p>
-                      </div>
-                    </div>
-
-                    <div
-                      className="flex items-center p-4 rounded-lg"
-                      style={{ backgroundColor: "var(--color-card)" }}
-                    >
-                      <Download
-                        className="h-8 w-8 mr-3"
-                        style={{ color: "var(--color-primary)" }}
-                      />
-                      <div>
-                        <h3
-                          className="font-medium"
-                          style={{ color: "var(--color-foreground)" }}
-                        >
-                          Resources
-                        </h3>
-                        <p
-                          className="text-sm"
-                          style={{
-                            color: "var(--color-foreground)",
-                            opacity: 0.7,
-                          }}
-                        >
-                          Downloadable resources and exercises
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "curriculum" && (
-              <div>
-                <h2
-                  className="text-2xl font-bold mb-6"
-                  style={{ color: "var(--color-foreground)" }}
-                >
-                  Course Content
-                </h2>
-                <div className="space-y-4">
-                  {course.curriculum.map((section) => (
-                    <div
-                      key={section.id}
-                      className="rounded-lg overflow-hidden"
-                      style={{ backgroundColor: "var(--color-card)" }}
-                    >
-                      <button
-                        onClick={() => toggleSection(section.id)}
-                        className="w-full p-4 flex items-center justify-between text-left"
-                      >
-                        <div className="flex items-center">
-                          <div
-                            className="p-2 rounded mr-3"
-                            style={{
-                              backgroundColor: "var(--color-background)",
-                            }}
-                          >
-                            <BookOpen
-                              className="h-5 w-5"
-                              style={{ color: "var(--color-primary)" }}
-                            />
-                          </div>
-                          <div>
-                            <h3
-                              className="font-medium"
-                              style={{ color: "var(--color-foreground)" }}
-                            >
-                              {section.title}
-                            </h3>
-                            <p
-                              className="text-sm"
-                              style={{
-                                color: "var(--color-foreground)",
-                                opacity: 0.7,
-                              }}
-                            >
-                              {section.lessons.length} lessons •{" "}
-                              {section.duration}
-                            </p>
-                          </div>
-                        </div>
-                        <ChevronRight
-                          className={`h-5 w-5 transition-transform ${
-                            expandedSections.includes(section.id)
-                              ? "transform rotate-90"
-                              : ""
-                          }`}
-                          style={{ color: "var(--color-foreground)" }}
-                        />
-                      </button>
-
-                      {expandedSections.includes(section.id) && (
-                        <div
-                          className="border-t"
-                          style={{ borderColor: "var(--color-border)" }}
-                        >
-                          {section.lessons.map((lesson) => (
-                            <div
-                              key={lesson.id}
-                              className="flex items-center justify-between p-4 hover:bg-gray-50"
-                              style={{
-                                backgroundColor: "var(--color-background)",
-                              }}
-                            >
-                              <div className="flex items-center">
-                                {lesson.isPreview ? (
-                                  <Play
-                                    className="h-4 w-4 mr-3"
-                                    style={{ color: "var(--color-primary)" }}
-                                  />
-                                ) : (
-                                  <div
-                                    className="h-4 w-4 mr-3 rounded-full border-2"
-                                    style={{
-                                      borderColor: "var(--color-border)",
-                                    }}
-                                  ></div>
-                                )}
-                                <span
-                                  style={{ color: "var(--color-foreground)" }}
-                                >
-                                  {lesson.title}
-                                </span>
-                                {lesson.isPreview && (
-                                  <span
-                                    className="ml-2 px-2 py-1 text-xs rounded"
-                                    style={{
-                                      backgroundColor: "var(--color-accent)",
-                                      color: "var(--color-background)",
-                                    }}
-                                  >
-                                    Preview
-                                  </span>
-                                )}
-                              </div>
-                              <span
-                                className="text-sm"
-                                style={{
-                                  color: "var(--color-foreground)",
-                                  opacity: 0.7,
-                                }}
-                              >
-                                {lesson.duration}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                        {item}
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
 
-            {activeTab === "instructor" && (
               <div>
                 <h2
-                  className="text-2xl font-bold mb-6"
+                  className="text-2xl font-bold mb-4"
                   style={{ color: "var(--color-foreground)" }}
                 >
-                  Your Instructor
+                  Requirements
                 </h2>
-                <div
-                  className="p-6 rounded-lg"
-                  style={{ backgroundColor: "var(--color-card)" }}
+                <ul className="space-y-2">
+                  {course.requirements.map((requirement, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start"
+                      style={{
+                        color: "var(--color-foreground)",
+                        opacity: 0.8,
+                      }}
+                    >
+                      <span className="mr-2">•</span>
+                      <span>{requirement}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h2
+                  className="text-2xl font-bold mb-4"
+                  style={{ color: "var(--color-foreground)" }}
                 >
-                  <div className="flex flex-col md:flex-row gap-6">
-                    <div className="w-24 h-24 rounded-full overflow-hidden flex-shrink-0">
-                      <img
-                        src={course.instructor.avatar}
-                        alt={course.instructor.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1">
+                  Course Features
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div
+                    className="flex items-center p-4 rounded-lg"
+                    style={{ backgroundColor: "var(--color-card)" }}
+                  >
+                    <Target
+                      className="h-8 w-8 mr-3"
+                      style={{ color: "var(--color-primary)" }}
+                    />
+                    <div>
                       <h3
-                        className="text-xl font-bold mb-2"
+                        className="font-medium"
                         style={{ color: "var(--color-foreground)" }}
                       >
-                        {course.instructor.name}
+                        Practical Learning
                       </h3>
                       <p
+                        className="text-sm"
                         style={{
                           color: "var(--color-foreground)",
-                          opacity: 0.8,
+                          opacity: 0.7,
                         }}
-                        className="mb-4"
                       >
-                        {course.instructor.bio}
+                        Hands-on exercises and real-world examples
                       </p>
+                    </div>
+                  </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="flex items-center">
-                          <div
-                            className="p-2 rounded mr-3"
-                            style={{
-                              backgroundColor: "var(--color-background)",
-                            }}
-                          >
-                            <Star
-                              className="h-5 w-5"
-                              style={{ color: "#f59e0b" }}
-                            />
-                          </div>
-                          <div>
-                            <p
-                              className="font-medium"
-                              style={{ color: "var(--color-foreground)" }}
-                            >
-                              {course.instructor.rating} Instructor Rating
-                            </p>
-                            <p
-                              className="text-sm"
-                              style={{
-                                color: "var(--color-foreground)",
-                                opacity: 0.7,
-                              }}
-                            >
-                              {course.reviewsCount} Reviews
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center">
-                          <div
-                            className="p-2 rounded mr-3"
-                            style={{
-                              backgroundColor: "var(--color-background)",
-                            }}
-                          >
-                            <Users
-                              className="h-5 w-5"
-                              style={{ color: "var(--color-primary)" }}
-                            />
-                          </div>
-                          <div>
-                            <p
-                              className="font-medium"
-                              style={{ color: "var(--color-foreground)" }}
-                            >
-                              {course.instructor.studentsCount.toLocaleString()}{" "}
-                              Students
-                            </p>
-                            <p
-                              className="text-sm"
-                              style={{
-                                color: "var(--color-foreground)",
-                                opacity: 0.7,
-                              }}
-                            >
-                              Enrolled
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center">
-                          <div
-                            className="p-2 rounded mr-3"
-                            style={{
-                              backgroundColor: "var(--color-background)",
-                            }}
-                          >
-                            <BookOpen
-                              className="h-5 w-5"
-                              style={{ color: "var(--color-primary)" }}
-                            />
-                          </div>
-                          <div>
-                            <p
-                              className="font-medium"
-                              style={{ color: "var(--color-foreground)" }}
-                            >
-                              {course.instructor.coursesCount} Courses
-                            </p>
-                            <p
-                              className="text-sm"
-                              style={{
-                                color: "var(--color-foreground)",
-                                opacity: 0.7,
-                              }}
-                            >
-                              Published
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        className="px-4 py-2 rounded-md text-white font-medium"
-                        style={{ backgroundColor: "var(--color-primary)" }}
+                  <div
+                    className="flex items-center p-4 rounded-lg"
+                    style={{ backgroundColor: "var(--color-card)" }}
+                  >
+                    <Zap
+                      className="h-8 w-8 mr-3"
+                      style={{ color: "var(--color-primary)" }}
+                    />
+                    <div>
+                      <h3
+                        className="font-medium"
+                        style={{ color: "var(--color-foreground)" }}
                       >
-                        Follow Instructor
-                      </button>
+                        Self-Paced
+                      </h3>
+                      <p
+                        className="text-sm"
+                        style={{
+                          color: "var(--color-foreground)",
+                          opacity: 0.7,
+                        }}
+                      >
+                        Learn at your own pace with lifetime access
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className="flex items-center p-4 rounded-lg"
+                    style={{ backgroundColor: "var(--color-card)" }}
+                  >
+                    <Award
+                      className="h-8 w-8 mr-3"
+                      style={{ color: "var(--color-primary)" }}
+                    />
+                    <div>
+                      <h3
+                        className="font-medium"
+                        style={{ color: "var(--color-foreground)" }}
+                      >
+                        Certificate
+                      </h3>
+                      <p
+                        className="text-sm"
+                        style={{
+                          color: "var(--color-foreground)",
+                          opacity: 0.7,
+                        }}
+                      >
+                        Receive a certificate upon completion
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className="flex items-center p-4 rounded-lg"
+                    style={{ backgroundColor: "var(--color-card)" }}
+                  >
+                    <Download
+                      className="h-8 w-8 mr-3"
+                      style={{ color: "var(--color-primary)" }}
+                    />
+                    <div>
+                      <h3
+                        className="font-medium"
+                        style={{ color: "var(--color-foreground)" }}
+                      >
+                        Resources
+                      </h3>
+                      <p
+                        className="text-sm"
+                        style={{
+                          color: "var(--color-foreground)",
+                          opacity: 0.7,
+                        }}
+                      >
+                        Downloadable resources and exercises
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+            {/* )} */}
 
-            {activeTab === "reviews" && (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h2
-                    className="text-2xl font-bold"
-                    style={{ color: "var(--color-foreground)" }}
+            {/* {activeTab === "curriculum" && ( */}
+            <div id="curriculum">
+              <h2
+                className="text-2xl font-bold mb-6"
+                style={{ color: "var(--color-foreground)" }}
+              >
+                Course Content
+              </h2>
+              <div className="space-y-4">
+                {course.curriculum.map((section) => (
+                  <div
+                    key={section.id}
+                    className="rounded-lg overflow-hidden"
+                    style={{ backgroundColor: "var(--color-card)" }}
                   >
-                    Student Reviews
-                  </h2>
-                  <div className="flex items-center">
-                    <div className="flex items-center mr-2">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-5 w-5 ${i < Math.floor(course.rating) ? "fill-current" : ""}`}
-                          style={{
-                            color:
-                              i < Math.floor(course.rating)
-                                ? "#f59e0b"
-                                : "var(--color-border)",
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <span
-                      className="font-medium"
-                      style={{ color: "var(--color-foreground)" }}
+                    <button
+                      onClick={() => toggleSection(section.id)}
+                      className="w-full p-4 flex items-center justify-between text-left"
                     >
-                      {course.rating}
-                    </span>
-                    <span
-                      className="ml-1"
-                      style={{ color: "var(--color-foreground)", opacity: 0.7 }}
-                    >
-                      ({course.reviewsCount} reviews)
-                    </span>
-                  </div>
-                </div>
-
-                {/* Review Form */}
-                <div
-                  className="p-6 rounded-lg mb-8"
-                  style={{ backgroundColor: "var(--color-card)" }}
-                >
-                  <h3
-                    className="text-lg font-medium mb-4"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    Write a Review
-                  </h3>
-                  <form onSubmit={handleCommentSubmit(onCommentSubmit)}>
-                    <div className="mb-4">
-                      <label
-                        className="block text-sm font-medium mb-2"
-                        style={{ color: "var(--color-foreground)" }}
-                      >
-                        Rating
-                      </label>
                       <div className="flex items-center">
-                        {[1, 2, 3, 4, 5].map((rating) => (
-                          <button
-                            key={rating}
-                            type="button"
-                            onClick={() => setCommentValue("rating", rating)}
-                            className="mr-1"
+                        <div
+                          className="p-2 rounded mr-3"
+                          style={{
+                            backgroundColor: "var(--color-background)",
+                          }}
+                        >
+                          <BookOpen
+                            className="h-5 w-5"
+                            style={{ color: "var(--color-primary)" }}
+                          />
+                        </div>
+                        <div>
+                          <h3
+                            className="font-medium"
+                            style={{ color: "var(--color-foreground)" }}
                           >
-                            <Star
-                              className={`h-6 w-6 ${
-                                rating <= (watchComment("rating") || 0)
-                                  ? "fill-current"
-                                  : ""
-                              }`}
+                            {section.title}
+                          </h3>
+                          <p
+                            className="text-sm"
+                            style={{
+                              color: "var(--color-foreground)",
+                              opacity: 0.7,
+                            }}
+                          >
+                            {section.lessons.length} lessons •{" "}
+                            {section.duration}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight
+                        className={`h-5 w-5 transition-transform ${
+                          expandedSections.includes(section.id)
+                            ? "transform rotate-90"
+                            : ""
+                        }`}
+                        style={{ color: "var(--color-foreground)" }}
+                      />
+                    </button>
+
+                    {expandedSections.includes(section.id) && (
+                      <div
+                        className="border-t"
+                        style={{ borderColor: "var(--color-border)" }}
+                      >
+                        {section.lessons.map((lesson) => (
+                          <div
+                            key={lesson.id}
+                            className="flex items-center justify-between p-4 hover:bg-gray-50"
+                            style={{
+                              backgroundColor: "var(--color-background)",
+                            }}
+                          >
+                            <div className="flex items-center">
+                              {lesson.isPreview ? (
+                                <Play
+                                  className="h-4 w-4 mr-3"
+                                  style={{ color: "var(--color-primary)" }}
+                                />
+                              ) : (
+                                <div
+                                  className="h-4 w-4 mr-3 rounded-full border-2"
+                                  style={{
+                                    borderColor: "var(--color-border)",
+                                  }}
+                                ></div>
+                              )}
+                              <span
+                                style={{ color: "var(--color-foreground)" }}
+                              >
+                                {lesson.title}
+                              </span>
+                              {lesson.isPreview && (
+                                <span
+                                  className="ml-2 px-2 py-1 text-xs rounded"
+                                  style={{
+                                    backgroundColor: "var(--color-accent)",
+                                    color: "var(--color-background)",
+                                  }}
+                                >
+                                  Preview
+                                </span>
+                              )}
+                            </div>
+                            <span
+                              className="text-sm"
                               style={{
-                                color:
-                                  rating <= (watchComment("rating") || 0)
-                                    ? "#f59e0b"
-                                    : "var(--color-border)",
+                                color: "var(--color-foreground)",
+                                opacity: 0.7,
                               }}
-                            />
-                          </button>
+                            >
+                              {lesson.duration}
+                            </span>
+                          </div>
                         ))}
                       </div>
-                      {commentErrors.rating && (
-                        <p className="mt-1 text-sm text-red-600">
-                          {commentErrors.rating.message}
-                        </p>
-                      )}
-                    </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* )} */}
 
-                    <div className="mb-4">
-                      <label
-                        htmlFor="comment"
-                        className="block text-sm font-medium mb-2"
-                        style={{ color: "var(--color-foreground)" }}
-                      >
-                        Your Review
-                      </label>
-                      <textarea
-                        id="comment"
-                        rows={4}
-                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        style={{
-                          backgroundColor: "var(--color-background)",
-                          borderColor: "var(--color-border)",
-                          color: "var(--color-foreground)",
-                        }}
-                        placeholder="Share your experience with this course..."
-                        {...registerComment("comment")}
-                      ></textarea>
-                      {commentErrors.comment && (
-                        <p className="mt-1 text-sm text-red-600">
-                          {commentErrors.comment.message}
-                        </p>
-                      )}
+            {/* {activeTab === "instructor" && ( */}
+            <div id="instructor">
+              <h2
+                className="text-2xl font-bold mb-6"
+                style={{ color: "var(--color-foreground)" }}
+              >
+                Your Instructor
+              </h2>
+              <div
+                className="p-6 rounded-lg"
+                style={{ backgroundColor: "var(--color-card)" }}
+              >
+                <div className="flex flex-col md:flex-row gap-6">
+                  <div className="w-24 h-24 rounded-full overflow-hidden flex-shrink-0">
+                    <img
+                      src={course.instructor.avatar}
+                      alt={course.instructor.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h3
+                      className="text-xl font-bold mb-2"
+                      style={{ color: "var(--color-foreground)" }}
+                    >
+                      {course.instructor.name}
+                    </h3>
+                    <p
+                      style={{
+                        color: "var(--color-foreground)",
+                        opacity: 0.8,
+                      }}
+                      className="mb-4"
+                    >
+                      {course.instructor.bio}
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="flex items-center">
+                        <div
+                          className="p-2 rounded mr-3"
+                          style={{
+                            backgroundColor: "var(--color-background)",
+                          }}
+                        >
+                          <Star
+                            className="h-5 w-5"
+                            style={{ color: "#f59e0b" }}
+                          />
+                        </div>
+                        <div>
+                          <p
+                            className="font-medium"
+                            style={{ color: "var(--color-foreground)" }}
+                          >
+                            {course.instructor.rating} Instructor Rating
+                          </p>
+                          <p
+                            className="text-sm"
+                            style={{
+                              color: "var(--color-foreground)",
+                              opacity: 0.7,
+                            }}
+                          >
+                            {course.reviewsCount} Reviews
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center">
+                        <div
+                          className="p-2 rounded mr-3"
+                          style={{
+                            backgroundColor: "var(--color-background)",
+                          }}
+                        >
+                          <Users
+                            className="h-5 w-5"
+                            style={{ color: "var(--color-primary)" }}
+                          />
+                        </div>
+                        <div>
+                          <p
+                            className="font-medium"
+                            style={{ color: "var(--color-foreground)" }}
+                          >
+                            {course.instructor.studentsCount.toLocaleString()}{" "}
+                            Students
+                          </p>
+                          <p
+                            className="text-sm"
+                            style={{
+                              color: "var(--color-foreground)",
+                              opacity: 0.7,
+                            }}
+                          >
+                            Enrolled
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center">
+                        <div
+                          className="p-2 rounded mr-3"
+                          style={{
+                            backgroundColor: "var(--color-background)",
+                          }}
+                        >
+                          <BookOpen
+                            className="h-5 w-5"
+                            style={{ color: "var(--color-primary)" }}
+                          />
+                        </div>
+                        <div>
+                          <p
+                            className="font-medium"
+                            style={{ color: "var(--color-foreground)" }}
+                          >
+                            {course.instructor.coursesCount} Courses
+                          </p>
+                          <p
+                            className="text-sm"
+                            style={{
+                              color: "var(--color-foreground)",
+                              opacity: 0.7,
+                            }}
+                          >
+                            Published
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
                     <button
-                      type="submit"
-                      disabled={isSubmittingReview}
-                      className="px-4 py-2 rounded-md text-white font-medium disabled:opacity-50"
+                      className="px-4 py-2 rounded-md text-white font-medium"
                       style={{ backgroundColor: "var(--color-primary)" }}
                     >
-                      {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                      Follow Instructor
                     </button>
-                  </form>
+                  </div>
                 </div>
+              </div>
+            </div>
+            {/* )} */}
 
-                {/* Reviews List */}
-                <div className="space-y-6">
-                  {reviews.map((review) => (
-                    <div
-                      key={review.id}
-                      className="p-6 rounded-lg"
-                      style={{ backgroundColor: "var(--color-card)" }}
+            {/* {activeTab === "reviews" && ( */}
+            <div id="reviews">
+              <div className="flex items-center justify-between mb-6">
+                <h2
+                  className="text-2xl font-bold"
+                  style={{ color: "var(--color-foreground)" }}
+                >
+                  Student Reviews
+                </h2>
+                <div className="flex items-center">
+                  <div className="flex items-center mr-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-5 w-5 ${i < Math.floor(course.rating) ? "fill-current" : ""}`}
+                        style={{
+                          color:
+                            i < Math.floor(course.rating)
+                              ? "#f59e0b"
+                              : "var(--color-border)",
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span
+                    className="font-medium"
+                    style={{ color: "var(--color-foreground)" }}
+                  >
+                    {course.rating}
+                  </span>
+                  <span
+                    className="ml-1"
+                    style={{ color: "var(--color-foreground)", opacity: 0.7 }}
+                  >
+                    ({course.reviewsCount} reviews)
+                  </span>
+                </div>
+              </div>
+
+              {/* Review Form */}
+              <div
+                className="p-6 rounded-lg mb-8"
+                style={{ backgroundColor: "var(--color-card)" }}
+              >
+                <h3
+                  className="text-lg font-medium mb-4"
+                  style={{ color: "var(--color-foreground)" }}
+                >
+                  Write a Review
+                </h3>
+                <form onSubmit={handleCommentSubmit(onCommentSubmit)}>
+                  <div className="mb-4">
+                    <label
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: "var(--color-foreground)" }}
                     >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center">
-                          <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                            <img
-                              src={review.userAvatar}
-                              alt={review.userName}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div>
-                            <h4
-                              className="font-medium"
-                              style={{ color: "var(--color-foreground)" }}
-                            >
-                              {review.userName}
-                            </h4>
-                            <div className="flex items-center">
-                              <div className="flex items-center mr-2">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`h-4 w-4 ${i < Math.floor(review.rating) ? "fill-current" : ""}`}
-                                    style={{
-                                      color:
-                                        i < Math.floor(review.rating)
-                                          ? "#f59e0b"
-                                          : "var(--color-border)",
-                                    }}
-                                  />
-                                ))}
-                              </div>
-                              <span
-                                className="text-sm"
-                                style={{
-                                  color: "var(--color-foreground)",
-                                  opacity: 0.7,
-                                }}
-                              >
-                                {format(new Date(review.date), "MMM dd, yyyy")}
-                              </span>
+                      Rating
+                    </label>
+                    <div className="flex items-center">
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <button
+                          key={rating}
+                          type="button"
+                          onClick={() => setCommentValue("rating", rating)}
+                          className="mr-1"
+                        >
+                          <Star
+                            className={`h-6 w-6 ${
+                              rating <= (watchComment("rating") || 0)
+                                ? "fill-current"
+                                : ""
+                            }`}
+                            style={{
+                              color:
+                                rating <= (watchComment("rating") || 0)
+                                  ? "#f59e0b"
+                                  : "var(--color-border)",
+                            }}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    {commentErrors.rating && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {commentErrors.rating.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mb-4">
+                    <label
+                      htmlFor="comment"
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: "var(--color-foreground)" }}
+                    >
+                      Your Review
+                    </label>
+                    <textarea
+                      id="comment"
+                      rows={4}
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      style={{
+                        backgroundColor: "var(--color-background)",
+                        borderColor: "var(--color-border)",
+                        color: "var(--color-foreground)",
+                      }}
+                      placeholder="Share your experience with this course..."
+                      {...registerComment("comment")}
+                    ></textarea>
+                    {commentErrors.comment && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {commentErrors.comment.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmittingReview}
+                    className="px-4 py-2 rounded-md text-white font-medium disabled:opacity-50"
+                    style={{ backgroundColor: "var(--color-primary)" }}
+                  >
+                    {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                  </button>
+                </form>
+              </div>
+
+              {/* Reviews List */}
+              <div className="space-y-6">
+                {reviews.map((review) => (
+                  <div
+                    key={review.id}
+                    className="p-6 rounded-lg"
+                    style={{ backgroundColor: "var(--color-card)" }}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
+                          <img
+                            src={review.userAvatar}
+                            alt={review.userName}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <h4
+                            className="font-medium"
+                            style={{ color: "var(--color-foreground)" }}
+                          >
+                            {review.userName}
+                          </h4>
+                          <div className="flex items-center">
+                            <div className="flex items-center mr-2">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-4 w-4 ${i < Math.floor(review.rating) ? "fill-current" : ""}`}
+                                  style={{
+                                    color:
+                                      i < Math.floor(review.rating)
+                                        ? "#f59e0b"
+                                        : "var(--color-border)",
+                                  }}
+                                />
+                              ))}
                             </div>
+                            <span
+                              className="text-sm"
+                              style={{
+                                color: "var(--color-foreground)",
+                                opacity: 0.7,
+                              }}
+                            >
+                              {format(new Date(review.date), "MMM dd, yyyy")}
+                            </span>
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      <p
-                        className="mb-4"
+                    <p
+                      className="mb-4"
+                      style={{
+                        color: "var(--color-foreground)",
+                        opacity: 0.8,
+                      }}
+                    >
+                      {review.comment}
+                    </p>
+
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => toggleHelpful(review.id)}
+                        className={`flex items-center text-sm ${
+                          review.isHelpful ? "text-indigo-600" : ""
+                        }`}
                         style={{
-                          color: "var(--color-foreground)",
-                          opacity: 0.8,
+                          color: review.isHelpful
+                            ? "var(--color-primary)"
+                            : "var(--color-foreground)",
+                          opacity: review.isHelpful ? 1 : 0.7,
                         }}
                       >
-                        {review.comment}
-                      </p>
-
-                      <div className="flex items-center">
-                        <button
-                          onClick={() => toggleHelpful(review.id)}
-                          className={`flex items-center text-sm ${
-                            review.isHelpful ? "text-indigo-600" : ""
-                          }`}
-                          style={{
-                            color: review.isHelpful
-                              ? "var(--color-primary)"
-                              : "var(--color-foreground)",
-                            opacity: review.isHelpful ? 1 : 0.7,
-                          }}
-                        >
-                          <ThumbsUp className="h-4 w-4 mr-1" />
-                          Helpful ({review.helpfulCount})
-                        </button>
-                      </div>
+                        <ThumbsUp className="h-4 w-4 mr-1" />
+                        Helpful ({review.helpfulCount})
+                      </button>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+            {/* )} */}
           </div>
 
           {/* Sidebar */}
           <div className="w-full lg:w-80">
-            <div className="sticky top-6 space-y-6">
+            <div className="sticky top-20 space-y-6">
               {/* Course Info */}
               <div
                 className="p-6 rounded-lg"

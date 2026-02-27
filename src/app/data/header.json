@@ -1,0 +1,17 @@
+// {
+//   ""@context"": ""https://schema.org"",
+//   ""@type"": ""EducationalOrganization"",
+//   ""name"": ""Lingual Academy"",
+//   ""description"": ""Spoken English, Grammar (SSC/HSC), Business English & Online courses for learners across Bangladesh."",
+//   ""url"": ""https://www.lingualacademybd.com"",
+//   ""address"": {
+//     ""@type"": ""PostalAddress"",
+//     ""streetAddress"": ""Uttara Sector, House Building area"",
+//     ""addressLocality"": ""Uttara"",
+//     ""addressRegion"": ""Dhaka"",
+//     ""addressCountry"": ""BD""
+//   },
+//   ""sameAs"": [],
+//   ""telephone"": ""+880-XXXXXXXXXX"",
+//   ""openingHours"": ""Mo,Tu,We,Th,Fr 10:00-20:00; Sa,Su 10:00-14:00""
+// }"

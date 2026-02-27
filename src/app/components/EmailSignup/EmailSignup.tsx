@@ -79,7 +79,7 @@ const EmailSignup: React.FC = () => {
           </h2>
           <p
             className="text-lg max-w-2xl mx-auto mb-8"
-            style={{ color: "var(--color-mutedForeground)" }}
+            style={{ color: colors.secondary }}
           >
             {String(
               t.newsletterSubtitle ||
@@ -92,7 +92,7 @@ const EmailSignup: React.FC = () => {
           {status === "success" ? (
             <div
               className="p-6 rounded-lg text-center"
-              style={{ backgroundColor: "var(--color-card)" }}
+              style={{ backgroundColor: colors.primary }}
             >
               <div className="mb-4">
                 <svg
@@ -147,7 +147,7 @@ const EmailSignup: React.FC = () => {
                     placeholder={String(
                       t.emailPlaceholder || "Enter your email",
                     )}
-                    className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2"
+                    className="w-full border border-gray-500 px-4 py-3 rounded-lg focus:outline-none focus:ring-2"
                     style={{
                       borderColor:
                         status === "error" ? "#ef4444" : "var(--color-border)",
@@ -218,10 +218,7 @@ const EmailSignup: React.FC = () => {
                 </div>
               )}
 
-              <p
-                className="text-xs mt-2"
-                style={{ color: "var(--color-mutedForeground)" }}
-              >
+              <p className="text-xs mt-2" style={{ color: colors.foreground }}>
                 {String(
                   t.newsletterDisclaimer ||
                     "We respect your privacy. Unsubscribe at any time.",

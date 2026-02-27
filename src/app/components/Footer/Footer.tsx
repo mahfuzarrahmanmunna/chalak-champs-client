@@ -1,5 +1,3 @@
-// src/app/components/Footer/Footer.tsx
-
 "use client";
 
 import React, { useState } from "react";
@@ -77,7 +75,7 @@ const Footer: React.FC = () => {
     },
     links: {
       learn: [
-        { name: isBangla ? "সবকোর্স" : "Courses", href: "/all-courses" },
+        { name: isBangla ? "সবকোর্স" : "Courses", href: "/courses" },
         { name: isBangla ? "ব্লগ" : "Blog", href: "/blog" },
         {
           name: isBangla ? "ইনস্ট্রাক্টর" : "Instructors",
@@ -86,7 +84,7 @@ const Footer: React.FC = () => {
         { name: isBangla ? "সম্পদগুলি" : "Resources", href: "/resources" },
       ],
       company: [
-        { name: isBangla ? "আমাদের সম্পর্কে" : "About Us", href: "/about" },
+        { name: isBangla ? "আমাদের সম্পর্কে" : "About Us", href: "/aboutus" },
         { name: isBangla ? "ক্যারিয়ার নীতি" : "Careers", href: "/careers" },
         { name: isBangla ? "যোগাযোগ" : "Contact", href: "/contact" },
         {
@@ -219,7 +217,7 @@ const Footer: React.FC = () => {
             >
               {footerData.company.description}
             </p>
-            <div className="flex space-x-4 mb-6">
+            <div className="md:flex space-x-4 mb-6">
               <div
                 className="flex items-center"
                 style={{ color: colors.foreground, opacity: 0.8 }}
@@ -241,34 +239,6 @@ const Footer: React.FC = () => {
                 <Mail className="h-4 w-4 mr-2" />
                 <span className="text-sm">{footerData.company.email}</span>
               </div>
-            </div>
-            {/* Social Media Icons */}
-            <div className="flex space-x-4">
-              {footerData.social.map((social, index) => (
-                <a
-                  key={index}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-full transition-colors duration-200"
-                  style={{
-                    backgroundColor:
-                      theme === "light" ? colors.background : colors.card,
-                    color: colors.foreground,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = colors.primary;
-                    e.currentTarget.style.color = "white";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      theme === "light" ? colors.background : colors.card;
-                    e.currentTarget.style.color = colors.foreground;
-                  }}
-                >
-                  <social.icon className="h-5 w-5" />
-                </a>
-              ))}
             </div>
           </div>
 
@@ -363,6 +333,35 @@ const Footer: React.FC = () => {
                 </li>
               ))}
             </ul>
+          </div>
+
+          {/* Social Media Icons */}
+          <div className="flex space-x-4">
+            {footerData.social.map((social, index) => (
+              <a
+                key={index}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-full transition-colors duration-200"
+                style={{
+                  backgroundColor:
+                    theme === "light" ? colors.background : colors.card,
+                  color: colors.foreground,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.primary;
+                  e.currentTarget.style.color = "white";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    theme === "light" ? colors.background : colors.card;
+                  e.currentTarget.style.color = colors.foreground;
+                }}
+              >
+                <social.icon className="h-5 w-5" />
+              </a>
+            ))}
           </div>
         </div>
       </div>

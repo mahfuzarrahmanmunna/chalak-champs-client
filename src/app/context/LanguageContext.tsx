@@ -4,6 +4,17 @@
 
 import React, { createContext, useState, useContext, ReactNode } from "react";
 
+import heroEnglish from "../data/translations/hero-english.json";
+import heroBangla from "../data/translations/hero-bangla.json";
+import navbarEnglish from "../data/translations/navbar-english.json";
+import navbarBangla from "../data/translations/navbar-bangla.json";
+import commonEnglish from "../data/translations/common-english.json";
+import commonBangla from "../data/translations/common-bangla.json";
+import faqEnglish from "../data/translations/faq-english.json";
+import faqBangla from "../data/translations/faq-bangla.json";
+import mailchimpEnglish from "../data/translations/mailchimp-english.json";
+import mailchimpBangla from "../data/translations/mailchimp-bangla.json";
+
 // Define types for translations
 type Translations = {
   [key: string]: string | Translations;
@@ -45,59 +56,45 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined,
 );
 
+// Helper to get all translations for a language
+const getLanguageData = (isBangla: boolean) => {
+  const hero = (isBangla ? heroBangla : heroEnglish) as HeroData;
+  const navbar = isBangla ? navbarBangla : navbarEnglish;
+  const common = isBangla ? commonBangla : commonEnglish;
+  const faq = isBangla ? faqBangla : faqEnglish;
+  const mailchimp = isBangla ? mailchimpBangla : mailchimpEnglish;
+
+  const merged: Translations = {
+    ...(hero as unknown as Translations),
+    ...(navbar as unknown as Translations),
+    ...(common as unknown as Translations),
+    ...(faq as unknown as Translations),
+    ...(mailchimp as unknown as Translations),
+  };
+
+  return { hero, merged };
+};
+
 // Provider component
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [isBangla, setIsBangla] = useState(false);
-  const [translations, setTranslations] = useState<Translations>({});
-  const [heroData, setHeroData] = useState<HeroData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [{ hero, merged }] = useState(() => getLanguageData(false));
+  const [translations, setTranslations] = useState<Translations>(merged);
+  const [heroData, setHeroData] = useState<HeroData | null>(hero);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Function to toggle language
   const toggleLanguage = () => {
-    setIsBangla(!isBangla);
+    setIsBangla((prev) => !prev);
   };
 
-  // Load translations based on current language
-  const loadTranslations = async (): Promise<Translations> => {
-    const lang = isBangla ? "bangla" : "english";
-
-    try {
-      // Import all translation files
-      const hero = await import(`../data/translations/hero-${lang}.json`);
-      const navbar = await import(`../data/translations/navbar-${lang}.json`);
-      const common = await import(`../data/translations/common-${lang}.json`);
-      const faq = await import(`../data/translations/faq-${lang}.json`);
-      const mailchimp = await import(
-        `../data/translations/mailchimp-${lang}.json`
-      );
-
-      // Set hero data separately
-      setHeroData(hero.default as HeroData);
-
-      // Merge all translations
-      return {
-        ...hero.default,
-        ...navbar.default,
-        ...common.default,
-        ...faq.default,
-        ...mailchimp.default,
-      };
-    } catch (error) {
-      console.error(`Failed to load translations for ${lang}:`, error);
-      return {};
-    }
-  };
-
-  // Load translations when language changes
+  // Update translations when language changes
   React.useEffect(() => {
-    const fetchTranslations = async () => {
-      setIsLoading(true);
-      const translationsData = await loadTranslations();
-      setTranslations(translationsData);
-      setIsLoading(false);
-    };
-
-    fetchTranslations();
+    setIsLoading(true);
+    const { hero: newHero, merged: newMerged } = getLanguageData(isBangla);
+    setHeroData(newHero);
+    setTranslations(newMerged);
+    setIsLoading(false);
   }, [isBangla]);
 
   return (
