@@ -1,4 +1,4 @@
-// src/app/all-courses/page.tsx
+// src/app/courses/page.tsx
 
 "use client";
 

@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -34,6 +34,7 @@ import {
   Target,
   Zap,
   Globe,
+  CreditCard,
 } from "lucide-react";
 
 // TypeScript interfaces
@@ -43,6 +44,7 @@ interface Course {
   description: string;
   fullDescription: string;
   instructor: {
+    id: string; // Added ID for instructor
     name: string;
     avatar: string;
     bio: string;
@@ -51,7 +53,7 @@ interface Course {
     coursesCount: number;
   };
   level: "Beginner" | "Intermediate" | "Advanced";
-  duration: string; // in hours
+  duration: string;
   enrolledCount: number;
   rating: number;
   reviewsCount: number;
@@ -92,7 +94,7 @@ interface Review {
   isHelpful?: boolean;
 }
 
-// Mock course data
+// Mock course data (Added instructor ID)
 const mockCourses: Course[] = [
   {
     id: "1",
@@ -102,6 +104,7 @@ const mockCourses: Course[] = [
     fullDescription:
       "This comprehensive English grammar course is designed to take you from beginner to advanced level. We'll cover all aspects of English grammar including tenses, parts of speech, sentence structure, punctuation, and more. Each module includes detailed explanations, practical examples, and exercises to reinforce your learning. By the end of this course, you'll have a solid understanding of English grammar and be able to use it confidently in your writing and speaking.",
     instructor: {
+      id: "inst-1", // Added ID
       name: "Sarah Johnson",
       avatar: "https://randomuser.me/api/portraits/women/32.jpg",
       bio: "Sarah is an experienced English language instructor with over 10 years of teaching experience. She specializes in grammar and writing skills.",
@@ -255,6 +258,7 @@ const mockCourses: Course[] = [
     fullDescription:
       "This course focuses on the specific English language skills needed in a business environment. You'll learn how to communicate effectively in meetings, write professional emails and reports, deliver compelling presentations, and network with confidence. The course includes real-world business scenarios and practical exercises to help you apply what you learn directly to your workplace.",
     instructor: {
+      id: "inst-2", // Added ID
       name: "Michael Chen",
       avatar: "https://randomuser.me/api/portraits/men/45.jpg",
       bio: "Michael is a business communication expert with 15 years of corporate training experience. He has worked with Fortune 500 companies worldwide.",
@@ -412,7 +416,7 @@ const mockReviews: Review[] = [
   },
 ];
 
-// Validation schema for comment form
+// Validation schemas
 const commentSchema = yup.object().shape({
   comment: yup
     .string()
@@ -425,7 +429,6 @@ const commentSchema = yup.object().shape({
     .max(5, "Maximum rating is 5"),
 });
 
-// Validation schema for enrollment form
 const enrollmentSchema = yup.object().shape({
   firstName: yup.string().required("First name is required"),
   lastName: yup.string().required("Last name is required"),
@@ -472,12 +475,24 @@ export default function CourseDetailsPage() {
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("#overview");
   const [expandedSections, setExpandedSections] = useState<string[]>(["1"]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
-  const tabs = ["overview", "curriculum", "instructor", "reviews"];
+
+  // Navigation Sections
+  const sections = [
+    { id: "overview", label: "Overview" },
+    { id: "curriculum", label: "Curriculum" },
+    { id: "instructor", label: "Instructor" },
+    { id: "reviews", label: "Reviews" },
+  ];
+
+  // Refs for scrolling
+  const overviewRef = useRef<HTMLDivElement>(null);
+  const curriculumRef = useRef<HTMLDivElement>(null);
+  const instructorRef = useRef<HTMLDivElement>(null);
+  const reviewsRef = useRef<HTMLDivElement>(null);
 
   // React Hook Form for comment
   const {
@@ -519,18 +534,31 @@ export default function CourseDetailsPage() {
 
   // Load course data
   useEffect(() => {
-    // Simulate API call
     setTimeout(() => {
       const foundCourse = mockCourses.find((c) => c.id === courseId);
       if (foundCourse) {
         setCourse(foundCourse);
       } else {
-        // Course not found, redirect to all courses
-        router.push("/all-courses");
+        router.push("/courses");
       }
       setIsLoading(false);
     }, 500);
   }, [courseId, router]);
+
+  // Scroll to section handler
+  const scrollToSection = (id: string) => {
+    const refs: { [key: string]: React.RefObject<HTMLDivElement | null> } = {
+      overview: overviewRef,
+      curriculum: curriculumRef,
+      instructor: instructorRef,
+      reviews: reviewsRef,
+    };
+
+    const ref = refs[id];
+    if (ref && ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   // Toggle section expansion
   const toggleSection = (sectionId: string) => {
@@ -544,8 +572,6 @@ export default function CourseDetailsPage() {
   // Handle review submission
   const onCommentSubmit: SubmitHandler<any> = (data) => {
     setIsSubmittingReview(true);
-
-    // Simulate API call
     setTimeout(() => {
       const newReview: Review = {
         id: `review-${Date.now()}`,
@@ -558,7 +584,6 @@ export default function CourseDetailsPage() {
         helpfulCount: 0,
         isHelpful: false,
       };
-
       setReviews([newReview, ...reviews]);
       resetCommentForm();
       setIsSubmittingReview(false);
@@ -568,15 +593,11 @@ export default function CourseDetailsPage() {
   // Handle enrollment submission
   const onEnrollmentSubmit: SubmitHandler<any> = (data) => {
     setIsEnrolling(true);
-
-    // Simulate API call
     setTimeout(() => {
       setIsEnrolled(true);
       setShowEnrollmentModal(false);
       resetEnrollmentForm();
       setIsEnrolling(false);
-
-      // Show success message
       alert("Enrollment successful! You can now access the course.");
     }, 2000);
   };
@@ -626,11 +647,8 @@ export default function CourseDetailsPage() {
           >
             Course Not Found
           </h1>
-          <p className="mb-6" style={{ color: "var(--color-foreground)" }}>
-            The course you're looking for doesn't exist.
-          </p>
           <Link
-            href="/all-courses"
+            href="/courses"
             className="px-4 py-2 rounded-md text-white font-medium"
             style={{ backgroundColor: "var(--color-primary)" }}
           >
@@ -640,8 +658,6 @@ export default function CourseDetailsPage() {
       </div>
     );
   }
-
-  const handleChangeTab = () => {};
 
   return (
     <div
@@ -668,9 +684,8 @@ export default function CourseDetailsPage() {
             <div className="flex-1">
               <div className="mb-4">
                 <Link
-                  href="/all-courses"
-                  className="inline-flex items-center text-sm font-medium mb-4"
-                  style={{ color: "var(--color-primary)" }}
+                  href="/courses"
+                  className="inline-flex items-center text-sm font-medium mb-4 text-white hover:underline"
                 >
                   <ArrowLeft className="h-4 w-4 mr-1" />
                   Back to Courses
@@ -726,7 +741,9 @@ export default function CourseDetailsPage() {
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`h-5 w-5 ${i < Math.floor(course.rating) ? "fill-current" : ""}`}
+                          className={`h-5 w-5 ${
+                            i < Math.floor(course.rating) ? "fill-current" : ""
+                          }`}
                           style={{
                             color:
                               i < Math.floor(course.rating)
@@ -924,41 +941,39 @@ export default function CourseDetailsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="flex-1">
-            {/* Tabs */}
+            {/* Navigation Tabs - Now Scrolls to Section */}
             <div
-              className="border-b mb-8"
-              style={{ borderColor: "var(--color-border)" }}
+              className="sticky top-16 z-30 border-b mb-8"
+              style={{
+                borderColor: "var(--color-border)",
+                backgroundColor: "var(--color-background)",
+              }}
             >
-              <nav className="-mb-px flex space-x-8">
-                {tabs.map((tab) => (
+              <nav className="-mb-px flex space-x-8 overflow-x-auto">
+                {sections.map((section) => (
                   <button
-                    key={tab}
-                    onClick={() => setActiveTab(`${tab}`)}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm capitalize ${
-                      activeTab === tab
-                        ? "border-indigo-500 text-indigo-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    }`}
+                    key={section.id}
+                    onClick={() => scrollToSection(section.id)}
+                    className="py-4 px-1 border-b-2 font-medium text-sm capitalize whitespace-nowrap transition-colors"
                     style={{
-                      borderColor:
-                        activeTab === tab
-                          ? "var(--color-primary)"
-                          : "transparent",
-                      color:
-                        activeTab === tab
-                          ? "var(--color-primary)"
-                          : "var(--color-foreground)",
+                      borderColor: "transparent",
+                      color: "var(--color-foreground)",
                     }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.color = "var(--color-primary)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.color = "var(--color-foreground)")
+                    }
                   >
-                    {tab}
+                    {section.label}
                   </button>
                 ))}
               </nav>
             </div>
 
-            {/* Tab Content */}
-            {/* {activeTab === "overview" && ( */}
-            <div id="overview" className="space-y-8">
+            {/* 1. Overview Section */}
+            <div ref={overviewRef} id="overview" className="space-y-8 mb-16">
               <div>
                 <h2
                   className="text-2xl font-bold mb-4"
@@ -1137,10 +1152,13 @@ export default function CourseDetailsPage() {
                 </div>
               </div>
             </div>
-            {/* )} */}
 
-            {/* {activeTab === "curriculum" && ( */}
-            <div id="curriculum">
+            {/* 2. Curriculum Section */}
+            <div
+              ref={curriculumRef}
+              id="curriculum"
+              className="mb-16 scroll-mt-32"
+            >
               <h2
                 className="text-2xl font-bold mb-6"
                 style={{ color: "var(--color-foreground)" }}
@@ -1207,7 +1225,7 @@ export default function CourseDetailsPage() {
                         {section.lessons.map((lesson) => (
                           <div
                             key={lesson.id}
-                            className="flex items-center justify-between p-4 hover:bg-gray-50"
+                            className="flex items-center justify-between p-4"
                             style={{
                               backgroundColor: "var(--color-background)",
                             }}
@@ -1260,10 +1278,13 @@ export default function CourseDetailsPage() {
                 ))}
               </div>
             </div>
-            {/* )} */}
 
-            {/* {activeTab === "instructor" && ( */}
-            <div id="instructor">
+            {/* 3. Instructor Section */}
+            <div
+              ref={instructorRef}
+              id="instructor"
+              className="mb-16 scroll-mt-32"
+            >
               <h2
                 className="text-2xl font-bold mb-6"
                 style={{ color: "var(--color-foreground)" }}
@@ -1395,20 +1416,22 @@ export default function CourseDetailsPage() {
                       </div>
                     </div>
 
-                    <button
-                      className="px-4 py-2 rounded-md text-white font-medium"
+                    {/* Instructor Page Button */}
+                    <Link
+                      href={`/instructor/${course.instructor.id}`}
+                      className="inline-flex items-center px-4 py-2 rounded-md text-white font-medium"
                       style={{ backgroundColor: "var(--color-primary)" }}
                     >
-                      Follow Instructor
-                    </button>
+                      View Full Profile
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Link>
                   </div>
                 </div>
               </div>
             </div>
-            {/* )} */}
 
-            {/* {activeTab === "reviews" && ( */}
-            <div id="reviews">
+            {/* 4. Reviews Section */}
+            <div ref={reviewsRef} id="reviews" className="scroll-mt-32">
               <div className="flex items-center justify-between mb-6">
                 <h2
                   className="text-2xl font-bold"
@@ -1421,7 +1444,9 @@ export default function CourseDetailsPage() {
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`h-5 w-5 ${i < Math.floor(course.rating) ? "fill-current" : ""}`}
+                        className={`h-5 w-5 ${
+                          i < Math.floor(course.rating) ? "fill-current" : ""
+                        }`}
                         style={{
                           color:
                             i < Math.floor(course.rating)
@@ -1563,7 +1588,11 @@ export default function CourseDetailsPage() {
                               {[...Array(5)].map((_, i) => (
                                 <Star
                                   key={i}
-                                  className={`h-4 w-4 ${i < Math.floor(review.rating) ? "fill-current" : ""}`}
+                                  className={`h-4 w-4 ${
+                                    i < Math.floor(review.rating)
+                                      ? "fill-current"
+                                      : ""
+                                  }`}
                                   style={{
                                     color:
                                       i < Math.floor(review.rating)
@@ -1600,9 +1629,7 @@ export default function CourseDetailsPage() {
                     <div className="flex items-center">
                       <button
                         onClick={() => toggleHelpful(review.id)}
-                        className={`flex items-center text-sm ${
-                          review.isHelpful ? "text-indigo-600" : ""
-                        }`}
+                        className="flex items-center text-sm"
                         style={{
                           color: review.isHelpful
                             ? "var(--color-primary)"
@@ -1618,12 +1645,11 @@ export default function CourseDetailsPage() {
                 ))}
               </div>
             </div>
-            {/* )} */}
           </div>
 
           {/* Sidebar */}
           <div className="w-full lg:w-80">
-            <div className="sticky top-20 space-y-6">
+            <div className="sticky top-32 space-y-6">
               {/* Course Info */}
               <div
                 className="p-6 rounded-lg"
@@ -1713,7 +1739,7 @@ export default function CourseDetailsPage() {
                     .map((relatedCourse) => (
                       <Link
                         key={relatedCourse.id}
-                        href={`/course/${relatedCourse.id}`}
+                        href={`/course-details/${relatedCourse.id}`}
                         className="block p-4 rounded-lg transition-all hover:shadow-md"
                         style={{ backgroundColor: "var(--color-card)" }}
                       >
@@ -1772,12 +1798,15 @@ export default function CourseDetailsPage() {
       {showEnrollmentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div
-            className="w-full max-w-md rounded-lg overflow-hidden"
+            className="w-full max-w-md rounded-lg overflow-hidden max-h-[90vh] overflow-y-auto"
             style={{ backgroundColor: "var(--color-card)" }}
           >
             <div
-              className="p-6 border-b"
-              style={{ borderColor: "var(--color-border)" }}
+              className="p-6 border-b sticky top-0 z-10"
+              style={{
+                borderColor: "var(--color-border)",
+                backgroundColor: "var(--color-card)",
+              }}
             >
               <div className="flex items-center justify-between">
                 <h2
@@ -2135,22 +2164,3 @@ export default function CourseDetailsPage() {
     </div>
   );
 }
-
-// Add CreditCard icon to lucide-react imports
-const CreditCard = (props: any) => (
-  <svg
-    {...props}
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect width="20" height="14" x="2" y="5" rx="2" />
-    <line x1="2" x2="22" y1="10" y2="10" />
-  </svg>
-);

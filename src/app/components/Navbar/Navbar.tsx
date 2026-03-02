@@ -1,33 +1,33 @@
-// src/components/Navbar/Navbar.tsx
 "use client";
+
 import Link from "next/link";
-// import React, { useState } from "react";
+import React, { useState } from "react";
 import ThemeToggle from "../ThemeToggle/ThemeToggle";
 import SearchBar from "../SearchBar/SearchBar";
 import CategoryModal from "../CategoryModal/CategoryModal";
-// import ProfileModal from "../ProfileModal/ProfileModal";
-// import ProfileButton from "../ProfileButton/ProfileButton";
 import { useTheme } from "@/app/context/ThemeContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import useAuth from "@/app/hooks/useAuth";
 import ProfileModal from "./ProfileModal";
 import ProfileButton from "./ProfileButton";
-import { useState } from "react";
-import { useCurrentUser } from "@/app/hooks/useCurrentUser";
-// import ThemeSwitch from "../ThemeSwitch/ThemeSwitch";
+// import { useCurrentUser } from "@/app/hooks/useCurrentUser"; // Optional if not used in render
 
 const Navbar = () => {
+  // State Management
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Hooks
   const { isBangla, toggleLanguage, t } = useLanguage();
   const { colors } = useTheme();
   const { user } = useAuth();
-  const { currentUser } = useCurrentUser();
+  console.log(t);
 
+  // Modal Handlers
   const openCategoryModal = () => {
     setIsCategoryModalOpen(true);
     setSelectedCategory(null);
@@ -57,6 +57,7 @@ const Navbar = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
+            {/* Logo */}
             <div className="shrink-0">
               <Link
                 href="/"
@@ -73,9 +74,7 @@ const Navbar = () => {
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors duration-200"
-                  style={{
-                    color: "var(--color-foreground)",
-                  }}
+                  style={{ color: "var(--color-foreground)" }}
                 >
                   {String(t.courses)}
                   <svg
@@ -102,9 +101,7 @@ const Navbar = () => {
                       <Link
                         href="#"
                         className="block px-4 py-2 text-sm transition-colors duration-200"
-                        style={{
-                          color: "var(--color-foreground)",
-                        }}
+                        style={{ color: "var(--color-foreground)" }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.backgroundColor =
                             "var(--color-accent)";
@@ -120,9 +117,7 @@ const Navbar = () => {
                       <Link
                         href="#"
                         className="block px-4 py-2 text-sm transition-colors duration-200"
-                        style={{
-                          color: "var(--color-foreground)",
-                        }}
+                        style={{ color: "var(--color-foreground)" }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.backgroundColor =
                             "var(--color-accent)";
@@ -138,9 +133,7 @@ const Navbar = () => {
                       <Link
                         href="#"
                         className="block px-4 py-2 text-sm transition-colors duration-200"
-                        style={{
-                          color: "var(--color-foreground)",
-                        }}
+                        style={{ color: "var(--color-foreground)" }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.backgroundColor =
                             "var(--color-accent)";
@@ -161,9 +154,7 @@ const Navbar = () => {
               <button
                 onClick={openCategoryModal}
                 className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
+                style={{ color: "var(--color-foreground)" }}
               >
                 {String(t.categories)}
               </button>
@@ -171,27 +162,21 @@ const Navbar = () => {
               <Link
                 href="#"
                 className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
+                style={{ color: "var(--color-foreground)" }}
               >
                 {String(t.modelTest)}
               </Link>
               <Link
                 href="/blog"
                 className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
+                style={{ color: "var(--color-foreground)" }}
               >
                 {String(t.blog)}
               </Link>
               <Link
                 href="#"
                 className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
+                style={{ color: "var(--color-foreground)" }}
               >
                 {String(t.store)}
               </Link>
@@ -207,9 +192,7 @@ const Navbar = () => {
               <button
                 onClick={toggleLanguage}
                 className="p-2 rounded-md transition-colors duration-200 font-medium"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
+                style={{ color: "var(--color-foreground)" }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "var(--color-card)";
                 }}
@@ -223,7 +206,6 @@ const Navbar = () => {
 
               <ThemeToggle />
 
-              {/* Show either login/register buttons or profile button */}
               {user ? (
                 <ProfileButton onClick={openProfileModal} />
               ) : (
@@ -231,9 +213,7 @@ const Navbar = () => {
                   <Link
                     href="/login"
                     className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                    style={{
-                      color: "var(--color-foreground)",
-                    }}
+                    style={{ color: "var(--color-foreground)" }}
                   >
                     {String(t.login)}
                   </Link>
@@ -256,9 +236,7 @@ const Navbar = () => {
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                 className="p-2 rounded-md transition-colors duration-200"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
+                style={{ color: "var(--color-foreground)" }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "var(--color-card)";
                 }}
@@ -285,9 +263,7 @@ const Navbar = () => {
               <button
                 onClick={toggleLanguage}
                 className="p-2 rounded-md transition-colors duration-200 font-medium"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
+                style={{ color: "var(--color-foreground)" }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "var(--color-card)";
                 }}
@@ -300,14 +276,11 @@ const Navbar = () => {
               </button>
 
               <ThemeToggle />
-              {/* <ThemeSwitch /> */}
 
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="p-2 rounded-md transition-colors duration-200 focus:outline-none"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
+                style={{ color: "var(--color-foreground)" }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "var(--color-card)";
                 }}
@@ -353,16 +326,12 @@ const Navbar = () => {
         {isMenuOpen && (
           <div
             className="md:hidden px-2 pt-2 pb-3 space-y-1 sm:px-3 shadow-lg"
-            style={{
-              backgroundColor: "var(--color-card)",
-            }}
+            style={{ backgroundColor: "var(--color-card)" }}
           >
             <Link
               href="#"
               className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-              style={{
-                color: "var(--color-foreground)",
-              }}
+              style={{ color: "var(--color-foreground)" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "var(--color-accent)";
                 e.currentTarget.style.opacity = "0.1";
@@ -376,19 +345,15 @@ const Navbar = () => {
             </Link>
             <button
               onClick={openCategoryModal}
-              className="block text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-              style={{
-                color: "var(--color-foreground)",
-              }}
+              className="block text-left w-full px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+              style={{ color: "var(--color-foreground)" }}
             >
               {String(t.categories)}
             </button>
             <Link
               href="#"
               className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-              style={{
-                color: "var(--color-foreground)",
-              }}
+              style={{ color: "var(--color-foreground)" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "var(--color-accent)";
                 e.currentTarget.style.opacity = "0.1";
@@ -403,9 +368,7 @@ const Navbar = () => {
             <Link
               href="#"
               className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-              style={{
-                color: "var(--color-foreground)",
-              }}
+              style={{ color: "var(--color-foreground)" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "var(--color-accent)";
                 e.currentTarget.style.opacity = "0.1";
@@ -420,9 +383,7 @@ const Navbar = () => {
             <Link
               href="#"
               className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-              style={{
-                color: "var(--color-foreground)",
-              }}
+              style={{ color: "var(--color-foreground)" }}
             >
               {String(t.store)}
             </Link>
@@ -437,15 +398,11 @@ const Navbar = () => {
                   <div className="flex items-center">
                     <div
                       className="h-10 w-10 rounded-full flex items-center justify-center mr-3"
-                      style={{
-                        backgroundColor: "var(--color-primary)",
-                      }}
+                      style={{ backgroundColor: "var(--color-primary)" }}
                     >
                       <span
                         className="text-lg font-medium"
-                        style={{
-                          color: "var(--color-background)",
-                        }}
+                        style={{ color: "var(--color-background)" }}
                       >
                         {user?.displayName?.charAt(0) ||
                           user?.email?.charAt(0) ||
@@ -455,17 +412,13 @@ const Navbar = () => {
                     <div>
                       <p
                         className="text-sm font-medium"
-                        style={{
-                          color: "var(--color-foreground)",
-                        }}
+                        style={{ color: "var(--color-foreground)" }}
                       >
                         {user?.displayName || "User"}
                       </p>
                       <p
                         className="text-xs"
-                        style={{
-                          color: "var(--color-muted-foreground)",
-                        }}
+                        style={{ color: "var(--color-muted-foreground)" }}
                       >
                         {user?.email}
                       </p>
@@ -474,9 +427,7 @@ const Navbar = () => {
                   <button
                     onClick={openProfileModal}
                     className="w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                    style={{
-                      color: "var(--color-foreground)",
-                    }}
+                    style={{ color: "var(--color-foreground)" }}
                   >
                     {String(t.viewProfile || "View Profile")}
                   </button>
@@ -486,9 +437,7 @@ const Navbar = () => {
                   <Link
                     href="/login"
                     className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-                    style={{
-                      color: "var(--color-foreground)",
-                    }}
+                    style={{ color: "var(--color-foreground)" }}
                   >
                     {String(t.login)}
                   </Link>
@@ -509,6 +458,7 @@ const Navbar = () => {
         )}
       </nav>
 
+      {/* Modals */}
       <CategoryModal
         isOpen={isCategoryModalOpen}
         onClose={closeCategoryModal}

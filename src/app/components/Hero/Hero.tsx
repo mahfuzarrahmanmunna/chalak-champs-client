@@ -96,7 +96,7 @@ const HeroBanner: React.FC = () => {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                href="/all-courses"
+                href="/courses"
                 className="px-8 py-4 font-semibold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center"
                 style={{
                   backgroundColor: "var(--color-primary)",

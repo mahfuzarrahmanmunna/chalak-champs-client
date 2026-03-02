@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, FormEvent, ChangeEvent } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  FormEvent,
+  ChangeEvent,
+  Fragment,
+} from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -9,7 +16,6 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   ConfirmationResult,
-  User,
   UserCredential,
   RecaptchaVerifier,
   updateProfile,
@@ -18,7 +24,6 @@ import {
 import { auth, setupRecaptcha } from "@/lib/firebase";
 import api from "@/lib/api";
 import useAxiosSecure from "../hooks/useAxiosSecure";
-// import useAxiosSecure from "@/hooks/useAxiosSecure";
 
 // Define interfaces for TypeScript
 interface FormData {
@@ -30,14 +35,13 @@ interface FormData {
 }
 
 interface FormErrors {
-  phone?: string;
-  email?: string;
+  identifier?: string;
+  verification?: string;
   firstName?: string;
   lastName?: string;
   password?: string;
   confirmPassword?: string;
   agreeToTerms?: string;
-  verification?: string;
   registration?: string;
 }
 
@@ -49,9 +53,8 @@ interface ApiResponse {
 
 export default function RegisterPage() {
   const [step, setStep] = useState<number>(1);
-  const [authMethod, setAuthMethod] = useState<"phone" | "email">("email"); // Default to email
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
+  const [identifier, setIdentifier] = useState<string>("");
+  const [authMethod, setAuthMethod] = useState<"phone" | "email" | null>(null);
   const [verificationCode, setVerificationCode] = useState<string>("");
   const [confirmationResult, setConfirmationResult] =
     useState<ConfirmationResult | null>(null);
@@ -75,11 +78,19 @@ export default function RegisterPage() {
   const router = useRouter();
   const axiosSecure = useAxiosSecure();
 
+  // Validation Helpers
+  const validateEmail = (email: string): boolean => {
+    return /\S+@\S+\.\S+/.test(email);
+  };
+
+  const validatePhoneNumber = (phone: string): boolean => {
+    return /^\+?[0-9]{10,15}$/.test(phone.replace(/\s/g, ""));
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, () => {
       setIsAuthReady(true);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -115,34 +126,33 @@ export default function RegisterPage() {
     }
   }, [countdown]);
 
-  const handleAuthMethodSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  // Step 1: Validate Identifier and Move to Step 2
+  const handleIdentifierSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrors({});
 
-    if (authMethod === "phone") {
-      if (phoneNumber.trim() === "") {
-        setErrors({ phone: "Phone number is required" });
-        return;
-      }
-      // Basic phone number validation
-      if (!/^\+?[0-9]{10,15}$/.test(phoneNumber.replace(/\s/g, ""))) {
-        setErrors({ phone: "Please enter a valid phone number" });
-        return;
-      }
-      setErrors({});
+    if (!identifier.trim()) {
+      setErrors({ identifier: "Phone number or email is required" });
+      return;
+    }
+
+    const isPhone = validatePhoneNumber(identifier);
+    const isEmail = validateEmail(identifier);
+
+    if (isPhone) {
+      setAuthMethod("phone");
+      setStep(2);
+    } else if (isEmail) {
+      setAuthMethod("email");
       setStep(2);
     } else {
-      if (email.trim() === "") {
-        setErrors({ email: "Email is required" });
-        return;
-      } else if (!/\S+@\S+\.\S+/.test(email)) {
-        setErrors({ email: "Email is invalid" });
-        return;
-      }
-      setErrors({});
-      setStep(2);
+      setErrors({
+        identifier: "Please enter a valid phone number or email address",
+      });
     }
   };
 
+  // Step 2: Send Verification Code
   const sendVerificationCode = async () => {
     setIsSendingCode(true);
     setErrors({});
@@ -153,10 +163,9 @@ export default function RegisterPage() {
           throw new Error("reCAPTCHA not initialized");
         }
 
-        // Format phone number with country code if not provided
-        const formattedPhone = phoneNumber.startsWith("+")
-          ? phoneNumber
-          : `+880${phoneNumber}`;
+        const formattedPhone = identifier.startsWith("+")
+          ? identifier
+          : `+880${identifier}`;
 
         const confirmation = await signInWithPhoneNumber(
           auth,
@@ -167,13 +176,12 @@ export default function RegisterPage() {
         setConfirmationResult(confirmation);
         setStep(3);
         setCountdown(60);
-      } else {
+      } else if (authMethod === "email") {
         const response = await api.post<ApiResponse>(
           "/auth/send-email-verification",
-          {
-            email,
-          },
+          { email: identifier },
         );
+
         if (response.data.success) {
           setStep(3);
           setCountdown(60);
@@ -194,8 +202,7 @@ export default function RegisterPage() {
         } else if (error.code === "auth/too-many-requests") {
           errorMessage = "Too many requests. Please try again later";
         } else if (error.code === "auth/quota-exceeded") {
-          errorMessage =
-            "SMS quota exceeded. Please try email verification instead";
+          errorMessage = "SMS quota exceeded. Please try email verification";
         } else {
           errorMessage =
             error.message || "Failed to send SMS verification code";
@@ -213,6 +220,7 @@ export default function RegisterPage() {
     }
   };
 
+  // Step 3: Verify Code
   const verifyCode = async () => {
     setIsVerifying(true);
     setErrors({});
@@ -230,7 +238,7 @@ export default function RegisterPage() {
         const response = await api.post<ApiResponse>(
           "/auth/verify-email-code",
           {
-            email,
+            email: identifier,
             code: verificationCode,
           },
         );
@@ -277,11 +285,16 @@ export default function RegisterPage() {
     if (!formData.firstName.trim())
       newErrors.firstName = "First name is required";
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
-    if (!formData.password) newErrors.password = "Password is required";
-    else if (formData.password.length < 8)
-      newErrors.password = "Password must be at least 8 characters";
-    if (formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match";
+
+    // Password only required for email method
+    if (authMethod === "email") {
+      if (!formData.password) newErrors.password = "Password is required";
+      else if (formData.password.length < 8)
+        newErrors.password = "Password must be at least 8 characters";
+      if (formData.password !== formData.confirmPassword)
+        newErrors.confirmPassword = "Passwords do not match";
+    }
+
     if (!formData.agreeToTerms)
       newErrors.agreeToTerms = "You must agree to the terms and conditions";
 
@@ -289,19 +302,18 @@ export default function RegisterPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // In your handleFinalSubmit function
+  // Step 4: Final Submit
   const handleFinalSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsRegistering(true);
-    setErrors({}); // Clear previous errors
+    setErrors({});
 
     let userCredential: UserCredential | null = null;
     let registrationSuccessful = false;
 
     try {
-      // Step 1: Create user in Firebase
       if (authMethod === "phone") {
         const currentUser = auth.currentUser;
         if (!currentUser) {
@@ -311,12 +323,11 @@ export default function RegisterPage() {
       } else {
         userCredential = await createUserWithEmailAndPassword(
           auth,
-          email,
+          identifier,
           formData.password,
         );
       }
 
-      // Step 2: Update user profile in Firebase (optional)
       try {
         await updateProfile(userCredential.user, {
           displayName: `${formData.firstName} ${formData.lastName}`,
@@ -325,20 +336,17 @@ export default function RegisterPage() {
         console.warn("Could not update profile in Firebase:", profileError);
       }
 
-      // Step 3: Get ID token
       const idToken = await userCredential.user.getIdToken();
 
-      // Step 4: Prepare user data for backend
       const userData = {
         uid: userCredential.user.uid,
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
-        email: authMethod === "email" ? email.toLowerCase().trim() : null,
-        phoneNumber: authMethod === "phone" ? phoneNumber.trim() : null,
+        email: authMethod === "email" ? identifier.toLowerCase().trim() : null,
+        phoneNumber: authMethod === "phone" ? identifier.trim() : null,
         role: "student",
       };
 
-      // Step 5: Register user with backend with retry logic
       let response;
       try {
         response = await axiosSecure.post<ApiResponse>(
@@ -346,7 +354,6 @@ export default function RegisterPage() {
           userData,
         );
       } catch (error: any) {
-        // If it's a network error, try once more
         if (
           error.code === "NETWORK_ERROR" ||
           error.message === "Network Error"
@@ -371,7 +378,6 @@ export default function RegisterPage() {
     } catch (error: any) {
       console.error("Error during registration:", error);
 
-      // If registration failed, clean up the Firebase user
       if (userCredential && !registrationSuccessful) {
         try {
           await deleteUser(userCredential.user);
@@ -383,13 +389,10 @@ export default function RegisterPage() {
 
       let errorMessage = "Registration failed";
 
-      // Handle specific Firebase errors
       if (error.code === "auth/email-already-in-use") {
         errorMessage = "Email is already in use";
       } else if (error.code === "auth/weak-password") {
         errorMessage = "Password is too weak";
-      } else if (error.code === "auth/quota-exceeded") {
-        errorMessage = "Too many registration attempts. Please try again later";
       } else if (
         error.response?.status === 400 &&
         error.response?.data?.message
@@ -430,7 +433,7 @@ export default function RegisterPage() {
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
         />
-        <div className="absolute inset-0  bg-gradient-to-r from-[rgb(243,6,110)] to-[rgb(33,65,135)] opacity-80"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[rgb(243,6,110)] to-[rgb(33,65,135)] opacity-80"></div>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white p-8">
             <h1 className="text-4xl font-bold mb-4">Join Chalak Champs</h1>
@@ -447,7 +450,7 @@ export default function RegisterPage() {
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
             <p className="mt-2 text-gray-600">
-              {step === 1 && "Choose your verification method"}
+              {step === 1 && "Enter your phone number or email to continue"}
               {step === 2 && "Verify your contact information"}
               {step === 3 && "Enter the verification code"}
               {step === 4 && "Complete your profile information"}
@@ -456,172 +459,73 @@ export default function RegisterPage() {
             {/* Progress indicator */}
             <div className="flex justify-center mt-6">
               <div className="flex items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    step >= 1
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  1
-                </div>
-                <div
-                  className={`w-16 h-1 ${
-                    step >= 2 ? "bg-indigo-600" : "bg-gray-200"
-                  }`}
-                ></div>
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    step >= 2
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  2
-                </div>
-                <div
-                  className={`w-16 h-1 ${
-                    step >= 3 ? "bg-indigo-600" : "bg-gray-200"
-                  }`}
-                ></div>
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    step >= 3
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  3
-                </div>
-                <div
-                  className={`w-16 h-1 ${
-                    step >= 4 ? "bg-indigo-600" : "bg-gray-200"
-                  }`}
-                ></div>
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    step >= 4
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  4
-                </div>
+                {[1, 2, 3, 4].map((s) => (
+                  <Fragment key={s}>
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        step >= s
+                          ? "bg-indigo-600 text-white"
+                          : "bg-gray-200 text-gray-600"
+                      }`}
+                    >
+                      {s}
+                    </div>
+                    {s < 4 && (
+                      <div
+                        className={`w-16 h-1 ${
+                          step > s ? "bg-indigo-600" : "bg-gray-200"
+                        }`}
+                      ></div>
+                    )}
+                  </Fragment>
+                ))}
               </div>
             </div>
           </div>
 
           {step === 1 && (
-            <form onSubmit={handleAuthMethodSubmit} className="space-y-6">
+            <form onSubmit={handleIdentifierSubmit} className="space-y-6">
               <div>
-                <div className="flex mb-4">
-                  <button
-                    type="button"
-                    onClick={() => setAuthMethod("phone")}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-l-md ${
-                      authMethod === "phone"
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-200 text-gray-700"
+                <label
+                  htmlFor="identifier"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Phone Number or Email Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                    </svg>
+                  </div>
+                  <input
+                    id="identifier"
+                    name="identifier"
+                    type="text"
+                    required
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                      errors.identifier ? "border-red-500" : "border-gray-300"
                     }`}
-                  >
-                    Phone Number
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAuthMethod("email")}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-r-md ${
-                      authMethod === "email"
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
-                  >
-                    Email
-                  </button>
+                    placeholder="+880 1XXX XXXXXX or you@example.com"
+                  />
                 </div>
-
-                {authMethod === "phone" ? (
-                  <div>
-                    <label
-                      htmlFor="phone"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Phone Number
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg
-                          className="h-5 w-5 text-gray-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                        </svg>
-                      </div>
-                      <input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        autoComplete="tel"
-                        required
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                          errors.phone ? "border-red-500" : "border-gray-300"
-                        }`}
-                        placeholder="+880 1XXX XXXXXX"
-                      />
-                    </div>
-                    {errors.phone && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.phone}
-                      </p>
-                    )}
-                    <p className="mt-2 text-xs text-gray-500">
-                      Include country code (e.g., +880 for Bangladesh)
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Email Address
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg
-                          className="h-5 w-5 text-gray-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                        </svg>
-                      </div>
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                          errors.email ? "border-red-500" : "border-gray-300"
-                        }`}
-                        placeholder="you@example.com"
-                      />
-                    </div>
-                    {errors.email && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.email}
-                      </p>
-                    )}
-                  </div>
+                {errors.identifier && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.identifier}
+                  </p>
                 )}
+                <p className="mt-2 text-xs text-gray-500">
+                  We recommend using a phone number for easier account recovery
+                  and login.
+                </p>
               </div>
 
               <div>
@@ -629,7 +533,7 @@ export default function RegisterPage() {
                   type="submit"
                   className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  Next
+                  Continue
                 </button>
               </div>
 
@@ -668,8 +572,8 @@ export default function RegisterPage() {
                   <div className="ml-3">
                     <p className="text-sm text-blue-700">
                       We will send a verification code to{" "}
-                      {authMethod === "phone" ? phoneNumber : email}. Please
-                      make sure you have access to this{" "}
+                      <span className="font-semibold">{identifier}</span>.
+                      Please make sure you have access to this{" "}
                       {authMethod === "phone"
                         ? "phone number"
                         : "email address"}
@@ -715,7 +619,10 @@ export default function RegisterPage() {
               <div>
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
+                  onClick={() => {
+                    setStep(1);
+                    setErrors({});
+                  }}
                   className="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   Back
@@ -836,7 +743,10 @@ export default function RegisterPage() {
               <div>
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
+                  onClick={() => {
+                    setStep(2);
+                    setErrors({});
+                  }}
                   className="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   Back
@@ -1010,7 +920,10 @@ export default function RegisterPage() {
               <div className="flex space-x-4">
                 <button
                   type="button"
-                  onClick={() => setStep(3)}
+                  onClick={() => {
+                    setStep(3);
+                    setErrors({});
+                  }}
                   className="flex-1 flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   Back

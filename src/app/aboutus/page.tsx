@@ -364,7 +364,7 @@ export default function AboutUsPage() {
             with Chalak Champs.
           </p>
           <Link
-            href="/all-courses"
+            href="/courses"
             className="inline-block px-8 py-4 rounded-lg font-semibold text-white transition-transform hover:scale-105"
             style={{ backgroundColor: "var(--color-primary)" }}
           >

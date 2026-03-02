@@ -1,10 +1,19 @@
-// src/components/ProfileModal/ProfileModal.tsx
 "use client";
-import React from "react";
+
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useTheme } from "@/app/context/ThemeContext";
 import { useLanguage } from "@/app/context/LanguageContext";
+import {
+  X,
+  Home,
+  BookOpen,
+  Settings,
+  HelpCircle,
+  LogOut,
+  User,
+} from "lucide-react";
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -16,6 +25,20 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
   const { user, signOut } = useAuth();
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const [isVisible, setIsVisible] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+
+  // Handle animation states
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setTimeout(() => setIsVisible(true), 10); // Trigger enter animation
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setShouldRender(false), 300); // Wait for exit animation
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   const handleLogout = async () => {
     try {
@@ -32,341 +55,223 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
     onClose();
   };
 
-  if (!isOpen) return null;
+  // Helper to safely get translation strings
+  const getText = (key: any, fallback: string) => {
+    return key ? String(key) : fallback;
+  };
+
+  if (!shouldRender) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div
-          className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
-          onClick={onClose}
-          aria-hidden="true"
-        ></div>
+    <div className="fixed inset-0 z-50">
+      {/* Backdrop with fade animation */}
+      <div
+        onClick={onClose}
+        className={`absolute inset-0 transition-opacity duration-300 ${
+          isVisible ? "opacity-100" : "opacity-0"
+        }`}
+        style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+      ></div>
 
-        <span
-          className="hidden sm:inline-block sm:align-middle sm:h-screen"
-          aria-hidden="true"
-        >
-          &#8203;
-        </span>
-
+      {/* Dropdown Container - Positioned Top Right */}
+      <div
+        className={`absolute right-4 top-20 z-50 w-full max-w-sm transform transition-all duration-300 ${
+          isVisible
+            ? "opacity-100 translate-y-0 scale-100"
+            : "opacity-0 -translate-y-4 scale-95"
+        }`}
+      >
         <div
-          className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full"
+          className="relative overflow-hidden rounded-2xl shadow-2xl border"
           style={{
-            backgroundColor: "var(--color-card)",
+            backgroundColor: colors.card,
+            borderColor: colors.border,
           }}
         >
-          {/* Header with user info */}
+          {/* Close Button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-1 rounded-full transition-colors z-10"
+            style={{ color: colors.foreground }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = colors.background)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "transparent")
+            }
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          {/* Header Section */}
           <div
-            className="px-6 py-4 border-b"
+            className="relative px-6 pt-8 pb-6 text-center"
             style={{
-              borderColor: "var(--color-border)",
-              backgroundColor: "var(--color-primary)",
+              backgroundColor: colors.primary,
+              color: "white",
             }}
           >
-            <div className="flex items-center">
-              <div
-                className="h-12 w-12 rounded-full flex items-center justify-center mr-4"
-                style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                }}
-              >
-                <span
-                  className="text-xl font-bold"
-                  style={{
-                    color: "white",
-                  }}
-                >
-                  {user?.displayName?.charAt(0) ||
-                    user?.email?.charAt(0) ||
-                    "U"}
-                </span>
-              </div>
-              <div className="flex-1">
-                <p
-                  className="text-base font-semibold"
-                  style={{
-                    color: "white",
-                  }}
-                >
-                  {user?.displayName || "User"}
-                </p>
-                <p
-                  className="text-sm opacity-90"
-                  style={{
-                    color: "rgba(255, 255, 255, 0.9)",
-                  }}
-                >
-                  {user?.email}
-                </p>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-1 rounded-full transition-colors duration-200"
-                style={{
-                  color: "rgba(255, 255, 255, 0.8)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    "rgba(255, 255, 255, 0.1)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+            {/* Avatar Circle */}
+            <div
+              className="mx-auto w-20 h-20 rounded-full border-4 flex items-center justify-center mb-4 shadow-lg"
+              style={{
+                backgroundColor: colors.background,
+                borderColor: colors.card,
+              }}
+            >
+              {user?.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt="User"
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <User className="h-10 w-10" style={{ color: colors.primary }} />
+              )}
             </div>
+
+            <h3 className="text-xl font-bold truncate px-4">
+              {user?.displayName || "User"}
+            </h3>
+            <p className="text-sm opacity-90 mt-1 truncate px-4">
+              {user?.email || "user@example.com"}
+            </p>
           </div>
 
-          {/* Menu items */}
-          <div className="py-2">
+          {/* Menu Items */}
+          <div className="px-4 py-4 space-y-1">
+            {/* Dashboard */}
             <button
               onClick={() => handleNavigation("/dashboard")}
-              className="w-full px-6 py-3 flex items-center hover:bg-gray-50 transition-colors duration-200"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--color-accent)";
-                e.currentTarget.style.opacity = "0.05";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.opacity = "1";
-              }}
+              className="w-full flex items-center gap-4 p-3 rounded-lg transition-colors group"
+              style={{ color: colors.foreground }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = colors.background)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
             >
               <div
-                className="h-8 w-8 rounded-full flex items-center justify-center mr-3"
+                className="p-2 rounded-md transition-colors"
                 style={{
-                  backgroundColor: "var(--color-primary)",
+                  backgroundColor: colors.background,
+                  color: colors.primary,
                 }}
               >
-                <svg
-                  className="w-4 h-4"
-                  style={{
-                    color: "var(--color-background)",
-                  }}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                  />
-                </svg>
+                <Home className="h-5 w-5" />
               </div>
-              <span
-                className="text-sm font-medium"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
-              >
-                {String(t.dashboard) || "Dashboard"}
+              <span className="font-medium">
+                {getText(t?.dashboard, "Dashboard")}
               </span>
             </button>
 
+            {/* My Courses */}
             <button
               onClick={() => handleNavigation("/my-courses")}
-              className="w-full px-6 py-3 flex items-center hover:bg-gray-50 transition-colors duration-200"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--color-accent)";
-                e.currentTarget.style.opacity = "0.05";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.opacity = "1";
-              }}
+              className="w-full flex items-center gap-4 p-3 rounded-lg transition-colors group"
+              style={{ color: colors.foreground }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = colors.background)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
             >
               <div
-                className="h-8 w-8 rounded-full flex items-center justify-center mr-3"
+                className="p-2 rounded-md transition-colors"
                 style={{
-                  backgroundColor: "var(--color-primary)",
+                  backgroundColor: colors.background,
+                  color: colors.primary,
                 }}
               >
-                <svg
-                  className="w-4 h-4"
-                  style={{
-                    color: "var(--color-background)",
-                  }}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                  />
-                </svg>
+                <BookOpen className="h-5 w-5" />
               </div>
-              <span
-                className="text-sm font-medium"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
-              >
-                {String(t.myCourses) || "My Courses"}
+              <span className="font-medium">
+                {getText(t?.myCourses, "My Courses")}
               </span>
             </button>
 
+            {/* Settings */}
             <button
               onClick={() => handleNavigation("/settings")}
-              className="w-full px-6 py-3 flex items-center hover:bg-gray-50 transition-colors duration-200"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--color-accent)";
-                e.currentTarget.style.opacity = "0.05";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.opacity = "1";
-              }}
+              className="w-full flex items-center gap-4 p-3 rounded-lg transition-colors group"
+              style={{ color: colors.foreground }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = colors.background)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
             >
               <div
-                className="h-8 w-8 rounded-full flex items-center justify-center mr-3"
+                className="p-2 rounded-md transition-colors"
                 style={{
-                  backgroundColor: "var(--color-primary)",
+                  backgroundColor: colors.background,
+                  color: colors.primary,
                 }}
               >
-                <svg
-                  className="w-4 h-4"
-                  style={{
-                    color: "var(--color-background)",
-                  }}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
+                <Settings className="h-5 w-5" />
               </div>
-              <span
-                className="text-sm font-medium"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
-              >
-                {String(t.settings) || "Settings"}
+              <span className="font-medium">
+                {getText(t?.settings, "Settings")}
               </span>
             </button>
 
+            {/* Help */}
             <button
               onClick={() => handleNavigation("/help")}
-              className="w-full px-6 py-3 flex items-center hover:bg-gray-50 transition-colors duration-200"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--color-accent)";
-                e.currentTarget.style.opacity = "0.05";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.opacity = "1";
-              }}
+              className="w-full flex items-center gap-4 p-3 rounded-lg transition-colors group"
+              style={{ color: colors.foreground }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = colors.background)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
             >
               <div
-                className="h-8 w-8 rounded-full flex items-center justify-center mr-3"
+                className="p-2 rounded-md transition-colors"
                 style={{
-                  backgroundColor: "var(--color-primary)",
+                  backgroundColor: colors.background,
+                  color: colors.primary,
                 }}
               >
-                <svg
-                  className="w-4 h-4"
-                  style={{
-                    color: "var(--color-background)",
-                  }}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                <HelpCircle className="h-5 w-5" />
               </div>
-              <span
-                className="text-sm font-medium"
-                style={{
-                  color: "var(--color-foreground)",
-                }}
-              >
-                {String(t.help) || "Help & Support"}
+              <span className="font-medium">
+                {getText(t?.help, "Help & Support")}
               </span>
             </button>
 
             <div
-              className="my-2"
-              style={{
-                borderTop: `1px solid var(--color-border)`,
-              }}
+              className="my-2 border-t"
+              style={{ borderColor: colors.border }}
             ></div>
 
+            {/* Logout */}
             <button
               onClick={handleLogout}
-              className="w-full px-6 py-3 flex items-center hover:bg-gray-50 transition-colors duration-200"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  "rgba(239, 68, 68, 0.05)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
+              className="w-full flex items-center gap-4 p-3 rounded-lg transition-colors group"
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor =
+                  "rgba(239, 68, 68, 0.1)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
             >
               <div
-                className="h-8 w-8 rounded-full flex items-center justify-center mr-3"
+                className="p-2 rounded-md"
                 style={{
                   backgroundColor: "#ef4444",
+                  color: "white",
                 }}
               >
-                <svg
-                  className="w-4 h-4"
-                  style={{
-                    color: "white",
-                  }}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
+                <LogOut className="h-5 w-5" />
               </div>
-              <span
-                className="text-sm font-medium"
-                style={{
-                  color: "#ef4444",
-                }}
-              >
-                {String(t.logout) || "Logout"}
+              <span className="font-medium text-red-500">
+                {getText(t?.logout, "Logout")}
               </span>
             </button>
           </div>

@@ -15,6 +15,7 @@ import Footer from "../components/Footer/Footer";
 const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
   const isDashboard = pathname.startsWith("/admin-dashboard");
+  const isStDashboard = pathname.startsWith("/dashboard");
   // const
   return (
     // <DataLoadedWrapper>
@@ -23,9 +24,9 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <LoadingProvider>
         <ThemeProvider>
           <LanguageProvider>
-            {!isDashboard && <Navbar />}
+            {!isDashboard && !isStDashboard && <Navbar />}
             {children}
-            {!isDashboard && <Footer />}
+            {!isDashboard && !isStDashboard && <Footer />}
           </LanguageProvider>
         </ThemeProvider>
       </LoadingProvider>
