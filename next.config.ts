@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
-  reactStrictMode: true, // typo fix
-
+  reactStrictMode: true,
   images: {
     // 1. 'domains' array-ti pura-puri muche felun
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
