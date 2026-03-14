@@ -1,3 +1,4 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -17,6 +18,13 @@ export const metadata: Metadata = {
   title: "Chalak Champs - Learn English with Fun",
   description:
     "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.",
+
+  // --- ADD THIS SECTION ---
+  icons: {
+    icon: "./assets/logo.jpg", // Path to your file in the 'public' folder
+    shortcut: "./assets/logo.jpg",
+    // apple: "./a",
+  },
 };
 
 export default function RootLayout({
@@ -30,7 +38,6 @@ export default function RootLayout({
         cz-shortcut-listen="true"
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Client-side providers */}
         <Providers>{children}</Providers>
       </body>
     </html>

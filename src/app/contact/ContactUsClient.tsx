@@ -1,4 +1,3 @@
-// src/app/contactus/ContactUsClient.tsx
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -17,28 +16,33 @@ import {
   CheckCircle,
   ChevronDown,
   Search,
+  Building,
+  Map,
 } from "lucide-react";
 
-// Country Interface for API response
+// Country Interface
 interface Country {
   name: string;
   code: string;
   dial_code: string;
-  flag: string; // URL of the flag image
+  flag: string;
 }
 
-// Form Inputs Interface
+// Form Inputs Interface - Added new fields
 interface ContactFormInputs {
   fullName: string;
   email: string;
   phone: string;
+  companyName: string; // NEW
+  city: string; // NEW
+  address: string; // NEW
   preferredLanguage: string;
   inquiryType: string;
   subject: string;
   message: string;
 }
 
-// Validation Schema
+// Validation Schema - Added new fields
 const contactSchema = yup.object().shape({
   fullName: yup.string().required("Full name is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -46,6 +50,9 @@ const contactSchema = yup.object().shape({
     .string()
     .required("Phone number is required")
     .min(8, "Phone number is too short"),
+  companyName: yup.string().required("Company name is required"),
+  city: yup.string().required("City is required"),
+  address: yup.string().required("Address is required"),
   preferredLanguage: yup.string().required("Please select a language"),
   inquiryType: yup.string().required("Please select an inquiry type"),
   subject: yup.string().required("Subject is required"),
@@ -68,14 +75,10 @@ const ContactCard = ({
   subContent?: string;
 }) => {
   const { colors } = useTheme();
-
   return (
     <div
       className="p-6 rounded-xl border flex items-start gap-4 transition-shadow hover:shadow-lg"
-      style={{
-        backgroundColor: colors.card,
-        borderColor: colors.border,
-      }}
+      style={{ backgroundColor: colors.card, borderColor: colors.border }}
     >
       <div
         className="w-12 h-12 flex items-center justify-center rounded-lg flex-shrink-0"
@@ -110,14 +113,13 @@ export default function ContactUsClient() {
   const { colors } = useTheme();
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // State for Country Data from API
+  // Country Logic
   const [countries, setCountries] = useState<Country[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch Countries from API
   useEffect(() => {
     const fetchCountries = async () => {
       try {
@@ -125,16 +127,13 @@ export default function ContactUsClient() {
           "https://restcountries.com/v3.1/all?fields=name,flags,idd,cca2",
         );
         const data = await response.json();
-
         const formattedCountries: Country[] = data
           .map((country: any) => {
-            // Handle dial code formatting (some countries have multiple suffixes)
             let dialCode = "";
             if (country.idd && country.idd.root) {
               dialCode = country.idd.root;
-              if (country.idd.suffixes && country.idd.suffixes.length > 0) {
+              if (country.idd.suffixes && country.idd.suffixes.length > 0)
                 dialCode += country.idd.suffixes[0];
-              }
             }
             return {
               name: country.name.common,
@@ -143,31 +142,25 @@ export default function ContactUsClient() {
               flag: country.flags.svg || country.flags.png,
             };
           })
-          .filter((c: Country) => c.dial_code) // Remove countries with no dial code
+          .filter((c: Country) => c.dial_code)
           .sort((a: Country, b: Country) => a.name.localeCompare(b.name));
-
         setCountries(formattedCountries);
-
-        // Set default to Bangladesh
         const bd = formattedCountries.find((c) => c.code === "BD");
         if (bd) setSelectedCountry(bd);
       } catch (error) {
         console.error("Failed to fetch countries", error);
       }
     };
-
     fetchCountries();
   }, []);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
-      ) {
+      )
         setIsDropdownOpen(false);
-      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -184,6 +177,9 @@ export default function ContactUsClient() {
       fullName: "",
       email: "",
       phone: "",
+      companyName: "",
+      city: "",
+      address: "",
       preferredLanguage: "",
       inquiryType: "",
       subject: "",
@@ -192,34 +188,39 @@ export default function ContactUsClient() {
   });
 
   const onSubmit: SubmitHandler<ContactFormInputs> = async (data) => {
-    // Combine dial code and phone number before submitting
     const fullPhoneNumber = selectedCountry
       ? `${selectedCountry.dial_code}${data.phone}`
       : data.phone;
+    const finalData = { ...data, phone: fullPhoneNumber };
 
-    const finalData = {
-      ...data,
-      phone: fullPhoneNumber,
-    };
+    try {
+      // CALLING THE NEW BACKEND ROUTE
+      const response = await fetch(
+        "http://localhost:5000/api/contact/submit-sheet",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(finalData),
+        },
+      );
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log(finalData);
-    setIsSubmitted(true);
-    reset();
+      if (!response.ok) throw new Error("Network response was not ok");
 
-    // Reset success message after 5 seconds
-    setTimeout(() => setIsSubmitted(false), 5000);
+      setIsSubmitted(true);
+      reset();
+      setTimeout(() => setIsSubmitted(false), 5000);
+    } catch (error) {
+      console.error("Submission error:", error);
+      alert("Failed to submit form. Please try again.");
+    }
   };
 
-  // Common Input Styles
   const inputStyle = (hasError: boolean) => ({
     backgroundColor: colors.background,
     borderColor: hasError ? colors.destructive : colors.border,
     color: colors.foreground,
   });
 
-  // Filtered countries based on search
   const filteredCountries = countries.filter(
     (country) =>
       country.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -243,40 +244,29 @@ export default function ContactUsClient() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[rgb(243,6,110)] to-[rgb(33,65,135)] opacity-90"></div>
         </div>
-
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Get In Touch With Us
           </h1>
           <p className="text-lg md:text-xl max-w-2xl mx-auto opacity-90">
             Have questions about our courses or need assistance? Our team is
-            ready to help you on your English learning journey.
+            ready to help.
           </p>
         </div>
       </section>
 
-      {/* Main Content Section */}
+      {/* Main Content */}
       <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column: Contact Info */}
+            {/* Left Info */}
             <div className="lg:col-span-1 space-y-6">
-              <div>
-                <h2
-                  className="text-2xl font-bold mb-6"
-                  style={{ color: colors.foreground }}
-                >
-                  Contact Information
-                </h2>
-                <p
-                  className="mb-6"
-                  style={{ color: colors.foreground, opacity: 0.8 }}
-                >
-                  Fill out the form and our team will get back to you within 24
-                  hours.
-                </p>
-              </div>
-
+              <h2
+                className="text-2xl font-bold mb-6"
+                style={{ color: colors.foreground }}
+              >
+                Contact Information
+              </h2>
               <ContactCard
                 icon={<Phone className="h-6 w-6" />}
                 title="Phone"
@@ -295,15 +285,9 @@ export default function ContactUsClient() {
                 content="House 12, Road 5, Dhanmondi"
                 subContent="Dhaka, Bangladesh"
               />
-              <ContactCard
-                icon={<Clock className="h-6 w-6" />}
-                title="Working Hours"
-                content="Sunday - Thursday"
-                subContent="9:00 AM - 6:00 PM"
-              />
             </div>
 
-            {/* Right Column: Contact Form */}
+            {/* Right Form */}
             <div className="lg:col-span-2">
               <div
                 className="p-8 rounded-2xl shadow-lg border"
@@ -327,12 +311,10 @@ export default function ContactUsClient() {
 
                 {isSubmitted ? (
                   <div className="text-center py-12">
-                    <div className="flex justify-center mb-4">
-                      <CheckCircle
-                        className="h-16 w-16"
-                        style={{ color: colors.success || "#10b981" }}
-                      />
-                    </div>
+                    <CheckCircle
+                      className="h-16 w-16 mx-auto mb-4"
+                      style={{ color: colors.success || "#10b981" }}
+                    />
                     <h3
                       className="text-xl font-semibold mb-2"
                       style={{ color: colors.foreground }}
@@ -340,8 +322,7 @@ export default function ContactUsClient() {
                       Message Sent Successfully!
                     </h3>
                     <p style={{ color: colors.muted }}>
-                      Thank you for reaching out. We will get back to you
-                      shortly.
+                      We have sent a confirmation email to you.
                     </p>
                   </div>
                 ) : (
@@ -350,7 +331,6 @@ export default function ContactUsClient() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label
-                          htmlFor="fullName"
                           className="block text-sm font-medium mb-2"
                           style={{ color: colors.foreground }}
                         >
@@ -358,7 +338,6 @@ export default function ContactUsClient() {
                           <span style={{ color: colors.primary }}>*</span>
                         </label>
                         <input
-                          id="fullName"
                           type="text"
                           {...register("fullName")}
                           placeholder="John Doe"
@@ -374,10 +353,8 @@ export default function ContactUsClient() {
                           </p>
                         )}
                       </div>
-
                       <div>
                         <label
-                          htmlFor="email"
                           className="block text-sm font-medium mb-2"
                           style={{ color: colors.foreground }}
                         >
@@ -385,7 +362,6 @@ export default function ContactUsClient() {
                           <span style={{ color: colors.primary }}>*</span>
                         </label>
                         <input
-                          id="email"
                           type="email"
                           {...register("email")}
                           placeholder="john@example.com"
@@ -403,12 +379,98 @@ export default function ContactUsClient() {
                       </div>
                     </div>
 
-                    {/* Row 2: Phone & Language */}
+                    {/* Row 2: Company & City (NEW) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Phone Input with Country Code */}
                       <div>
                         <label
-                          htmlFor="phone"
+                          className="block text-sm font-medium mb-2"
+                          style={{ color: colors.foreground }}
+                        >
+                          Company Name{" "}
+                          <span style={{ color: colors.primary }}>*</span>
+                        </label>
+                        <div className="relative">
+                          <Building
+                            className="absolute left-3 top-3.5 h-5 w-5 opacity-50"
+                            style={{ color: colors.muted }}
+                          />
+                          <input
+                            type="text"
+                            {...register("companyName")}
+                            placeholder="e.g. Acme Corp"
+                            className="w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
+                            style={inputStyle(!!errors.companyName)}
+                          />
+                        </div>
+                        {errors.companyName && (
+                          <p
+                            className="mt-1 text-sm"
+                            style={{ color: colors.destructive }}
+                          >
+                            {errors.companyName.message}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label
+                          className="block text-sm font-medium mb-2"
+                          style={{ color: colors.foreground }}
+                        >
+                          City <span style={{ color: colors.primary }}>*</span>
+                        </label>
+                        <input
+                          type="text"
+                          {...register("city")}
+                          placeholder="Dhaka"
+                          className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
+                          style={inputStyle(!!errors.city)}
+                        />
+                        {errors.city && (
+                          <p
+                            className="mt-1 text-sm"
+                            style={{ color: colors.destructive }}
+                          >
+                            {errors.city.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Row 2.5: Address (NEW) */}
+                    <div>
+                      <label
+                        className="block text-sm font-medium mb-2"
+                        style={{ color: colors.foreground }}
+                      >
+                        Address <span style={{ color: colors.primary }}>*</span>
+                      </label>
+                      <div className="relative">
+                        <Map
+                          className="absolute left-3 top-3.5 h-5 w-5 opacity-50"
+                          style={{ color: colors.muted }}
+                        />
+                        <input
+                          type="text"
+                          {...register("address")}
+                          placeholder="House 12, Road 5..."
+                          className="w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
+                          style={inputStyle(!!errors.address)}
+                        />
+                      </div>
+                      {errors.address && (
+                        <p
+                          className="mt-1 text-sm"
+                          style={{ color: colors.destructive }}
+                        >
+                          {errors.address.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Row 3: Phone & Language */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label
                           className="block text-sm font-medium mb-2"
                           style={{ color: colors.foreground }}
                         >
@@ -416,7 +478,6 @@ export default function ContactUsClient() {
                           <span style={{ color: colors.primary }}>*</span>
                         </label>
                         <div className="flex">
-                          {/* Country Code Dropdown */}
                           <div
                             ref={dropdownRef}
                             className="relative"
@@ -450,7 +511,6 @@ export default function ContactUsClient() {
                               )}
                               <ChevronDown className="h-4 w-4 opacity-70 ml-1" />
                             </button>
-
                             {isDropdownOpen && (
                               <div
                                 className="absolute z-20 w-72 mt-1 rounded-lg shadow-lg border overflow-hidden"
@@ -459,7 +519,6 @@ export default function ContactUsClient() {
                                   borderColor: colors.border,
                                 }}
                               >
-                                {/* Search Input inside Dropdown */}
                                 <div
                                   className="p-2 border-b"
                                   style={{ borderColor: colors.border }}
@@ -482,57 +541,46 @@ export default function ContactUsClient() {
                                     />
                                   </div>
                                 </div>
-
                                 <div className="max-h-60 overflow-y-auto">
-                                  {filteredCountries.length > 0 ? (
-                                    filteredCountries.map((country) => (
-                                      <button
-                                        type="button"
-                                        key={country.code}
-                                        onClick={() => {
-                                          setSelectedCountry(country);
-                                          setIsDropdownOpen(false);
-                                          setSearchQuery(""); // Reset search
-                                        }}
-                                        className="flex items-center gap-3 w-full px-4 py-2 text-left hover:bg-opacity-50 transition-colors"
-                                        style={{
-                                          color: colors.foreground,
-                                          backgroundColor:
-                                            selectedCountry?.code ===
-                                            country.code
-                                              ? colors.primary + "20"
-                                              : "transparent",
-                                        }}
+                                  {filteredCountries.map((country) => (
+                                    <button
+                                      type="button"
+                                      key={country.code}
+                                      onClick={() => {
+                                        setSelectedCountry(country);
+                                        setIsDropdownOpen(false);
+                                        setSearchQuery("");
+                                      }}
+                                      className="flex items-center gap-3 w-full px-4 py-2 text-left hover:bg-opacity-50 transition-colors"
+                                      style={{
+                                        color: colors.foreground,
+                                        backgroundColor:
+                                          selectedCountry?.code === country.code
+                                            ? colors.primary + "20"
+                                            : "transparent",
+                                      }}
+                                    >
+                                      <img
+                                        src={country.flag}
+                                        alt={country.name}
+                                        className="w-5 h-4 object-cover rounded-sm"
+                                      />
+                                      <span className="flex-1 text-sm truncate">
+                                        {country.name}
+                                      </span>
+                                      <span
+                                        className="text-xs"
+                                        style={{ opacity: 0.7 }}
                                       >
-                                        <img
-                                          src={country.flag}
-                                          alt={country.name}
-                                          className="w-5 h-4 object-cover rounded-sm"
-                                        />
-                                        <span className="flex-1 text-sm truncate">
-                                          {country.name}
-                                        </span>
-                                        <span
-                                          className="text-xs"
-                                          style={{ opacity: 0.7 }}
-                                        >
-                                          {country.dial_code}
-                                        </span>
-                                      </button>
-                                    ))
-                                  ) : (
-                                    <p className="p-4 text-sm text-center opacity-70">
-                                      No country found
-                                    </p>
-                                  )}
+                                        {country.dial_code}
+                                      </span>
+                                    </button>
+                                  ))}
                                 </div>
                               </div>
                             )}
                           </div>
-
-                          {/* Phone Number Input */}
                           <input
-                            id="phone"
                             type="tel"
                             {...register("phone")}
                             placeholder="171234567"
@@ -549,10 +597,8 @@ export default function ContactUsClient() {
                           </p>
                         )}
                       </div>
-
                       <div>
                         <label
-                          htmlFor="preferredLanguage"
                           className="block text-sm font-medium mb-2"
                           style={{ color: colors.foreground }}
                         >
@@ -560,7 +606,6 @@ export default function ContactUsClient() {
                           <span style={{ color: colors.primary }}>*</span>
                         </label>
                         <select
-                          id="preferredLanguage"
                           {...register("preferredLanguage")}
                           className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
                           style={inputStyle(!!errors.preferredLanguage)}
@@ -580,11 +625,10 @@ export default function ContactUsClient() {
                       </div>
                     </div>
 
-                    {/* Row 3: Inquiry Type & Subject */}
+                    {/* Row 4: Inquiry Type & Subject */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label
-                          htmlFor="inquiryType"
                           className="block text-sm font-medium mb-2"
                           style={{ color: colors.foreground }}
                         >
@@ -592,7 +636,6 @@ export default function ContactUsClient() {
                           <span style={{ color: colors.primary }}>*</span>
                         </label>
                         <select
-                          id="inquiryType"
                           {...register("inquiryType")}
                           className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
                           style={inputStyle(!!errors.inquiryType)}
@@ -608,7 +651,6 @@ export default function ContactUsClient() {
                             Technical Support
                           </option>
                           <option value="Feedback">Feedback</option>
-                          <option value="Partnership">Partnership</option>
                         </select>
                         {errors.inquiryType && (
                           <p
@@ -619,10 +661,8 @@ export default function ContactUsClient() {
                           </p>
                         )}
                       </div>
-
                       <div>
                         <label
-                          htmlFor="subject"
                           className="block text-sm font-medium mb-2"
                           style={{ color: colors.foreground }}
                         >
@@ -630,7 +670,6 @@ export default function ContactUsClient() {
                           <span style={{ color: colors.primary }}>*</span>
                         </label>
                         <input
-                          id="subject"
                           type="text"
                           {...register("subject")}
                           placeholder="How can we help?"
@@ -648,17 +687,15 @@ export default function ContactUsClient() {
                       </div>
                     </div>
 
-                    {/* Row 4: Message */}
+                    {/* Row 5: Message */}
                     <div>
                       <label
-                        htmlFor="message"
                         className="block text-sm font-medium mb-2"
                         style={{ color: colors.foreground }}
                       >
                         Message <span style={{ color: colors.primary }}>*</span>
                       </label>
                       <textarea
-                        id="message"
                         rows={5}
                         {...register("message")}
                         placeholder="Write your message here..."
@@ -700,28 +737,6 @@ export default function ContactUsClient() {
                 )}
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Map Section  */}
-      <section className="px-4 pb-16">
-        <div className="max-w-7xl mx-auto">
-          <div
-            className="w-full h-96 rounded-2xl overflow-hidden border"
-            style={{
-              borderColor: colors.border,
-            }}
-          >
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3651.9001954636967!2d90.38901731540354!3d23.750883194604!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8b087026b81%3A0x8fa563bbdd5904c2!2sDhaka!5e0!3m2!1sen!2sbd!4v1699234567890!5m2!1sen!2sbd"
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            ></iframe>
           </div>
         </div>
       </section>

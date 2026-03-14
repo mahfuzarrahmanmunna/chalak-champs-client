@@ -1,4 +1,3 @@
-// src/app/admin-dashboard/layout.tsx
 "use client";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -8,26 +7,12 @@ import { useTheme } from "@/app/context/ThemeContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { BookOpenIcon, ChartBarIcon, CogIcon, HomeIcon } from "lucide-react";
 import { FaUserGroup, FaXmark } from "react-icons/fa6";
-import { HiAcademicCap, HiQuestionMarkCircle } from "react-icons/hi";
+import { HiAcademicCap, HiQuestionMarkCircle, HiPlus } from "react-icons/hi"; // ADDED HiPlus import
 import { GrDocumentText } from "react-icons/gr";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { HiArrowRightOnRectangle } from "react-icons/hi2";
 import { FaBars } from "react-icons/fa";
 import { useCurrentUser } from "../hooks/useCurrentUser";
-// import {
-//   HomeIcon,
-//   UserGroupIcon,
-//   AcademicCapIcon,
-//   ChartBarIcon,
-//   CogIcon,
-//   DocumentTextIcon,
-//   BookOpenIcon,
-//   CurrencyDollarIcon,
-//   QuestionMarkCircleIcon,
-//   ArrowRightOnRectangleIcon,
-//   Bars3Icon,
-//   XMarkIcon,
-// } from "@heroicons/react/24/outline";
 
 export default function AdminDashboardLayout({
   children,
@@ -70,6 +55,14 @@ export default function AdminDashboardLayout({
       icon: HiAcademicCap,
       current: pathname === "/admin-dashboard/manage-courses",
     },
+    // --- NEW LINK ADDED HERE ---
+    {
+      name: "Create Course", // You can change to t.createCourse if you have the translation
+      href: "/admin-dashboard/courses/create",
+      icon: HiPlus,
+      current: pathname === "/admin-dashboard/courses/create",
+    },
+    // --------------------------
     {
       name: t.analytics || "Analytics",
       href: "/admin-dashboard/analytics",

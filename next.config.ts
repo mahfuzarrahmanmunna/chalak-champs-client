@@ -6,16 +6,28 @@ const nextConfig = {
     domains: [
       "randomuser.me",
       "images.unsplash.com",
-      "plus.unsplash.com", // Sometimes Unsplash uses this CDN
+      "plus.unsplash.com",
+      // You can also add it here if you prefer, but remotePatterns is preferred:
+      // "i.ibb.co.com",
     ],
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "*",
+        hostname: "**.firebasestorage.app",
       },
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
+      },
+      // --- ADD THE CONFIGURATION BELOW ---
+      {
+        protocol: "https",
+        hostname: "i.ibb.co.com", // Added based on the exact error message
+      },
+      // Standard ImgBB domain (in case the URL is actually a typo for i.ibb.co)
+      {
+        protocol: "https",
+        hostname: "i.ibb.co",
       },
     ],
   },

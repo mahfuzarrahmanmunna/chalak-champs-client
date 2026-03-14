@@ -109,6 +109,7 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
 
         if (response.data.success) {
           setCurrentUser(response.data.user);
+          console.log(response.data.user);
           return response.data.user;
         } else {
           throw new Error(response.data.message || "Failed to update profile");

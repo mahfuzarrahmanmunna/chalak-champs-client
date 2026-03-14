@@ -48,19 +48,19 @@ export default function AdminDashboardPage() {
       setLoading(true);
 
       // Fetch dashboard stats
-      const statsResponse = await api.get("/api/admin/dashboard/stats");
+      const statsResponse = await api.get("/admin/dashboard/stats");
       if (statsResponse.data.success) {
         setStats(statsResponse.data.stats);
       }
 
       // Fetch recent users
-      const usersResponse = await api.get("/api/admin/users?limit=5");
+      const usersResponse = await api.get("/admin/users?limit=5");
       if (usersResponse.data.success) {
         setRecentUsers(usersResponse.data.users);
       }
 
       // Fetch recent courses
-      const coursesResponse = await api.get("/api/admin/courses?limit=5");
+      const coursesResponse = await api.get("/admin/courses?limit=5");
       if (coursesResponse.data.success) {
         setRecentCourses(coursesResponse.data.courses);
       }

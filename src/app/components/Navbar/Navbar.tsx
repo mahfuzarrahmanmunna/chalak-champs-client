@@ -25,7 +25,7 @@ const Navbar = () => {
   const { isBangla, toggleLanguage, t } = useLanguage();
   const { colors } = useTheme();
   const { user } = useAuth();
-  console.log(t);
+  // console.log(t);
 
   // Modal Handlers
   const openCategoryModal = () => {

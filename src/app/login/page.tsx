@@ -1,22 +1,59 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import api from "@/lib/api";
+import { useCurrentUser } from "../hooks/useCurrentUser";
+
+// FIX 1: Define a type for errors to avoid 'any'
+type AuthError = {
+  code?: string;
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message?: string;
+};
 
 export default function LoginPage() {
-  const [identifier, setIdentifier] = useState<string>(""); // email or phone
+  const [identifier, setIdentifier] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  const [step, setStep] = useState<number>(1); // 1: enter credentials, 2: verify OTP
+  const [step, setStep] = useState<number>(1);
   const [verificationCode, setVerificationCode] = useState<string>("");
   const router = useRouter();
+  const { currentUser } = useCurrentUser();
+
+  // Helper function to handle redirection based on role
+  const handleRedirect = (role: string) => {
+    if (role === "admin") {
+      router.push("/admin-dashboard");
+    } else if (role === "teacher") {
+      router.push("/teacher-dashboard");
+    } else {
+      // Default to student dashboard
+      router.push("/dashboard");
+    }
+  };
+
+  // FIX 2: Added [currentUser, router] to the dependency array.
+  // This ensures the effect runs every time the currentUser changes.
+  useEffect(() => {
+    if (currentUser?.role === "admin") {
+      router.push("/admin-dashboard");
+    } else if (currentUser?.role === "teacher") {
+      router.push("/teacher-dashboard");
+    } else if (currentUser?.role === "student") {
+      router.push("/dashboard");
+    }
+  }, [currentUser, router]); // <--- CRITICAL FIX: Added dependencies
 
   const validateEmail = (email: string): boolean => {
     return /\S+@\S+\.\S+/.test(email);
@@ -51,9 +88,6 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const isEmail = validateEmail(identifier);
-      const isPhone = validatePhoneNumber(identifier);
-
       if (isEmail) {
         // Email login with Firebase
         const userCredential = await signInWithEmailAndPassword(
@@ -65,11 +99,18 @@ export default function LoginPage() {
         // Get ID token
         const idToken = await userCredential.user.getIdToken();
 
-        // Store the token directly
+        // Store the token
         localStorage.setItem("token", idToken);
 
-        // Redirect to dashboard
-        router.push("/dashboard");
+        // Fetch user profile to get the role from the database
+        const profileResponse = await api.get("/auth/profile");
+
+        if (profileResponse.data.success && profileResponse.data.user) {
+          const userRole = profileResponse.data.user.role;
+          handleRedirect(userRole);
+        } else {
+          throw new Error("Failed to retrieve user profile");
+        }
       } else if (isPhone) {
         // Phone login - send verification code
         const response = await api.post("/auth/send-phone-verification", {
@@ -82,17 +123,19 @@ export default function LoginPage() {
           setError(response.data.message || "Failed to send verification code");
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      // FIX 3: Use 'unknown' and cast to AuthError to satisfy linter
       console.error("Login failed:", error);
+      const err = error as AuthError;
 
-      if (error.code === "auth/user-not-found") {
+      if (err.code === "auth/user-not-found") {
         setError("User not found. Please check your credentials.");
-      } else if (error.code === "auth/wrong-password") {
+      } else if (err.code === "auth/wrong-password") {
         setError("Incorrect password. Please try again.");
-      } else if (error.code === "auth/too-many-requests") {
+      } else if (err.code === "auth/too-many-requests") {
         setError("Too many failed login attempts. Please try again later.");
-      } else if (error.response?.data?.message) {
-        setError(error.response.data.message);
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
       } else {
         setError("Login failed. Please try again.");
       }
@@ -112,9 +155,15 @@ export default function LoginPage() {
       });
 
       if (response.data.success && response.data.token) {
-        // Store the token from the response
+        // Store the token
         localStorage.setItem("token", response.data.token);
-        router.push("/dashboard");
+
+        // Redirect based on role from the verification response
+        if (response.data.user && response.data.user.role) {
+          handleRedirect(response.data.user.role);
+        } else {
+          router.push("/dashboard"); // Fallback
+        }
       } else {
         setError(response.data.message || "Invalid verification code");
       }
