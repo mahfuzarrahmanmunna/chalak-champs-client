@@ -1,16 +1,20 @@
-// next.config.js
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      "randomuser.me",
-      "images.unsplash.com",
-      "plus.unsplash.com",
-      // You can also add it here if you prefer, but remotePatterns is preferred:
-      // "i.ibb.co.com",
-    ],
+    // 1. 'domains' array-ti pura-puri muche felun
     remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "randomuser.me",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "plus.unsplash.com",
+      },
       {
         protocol: "https",
         hostname: "**.firebasestorage.app",
@@ -19,12 +23,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
       },
-      // --- ADD THE CONFIGURATION BELOW ---
       {
         protocol: "https",
-        hostname: "i.ibb.co.com", // Added based on the exact error message
+        hostname: "i.ibb.co.com",
       },
-      // Standard ImgBB domain (in case the URL is actually a typo for i.ibb.co)
       {
         protocol: "https",
         hostname: "i.ibb.co",
