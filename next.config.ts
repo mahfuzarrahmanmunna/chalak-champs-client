@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "export",
+  reactStrictMode: true, // typo fix
+
   images: {
     // 1. 'domains' array-ti pura-puri muche felun
     remotePatterns: [
