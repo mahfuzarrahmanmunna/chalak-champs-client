@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { ThemeProvider } from "@/app/context/ThemeContext";
 import { LanguageProvider } from "@/app/context/LanguageContext";
 import { AuthProvider } from "./FirebaseProvider";
@@ -19,7 +19,28 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isStDashboard = pathname.startsWith("/dashboard");
   const { currentUser } = useCurrentUser();
   console.log(currentUser);
-  // const
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!("serviceWorker" in navigator)) return;
+
+    // Only register on production builds over HTTPS
+    const isLocalhost =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+
+    if (window.location.protocol === "https:" || isLocalhost) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => {
+          console.log("Service worker registered:", registration.scope);
+        })
+        .catch((error) => {
+          console.error("Service worker registration failed:", error);
+        });
+    }
+  }, []);
+
   return (
     // <DataLoadedWrapper>
     //   <DataProvider>

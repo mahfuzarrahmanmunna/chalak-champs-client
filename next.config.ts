@@ -1,9 +1,11 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: "export",
+import type { NextConfig } from "next";
+
+// Your existing configuration (PWA handled via custom service worker)
+const nextConfig: NextConfig = {
+  turbopack: {},
+
   reactStrictMode: true,
   images: {
-    // 1. 'domains' array-ti pura-puri muche felun
     unoptimized: true,
     remotePatterns: [
       {
@@ -20,15 +22,11 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "**.firebasestorage.app",
+        hostname: "firebasestorage.googleapis.com",
       },
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
-      },
-      {
-        protocol: "https",
-        hostname: "i.ibb.co.com",
       },
       {
         protocol: "https",
@@ -38,4 +36,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
