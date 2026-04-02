@@ -34,12 +34,12 @@ export default function LoginPage() {
   // Helper function to handle redirection based on role
   const handleRedirect = (role: string) => {
     if (role === "admin") {
-      router.push("/admin-dashboard");
+      router.push("/");
     } else if (role === "teacher") {
-      router.push("/teacher-dashboard");
+      router.push("/");
     } else {
       // Default to student dashboard
-      router.push("/dashboard");
+      router.push("/");
     }
   };
 
@@ -124,17 +124,17 @@ export default function LoginPage() {
         }
       }
     } catch (error: unknown) {
-      // FIX 3: Use 'unknown' and cast to AuthError to satisfy linter
+      // FIX 3: Updated Error Handling for Firebase v9+
       console.error("Login failed:", error);
       const err = error as AuthError;
 
-      if (err.code === "auth/user-not-found") {
-        setError("User not found. Please check your credentials.");
-      } else if (err.code === "auth/wrong-password") {
-        setError("Incorrect password. Please try again.");
+      // 'auth/invalid-credential' replaces both 'user-not-found' and 'wrong-password'
+      if (err.code === "auth/invalid-credential") {
+        setError("Invalid email or password. Please check your credentials.");
       } else if (err.code === "auth/too-many-requests") {
         setError("Too many failed login attempts. Please try again later.");
       } else if (err.response?.data?.message) {
+        // Handle API errors (like profile fetch failure)
         setError(err.response.data.message);
       } else {
         setError("Login failed. Please try again.");

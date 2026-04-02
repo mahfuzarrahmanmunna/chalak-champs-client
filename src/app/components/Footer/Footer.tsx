@@ -124,31 +124,16 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer
-      style={{
-        backgroundColor: theme === "light" ? colors.card : colors.background,
-      }}
-    >
+    <footer className="bg-primary dark:bg-gray-800 p-8 text-black dark:text-white">
       {/* Newsletter Section */}
-      <div
-        className="py-12 px-4 sm:px-6 lg:px-8"
-        style={{
-          backgroundColor: theme === "light" ? colors.background : colors.card,
-        }}
-      >
+      <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-              <h3
-                className="text-2xl font-bold mb-4"
-                style={{ color: colors.foreground }}
-              >
+              <h3 className="text-2xl font-bold mb-4 text-black dark:text-white">
                 {footerData.newsletter.title}
               </h3>
-              <p
-                className="mb-6 max-w-md"
-                style={{ color: colors.foreground, opacity: 0.8 }}
-              >
+              <p className="mb-6 max-w-md text-gray-700 dark:text-gray-300 opacity-80">
                 {footerData.newsletter.description}
               </p>
             </div>
@@ -162,18 +147,12 @@ const Footer: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={footerData.newsletter.placeholder}
                 required
-                className="flex-1 px-4 py-3 rounded-md focus:outline-none focus:ring-2"
-                style={{
-                  backgroundColor: theme === "light" ? "white" : colors.card,
-                  borderColor: colors.border,
-                  color: colors.foreground,
-                }}
+                className="flex-1 px-4 py-3 rounded-md focus:outline-none focus:ring-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-black dark:text-white"
               />
               <button
                 type="submit"
                 disabled={subscribed}
-                className="px-6 py-3 rounded-md font-medium text-white flex items-center justify-center disabled:opacity-50"
-                style={{ backgroundColor: colors.primary }}
+                className="px-6 py-3 rounded-md font-medium text-white flex items-center justify-center disabled:opacity-50 bg-primary hover:bg-primary-focus"
               >
                 {subscribed ? (
                   <span>
@@ -204,38 +183,23 @@ const Footer: React.FC = () => {
                 height={40}
                 className="rounded-md mr-3"
               />
-              <h3
-                className="text-xl font-bold"
-                style={{ color: colors.foreground }}
-              >
+              <h3 className="text-xl font-bold text-black dark:text-white">
                 {footerData.company.name}
               </h3>
             </div>
-            <p
-              className="mb-6 max-w-md"
-              style={{ color: colors.foreground, opacity: 0.8 }}
-            >
+            <p className="mb-6 max-w-md text-gray-700 dark:text-gray-300 opacity-80">
               {footerData.company.description}
             </p>
             <div className="md:flex space-x-4 mb-6">
-              <div
-                className="flex items-center"
-                style={{ color: colors.foreground, opacity: 0.8 }}
-              >
+              <div className="flex items-center text-gray-700 dark:text-gray-300 opacity-80">
                 <MapPin className="h-4 w-4 mr-2" />
                 <span className="text-sm">{footerData.company.address}</span>
               </div>
-              <div
-                className="flex items-center"
-                style={{ color: colors.foreground, opacity: 0.8 }}
-              >
+              <div className="flex items-center text-gray-700 dark:text-gray-300 opacity-80">
                 <Phone className="h-4 w-4 mr-2" />
                 <span className="text-sm">{footerData.company.phone}</span>
               </div>
-              <div
-                className="flex items-center"
-                style={{ color: colors.foreground, opacity: 0.8 }}
-              >
+              <div className="flex items-center text-gray-700 dark:text-gray-300 opacity-80">
                 <Mail className="h-4 w-4 mr-2" />
                 <span className="text-sm">{footerData.company.email}</span>
               </div>
@@ -244,10 +208,7 @@ const Footer: React.FC = () => {
 
           {/* Learn Links */}
           <div>
-            <h4
-              className="text-lg font-semibold mb-4"
-              style={{ color: colors.foreground }}
-            >
+            <h4 className="text-lg font-semibold mb-4 text-black dark:text-white">
               {isBangla ? "শিখুন" : "Learn"}
             </h4>
             <ul className="space-y-2">
@@ -255,16 +216,7 @@ const Footer: React.FC = () => {
                 <li key={index}>
                   <Link
                     href={link.href}
-                    className="text-sm transition-colors duration-200"
-                    style={{ color: colors.foreground, opacity: 0.8 }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = "1";
-                      e.currentTarget.style.color = colors.primary;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = "0.8";
-                      e.currentTarget.style.color = colors.foreground;
-                    }}
+                    className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary transition-colors duration-200"
                   >
                     {link.name}
                   </Link>
@@ -275,10 +227,7 @@ const Footer: React.FC = () => {
 
           {/* Company Links */}
           <div>
-            <h4
-              className="text-lg font-semibold mb-4"
-              style={{ color: colors.foreground }}
-            >
+            <h4 className="text-lg font-semibold mb-4 text-black dark:text-white">
               {isBangla ? "কোম্পানি" : "Company"}
             </h4>
             <ul className="space-y-2">
@@ -286,16 +235,7 @@ const Footer: React.FC = () => {
                 <li key={index}>
                   <Link
                     href={link.href}
-                    className="text-sm transition-colors duration-200"
-                    style={{ color: colors.foreground, opacity: 0.8 }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = "1";
-                      e.currentTarget.style.color = colors.primary;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = "0.8";
-                      e.currentTarget.style.color = colors.foreground;
-                    }}
+                    className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary transition-colors duration-200"
                   >
                     {link.name}
                   </Link>
@@ -306,10 +246,7 @@ const Footer: React.FC = () => {
 
           {/* Support Links */}
           <div>
-            <h4
-              className="text-lg font-semibold mb-4"
-              style={{ color: colors.foreground }}
-            >
+            <h4 className="text-lg font-semibold mb-4 text-black dark:text-white">
               {isBangla ? "সমর্থন" : "Support"}
             </h4>
             <ul className="space-y-2">
@@ -317,16 +254,7 @@ const Footer: React.FC = () => {
                 <li key={index}>
                   <Link
                     href={link.href}
-                    className="text-sm transition-colors duration-200"
-                    style={{ color: colors.foreground, opacity: 0.8 }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = "1";
-                      e.currentTarget.style.color = colors.primary;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = "0.8";
-                      e.currentTarget.style.color = colors.foreground;
-                    }}
+                    className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary transition-colors duration-200"
                   >
                     {link.name}
                   </Link>
@@ -343,21 +271,7 @@ const Footer: React.FC = () => {
                 href={social.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-full transition-colors duration-200"
-                style={{
-                  backgroundColor:
-                    theme === "light" ? colors.background : colors.card,
-                  color: colors.foreground,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primary;
-                  e.currentTarget.style.color = "white";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    theme === "light" ? colors.background : colors.card;
-                  e.currentTarget.style.color = colors.foreground;
-                }}
+                className="p-2 rounded-full transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white"
               >
                 <social.icon className="h-5 w-5" />
               </a>
@@ -367,29 +281,17 @@ const Footer: React.FC = () => {
       </div>
 
       {/* Copyright and Back to Top */}
-      <div
-        className="py-6 px-4 sm:px-6 lg:px-8 border-t"
-        style={{ borderColor: colors.border }}
-      >
+      <div className="py-6 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
-          <p
-            className="text-sm"
-            style={{ color: colors.foreground, opacity: 0.8 }}
-          >
+          <p className="text-sm text-gray-700 dark:text-gray-300 opacity-80">
             {footerData.copyright.text}
           </p>
           <div className="flex items-center mt-4 md:mt-0">
-            <span
-              className="text-sm mr-2"
-              style={{ color: colors.foreground, opacity: 0.8 }}
-            >
+            <span className="text-sm mr-2 text-gray-700 dark:text-gray-300 opacity-80">
               {isBangla ? "সঙ্গে তৈরি তৈরি করা" : "Made with"}
             </span>
-            <Heart className="h-4 w-4" style={{ color: "#ef4444" }} />
-            <span
-              className="text-sm ml-2"
-              style={{ color: colors.foreground, opacity: 0.8 }}
-            >
+            <Heart className="h-4 w-4 text-red-500" />
+            <span className="text-sm ml-2 text-gray-700 dark:text-gray-300 opacity-80">
               {isBangla ? "চালাক চ্যাম্পসতে" : "by Chalak Champs"}
             </span>
           </div>
@@ -400,11 +302,7 @@ const Footer: React.FC = () => {
       {showBackToTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 p-3 rounded-full shadow-lg transition-all duration-300 z-10"
-          style={{
-            backgroundColor: colors.primary,
-            color: "white",
-          }}
+          className="fixed bottom-8 right-8 p-3 rounded-full shadow-lg transition-all duration-300 z-10 bg-primary text-white hover:-translate-y-1"
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = "translateY(-2px)";
           }}

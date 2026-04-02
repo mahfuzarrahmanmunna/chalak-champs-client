@@ -10,6 +10,7 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import useAuth from "@/app/hooks/useAuth";
 import ProfileModal from "./ProfileModal";
 import ProfileButton from "./ProfileButton";
+import Image from "next/image";
 // import { useCurrentUser } from "@/app/hooks/useCurrentUser"; // Optional if not used in render
 
 const Navbar = () => {
@@ -61,10 +62,16 @@ const Navbar = () => {
             <div className="shrink-0">
               <Link
                 href="/"
-                className="text-2xl font-bold"
+                className="h-12 flex +-*items-center transition-colors duration-200"
                 style={{ color: "var(--color-primary)" }}
               >
-                {String(t.logo)}
+                <Image
+                  src="logo.png"
+                  alt="Chalak Champs Logo"
+                  width={120}
+                  height={60}
+                />
+                {/* <img src="/logo.png" alt="Chalak Champs Logo" /> */}
               </Link>
             </div>
 
@@ -73,21 +80,17 @@ const Navbar = () => {
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors duration-200"
-                  style={{ color: "var(--color-foreground)" }}
+                  className="relative px-3 bg-primary  py-2 rounded-full text-white text-sm font-medium flex items-center transition-colors duration-200"
                 >
-                  {String(t.courses)}
-                  <svg
-                    className={`ml-1 h-4 w-4 transition-transform ${isDropdownOpen ? "transform rotate-180" : ""}`}
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      clipRule="evenodd"
+                  <figure className="absolute top-2 rotate-30">
+                    <Image
+                      src={"/star.png"}
+                      alt="star"
+                      width={20}
+                      height={20}
                     />
-                  </svg>
+                  </figure>
+                  {String(t.courses)}
                 </button>
                 {isDropdownOpen && (
                   <div
@@ -112,7 +115,7 @@ const Navbar = () => {
                           e.currentTarget.style.opacity = "1";
                         }}
                       >
-                        {String(t.liveCourses)}
+                        {String(t.allcourses)}
                       </Link>
                       <Link
                         href="#"
@@ -156,7 +159,7 @@ const Navbar = () => {
                 className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                 style={{ color: "var(--color-foreground)" }}
               >
-                {String(t.categories)}
+                {String(t.category)}
               </button>
 
               <Link
@@ -183,9 +186,9 @@ const Navbar = () => {
             </div>
 
             {/* Search Bar (Desktop) */}
-            <div className="hidden md:block">
+            {/* <div className="hidden md:block">
               <SearchBar />
-            </div>
+            </div> */}
 
             {/* Right Side Actions (Desktop) */}
             <div className="hidden md:flex items-center space-x-4">

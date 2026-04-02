@@ -1,8 +1,24 @@
+// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}", "./app/**/*.{js,ts,jsx,tsx,mdx}"],
+const daisyui = require("daisyui");
+
+const config = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["var(--font-inter)", "sans-serif"],
+      },
+    },
   },
-  plugins: [],
+  plugins: [daisyui],
+  daisyui: {
+    themes: ["light", "dark"],
+  },
 };
+
+module.exports = config;

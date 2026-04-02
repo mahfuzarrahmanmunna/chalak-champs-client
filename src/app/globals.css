@@ -5,6 +5,7 @@
     light --default,
     dark --prefersdark;
 }
+/* REMOVED: @import "react-quill/dist/quill.snow.css"; */
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -94,20 +95,18 @@
     --foreground: #ededed;
 
     /* Dark theme variations - keeping the same brand colors but with different intensities */
-    --color-primary: #ff1493; /* Deeper pink for dark mode */
-    --color-secondary: #1e90ff; /* Brighter blue for dark mode */
-    --color-accent: #ffc700; /* Slightly darker yellow for dark mode */
-
-    /* Dark theme variations */
-    --color-primary-light: #ff69b4; /* Original pink */
-    --color-secondary-light: #4169e1; /* Original blue */
-    --color-accent-light: #ffd700; /* Original yellow */
+    --color-primary: #0ea5e9; /* bright blue */
+    --color-secondary: #6366f1;
+    --color-accent: #f97316;
+    --color-primary-content: #ffffff;
+    --color-base-100: #0f172a;
+    --color-base-content: #ffffff;
 
     /* Dark gradient */
     --gradient-primary: linear-gradient(
       135deg,
-      rgba(255, 105, 180, 0.85) 0%,
-      rgba(65, 105, 225, 0.85) 100%
+      rgba(14, 165, 233, 0.85) 0%,
+      rgba(99, 102, 241, 0.85) 100%
     );
   }
 }
@@ -115,7 +114,23 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter);
+}
+
+/* Prefer only Tailwind/daisyUI text utility classes */
+/* let standard .text-white .text-black .dark:text-white work correctly */
+
+.dark .bg-primary,
+.bg-primary {
+  background-color: var(--color-primary) !important;
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.dark-text-white {
+  color: #ffffff;
 }
 
 /* Optional: Add utility classes for your theme colors */

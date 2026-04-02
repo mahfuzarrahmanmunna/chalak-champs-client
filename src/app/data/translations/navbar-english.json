@@ -1,14 +1,18 @@
 {
-  "logo": "Chalak Champs",
-  "courses": "Courses",
+  "logo": "/logo.png",
+  "courses": "Book A Free Class",
   "liveCourses": "Live Courses",
+  "allcourses": "All Courses",
+  "kidenglish": "Kids English",
+  "more": "More",
   "recordedCourses": "Recorded Courses",
   "skillDev": "Skill Development",
-  "categories": "Categories",
+  "category": "Categories",
   "modelTest": "Model Test",
   "blog": "Blog",
   "store": "Store",
   "login": "Login",
   "signUp": "Sign Up",
-  "searchPlaceholder": "Search..."
+  "searchPlaceholder": "Search...",
+  "skill": "Skills"
 }

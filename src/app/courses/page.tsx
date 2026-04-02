@@ -1,3 +1,5 @@
+// src/app/courses/page.tsx
+
 import React from "react";
 import CoursesContent from "./CoursesContent";
 

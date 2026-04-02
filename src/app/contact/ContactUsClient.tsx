@@ -3,9 +3,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useTheme } from "@/app/context/ThemeContext";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, useController, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import ReactQuill from "react-quill";
+// REMOVED: import "react-quill/dist/quill.snow.css"; -> Moved to globals.css
 import {
   MapPin,
   Mail,
@@ -28,21 +30,21 @@ interface Country {
   flag: string;
 }
 
-// Form Inputs Interface - Added new fields
+// Form Inputs Interface
 interface ContactFormInputs {
   fullName: string;
   email: string;
   phone: string;
-  companyName: string; // NEW
-  city: string; // NEW
-  address: string; // NEW
+  companyName: string;
+  city: string;
+  address: string;
   preferredLanguage: string;
   inquiryType: string;
   subject: string;
   message: string;
 }
 
-// Validation Schema - Added new fields
+// Validation Schema
 const contactSchema = yup.object().shape({
   fullName: yup.string().required("Full name is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -59,7 +61,12 @@ const contactSchema = yup.object().shape({
   message: yup
     .string()
     .required("Message is required")
-    .min(10, "Message must be at least 10 characters"),
+    .min(10, "Message must be at least 10 characters")
+    .test(
+      "is-not-empty",
+      "Message cannot be empty",
+      (value) => value.replace(/<[^>]*>?/gm, "").trim().length > 0
+    ),
 });
 
 // Contact Info Card Component
@@ -120,11 +127,21 @@ export default function ContactUsClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Quill Modules configuration
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["clean"],
+    ],
+  };
+
   useEffect(() => {
     const fetchCountries = async () => {
       try {
         const response = await fetch(
-          "https://restcountries.com/v3.1/all?fields=name,flags,idd,cca2",
+          "https://restcountries.com/v3.1/all?fields=name,flags,idd,cca2"
         );
         const data = await response.json();
         const formattedCountries: Country[] = data
@@ -169,6 +186,7 @@ export default function ContactUsClient() {
   const {
     register,
     handleSubmit,
+    control, // Get control from useForm for useController
     formState: { errors, isSubmitting },
     reset,
   } = useForm<ContactFormInputs>({
@@ -187,6 +205,13 @@ export default function ContactUsClient() {
     },
   });
 
+  // Use Controller for Quill
+  const { field: messageField } = useController({
+    name: "message",
+    control,
+    defaultValue: "",
+  });
+
   const onSubmit: SubmitHandler<ContactFormInputs> = async (data) => {
     const fullPhoneNumber = selectedCountry
       ? `${selectedCountry.dial_code}${data.phone}`
@@ -194,20 +219,19 @@ export default function ContactUsClient() {
     const finalData = { ...data, phone: fullPhoneNumber };
 
     try {
-      // CALLING THE NEW BACKEND ROUTE
       const response = await fetch(
         "http://localhost:5000/api/contact/submit-sheet",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(finalData),
-        },
+        }
       );
 
       if (!response.ok) throw new Error("Network response was not ok");
 
       setIsSubmitted(true);
-      reset();
+      reset(); // Reset form
       setTimeout(() => setIsSubmitted(false), 5000);
     } catch (error) {
       console.error("Submission error:", error);
@@ -225,7 +249,7 @@ export default function ContactUsClient() {
     (country) =>
       country.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       country.dial_code.includes(searchQuery) ||
-      country.code.toLowerCase().includes(searchQuery.toLowerCase()),
+      country.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -233,6 +257,37 @@ export default function ContactUsClient() {
       className="min-h-screen"
       style={{ backgroundColor: colors.background }}
     >
+      {/* Custom Styles for Quill Editor to match Theme */}
+      <style jsx global>{`
+        .ql-container {
+          background-color: ${colors.background} !important;
+          color: ${colors.foreground} !important;
+          border-bottom-left-radius: 0.5rem;
+          border-bottom-right-radius: 0.5rem;
+          border: none;
+          font-size: 1rem;
+        }
+        .ql-toolbar {
+          background-color: ${colors.background} !important;
+          border: none;
+          border-bottom: 1px solid ${colors.border};
+          border-top-left-radius: 0.5rem;
+          border-top-right-radius: 0.5rem;
+        }
+        .ql-stroke {
+          stroke: ${colors.foreground} !important;
+        }
+        .ql-fill {
+          fill: ${colors.foreground} !important;
+        }
+        .ql-picker {
+          color: ${colors.foreground} !important;
+        }
+        .ql-editor.ql-blank::before {
+          color: ${colors.muted || "#9ca3af"} !important;
+        }
+      `}</style>
+
       {/* Hero Section */}
       <section className="relative py-20 md:py-28 overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -379,7 +434,7 @@ export default function ContactUsClient() {
                       </div>
                     </div>
 
-                    {/* Row 2: Company & City (NEW) */}
+                    {/* Row 2: Company & City */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label
@@ -436,7 +491,7 @@ export default function ContactUsClient() {
                       </div>
                     </div>
 
-                    {/* Row 2.5: Address (NEW) */}
+                    {/* Row 2.5: Address */}
                     <div>
                       <label
                         className="block text-sm font-medium mb-2"
@@ -687,7 +742,7 @@ export default function ContactUsClient() {
                       </div>
                     </div>
 
-                    {/* Row 5: Message */}
+                    {/* Row 5: Message (QUILL EDITOR) */}
                     <div>
                       <label
                         className="block text-sm font-medium mb-2"
@@ -695,13 +750,21 @@ export default function ContactUsClient() {
                       >
                         Message <span style={{ color: colors.primary }}>*</span>
                       </label>
-                      <textarea
-                        rows={5}
-                        {...register("message")}
-                        placeholder="Write your message here..."
-                        className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 resize-none"
-                        style={inputStyle(!!errors.message)}
-                      />
+                      <div
+                        className={`rounded-lg border overflow-hidden ${
+                          errors.message ? "ring-2 ring-red-500" : ""
+                        }`}
+                        style={{ borderColor: errors.message ? colors.destructive : colors.border }}
+                      >
+                        <ReactQuill
+                          theme="snow"
+                          value={messageField.value}
+                          onChange={messageField.onChange}
+                          modules={quillModules}
+                          placeholder="Write your message here..."
+                          style={{ height: "150px" }}
+                        />
+                      </div>
                       {errors.message && (
                         <p
                           className="mt-1 text-sm"

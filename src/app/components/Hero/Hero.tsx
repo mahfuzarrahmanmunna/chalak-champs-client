@@ -50,6 +50,7 @@ const HeroBanner: React.FC = () => {
         <Image
           src="https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
           alt="Language Learning"
+          loader={({ src }) => src}
           fill
           className="object-cover"
           priority

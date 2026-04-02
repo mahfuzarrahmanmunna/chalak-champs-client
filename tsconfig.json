@@ -29,6 +29,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts",
+    "src/types/**/*.d.ts",
     "src/app/hooks/useCurrentUser"
   ],
   "exclude": ["node_modules"]

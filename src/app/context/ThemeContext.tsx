@@ -79,13 +79,21 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   // Derive isDarkMode from the current theme
   const isDarkMode = theme === "dark";
 
-  // Apply CSS custom properties
+  // Apply CSS variables + dark class for Tailwind/daisyUI
   useEffect(() => {
     const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+      root.setAttribute("data-theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      root.setAttribute("data-theme", "light");
+    }
+
     Object.entries(colors).forEach(([key, value]) => {
       root.style.setProperty(`--color-${key}`, value);
     });
-  }, [colors]);
+  }, [theme, colors]);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, colors, isDarkMode }}>

@@ -5,7 +5,7 @@ export interface Course {
   id: string;
   title: string;
   description: string;
-  fullDescription?: string; // Optional for listing page
+  fullDescription?: string;
   instructor: {
     id: string;
     name: string;
@@ -16,7 +16,7 @@ export interface Course {
     coursesCount: number;
   };
   level: "Beginner" | "Intermediate" | "Advanced";
-  duration: string; // in hours
+  duration: string;
   enrolledCount: number;
   rating: number;
   reviewsCount?: number;
@@ -24,10 +24,10 @@ export interface Course {
   originalPrice?: number;
   category: string;
   thumbnail: string;
-  lessons: number; // For listing page
+  lessons: number;
   isBestseller?: boolean;
   isNew?: boolean;
-  previewVideo?: string; // For details page
+  previewVideo?: string;
   language?: string;
   subtitles?: string[];
   lastUpdated?: string;
@@ -58,7 +58,7 @@ export interface Review {
   isHelpful?: boolean;
 }
 
-// Mock course data (Merged and unified)
+// Mock course data
 export const coursesData: Course[] = [
   {
     id: "1",
@@ -66,7 +66,7 @@ export const coursesData: Course[] = [
     description:
       "Master English grammar from basics to advanced concepts with practical examples and exercises.",
     fullDescription:
-      "This comprehensive English grammar course is designed to take you from beginner to advanced level. We'll cover all aspects of English grammar including tenses, parts of speech, sentence structure, punctuation, and more. Each module includes detailed explanations, practical examples, and exercises to reinforce your learning.",
+      "This comprehensive English grammar course is designed to take you from beginner to advanced level. We'll cover all aspects of English grammar including tenses, parts of speech, sentence structure, punctuation, and more.",
     instructor: {
       id: "inst-1",
       name: "Sarah Johnson",
@@ -175,44 +175,6 @@ export const coursesData: Course[] = [
           },
         ],
       },
-      {
-        id: "3",
-        title: "Verbs and Tenses",
-        duration: "3h 45m",
-        lessons: [
-          { id: "3.1", title: "Verb Types", duration: "30m", isPreview: false },
-          {
-            id: "3.2",
-            title: "Present Tenses",
-            duration: "45m",
-            isPreview: false,
-          },
-          {
-            id: "3.3",
-            title: "Past Tenses",
-            duration: "45m",
-            isPreview: false,
-          },
-          {
-            id: "3.4",
-            title: "Future Tenses",
-            duration: "45m",
-            isPreview: false,
-          },
-          {
-            id: "3.5",
-            title: "Perfect Tenses",
-            duration: "40m",
-            isPreview: false,
-          },
-          {
-            id: "3.6",
-            title: "Conditional Sentences",
-            duration: "20m",
-            isPreview: false,
-          },
-        ],
-      },
     ],
   },
   {
@@ -221,7 +183,7 @@ export const coursesData: Course[] = [
     description:
       "Develop professional English skills for meetings, presentations, and business correspondence.",
     fullDescription:
-      "This course focuses on the specific English language skills needed in a business environment. You'll learn how to communicate effectively in meetings, write professional emails and reports, deliver compelling presentations, and network with confidence.",
+      "This course focuses on the specific English language skills needed in a business environment.",
     instructor: {
       id: "inst-2",
       name: "Michael Chen",
@@ -295,54 +257,8 @@ export const coursesData: Course[] = [
           },
         ],
       },
-      {
-        id: "2",
-        title: "Presentation Skills",
-        duration: "3h 15m",
-        lessons: [
-          {
-            id: "2.1",
-            title: "Structuring Presentations",
-            duration: "30m",
-            isPreview: false,
-          },
-          {
-            id: "2.2",
-            title: "Visual Aids",
-            duration: "25m",
-            isPreview: false,
-          },
-          {
-            id: "2.3",
-            title: "Body Language",
-            duration: "40m",
-            isPreview: false,
-          },
-          {
-            id: "2.4",
-            title: "Handling Q&A",
-            duration: "30m",
-            isPreview: false,
-          },
-          {
-            id: "2.5",
-            title: "Virtual Presentations",
-            duration: "40m",
-            isPreview: false,
-          },
-          {
-            id: "2.6",
-            title: "Practice Session",
-            duration: "20m",
-            isPreview: false,
-          },
-        ],
-      },
     ],
   },
-  // Add the rest of your mock courses here (items 3-8 from your original list)
-  // I will add a placeholder for the 3rd one to ensure the build works,
-  // but you should copy the rest from your original code.
   {
     id: "3",
     title: "IELTS Preparation Masterclass",
@@ -375,20 +291,6 @@ export const coursesData: Course[] = [
     curriculum: [],
   },
 ];
-
-// Categories for filter
-export const categories = [
-  "All",
-  "Grammar",
-  "Business",
-  "Test Preparation",
-  "Speaking",
-  "Writing",
-  "Literature",
-  "Vocabulary",
-];
-
-export const levels = ["All", "Beginner", "Intermediate", "Advanced"];
 
 // Mock reviews data
 export const mockReviews: Review[] = [

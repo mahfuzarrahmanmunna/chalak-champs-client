@@ -1,0 +1,280 @@
+[
+  {
+    "id": "1",
+    "title": "Complete English Grammar Course",
+    "description": "Master English grammar from basics to advanced concepts with practical examples and exercises.",
+    "fullDescription": "This comprehensive English grammar course is designed to take you from beginner to advanced level. We'll cover all aspects of English grammar including tenses, parts of speech, sentence structure, punctuation, and more. Each module includes detailed explanations, practical examples, and exercises to reinforce your learning.",
+    "instructor": {
+      "id": "inst-1",
+      "name": "Sarah Johnson",
+      "avatar": "https://randomuser.me/api/portraits/women/32.jpg",
+      "bio": "Sarah is an experienced English language instructor with over 10 years of teaching experience.",
+      "rating": 4.8,
+      "studentsCount": 45678,
+      "coursesCount": 5
+    },
+    "level": "Beginner",
+    "duration": "12",
+    "enrolledCount": 15234,
+    "rating": 4.7,
+    "reviewsCount": 3456,
+    "price": 49.99,
+    "originalPrice": 89.99,
+    "category": "Grammar",
+    "thumbnail": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "lessons": 45,
+    "isBestseller": true,
+    "previewVideo": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    "language": "English",
+    "subtitles": ["English", "Spanish", "French"],
+    "lastUpdated": "2023-10-15",
+    "requirements": [
+      "Basic understanding of English",
+      "Willingness to learn and practice",
+      "Notebook for taking notes"
+    ],
+    "whatYouLearn": [
+      "Master all English grammar rules",
+      "Improve writing skills",
+      "Enhance speaking confidence",
+      "Understand complex sentence structures",
+      "Use punctuation correctly",
+      "Avoid common grammar mistakes"
+    ],
+    "curriculum": [
+      {
+        "id": "1",
+        "title": "Introduction to Grammar",
+        "duration": "1h 30m",
+        "lessons": [
+          {
+            "id": "1.1",
+            "title": "What is Grammar?",
+            "duration": "15m",
+            "isPreview": true
+          },
+          {
+            "id": "1.2",
+            "title": "Parts of Speech Overview",
+            "duration": "25m",
+            "isPreview": false
+          },
+          {
+            "id": "1.3",
+            "title": "Sentence Structure",
+            "duration": "30m",
+            "isPreview": false
+          },
+          {
+            "id": "1.4",
+            "title": "Basic Punctuation",
+            "duration": "20m",
+            "isPreview": false
+          }
+        ]
+      },
+      {
+        "id": "2",
+        "title": "Nouns and Pronouns",
+        "duration": "2h 15m",
+        "lessons": [
+          {
+            "id": "2.1",
+            "title": "Types of Nouns",
+            "duration": "30m",
+            "isPreview": false
+          },
+          {
+            "id": "2.2",
+            "title": "Countable and Uncountable Nouns",
+            "duration": "25m",
+            "isPreview": false
+          },
+          {
+            "id": "2.3",
+            "title": "Pronoun Types",
+            "duration": "35m",
+            "isPreview": false
+          },
+          {
+            "id": "2.4",
+            "title": "Pronoun Agreement",
+            "duration": "25m",
+            "isPreview": false
+          },
+          {
+            "id": "2.5",
+            "title": "Possessive Nouns and Pronouns",
+            "duration": "20m",
+            "isPreview": false
+          }
+        ]
+      },
+      {
+        "id": "3",
+        "title": "Verbs and Tenses",
+        "duration": "3h 45m",
+        "lessons": [
+          {
+            "id": "3.1",
+            "title": "Verb Types",
+            "duration": "30m",
+            "isPreview": false
+          },
+          {
+            "id": "3.2",
+            "title": "Present Tenses",
+            "duration": "45m",
+            "isPreview": false
+          },
+          {
+            "id": "3.3",
+            "title": "Past Tenses",
+            "duration": "45m",
+            "isPreview": false
+          },
+          {
+            "id": "3.4",
+            "title": "Future Tenses",
+            "duration": "45m",
+            "isPreview": false
+          },
+          {
+            "id": "3.5",
+            "title": "Perfect Tenses",
+            "duration": "40m",
+            "isPreview": false
+          },
+          {
+            "id": "3.6",
+            "title": "Conditional Sentences",
+            "duration": "20m",
+            "isPreview": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "title": "Business English Communication",
+    "description": "Develop professional English skills for meetings, presentations, and business correspondence.",
+    "fullDescription": "This course focuses on the specific English language skills needed in a business environment. You'll learn how to communicate effectively in meetings, write professional emails and reports, deliver compelling presentations, and network with confidence.",
+    "instructor": {
+      "id": "inst-2",
+      "name": "Michael Chen",
+      "avatar": "https://randomuser.me/api/portraits/men/45.jpg",
+      "bio": "Michael is a business communication expert with 15 years of corporate training experience.",
+      "rating": 4.6,
+      "studentsCount": 23456,
+      "coursesCount": 3
+    },
+    "level": "Intermediate",
+    "duration": "8",
+    "enrolledCount": 8921,
+    "rating": 4.5,
+    "reviewsCount": 1234,
+    "price": 59.99,
+    "category": "Business",
+    "thumbnail": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "lessons": 32,
+    "language": "English",
+    "subtitles": ["English", "Chinese", "Japanese"],
+    "lastUpdated": "2023-09-20",
+    "requirements": [
+      "Intermediate English proficiency",
+      "Basic business knowledge",
+      "Desire to improve professional communication"
+    ],
+    "whatYouLearn": [
+      "Write effective business emails",
+      "Deliver engaging presentations",
+      "Participate confidently in meetings",
+      "Network with professionals",
+      "Use appropriate business vocabulary",
+      "Understand cross-cultural communication"
+    ],
+    "curriculum": [
+      {
+        "id": "1",
+        "title": "Business Writing Essentials",
+        "duration": "2h 30m",
+        "lessons": [
+          {
+            "id": "1.1",
+            "title": "Email Etiquette",
+            "duration": "30m",
+            "isPreview": true
+          },
+          {
+            "id": "1.2",
+            "title": "Report Writing",
+            "duration": "45m",
+            "isPreview": false
+          },
+          {
+            "id": "1.3",
+            "title": "Proposals and Memos",
+            "duration": "35m",
+            "isPreview": false
+          },
+          {
+            "id": "1.4",
+            "title": "Professional Tone",
+            "duration": "20m",
+            "isPreview": false
+          },
+          {
+            "id": "1.5",
+            "title": "Editing and Proofreading",
+            "duration": "20m",
+            "isPreview": false
+          }
+        ]
+      },
+      {
+        "id": "2",
+        "title": "Presentation Skills",
+        "duration": "3h 15m",
+        "lessons": [
+          {
+            "id": "2.1",
+            "title": "Structuring Presentations",
+            "duration": "30m",
+            "isPreview": false
+          },
+          {
+            "id": "2.2",
+            "title": "Visual Aids",
+            "duration": "25m",
+            "isPreview": false
+          },
+          {
+            "id": "2.3",
+            "title": "Body Language",
+            "duration": "40m",
+            "isPreview": false
+          },
+          {
+            "id": "2.4",
+            "title": "Handling Q&A",
+            "duration": "30m",
+            "isPreview": false
+          },
+          {
+            "id": "2.5",
+            "title": "Virtual Presentations",
+            "duration": "40m",
+            "isPreview": false
+          },
+          {
+            "id": "2.6",
+            "title": "Practice Session",
+            "duration": "20m",
+            "isPreview": false
+          }
+        ]
+      }
+    ]
+  }
+]

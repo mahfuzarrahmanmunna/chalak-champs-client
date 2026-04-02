@@ -13,6 +13,14 @@ import Footer from "../components/Footer/Footer";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 // import { ThemeProvider2 } from "../context/ThemeContext2";
 
+// Type definition for beforeinstallprompt event
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{
+    outcome: "accepted" | "dismissed";
+  }>;
+}
+
 const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
   const isDashboard = pathname.startsWith("/admin-dashboard");
@@ -39,6 +47,23 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           console.error("Service worker registration failed:", error);
         });
     }
+
+    // Capture beforeinstallprompt event
+    let deferredPrompt: BeforeInstallPromptEvent | null = null;
+
+    window.addEventListener("beforeinstallprompt", (e: Event) => {
+      e.preventDefault();
+      deferredPrompt = e as BeforeInstallPromptEvent;
+      console.log("Install prompt captured");
+      // Store in sessionStorage to make it available globally
+      (window as any).deferredInstallPrompt = deferredPrompt;
+    });
+
+    window.addEventListener("appinstalled", () => {
+      console.log("PWA installed successfully");
+      deferredPrompt = null;
+      (window as any).deferredInstallPrompt = null;
+    });
   }, []);
 
   return (

@@ -1,4 +1,4 @@
-// src/app/courses/page.tsx
+// src/app/courses/CoursesContent.tsx
 
 "use client";
 
@@ -17,12 +17,10 @@ import {
   CheckCircle,
   ShoppingCart,
 } from "lucide-react";
-import {
-  coursesData,
-  categories,
-  levels,
-  Course,
-} from "../../../data/coursesData";
+import { coursesData } from "../../../data/coursesData";
+import { categories } from "../../../data/blogData";
+
+// FIXED IMPORT: Use @ alias for consistency
 // import { coursesData, categories, levels, Course } from "@/data/coursesData";
 
 export default function CoursesContent() {
@@ -120,6 +118,7 @@ export default function CoursesContent() {
           fill
           className="object-cover"
           priority
+          unoptimized // Recommended if you haven't configured next.config.js for unsplash
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[rgb(243,6,110)] to-[rgb(33,65,135)] opacity-80"></div>
         <div className="absolute inset-0 flex items-center justify-center">
@@ -131,7 +130,9 @@ export default function CoursesContent() {
           </div>
         </div>
       </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search and Sort Controls */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-grow">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -192,6 +193,8 @@ export default function CoursesContent() {
             </div>
           </div>
         </div>
+
+        {/* Filters Panel */}
         <div
           className={`${showFilters ? "block" : "hidden"} md:block mb-8 p-4 rounded-lg`}
           style={{ backgroundColor: "var(--color-card)" }}
@@ -209,7 +212,9 @@ export default function CoursesContent() {
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${selectedCategory === category ? "text-white" : ""}`}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      selectedCategory === category ? "text-white" : ""
+                    }`}
                     style={{
                       backgroundColor:
                         selectedCategory === category
@@ -219,7 +224,11 @@ export default function CoursesContent() {
                         selectedCategory === category
                           ? "white"
                           : "var(--color-foreground)",
-                      border: `1px solid ${selectedCategory === category ? "var(--color-primary)" : "var(--color-border)"}`,
+                      border: `1px solid ${
+                        selectedCategory === category
+                          ? "var(--color-primary)"
+                          : "var(--color-border)"
+                      }`,
                     }}
                   >
                     {category}
@@ -235,11 +244,13 @@ export default function CoursesContent() {
                 Level
               </h3>
               <div className="flex flex-wrap gap-2">
-                {levels.map((level) => (
+                {/* {levels.map((level) => (
                   <button
                     key={level}
                     onClick={() => setSelectedLevel(level)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${selectedLevel === level ? "text-white" : ""}`}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      selectedLevel === level ? "text-white" : ""
+                    }`}
                     style={{
                       backgroundColor:
                         selectedLevel === level
@@ -249,16 +260,22 @@ export default function CoursesContent() {
                         selectedLevel === level
                           ? "white"
                           : "var(--color-foreground)",
-                      border: `1px solid ${selectedLevel === level ? "var(--color-primary)" : "var(--color-border)"}`,
+                      border: `1px solid ${
+                        selectedLevel === level
+                          ? "var(--color-primary)"
+                          : "var(--color-border)"
+                      }`,
                     }}
                   >
                     {level}
                   </button>
-                ))}
+                ))} */}
               </div>
             </div>
           </div>
         </div>
+
+        {/* Results Count */}
         <div className="mb-6">
           <p className="text-sm" style={{ color: "var(--color-foreground)" }}>
             Showing{" "}
@@ -268,6 +285,8 @@ export default function CoursesContent() {
             courses
           </p>
         </div>
+
+        {/* Course Grid */}
         {filteredAndSortedCourses.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredAndSortedCourses.map((course) => (
@@ -283,6 +302,7 @@ export default function CoursesContent() {
                       alt={course.title}
                       fill
                       className="object-cover cursor-pointer"
+                      unoptimized
                     />
                   </Link>
                   <div className="absolute top-2 left-2 flex flex-col gap-1">
@@ -304,6 +324,7 @@ export default function CoursesContent() {
                     )}
                   </div>
                 </div>
+
                 <div className="p-4">
                   <div className="flex justify-between items-center mb-2">
                     <span
@@ -322,6 +343,7 @@ export default function CoursesContent() {
                       {course.level}
                     </span>
                   </div>
+
                   <Link href={`/course-details/${course.id}`}>
                     <h3
                       className="font-semibold text-lg mb-2 line-clamp-2 cursor-pointer hover:underline"
@@ -330,12 +352,14 @@ export default function CoursesContent() {
                       {course.title}
                     </h3>
                   </Link>
+
                   <p
                     className="text-sm mb-3 line-clamp-2"
                     style={{ color: "var(--color-foreground)", opacity: 0.7 }}
                   >
                     {course.description}
                   </p>
+
                   <div className="flex items-center mb-3">
                     <Image
                       src={course.instructor.avatar}
@@ -343,6 +367,7 @@ export default function CoursesContent() {
                       width={24}
                       height={24}
                       className="rounded-full mr-2"
+                      unoptimized
                     />
                     <span
                       className="text-sm"
@@ -351,6 +376,7 @@ export default function CoursesContent() {
                       {course.instructor.name}
                     </span>
                   </div>
+
                   <div
                     className="flex items-center justify-between text-xs mb-3"
                     style={{ color: "var(--color-foreground)", opacity: 0.7 }}
@@ -368,12 +394,15 @@ export default function CoursesContent() {
                       {course.enrolledCount.toLocaleString()}
                     </div>
                   </div>
+
                   <div className="flex items-center mb-3">
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`h-4 w-4 ${i < Math.floor(course.rating) ? "fill-current" : ""}`}
+                          className={`h-4 w-4 ${
+                            i < Math.floor(course.rating) ? "fill-current" : ""
+                          }`}
                           style={{
                             color:
                               i < Math.floor(course.rating)
@@ -390,6 +419,7 @@ export default function CoursesContent() {
                       {course.rating}
                     </span>
                   </div>
+
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <span
@@ -411,6 +441,7 @@ export default function CoursesContent() {
                       )}
                     </div>
                   </div>
+
                   <div className="flex gap-2">
                     {enrolledCourses.has(course.id) ? (
                       <Link
