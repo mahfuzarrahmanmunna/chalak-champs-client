@@ -1,45 +1,42 @@
 // src/app/context/ThemeContext.tsx
 "use client";
 
-import React, {
-  createContext,
-  useState,
-  useContext,
-  ReactNode,
-  useEffect,
-} from "react";
+// Runtime imports (needed for the app to run)
+import { createContext, useState, useContext, useEffect } from "react";
 
-// Define the theme type
+// Type-only imports (removed from runtime bundle)
+import type { ReactNode } from "react";
+
+// ... (Rest of your code remains exactly the same)
+
 type Theme = "light" | "dark";
 
-// Define the theme colors
 const lightTheme = {
-  primary: "#f3066e", // Pink
-  secondary: "#204186", // Dark blue
-  accent: "#ffc500", // Yellow
+  primary: "#f3066e",
+  secondary: "#204186",
+  accent: "#ffc500",
   background: "#ffffff",
   foreground: "#000000",
   card: "#f8f9fa",
   border: "#e9ecef",
-  muted: "#6b7280", // Gray for secondary text
-  success: "#10b981", // Green
-  destructive: "#ef4444", // Red
+  muted: "#6b7280",
+  success: "#10b981",
+  destructive: "#ef4444",
 };
 
 const darkTheme = {
-  primary: "#f3066e", // Pink
-  secondary: "#4a6fa5", // Lighter version of dark blue
-  accent: "#ffc500", // Yellow
+  primary: "#f3066e",
+  secondary: "#4a6fa5",
+  accent: "#ffc500",
   background: "#121212",
   foreground: "#ffffff",
   card: "#1e1e1e",
   border: "#333333",
-  muted: "#9ca3af", // Lighter gray for dark mode
-  success: "#10b981", // Green
-  destructive: "#ef4444", // Red
+  muted: "#9ca3af",
+  success: "#10b981",
+  destructive: "#ef4444",
 };
 
-// Define the context type
 type ThemeContextType = {
   theme: Theme;
   toggleTheme: () => void;
@@ -47,10 +44,8 @@ type ThemeContextType = {
   isDarkMode: boolean;
 };
 
-// Create the context
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Function to get initial theme
 const getInitialTheme = (): Theme => {
   if (typeof window !== "undefined") {
     const savedTheme = localStorage.getItem("theme") as Theme;
@@ -61,25 +56,18 @@ const getInitialTheme = (): Theme => {
   return "light";
 };
 
-// Provider component
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  // Initialize theme from localStorage or default to 'light'
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
-  // Function to toggle theme
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
   };
 
-  // Get theme colors based on current theme
   const colors = theme === "light" ? lightTheme : darkTheme;
-
-  // Derive isDarkMode from the current theme
   const isDarkMode = theme === "dark";
 
-  // Apply CSS variables + dark class for Tailwind/daisyUI
   useEffect(() => {
     const root = document.documentElement;
     if (theme === "dark") {
@@ -102,7 +90,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Custom hook to use the theme context
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (context === undefined) {

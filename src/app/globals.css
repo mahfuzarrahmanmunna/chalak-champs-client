@@ -5,7 +5,8 @@
     light --default,
     dark --prefersdark;
 }
-/* REMOVED: @import "react-quill/dist/quill.snow.css"; */
+@import "react-quill/dist/quill.snow.css";
+
 
 @custom-variant dark (&:where(.dark, .dark *));
 
