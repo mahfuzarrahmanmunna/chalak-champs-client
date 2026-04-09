@@ -13,6 +13,7 @@ import {
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
+import Link from "next/link";
 
 interface DashboardStats {
   totalUsers: number;
@@ -36,40 +37,45 @@ export default function AdminDashboardPage() {
     activeCourses: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [recentUsers, setRecentUsers] = useState<any[]>([]);
-  const [recentCourses, setRecentCourses] = useState<any[]>([]);
+  const [recentUsers, setRecentUsers] = useState<{ id: number; firstName: string, lastName: string, email: string, role: string }[]>([]);
+  const [recentCourses, setRecentCourses] = useState<{id: number, instructor:string, status: string, title: string, thumbnail:string , role: string}[]>([]);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+   useEffect(() => {
+     // FIX: Only fetch data if the user is actually logged in.
+     // This prevents the 401 error because we ensure the token is ready.
+     if (user) {
+       fetchDashboardData();
+     }
+   }, [user]); // Add 'user' as a dependency
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
+   const fetchDashboardData = async () => {
+     try {
+       setLoading(true);
 
-      // Fetch dashboard stats
-      const statsResponse = await api.get("/admin/dashboard/stats");
-      if (statsResponse.data.success) {
-        setStats(statsResponse.data.stats);
-      }
+       // Fetch dashboard stats (This route EXISTS in your backend code now)
+       const statsResponse = await api.get("/admin/dashboard/stats");
+       if (statsResponse.data.success) {
+         setStats(statsResponse.data.stats);
+       }
 
-      // Fetch recent users
-      const usersResponse = await api.get("/admin/users?limit=5");
-      if (usersResponse.data.success) {
-        setRecentUsers(usersResponse.data.users);
-      }
+       // Fetch recent users
+       const usersResponse = await api.get("/admin/users?limit=5");
+       if (usersResponse.data.success) {
+         // Map backend _id to frontend id if necessary, or use as is
+         setRecentUsers(usersResponse.data.users);
+       }
 
-      // Fetch recent courses
-      const coursesResponse = await api.get("/admin/courses?limit=5");
-      if (coursesResponse.data.success) {
-        setRecentCourses(coursesResponse.data.courses);
-      }
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+       // Fetch recent courses
+       const coursesResponse = await api.get("/admin/courses?limit=5");
+       if (coursesResponse.data.success) {
+         setRecentCourses(coursesResponse.data.courses);
+       }
+     } catch (error) {
+       console.error("Error fetching dashboard data:", error);
+     } finally {
+       setLoading(false);
+     }
+   };
 
   const statCards = [
     {
@@ -345,7 +351,7 @@ export default function AdminDashboardPage() {
                 </ul>
               </div>
               <div className="mt-6">
-                <a
+                <Link
                   href="/admin-dashboard/courses"
                   className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                   style={{
@@ -353,7 +359,7 @@ export default function AdminDashboardPage() {
                   }}
                 >
                   {String(t.viewAllCourses || "View all courses")}
-                </a>
+                </Link>
               </div>
             </div>
           </div>

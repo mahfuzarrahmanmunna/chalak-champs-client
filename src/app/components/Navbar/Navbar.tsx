@@ -62,14 +62,14 @@ const Navbar = () => {
             <div className="shrink-0">
               <Link
                 href="/"
-                className="h-12 flex +-*items-center transition-colors duration-200"
+                className="h-16 flex +-*items-center transition-colors duration-200"
                 style={{ color: "var(--color-primary)" }}
               >
                 <Image
                   src="logo.png"
                   alt="Chalak Champs Logo"
-                  width={120}
-                  height={60}
+                  width={255}
+                  height={100}
                 />
                 {/* <img src="/logo.png" alt="Chalak Champs Logo" /> */}
               </Link>

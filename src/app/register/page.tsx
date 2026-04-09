@@ -23,7 +23,6 @@ import {
 } from "firebase/auth";
 import { auth, setupRecaptcha } from "@/lib/firebase";
 import api from "@/lib/api";
-import useAxiosSecure from "../hooks/useAxiosSecure";
 
 // Define interfaces for TypeScript
 interface FormData {
@@ -49,6 +48,14 @@ interface ApiResponse {
   success: boolean;
   message?: string;
   token?: string;
+  user?: {
+    uid: string;
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phoneNumber?: string;
+    role: string;
+  };
 }
 
 export default function RegisterPage() {
@@ -76,7 +83,6 @@ export default function RegisterPage() {
     useState<RecaptchaVerifier | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const axiosSecure = useAxiosSecure();
 
   // Validation Helpers
   const validateEmail = (email: string): boolean => {
@@ -336,40 +342,53 @@ export default function RegisterPage() {
         console.warn("Could not update profile in Firebase:", profileError);
       }
 
-      const idToken = await userCredential.user.getIdToken();
+      // Omit email/phone when unused — explicit null breaks MongoDB sparse unique indexes
+      const phoneForDb =
+        authMethod === "phone"
+          ? identifier.startsWith("+")
+            ? identifier.replace(/\s/g, "").trim()
+            : `+880${identifier.replace(/\s/g, "")}`
+          : undefined;
 
-      const userData = {
+      const userData: {
+        uid: string;
+        firstName: string;
+        lastName: string;
+        role: string;
+        email?: string;
+        phoneNumber?: string;
+      } = {
         uid: userCredential.user.uid,
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
-        email: authMethod === "email" ? identifier.toLowerCase().trim() : null,
-        phoneNumber: authMethod === "phone" ? identifier.trim() : null,
         role: "student",
       };
+      if (authMethod === "email") {
+        userData.email = identifier.toLowerCase().trim();
+      } else if (phoneForDb) {
+        userData.phoneNumber = phoneForDb;
+      }
 
       let response;
       try {
-        response = await axiosSecure.post<ApiResponse>(
-          "/auth/register",
-          userData,
-        );
-      } catch (error: any) {
-        if (
-          error.code === "NETWORK_ERROR" ||
-          error.message === "Network Error"
-        ) {
-          console.log("Network error, retrying...");
-          response = await axiosSecure.post<ApiResponse>(
-            "/auth/register",
-            userData,
-          );
+        response = await api.post<ApiResponse>("/auth/register", userData);
+      } catch (error: unknown) {
+        const err = error as { code?: string; message?: string };
+        if (err.code === "NETWORK_ERROR" || err.message === "Network Error") {
+          response = await api.post<ApiResponse>("/auth/register", userData);
         } else {
           throw error;
         }
       }
 
-      if (response.data.success && response.data.token) {
-        localStorage.setItem("token", response.data.token);
+      // Backend uses Firebase ID tokens only (no custom JWT in register response)
+      if (
+        response.data.success &&
+        (response.data.user || response.data.token)
+      ) {
+        if (response.data.token) {
+          localStorage.setItem("token", response.data.token);
+        }
         registrationSuccessful = true;
         router.push("/dashboard");
       } else {
@@ -511,7 +530,7 @@ export default function RegisterPage() {
                     required
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                    className={`pl-10 block placeholder:text-gray-500 text-black w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                       errors.identifier ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="+880 1XXX XXXXXX or you@example.com"
@@ -682,7 +701,7 @@ export default function RegisterPage() {
                   required
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
-                  className={`block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                  className={`block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-500 text-black focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                     errors.verification ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Enter 6-digit code"
@@ -772,7 +791,7 @@ export default function RegisterPage() {
                     required
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                    className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-500 text-black focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                       errors.firstName ? "border-red-500" : "border-gray-300"
                     }`}
                   />
@@ -797,7 +816,7 @@ export default function RegisterPage() {
                     required
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                    className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-500 text-black focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                       errors.lastName ? "border-red-500" : "border-gray-300"
                     }`}
                   />
@@ -826,7 +845,7 @@ export default function RegisterPage() {
                       required
                       value={formData.password}
                       onChange={handleInputChange}
-                      className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-500 text-black focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                         errors.password ? "border-red-500" : "border-gray-300"
                       }`}
                     />
@@ -851,7 +870,7 @@ export default function RegisterPage() {
                       required
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
-                      className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                        className={`block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-500 text-black focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                         errors.confirmPassword
                           ? "border-red-500"
                           : "border-gray-300"
@@ -873,14 +892,14 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={formData.agreeToTerms}
                   onChange={handleInputChange}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded text-black"
                 />
                 <label
                   htmlFor="agreeToTerms"
-                  className="ml-2 block text-sm text-gray-700"
+                  className="ml-2 block text-sm text-gray-700 text-black"
                 >
                   I agree to the{" "}
-                  <a href="#" className="text-indigo-600 hover:text-indigo-500">
+                  <a href="#" className="text-indigo-600 hover:text-indigo-500 text-black">
                     Terms and Conditions
                   </a>
                 </label>

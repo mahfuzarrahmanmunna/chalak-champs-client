@@ -1,19 +1,13 @@
 // src/app/context/ThemeContext.tsx
 "use client";
 
-// Runtime imports (needed for the app to run)
 import { createContext, useState, useContext, useEffect } from "react";
-
-// Type-only imports (removed from runtime bundle)
-import type { ReactNode } from "react";
-
-// ... (Rest of your code remains exactly the same)
 
 type Theme = "light" | "dark";
 
 const lightTheme = {
-  primary: "#f3066e",
-  secondary: "#204186",
+  primary: "#F3056D",
+  secondary: "#001D3A",
   accent: "#ffc500",
   background: "#ffffff",
   foreground: "#000000",
@@ -25,8 +19,8 @@ const lightTheme = {
 };
 
 const darkTheme = {
-  primary: "#f3066e",
-  secondary: "#4a6fa5",
+  primary: "#F3056D",
+  secondary: "#001D3A",
   accent: "#ffc500",
   background: "#121212",
   foreground: "#ffffff",
@@ -56,7 +50,7 @@ const getInitialTheme = (): Theme => {
   return "light";
 };
 
-export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
   const toggleTheme = () => {

@@ -270,7 +270,7 @@ export default function LoginPage() {
                       required
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
-                      className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`pl-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-500 text-black focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                         error ? "border-red-500" : "border-gray-300"
                       }`}
                       placeholder="you@example.com or +8801XXXXXXX"
@@ -311,7 +311,7 @@ export default function LoginPage() {
                       autoComplete="current-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className={`pl-10 pr-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`pl-10 pr-10 block w-full px-3 py-3 border rounded-md shadow-sm placeholder-gray-500 text-black focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
                         error ? "border-red-500" : "border-gray-300"
                       }`}
                       placeholder="••••••••"

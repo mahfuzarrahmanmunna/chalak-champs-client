@@ -57,7 +57,7 @@ function UsersPageContent() {
     filterPhoneVerified,
   ]);
 
-  const fetchUsers = async () => {
+    const fetchUsers = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -72,16 +72,35 @@ function UsersPageContent() {
       if (filterPhoneVerified !== "all")
         params.append("isPhoneVerified", filterPhoneVerified);
 
-      // *** FIX: Corrected the endpoint path ***
-      // The baseURL in api.ts already includes '/api', so we only need '/auth/users'
       const response = await api.get(`/auth/users?${params}`);
 
-      if (response.data.success) {
-        setUsers(response.data.data.users);
-        setTotalPages(response.data.data.pagination.totalPages);
+      // FIX 1: Handle API Errors explicitly
+      if (!response.data.success) {
+        console.error("API Error:", response.data.message);
+        // You might want to set an error state here to show the user
+        return; 
+      }
+
+      // FIX 2: Correct the data path. Backend returns 'users' directly, not inside 'data'.
+      // Also, your current backend doesn't seem to return 'pagination' object, so we calculate it or just handle what we have.
+      if (response.data.users) {
+        setUsers(response.data.users);
+        
+        // NOTE: Your backend currently returns 'count', not a 'pagination' object.
+        // You might need to update the backend to send pagination info, 
+        // or calculate totalPages here on the frontend if the count is total items.
+        // For now, let's assume the backend sends pagination or we just use what we have.
+        if (response.data.pagination) {
+            setTotalPages(response.data.pagination.totalPages);
+        } else {
+             // Fallback if backend doesn't send pagination object yet
+             setTotalPages(Math.ceil((response.data.count || 0) / 10));
+        }
       }
     } catch (error) {
       console.error("Error fetching users:", error);
+      // Optional: Set an error state to display in the UI
+      // setError("Failed to load users. Check console.");
     } finally {
       setLoading(false);
     }
@@ -152,7 +171,7 @@ function UsersPageContent() {
           </div>
           <div className="mt-4 sm:mt-0 sm:flex sm:items-center space-x-3">
             <button
-              onClick={toggleTheme} // Using the global toggleTheme function
+              onClick={toggleTheme}
               className="p-2 rounded-lg border transition-colors"
               style={{
                 borderColor: colors.border,

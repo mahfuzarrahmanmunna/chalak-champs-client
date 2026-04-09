@@ -5,8 +5,9 @@
     light --default,
     dark --prefersdark;
 }
-@import "react-quill/dist/quill.snow.css";
 
+/* REMOVED: @import "react-quill/dist/quill.snow.css"; */
+/* NOTE: Add this import to your src/app/layout.tsx file instead! */
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -20,9 +21,9 @@
   --color-base-200: oklch(95% 0.03 240);
   --color-base-300: oklch(92% 0.04 240);
   --color-base-content: oklch(20% 0.05 240);
-  --color-primary: oklch(55% 0.3 240);
+  --color-primary: #F3056D;
   --color-primary-content: oklch(98% 0.01 240);
-  --color-secondary: oklch(70% 0.25 200);
+  --color-secondary: #214187;
   --color-secondary-content: oklch(98% 0.01 200);
   --color-accent: oklch(65% 0.25 160);
   --color-accent-content: oklch(98% 0.01 160);
@@ -53,6 +54,7 @@
   --depth: 1;
   --noise: 0;
 }
+
 :root {
   /* Basic colors */
   --background: #d8cccce8;
@@ -60,9 +62,9 @@
   --muted: #666666;
 
   /* Your theme colors */
-  --color-primary: #ff69b4; /* Pink (60%) */
-  --color-secondary: #4169e1; /* Blue (30%) */
-  --color-accent: #ffd700; /* Yellow (10%) */
+  --color-primary: #F3056D;
+  --color-secondary: #214187; 
+  --color-accent: #ffd700; 
 
   /* Light theme variations */
   --color-primary-light: #ffb6c1; /* Light pink */
@@ -80,7 +82,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-muted-foreground: var(--muted) --font-sans: var(--font-geist-sans);
+  --color-muted-foreground: var(--muted); 
+  --font-sans: var(--font-geist-sans); /* FIXED: Was on same line as above */
   --font-mono: var(--font-geist-mono);
 
   /* Add your theme colors to Tailwind */
@@ -124,19 +127,6 @@ body {
 .dark .bg-primary,
 .bg-primary {
   background-color: var(--color-primary) !important;
-}
-
-.bg-primary {
-  background-color: var(--color-primary);
-}
-
-.dark-text-white {
-  color: #ffffff;
-}
-
-/* Optional: Add utility classes for your theme colors */
-.bg-primary {
-  background-color: var(--color-primary);
 }
 
 .bg-secondary {

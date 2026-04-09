@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "title": "Kids English",
+    "subtitle": "For Children (3-12 Years)",
+    "description": "Interactive learning to build strong English foundations with fun activities.",
+    "tag": "30% Help Available",
+    "badgeColor": "bg-pink-100 text-pink-600",
+    "image": "/kids-english-girl.png",
+    "buttonText": "Demo Class"
+  },
+  {
+    "id": 2,
+    "title": "Abacus Math",
+    "subtitle": "Brain Development",
+    "description": "Boost mental calculation speed and concentration with our proven Abacus method.",
+    "tag": "Best Seller",
+    "badgeColor": "bg-purple-100 text-purple-600",
+    "image": "/abacus-boy.png",
+    "buttonText": "Book Now"
+  },
+  {
+    "id": 3,
+    "title": "Programming",
+    "subtitle": "Future Skills",
+    "description": "Learn logic and coding through games and block-based programming.",
+    "tag": "New Course",
+    "badgeColor": "bg-blue-100 text-blue-600",
+    "image": "/coding-kid.png",
+    "buttonText": "Start Free"
+  },
+  {
+    "id": 4,
+    "title": "Olympiad Prep",
+    "subtitle": "Math & Science",
+    "description": "Prepare for global competitions with advanced problem-solving techniques.",
+    "tag": "Advanced",
+    "badgeColor": "bg-yellow-100 text-yellow-600",
+    "image": "/olympiad-student.png",
+    "buttonText": "Join Class"
+  },
+  {
+    "id": 5,
+    "title": "Art & Drawing",
+    "subtitle": "Creative Skills",
+    "description": "Unleash creativity with step-by-step drawing and coloring techniques.",
+    "tag": "Fun Activity",
+    "badgeColor": "bg-green-100 text-green-600",
+    "image": "/art-girl.png",
+    "buttonText": "View Details"
+  },
+  {
+    "id": 6,
+    "title": "Quran Learning",
+    "subtitle": "Religious Studies",
+    "description": "Learn to read the Quran with proper Tajweed and meaning.",
+    "tag": "Popular",
+    "badgeColor": "bg-teal-100 text-teal-600",
+    "image": "/quran-boy.png",
+    "buttonText": "Enroll Now"
+  }
+]

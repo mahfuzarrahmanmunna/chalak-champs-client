@@ -3,11 +3,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useTheme } from "@/app/context/ThemeContext";
-import { useForm, useController, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import ReactQuill from "react-quill";
-// REMOVED: import "react-quill/dist/quill.snow.css"; -> Moved to globals.css
 import {
   MapPin,
   Mail,
@@ -45,6 +43,7 @@ interface ContactFormInputs {
 }
 
 // Validation Schema
+// Validation Schema
 const contactSchema = yup.object().shape({
   fullName: yup.string().required("Full name is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -65,7 +64,8 @@ const contactSchema = yup.object().shape({
     .test(
       "is-not-empty",
       "Message cannot be empty",
-      (value) => value.replace(/<[^>]*>?/gm, "").trim().length > 0
+      // FIX: Added !!value to ensure the return type is always boolean
+      (value) => !!value && value.trim().length > 0,
     ),
 });
 
@@ -127,25 +127,15 @@ export default function ContactUsClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Quill Modules configuration
-  const quillModules = {
-    toolbar: [
-      [{ header: [1, 2, false] }],
-      ["bold", "italic", "underline", "strike"],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["clean"],
-    ],
-  };
-
   useEffect(() => {
     const fetchCountries = async () => {
       try {
         const response = await fetch(
-          "https://restcountries.com/v3.1/all?fields=name,flags,idd,cca2"
+          "https://restcountries.com/v3.1/all?fields=name,flags,idd,cca2",
         );
         const data = await response.json();
         const formattedCountries: Country[] = data
-          .map((country: any) => {
+          .map((country: {idd: {root: string, suffixes?: string[]}, name: {common: string}, cca2: string, flags: {svg?: string, png?: string}}) => {
             let dialCode = "";
             if (country.idd && country.idd.root) {
               dialCode = country.idd.root;
@@ -186,7 +176,6 @@ export default function ContactUsClient() {
   const {
     register,
     handleSubmit,
-    control, // Get control from useForm for useController
     formState: { errors, isSubmitting },
     reset,
   } = useForm<ContactFormInputs>({
@@ -205,13 +194,6 @@ export default function ContactUsClient() {
     },
   });
 
-  // Use Controller for Quill
-  const { field: messageField } = useController({
-    name: "message",
-    control,
-    defaultValue: "",
-  });
-
   const onSubmit: SubmitHandler<ContactFormInputs> = async (data) => {
     const fullPhoneNumber = selectedCountry
       ? `${selectedCountry.dial_code}${data.phone}`
@@ -225,7 +207,7 @@ export default function ContactUsClient() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(finalData),
-        }
+        },
       );
 
       if (!response.ok) throw new Error("Network response was not ok");
@@ -249,7 +231,7 @@ export default function ContactUsClient() {
     (country) =>
       country.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       country.dial_code.includes(searchQuery) ||
-      country.code.toLowerCase().includes(searchQuery.toLowerCase())
+      country.code.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -257,37 +239,6 @@ export default function ContactUsClient() {
       className="min-h-screen"
       style={{ backgroundColor: colors.background }}
     >
-      {/* Custom Styles for Quill Editor to match Theme */}
-      <style jsx global>{`
-        .ql-container {
-          background-color: ${colors.background} !important;
-          color: ${colors.foreground} !important;
-          border-bottom-left-radius: 0.5rem;
-          border-bottom-right-radius: 0.5rem;
-          border: none;
-          font-size: 1rem;
-        }
-        .ql-toolbar {
-          background-color: ${colors.background} !important;
-          border: none;
-          border-bottom: 1px solid ${colors.border};
-          border-top-left-radius: 0.5rem;
-          border-top-right-radius: 0.5rem;
-        }
-        .ql-stroke {
-          stroke: ${colors.foreground} !important;
-        }
-        .ql-fill {
-          fill: ${colors.foreground} !important;
-        }
-        .ql-picker {
-          color: ${colors.foreground} !important;
-        }
-        .ql-editor.ql-blank::before {
-          color: ${colors.muted || "#9ca3af"} !important;
-        }
-      `}</style>
-
       {/* Hero Section */}
       <section className="relative py-20 md:py-28 overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -742,7 +693,7 @@ export default function ContactUsClient() {
                       </div>
                     </div>
 
-                    {/* Row 5: Message (QUILL EDITOR) */}
+                    {/* Row 5: Message (TEXTAREA REPLACEMENT) */}
                     <div>
                       <label
                         className="block text-sm font-medium mb-2"
@@ -750,21 +701,13 @@ export default function ContactUsClient() {
                       >
                         Message <span style={{ color: colors.primary }}>*</span>
                       </label>
-                      <div
-                        className={`rounded-lg border overflow-hidden ${
-                          errors.message ? "ring-2 ring-red-500" : ""
-                        }`}
-                        style={{ borderColor: errors.message ? colors.destructive : colors.border }}
-                      >
-                        <ReactQuill
-                          theme="snow"
-                          value={messageField.value}
-                          onChange={messageField.onChange}
-                          modules={quillModules}
-                          placeholder="Write your message here..."
-                          style={{ height: "150px" }}
-                        />
-                      </div>
+                      <textarea
+                        {...register("message")}
+                        rows={6}
+                        placeholder="Write your message here..."
+                        className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 resize-y"
+                        style={inputStyle(!!errors.message)}
+                      />
                       {errors.message && (
                         <p
                           className="mt-1 text-sm"

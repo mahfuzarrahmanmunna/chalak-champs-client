@@ -62,11 +62,17 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
         throw new Error(response.data.message || "Failed to fetch user data");
       }
     } catch (err: unknown) {
-      console.error("Error fetching user data:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch user data",
-      );
-      setCurrentUser(null);
+      // 401: valid Firebase session but no DB profile yet (e.g. mid-registration) or bad token
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setCurrentUser(null);
+        setError(null);
+      } else {
+        console.error("Error fetching user data:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch user data",
+        );
+        setCurrentUser(null);
+      }
     } finally {
       setLoading(false);
     }

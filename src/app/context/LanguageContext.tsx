@@ -1,9 +1,8 @@
-// src/app/context/LanguageContext.tsx
-
 "use client";
 
-import React, { createContext, useState, useContext, ReactNode } from "react";
+import { createContext, useState, useContext, useMemo, ReactNode } from "react";
 
+// Imports
 import heroEnglish from "../data/translations/hero-english.json";
 import heroBangla from "../data/translations/hero-bangla.json";
 import navbarEnglish from "../data/translations/navbar-english.json";
@@ -15,12 +14,11 @@ import faqBangla from "../data/translations/faq-bangla.json";
 import mailchimpEnglish from "../data/translations/mailchimp-english.json";
 import mailchimpBangla from "../data/translations/mailchimp-bangla.json";
 
-// Define types for translations
+// Types
 type Translations = {
   [key: string]: string | Translations;
 };
 
-// Define specific types for hero data
 interface HeroFeature {
   title: string;
   description: string;
@@ -42,7 +40,6 @@ interface HeroData {
   stats: HeroStats;
 }
 
-// Define the context type
 type LanguageContextType = {
   isBangla: boolean;
   toggleLanguage: () => void;
@@ -51,12 +48,10 @@ type LanguageContextType = {
   isLoading: boolean;
 };
 
-// Create the context
 const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined,
 );
 
-// Helper to get all translations for a language
 const getLanguageData = (isBangla: boolean) => {
   const hero = (isBangla ? heroBangla : heroEnglish) as HeroData;
   const navbar = isBangla ? navbarBangla : navbarEnglish;
@@ -75,38 +70,37 @@ const getLanguageData = (isBangla: boolean) => {
   return { hero, merged };
 };
 
-// Provider component
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [isBangla, setIsBangla] = useState(false);
-  const [{ hero, merged }] = useState(() => getLanguageData(false));
-  const [translations, setTranslations] = useState<Translations>(merged);
-  const [heroData, setHeroData] = useState<HeroData | null>(hero);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Function to toggle language
+  // FIX: Use useMemo instead of useEffect + setState.
+  // This calculates translations instantly when isBangla changes,
+  // preventing "cascading renders" warnings.
+  const { hero, merged } = useMemo(() => {
+    return getLanguageData(isBangla);
+  }, [isBangla]);
+
   const toggleLanguage = () => {
     setIsBangla((prev) => !prev);
   };
 
-  // Update translations when language changes
-  React.useEffect(() => {
-    setIsLoading(true);
-    const { hero: newHero, merged: newMerged } = getLanguageData(isBangla);
-    setHeroData(newHero);
-    setTranslations(newMerged);
-    setIsLoading(false);
-  }, [isBangla]);
-
+  // Since data is synchronous (local JSON), we don't need a loading state logic.
+  // We return false for compatibility.
   return (
     <LanguageContext.Provider
-      value={{ isBangla, toggleLanguage, t: translations, heroData, isLoading }}
+      value={{
+        isBangla,
+        toggleLanguage,
+        t: merged,
+        heroData: hero,
+        isLoading: false,
+      }}
     >
       {children}
     </LanguageContext.Provider>
   );
 };
 
-// Custom hook to use the language context
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (context === undefined) {
