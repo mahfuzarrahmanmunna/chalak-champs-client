@@ -17,7 +17,7 @@ import {
   Video,
   FileText,
 } from "lucide-react";
-import EditorJS from "@editorjs/editorjs";
+import EditorJS, { OutputData } from "@editorjs/editorjs"; // Import OutputData
 import Header from "@editorjs/header";
 import List from "@editorjs/list";
 import ImageTool from "@editorjs/image";
@@ -34,39 +34,39 @@ const courseFormSchema = z.object({
   level: z.enum(["beginner", "intermediate", "advanced"]),
   duration: z.string().min(1, "Duration is required"),
   tags: z.string().optional(),
-  objectives: z.string().optional(), // Will be parsed as JSON
-  requirements: z.string().optional(), // Will be parsed as JSON
+  objectives: z.string().optional(),
+  requirements: z.string().optional(),
 });
 
 type CourseFormData = z.infer<typeof courseFormSchema>;
 
 // --- TYPES FOR CURRICULUM ---
+// Use the official OutputData type from EditorJS
 type Lesson = {
-  id: string; // Temp ID
+  id: string;
   title: string;
-  content?: any; // Editor.js Data
+  content?: OutputData;
   order: number;
 };
 
 type Module = {
-  id: string; // Temp ID
+  id: string;
   title: string;
   description: string;
   order: number;
   lessons: Lesson[];
   isExpanded: boolean;
-  activeLessonId: string | null; // Which lesson is currently being edited
+  activeLessonId: string | null;
 };
 
 // --- EDITOR COMPONENT ---
-// We extract the editor into a sub-component to handle mounting/unmounting cleanly
 const LessonEditor = ({
   data,
   onSave,
   onCancel,
 }: {
-  data: any;
-  onSave: (data: any) => void;
+  data: OutputData | undefined; // Allow undefined initially
+  onSave: (data: OutputData) => void;
   onCancel: () => void;
 }) => {
   const editorRef = useRef<EditorJS | null>(null);
@@ -77,42 +77,38 @@ const LessonEditor = ({
       const editor = new EditorJS({
         holder: "editorjs-container",
         placeholder: "Let's write an awesome lesson! Start with a header...",
-        data: data || { blocks: [] },
+        // FIX 1: Ensure data always has a blocks array to satisfy OutputData
+        data: data || { blocks: [], time: Date.now(), version: "2.22.0" },
         tools: {
+          // FIX 2: Cast tool config to 'any' to resolve type conflicts with plugins
           header: {
             class: Header,
             config: {
               levels: [1, 2, 3],
               defaultLevel: 2,
             },
-          },
+          } as any,
           list: {
             class: List,
             inlineToolbar: true,
-          },
-          code: CodeTool,
-          delimiter: Delimiter,
+          } as any,
+          code: CodeTool as any,
+          delimiter: Delimiter as any,
           image: {
             class: ImageTool,
             config: {
-              // Configure your backend upload endpoint here
               endpoints: {
-                byFile: "http://localhost:5000/api/upload/editor", // Example endpoint
+                byFile: "http://localhost:5000/api/upload/editor",
               },
-              // If you don't have a backend ready yet, you can use a custom uploader
               uploader: {
                 uploadByFile(file: File) {
-                  // NOTE: Replace this with your actual API call
-                  // This is a simulation showing how it works
                   console.log("Uploading file:", file);
-                  
                   return new Promise((resolve) => {
-                    // Mocking a successful upload for demonstration
                     setTimeout(() => {
                       resolve({
                         success: 1,
                         file: {
-                          url: "https://picsum.photos/800/400", // Dummy image URL
+                          url: "https://picsum.photos/800/400",
                         },
                       });
                     }, 1000);
@@ -120,7 +116,7 @@ const LessonEditor = ({
                 },
               },
             },
-          },
+          } as any,
         },
         autofocus: true,
       });
@@ -134,7 +130,10 @@ const LessonEditor = ({
         editorRef.current = null;
       }
     };
-  }, []); // Run only on mount
+    // NOTE: We intentionally omit 'data' from dependency array to prevent re-initializing
+    // the editor every time the parent updates, which would lose focus.
+    // If you need to update data externally, use editor.render(data).
+  }, []);
 
   const handleSave = async () => {
     if (!editorRef.current) return;
@@ -152,7 +151,9 @@ const LessonEditor = ({
   return (
     <div className="border-l-4 border-blue-500 bg-blue-50/50 p-4 my-4 rounded-r-lg">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-semibold text-blue-700">Editing Content</span>
+        <span className="text-sm font-semibold text-blue-700">
+          Editing Content
+        </span>
         <div className="flex gap-2">
           <button
             onClick={onCancel}
@@ -165,12 +166,20 @@ const LessonEditor = ({
             disabled={isSaving}
             className="text-xs px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 rounded flex items-center gap-1"
           >
-            {isSaving ? "Saving..." : <><Save size={12} /> Save Content</>}
+            {isSaving ? (
+              "Saving..."
+            ) : (
+              <>
+                <Save size={12} /> Save Content
+              </>
+            )}
           </button>
         </div>
       </div>
-      {/* Editor Container */}
-      <div id="editorjs-container" className="bg-white p-4 rounded border min-h-[300px]"></div>
+      <div
+        id="editorjs-container"
+        className="bg-white p-4 rounded border min-h-[300px]"
+      ></div>
     </div>
   );
 };
@@ -179,13 +188,11 @@ const LessonEditor = ({
 export default function AddCoursePage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Curriculum State
+
   const [modules, setModules] = useState<Module[]>([]);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
 
-  // Form Setup
   const {
     register,
     handleSubmit,
@@ -193,8 +200,6 @@ export default function AddCoursePage() {
   } = useForm<CourseFormData>({
     resolver: zodResolver(courseFormSchema),
   });
-
-  // --- CURRICULUM HANDLERS ---
 
   const addModule = () => {
     const newModule: Module = {
@@ -216,8 +221,8 @@ export default function AddCoursePage() {
   const toggleModule = (moduleId: string) => {
     setModules(
       modules.map((m) =>
-        m.id === moduleId ? { ...m, isExpanded: !m.isExpanded } : m
-      )
+        m.id === moduleId ? { ...m, isExpanded: !m.isExpanded } : m,
+      ),
     );
   };
 
@@ -226,8 +231,9 @@ export default function AddCoursePage() {
     const newLesson: Lesson = {
       id: lessonId,
       title: `Lesson 1`,
-      content: { blocks: [] },
-      order: 1, // Simplified ordering logic
+      // Initialize with empty valid data
+      content: { blocks: [], time: Date.now(), version: "2.22.0" },
+      order: 1,
     };
 
     setModules(
@@ -237,11 +243,11 @@ export default function AddCoursePage() {
             ...m,
             lessons: [...m.lessons, newLesson],
             isExpanded: true,
-            activeLessonId: lessonId, // Open editor immediately
+            activeLessonId: lessonId,
           };
         }
         return m;
-      })
+      }),
     );
   };
 
@@ -252,65 +258,77 @@ export default function AddCoursePage() {
           return {
             ...m,
             lessons: m.lessons.filter((l) => l.id !== lessonId),
-            activeLessonId: m.activeLessonId === lessonId ? null : m.activeLessonId,
+            activeLessonId:
+              m.activeLessonId === lessonId ? null : m.activeLessonId,
           };
         }
         return m;
-      })
+      }),
     );
   };
 
-  const updateLessonTitle = (moduleId: string, lessonId: string, newTitle: string) => {
+  const updateLessonTitle = (
+    moduleId: string,
+    lessonId: string,
+    newTitle: string,
+  ) => {
     setModules(
       modules.map((m) => {
         if (m.id === moduleId) {
           return {
             ...m,
             lessons: m.lessons.map((l) =>
-              l.id === lessonId ? { ...l, title: newTitle } : l
+              l.id === lessonId ? { ...l, title: newTitle } : l,
             ),
           };
         }
         return m;
-      })
+      }),
     );
   };
 
-  const handleLessonContentSave = (moduleId: string, lessonId: string, data: any) => {
+  const handleLessonContentSave = (
+    moduleId: string,
+    lessonId: string,
+    data: OutputData,
+  ) => {
     setModules(
       modules.map((m) => {
         if (m.id === moduleId) {
           return {
             ...m,
             lessons: m.lessons.map((l) =>
-              l.id === lessonId ? { ...l, content: data } : l
+              l.id === lessonId ? { ...l, content: data } : l,
             ),
-            activeLessonId: null, // Close editor after save
+            activeLessonId: null,
           };
         }
         return m;
-      })
+      }),
     );
   };
-
-  // --- SUBMIT LOGIC ---
 
   const onSubmit = async (data: CourseFormData) => {
     setIsSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append("thumbnail", thumbnail as Blob);
-      Object.keys(data).forEach((key) => {
-        formData.append(key, data[key as keyof CourseFormData]);
+
+      // Handle Optional Fields
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          formData.append(key, value);
+        }
       });
 
-      // 1. Create Course
-      // NOTE: Adjust URL to match your API route structure
+      // Handle Thumbnail
+      if (thumbnail) {
+        formData.append("thumbnail", thumbnail);
+      }
+
       const courseRes = await fetch("http://localhost:5000/api/courses", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming auth
-          // No Content-Type header for FormData! Browser sets it automatically with boundary
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: formData,
       });
@@ -319,8 +337,6 @@ export default function AddCoursePage() {
       const courseData = await courseRes.json();
       const courseId = courseData.data._id;
 
-      // 2. Create Modules & Lessons
-      // We must do this sequentially because Lessons depend on Module IDs
       for (const mod of modules) {
         const modRes = await fetch(
           `http://localhost:5000/api/courses/${courseId}/modules`,
@@ -334,14 +350,13 @@ export default function AddCoursePage() {
               title: mod.title,
               description: mod.description,
             }),
-          }
+          },
         );
 
-        if (!modRes.ok) continue; // Skip if fail, or handle error
+        if (!modRes.ok) continue;
         const modData = await modRes.json();
         const moduleId = modData.data._id;
 
-        // 3. Create Lessons for this Module
         for (const lesson of mod.lessons) {
           await fetch(
             `http://localhost:5000/api/courses/modules/${moduleId}/lessons`,
@@ -353,10 +368,10 @@ export default function AddCoursePage() {
               },
               body: JSON.stringify({
                 title: lesson.title,
-                content: lesson.content, // Editor.js JSON
-                duration: 10, // Default or calculate
+                content: lesson.content,
+                duration: 10,
               }),
-            }
+            },
           );
         }
       }
@@ -371,7 +386,6 @@ export default function AddCoursePage() {
     }
   };
 
-  // Thumbnail Handler
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -382,7 +396,9 @@ export default function AddCoursePage() {
 
   return (
     <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">Create New Course</h1>
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">
+        Create New Course
+      </h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         {/* --- SECTION 1: BASIC INFO --- */}
@@ -405,7 +421,9 @@ export default function AddCoursePage() {
                 className="w-full px-4 py-2 border rounded-lg text-black focus:ring-2 focus:ring-blue-500 outline-none"
               />
               {errors.title && (
-                <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.title.message}
+                </p>
               )}
             </div>
 
@@ -421,7 +439,9 @@ export default function AddCoursePage() {
                 className="w-full px-4 py-2 border rounded-lg text-black focus:ring-2 focus:ring-blue-500 outline-none"
               ></textarea>
               {errors.description && (
-                <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.description.message}
+                </p>
               )}
             </div>
 
@@ -469,7 +489,9 @@ export default function AddCoursePage() {
                 className="w-full px-4 py-2 border rounded-lg text-black focus:ring-2 focus:ring-blue-500 outline-none"
               />
               {errors.price && (
-                <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.price.message}
+                </p>
               )}
             </div>
 
@@ -543,7 +565,10 @@ export default function AddCoursePage() {
 
           <div className="space-y-4">
             {modules.map((mod) => (
-              <div key={mod.id} className="border border-gray-200 rounded-lg overflow-hidden">
+              <div
+                key={mod.id}
+                className="border border-gray-200 rounded-lg overflow-hidden"
+              >
                 {/* Module Header */}
                 <div className="bg-gray-50 p-4 flex justify-between items-center border-b border-gray-200">
                   <div className="flex items-center gap-3 flex-1">
@@ -559,7 +584,8 @@ export default function AddCoursePage() {
                       value={mod.title}
                       onChange={(e) => {
                         const newModules = [...modules];
-                        newModules.find((m) => m.id === mod.id)!.title = e.target.value;
+                        newModules.find((m) => m.id === mod.id)!.title =
+                          e.target.value;
                         setModules(newModules);
                       }}
                       className="bg-transparent font-semibold text-gray-800 outline-none w-full md:w-1/3"
@@ -587,7 +613,10 @@ export default function AddCoursePage() {
                 {mod.isExpanded && (
                   <div className="p-4 space-y-4">
                     {mod.lessons.map((lesson) => (
-                      <div key={lesson.id} className="border-l-2 border-gray-300 pl-4 relative">
+                      <div
+                        key={lesson.id}
+                        className="border-l-2 border-gray-300 pl-4 relative"
+                      >
                         {/* Lesson Header */}
                         <div className="flex justify-between items-center mb-2">
                           <div className="flex items-center gap-2 flex-1">
@@ -595,7 +624,13 @@ export default function AddCoursePage() {
                             <input
                               type="text"
                               value={lesson.title}
-                              onChange={(e) => updateLessonTitle(mod.id, lesson.id, e.target.value)}
+                              onChange={(e) =>
+                                updateLessonTitle(
+                                  mod.id,
+                                  lesson.id,
+                                  e.target.value,
+                                )
+                              }
                               className="text-sm text-gray-700 bg-transparent outline-none w-full"
                             />
                           </div>
@@ -612,33 +647,45 @@ export default function AddCoursePage() {
                         {mod.activeLessonId === lesson.id && (
                           <LessonEditor
                             data={lesson.content}
-                            onSave={(data) => handleLessonContentSave(mod.id, lesson.id, data)}
+                            onSave={(data) =>
+                              handleLessonContentSave(mod.id, lesson.id, data)
+                            }
                             onCancel={() => {
-                                const newModules = [...modules];
-                                newModules.find(m => m.id === mod.id)!.activeLessonId = null;
-                                setModules(newModules);
+                              const newModules = [...modules];
+                              newModules.find(
+                                (m) => m.id === mod.id,
+                              )!.activeLessonId = null;
+                              setModules(newModules);
                             }}
                           />
                         )}
 
                         {/* Edit Button (if not active) */}
                         {mod.activeLessonId !== lesson.id && (
-                            <button 
-                                type="button"
-                                onClick={() => {
-                                    const newModules = [...modules];
-                                    newModules.find(m => m.id === mod.id)!.activeLessonId = lesson.id;
-                                    setModules(newModules);
-                                }}
-                                className="text-xs text-blue-600 hover:underline mt-1"
-                            >
-                                {lesson.content && lesson.content.blocks.length > 0 ? "Edit Content" : "Add Content"}
-                            </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newModules = [...modules];
+                              newModules.find(
+                                (m) => m.id === mod.id,
+                              )!.activeLessonId = lesson.id;
+                              setModules(newModules);
+                            }}
+                            className="text-xs text-blue-600 hover:underline mt-1"
+                          >
+                            {lesson.content &&
+                            lesson.content.blocks &&
+                            lesson.content.blocks.length > 0
+                              ? "Edit Content"
+                              : "Add Content"}
+                          </button>
                         )}
                       </div>
                     ))}
                     {mod.lessons.length === 0 && (
-                        <p className="text-sm text-gray-400 pl-6 italic">No lessons yet. Add one to start writing.</p>
+                      <p className="text-sm text-gray-400 pl-6 italic">
+                        No lessons yet. Add one to start writing.
+                      </p>
                     )}
                   </div>
                 )}

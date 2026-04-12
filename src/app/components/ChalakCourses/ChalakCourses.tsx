@@ -9,6 +9,7 @@ import {
   Calculator,
   BookOpen,
 } from "lucide-react";
+import Button from "@/app/ui/button/Button";
 
 const ChalakCourses = () => {
   // 1. State to track the active tab
@@ -162,7 +163,7 @@ const ChalakCourses = () => {
   );
 
   return (
-    <section className="max-w-[1400px] mx-auto bg-[#D81B60] p-6 md:p-12 rounded-[40px] relative overflow-hidden">
+    <section className="max-w-300 mx-auto bg-[#D81B60] p-6 md:p-12 rounded-[40px] relative overflow-hidden">
       {/* --- Header Section --- */}
       <div className="text-center mb-8">
         <h2 className="text-white text-2xl md:text-3xl font-bold flex items-center justify-center gap-2">
@@ -187,7 +188,6 @@ const ChalakCourses = () => {
           </div>
         </h2>
       </div>
-
       {/* --- Categories / Tab Section --- */}
       <div className="flex flex-wrap justify-center gap-3 mb-10">
         {categories.map((cat, idx) => (
@@ -211,7 +211,6 @@ const ChalakCourses = () => {
           </button>
         ))}
       </div>
-
       {/* --- Slider Section --- */}
       <div className="relative max-w-6xl mx-auto px-10">
         {/* Navigation Arrows (Placeholder functionality for now, keeping design) */}
@@ -262,12 +261,14 @@ const ChalakCourses = () => {
           ))}
         </div>
       </div>
-
       {/* --- Footer Button --- */}
       <div className="flex flex-col items-center mt-12 gap-4">
-        <button className="bg-[#003B73] text-white px-10 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-transform">
+        {/* <button className="bg-[#003B73] text-white px-10 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-transform">
           আরও দেখুন
-        </button>
+        </button> */}
+        <Button bgColor="#003B73" textColor="#FFFFFF">
+          আরও দেখুন
+        </Button>
 
         <p className="text-white/80 text-xs text-center">
           📞 প্রতি সপ্তাহে আমাদের নতুন ব্যাচ ক্লাস শুরু হয়ে থাকে, বিস্তারিত
@@ -275,6 +276,7 @@ const ChalakCourses = () => {
           <span className="font-bold">+88 01740178774</span>
         </p>
       </div>
+      {/* <Button>click me</Button>{" "} */}
     </section>
   );
 };

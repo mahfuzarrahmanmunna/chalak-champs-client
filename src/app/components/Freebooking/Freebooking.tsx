@@ -125,7 +125,7 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
       onClick={handleBackdropClick}
     >
       {/* Backdrop Blur (Keeping your exact design) */}
-      <div className="absolute inset-0 bg-white/5 backdrop-blur-sm transition-opacity" />
+      <div className="absolute inset-0 bg-[#490023]/15 backdrop-blur-sm transition-opacity" />
 
       {/* Modal Content (Keeping your exact design) */}
       <div

@@ -6,16 +6,13 @@
     dark --prefersdark;
 }
 
-/* REMOVED: @import "react-quill/dist/quill.snow.css"; */
-/* NOTE: Add this import to your src/app/layout.tsx file instead! */
-
 @custom-variant dark (&:where(.dark, .dark *));
 
 @plugin "daisyui/theme" {
   name: "mytheme";
-  default: true; /* set as default */
-  prefersdark: false; /* set as default dark mode (prefers-color-scheme:dark) */
-  color-scheme: light; /* color of browser-provided UI */
+  default: true; 
+  prefersdark: false; 
+  color-scheme: light; 
 
   --color-base-100: oklch(98% 0.02 240);
   --color-base-200: oklch(95% 0.03 240);
@@ -58,7 +55,7 @@
 :root {
   /* Basic colors */
   --background: #d8cccce8;
-  --foreground: #8b7878;
+  --foreground: #0c0c0c;
   --muted: #666666;
 
   /* Your theme colors */
@@ -67,9 +64,9 @@
   --color-accent: #ffd700; 
 
   /* Light theme variations */
-  --color-primary-light: #ffb6c1; /* Light pink */
-  --color-secondary-light: #add8e6; /* Light blue */
-  --color-accent-light: #fffacd; /* Light yellow */
+  --color-primary-light: #ffb6c1; 
+  --color-secondary-light: #add8e6; 
+  --color-accent-light: #fffacd; 
 
   /* Gradient colors */
   --gradient-primary: linear-gradient(
@@ -81,10 +78,19 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-text: var(--foreground);
   --color-foreground: var(--foreground);
   --color-muted-foreground: var(--muted); 
-  --font-sans: var(--font-geist-sans); /* FIXED: Was on same line as above */
-  --font-mono: var(--font-geist-mono);
+  
+  /* --- UPDATED FONT STACK --- */
+  /* 1. Tries Google Sans (Open Sans) for English characters */
+  /* 2. Falls back to Hind Siliguri for Bangla characters (since Google Sans proxy lacks Bengali glyphs) */
+  /* 3. Falls back to system sans-serif */
+  --font-sans: var(--font-google-sans), var(--font-hind-siliguri), sans-serif;
+  
+  /* Explicit classes if you need to force one or the other manually */
+  --font-bangla: var(--font-hind-siliguri), sans-serif;
+  --font-english: var(--font-google-sans), sans-serif;
 
   /* Add your theme colors to Tailwind */
   --color-primary: var(--color-primary);
@@ -98,8 +104,8 @@
     --background: #0a0a0a;
     --foreground: #ededed;
 
-    /* Dark theme variations - keeping the same brand colors but with different intensities */
-    --color-primary: #0ea5e9; /* bright blue */
+    /* Dark theme variations */
+    --color-primary: #0ea5e9; 
     --color-secondary: #6366f1;
     --color-accent: #f97316;
     --color-primary-content: #ffffff;
@@ -118,12 +124,10 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter);
+  /* The font-sans variable from @theme inline is applied automatically by Tailwind */
 }
 
 /* Prefer only Tailwind/daisyUI text utility classes */
-/* let standard .text-white .text-black .dark:text-white work correctly */
-
 .dark .bg-primary,
 .bg-primary {
   background-color: var(--color-primary) !important;

@@ -1,14 +1,10 @@
+import Button from "@/app/ui/button/Button";
 import Image from "next/image";
 import React from "react";
 
 const FeatureCourses: React.FC = () => {
   return (
-    <section
-      className="px-4 relative"
-      style={{
-        backgroundColor: "var(--color-background)",
-      }}
-    >
+    <section className="px-4 relative">
       {/* 
         Gradient Div: 
         - Absolute positioning to take it out of flow.
@@ -18,7 +14,7 @@ const FeatureCourses: React.FC = () => {
         - pointer-events-none ensures it doesn't block clicks on the card.
       */}
       <div
-        className="absolute top-1/2 -translate-y-1/2 -right-10 md:-right-32 z-0 pointer-events-none"
+        className="absolute md:top-1/2  md:-translate-y-1/2 md:-right-16 z-0 pointer-events-none"
         style={{
           width: "700px",
           height: "700px",
@@ -31,13 +27,13 @@ const FeatureCourses: React.FC = () => {
       {/* 
         Main Card Container:
         - relative z-10 places it above the gradient.
-        - max-w-[1200px] ensures the container is wide enough for the layout.
+        - max-w-209.5 ensures the container is wide enough for the layout.
       */}
-      <div className="relative z-10 bg-primary max-w-[1200px] mx-auto p-3 md:p-4 md:pl-10 rounded-3xl flex flex-col md:flex-row items-center gap-6">
+      <div className="relative z-10 bg-primary max-w-250.5 mx-auto p-3 md:p-4 md:pl-10 rounded-3xl flex flex-col md:flex-row items-center gap-6">
         {/* Left Side: 60% width on desktop */}
         <div className="space-y-4 w-full md:w-[60%]">
           <div>
-            <h2 className="text-2xl md:text-4xl font-bold text-white leading-tight">
+            <h2 className="text-2xl md:text-3xl leading-[1.3] font-bold text-white">
               কিডস অনর্গল English কোর্সে
             </h2>
             <div className="flex items-center gap-4 mt-4">
@@ -48,7 +44,7 @@ const FeatureCourses: React.FC = () => {
             </div>
           </div>
 
-          <p className="text-white/90 text-sm md:text-base leading-relaxed">
+          <p className="text-white/90 text-sm md:text-sm leading-relaxed tracking-normal">
             আপনার সন্তানের ইংলিশ বলা শুরু হোক জীবনের প্রথম ধাপেই, আগামীদিনে
             আপনার সন্তান হবে আপনার এবং চালাক Champs এর গর্ব
           </p>
@@ -58,7 +54,7 @@ const FeatureCourses: React.FC = () => {
               <div className="relative p-0.5 rounded-full">
                 <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-transparent border-b-2 border-b-white/90 border-t-2 border-t-black">
                   <span className="w-3 h-3 bg-white rounded-full"></span>
-                  <span className="text-white font-medium text-xs md:text-sm">
+                  <span className="text-white font-regular text-xs">
                     লাইভ ক্লাস
                   </span>
                 </div>
@@ -79,21 +75,21 @@ const FeatureCourses: React.FC = () => {
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     ></path>
                   </svg>
-                  <span className="text-white font-medium text-xs md:text-sm">
+                  <span className="text-white font-regular text-xs">
                     5 মাস সময়ব্যাপি
                   </span>
                 </div>
               </div>
               <div className="relative p-0.5 rounded-full">
                 <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-transparent border-b-2 border-b-white/90 border-t-2 border-t-black">
-                  <span className="text-white font-medium text-xs md:text-sm">
+                  <span className="text-white font-regular text-xs">
                     এক ব্যাচে 15 জন
                   </span>
                 </div>
               </div>
               <div className="relative p-0.5 rounded-full">
                 <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-transparent border-b-2 border-b-white/90 border-t-2 border-t-black">
-                  <span className="text-white font-medium text-xs md:text-sm">
+                  <span className="text-white font-regular text-xs">
                     ফ্রি কোর্স ম্যাটিরিয়ালস
                   </span>
                 </div>
@@ -102,28 +98,25 @@ const FeatureCourses: React.FC = () => {
           </div>
 
           <div className="mt-5">
-            <button
-              className="px-8 py-3 cursor-pointer bg-white font-bold rounded-xl text-secondary 
-                   shadow-[0_4px_0_0_rgba(0,0,0,0.1)] 
-                   hover:shadow-lg hover:-translate-y-1 
-                   active:translate-y-0 active:shadow-none 
-                   transition-all duration-150 ease-in-out text-sm md:text-base"
-            >
+            {/* <button className="px-8 py-3 cursor-pointer bg-white font-bold rounded-xl text-secondary shadow-[inset_0_3px_0_rgba(0,29,58,0.6)] border-1 border-[rgba(0, 29, 58, 0.6)]">
               ভর্তি হতে ক্লিক করুন
-            </button>
+            </button> */}
+            <Button bgColor="" textColor="white"  className="shadow-[inset_0_4px_0_rgba(255,255,255,0.4)] hover:text-black">
+              ভর্তি হতে ক্লিক করুন
+            </Button>
           </div>
         </div>
 
         {/* Right Side: 40% width on desktop */}
-        <div className="w-full md:w-[40%] flex items-center justify-center mt-4 md:mt-0 relative z-10">
-          <figure className="relative w-full h-full flex items-center justify-center">
-            <div className="absolute inset-0 bg-white/10 blur-3xl rounded-full transform scale-90"></div>
+        <div className="w-full md:w-[40%] flex  items-center justify-center mt-4 md:mt-0 relative z-10">
+          <figure className="relative w-150 h-75 flex items-center justify-center">
+            <div className="absolute inset-0  bg-white/10 blur-3xl rounded-full transform scale-90"></div>
             <Image
               src={"/onorgol.png"}
               alt="Onorgol"
               width={400}
-              height={400}
-              className="rounded-xl relative z-10 w-full h-auto object-contain"
+              height={250}
+              className="rounded-xl relative z-10 w-full h-full  object-cover object-top"
             />
           </figure>
         </div>

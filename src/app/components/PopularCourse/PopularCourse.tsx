@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { FaArrowRight, FaLongArrowAltRight } from "react-icons/fa";
+import { HiOutlineArrowLongRight } from "react-icons/hi2";
 
 // 1. Fake Data (Array of Objects)
 const popularCourses = [
@@ -27,12 +28,15 @@ const popularCourses = [
 
 const PopularCourse = () => {
   return (
-    <section style={{ backgroundColor: "var(--color-background)" }}>
+    <section
+      style={{ backgroundColor: "var(--color-background)" }}
+      className="px-4"
+    >
       {/* --- Heading Section --- */}
       <div className="text-center mb-12">
-        <h2 className="text-secondary font-bold text-xl md:text-2xl">
+        <h2 className="text-secondary font-bold text-xl md:text-3xl">
           সেরা ও জনপ্রিয়{" "}
-          <span className="relative inline-block px-8 py-3 group">
+          <span className="relative inline-block px-3 py-3 group">
             {/* Dashed Border */}
             <span className="absolute inset-0 border-[3px] border-dashed border-pink-500"></span>
 
@@ -43,7 +47,7 @@ const PopularCourse = () => {
             <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
 
             {/* Gradient Text */}
-            <span className="relative font-bold bg-gradient-to-r from-pink-500 to-pink-300 bg-clip-text text-transparent text-2xl md:text-3xl">
+            <span className="relative font-bold bg-linear-to-r from-pink-500 to-pink-300 bg-clip-text text-transparent ">
               স্কিল প্রোগ্রামসমূহ
             </span>
           </span>
@@ -51,22 +55,22 @@ const PopularCourse = () => {
       </div>
 
       {/* --- Grid Section (1 Line 3 Cards) --- */}
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {popularCourses.map((course) => (
             <div
               key={course.id}
-              className="relative p-[3px] rounded-[55px] bg-linear-to-b from-[#F3066E] to-white shadow-xl w-full"
+              className="relative  rounded-[35px] bg-linear-to-b p-1 from-[#F3066EBF] to-white w-full"
             >
               {/* Inner White Content Area */}
-              <div className="bg-white rounded-[52px] p-6 flex flex-col items-center h-full">
+              <div className=" to-[] bg-white rounded-4xl p-6 flex flex-col items-center h-full">
                 {/* Image Wrapper with Light Pink Background/Border */}
-                <div className="relative w-full aspect-square rounded-[40px] overflow-hidden border-8 border-[#FFF0F6] shadow-sm">
+                <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-linear-to-b from-[#F3066E] to-[#FF8FCA]  ">
                   <Image
                     src={course.image}
                     alt={course.title}
                     fill
-                    className="object-cover"
+                    className="object-cover p-0.5 rounded-2xl"
                   />
                 </div>
 
@@ -87,10 +91,10 @@ const PopularCourse = () => {
       <div className="flex items-center justify-center mt-14">
         <button
           type="button"
-          className="px-8 py-3 font-bold text-xl cursor-pointer rounded-xl  text-white bg-primary flex items-center gap-2.5"
+          className="px-8 py-3 font-bold text-xl cursor-pointer rounded-xl text-white bg-primary flex items-center gap-2.5 shadow-[inset_0_4px_0_rgba(255,255,255,0.4)]"
         >
           আমাদের সকল স্কিলস
-          <FaLongArrowAltRight className="w-5 h-5 -rotate-45 font-light" />
+          <HiOutlineArrowLongRight className="w-6 h-6 -rotate-45" />
         </button>
       </div>
     </section>

@@ -1,318 +1,297 @@
-"use client";
-
-import React, { useState } from "react";
-import Link from "next/link";
+import React from "react";
 import Image from "next/image";
-import { useTheme } from "@/app/context/ThemeContext";
-import { useLanguage } from "@/app/context/LanguageContext";
-import {
-  Facebook,
-  Twitter,
-  Linkedin,
-  Instagram,
-  Youtube,
-  Mail,
-  Phone,
-  MapPin,
-  ArrowUp,
-  Heart,
-  Send,
-} from "lucide-react";
+import Link from "next/link";
+import { FaPhone } from "react-icons/fa6";
+import { Mail, MapPinIcon } from "lucide-react";
+import { FaFacebookF, FaFacebookMessenger, FaInstagram, FaWhatsapp, FaYoutube } from "react-icons/fa";
+import { HiArrowLongRight } from "react-icons/hi2";
 
-const Footer: React.FC = () => {
-  const { theme, colors } = useTheme();
-  const { isBangla } = useLanguage();
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
-  const [showBackToTop, setShowBackToTop] = useState(false);
-
-  // Handle scroll to show/hide back to top button
-  React.useEffect(() => {
-    const handleScroll = () => {
-      setShowBackToTop(window.scrollY > 300);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Handle back to top click
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
-  // Handle newsletter subscription
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      // Simulate API call
-      setTimeout(() => {
-        setSubscribed(true);
-        setTimeout(() => {
-          setSubscribed(false);
-          setEmail("");
-        }, 3000);
-      }, 1000);
-    }
-  };
-
-  // Footer data
-  const footerData = {
-    company: {
-      name: isBangla ? "চালাক চ্যাম্পস" : "Chalak Champs",
-      description: isBangla
-        ? "আমরা বিশ্বজ্ঞ ভাষা শিক্ষার প্ল্যাটফর্মের জন্য নিবেদিত কোর্স এবং সম্পদগুলি। আমাদের লক্ষ্য হল বিশ্বজ্ঞ ভাষায় দক্ষতা অর্জন করা এবং বিভিন্ন সংস্কৃতিতে সংযোগ করা।"
-        : "We provide comprehensive courses and resources for learning different languages. Our goal is to help you achieve language proficiency and connect with different cultures through language learning.",
-      logo: "https://i.ibb.co.com/4Z5b6Wm7/chalak-logo.jpg",
-      address: isBangla
-        ? "১২৩ বনগ্রাস রোড, ঢাকা ১২৩০, বাংলাদেশ"
-        : "123 Education Street, Dhaka 1200, Bangladesh",
-      phone: isBangla ? "+৮৮০১৭১১২৩৪৫৬৭" : "+880171234567",
-      email: isBangla ? "info@chalakchamps.com" : "info@chalakchamps.com",
-    },
-    links: {
-      learn: [
-        { name: isBangla ? "সবকোর্স" : "Courses", href: "/courses" },
-        { name: isBangla ? "ব্লগ" : "Blog", href: "/blog" },
-        {
-          name: isBangla ? "ইনস্ট্রাক্টর" : "Instructors",
-          href: "/instructors",
-        },
-        { name: isBangla ? "সম্পদগুলি" : "Resources", href: "/resources" },
-      ],
-      company: [
-        { name: isBangla ? "আমাদের সম্পর্কে" : "About Us", href: "/aboutus" },
-        { name: isBangla ? "ক্যারিয়ার নীতি" : "Careers", href: "/careers" },
-        { name: isBangla ? "যোগাযোগ" : "Contact", href: "/contact" },
-        {
-          name: isBangla ? "প্রেস বিজ্ঞপ্তি" : "Press Release",
-          href: "/press",
-        },
-      ],
-      support: [
-        { name: isBangla ? "সাহায্য কেন্দ্র" : "Help Center", href: "/help" },
-        { name: isBangla ? "প্রায়শ্নাল" : "FAQs", href: "/faqs" },
-        { name: isBangla ? "শর্তামাপত্র" : "Terms of Service", href: "/terms" },
-        { name: isBangla ? "গোপনীয়তা" : "Privacy Policy", href: "/privacy" },
-      ],
-    },
-    social: [
-      { name: "Facebook", icon: Facebook, href: "https://facebook.com" },
-      { name: "Twitter", icon: Twitter, href: "https://twitter.com" },
-      { name: "LinkedIn", icon: Linkedin, href: "https://linkedin.com" },
-      { name: "Instagram", icon: Instagram, href: "https://instagram.com" },
-      { name: "YouTube", icon: Youtube, href: "https://youtube.com" },
-    ],
-    newsletter: {
-      title: isBangla
-        ? "নিউজলেটার সাবস্ক্রাইপ করুন"
-        : "Subscribe to our newsletter",
-      description: isBangla
-        ? "নতুনতম কোর্স, প্রমোশন এবং বিশেষ অফার সরাসরি জানতে পান।"
-        : "Get the latest courses, promotions and exclusive offers delivered to your inbox.",
-      placeholder: isBangla ? "আপনার ইমেল লিখুন" : "Enter your email",
-      buttonText: isBangla ? "সাবস্ক্রাইপ করুন" : "Subscribe",
-    },
-    copyright: {
-      text: isBangla
-        ? "© ২০২৩ চালাক চ্যাম্পস। সর্বধ স্বত্বাধিকার।"
-        : "© 2023 Chalak Champs. All rights reserved.",
-    },
-  };
-
+const Footer = () => {
   return (
-    <footer className="bg-primary dark:bg-gray-800 p-8 text-black dark:text-white">
-      {/* Newsletter Section */}
-      <div className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h3 className="text-2xl font-bold mb-4 text-black dark:text-white">
-                {footerData.newsletter.title}
-              </h3>
-              <p className="mb-6 max-w-md text-gray-700 dark:text-gray-300 opacity-80">
-                {footerData.newsletter.description}
-              </p>
-            </div>
-            <form
-              onSubmit={handleSubscribe}
-              className="flex flex-col sm:flex-row gap-4 max-w-md"
-            >
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={footerData.newsletter.placeholder}
-                required
-                className="flex-1 px-4 py-3 rounded-md focus:outline-none focus:ring-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-black dark:text-white"
-              />
-              <button
-                type="submit"
-                disabled={subscribed}
-                className="px-6 py-3 rounded-md font-medium text-white flex items-center justify-center disabled:opacity-50 bg-primary hover:bg-primary-focus"
-              >
-                {subscribed ? (
-                  <span>
-                    {isBangla ? "সাবস্ক্রাইপ করা হয়েছে!" : "Subscribed!"}
-                  </span>
-                ) : (
-                  <>
-                    {footerData.newsletter.buttonText}
-                    <Send className="ml-2 h-4 w-4" />
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Footer Content */}
-      <div className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-          {/* Company Info */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center mb-4">
+    <footer
+      style={{
+        backgroundColor: "var(--color-background)",
+        color: "var(--color-text)",
+      }}
+      className=" pt-16 pb-8 text-black dark:text-white"
+    >
+      <div className="container mx-auto px-6 text-base font-inter">
+        {/* --- MAIN GRID LAYOUT --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[3fr_2fr_2fr_3fr] gap-12 mb-12">
+          {/* --- COLUMN 1: BRAND & INTRO --- */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              {/* Ensure you have logo.png in your public folder */}
               <Image
-                src={footerData.company.logo}
-                alt={footerData.company.name}
-                width={40}
-                height={40}
-                className="rounded-md mr-3"
+                src="/logo.png"
+                alt="Chalak Champs Logo"
+                width={177.7851104736328}
+                height={106.328125}
+                className="rounded-lg"
               />
-              <h3 className="text-xl font-bold text-black dark:text-white">
-                {footerData.company.name}
-              </h3>
             </div>
-            <p className="mb-6 max-w-md text-gray-700 dark:text-gray-300 opacity-80">
-              {footerData.company.description}
+            <p className="text-xs leading-5 tracking-normal text-[#2D2D2D] dark:text-white">
+              Chalak Champs একটি আধুনিক Skill-Based EdTech Platform, যেখানে ৩–১৫
+              বছর বয়সী শিশুদের Spoken English, Abacus, Programming সহ বিভিন্ন
+              কোর্সে “Learning by Doing” পদ্ধতিতে আত্মবিশ্বাসী ও দক্ষ করে গড়ে
+              তোলা হয়।
             </p>
-            <div className="md:flex space-x-4 mb-6">
-              <div className="flex items-center text-gray-700 dark:text-gray-300 opacity-80">
-                <MapPin className="h-4 w-4 mr-2" />
-                <span className="text-sm">{footerData.company.address}</span>
-              </div>
-              <div className="flex items-center text-gray-700 dark:text-gray-300 opacity-80">
-                <Phone className="h-4 w-4 mr-2" />
-                <span className="text-sm">{footerData.company.phone}</span>
-              </div>
-              <div className="flex items-center text-gray-700 dark:text-gray-300 opacity-80">
-                <Mail className="h-4 w-4 mr-2" />
-                <span className="text-sm">{footerData.company.email}</span>
+
+            <div className="dark:text-white text-[#2D2D2D]">
+              <h4 className="font-medium text-xl leading-6">
+                আমাদের সাথে কানেক্টেড থাকো
+              </h4>
+              <div className="flex gap-3 mt-3">
+                <div className="text-[#1777F2] bg-[#1777F21A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
+                  {/* facebook */}
+                  <Link href="#">
+                    <FaFacebookF size={18} />
+                  </Link>
+                </div>
+                {/* youtube */}
+                <div className="text-[#FE0000] bg-[#FE00001A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
+                  <Link href="#">
+                    <FaYoutube size={18} />
+                  </Link>
+                </div>
+
+                {/* Instagram */}
+                <div className="bg-[#FFAB4D26] h-10 w-10 flex items-center justify-center rounded-lg">
+                  <Link href="#">
+                    <FaInstagram
+                      size={18}
+                      style={{ fill: "url(#insta-grad)" }}
+                    />
+
+                    <svg width="0" height="0">
+                      <linearGradient
+                        id="insta-grad"
+                        x1="0%"
+                        y1="50%"
+                        x2="100%"
+                        y2="50%"
+                      >
+                        <stop offset="0%" stopColor="#FFDD55" />
+                        <stop offset="50%" stopColor="#FF543E" />
+                        <stop offset="100%" stopColor="#C837AB" />
+                      </linearGradient>
+                    </svg>
+                  </Link>
+                </div>
+
+                <div className="text-[#1777F2] bg-[#448AFF1A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
+                  <Link href="#">
+                    <FaFacebookMessenger size={18} />
+                  </Link>
+                </div>
+                <div className="text-[#25D366] bg-[#25D3661A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
+                  <Link href="#">
+                    <FaWhatsapp size={18} />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Learn Links */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4 text-black dark:text-white">
-              {isBangla ? "শিখুন" : "Learn"}
-            </h4>
-            <ul className="space-y-2">
-              {footerData.links.learn.map((link, index) => (
-                <li key={index}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary transition-colors duration-200"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
+          {/* --- Explore 1st --- */}
+          <div className="space-y-6 dark:text-white text-[#2D2D2D] font-medium">
+            <h3 className=" text-lg font-semibold mb-6  inline-block">
+              এক্সপ্লোর
+            </h3>
+            <ul className="space-y-3 text-sm ] ">
+              <li>
+                <Link
+                  href="#"
+                  className="hover:text-[#F3066E] transition-colors font-medium"
+                >
+                  আমাদের সম্পর্কে
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#"
+                  className="hover:text-[#F3066E] transition-colors font-medium"
+                >
+                  যোগাযোগ করুন
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#"
+                  className="hover:text-[#F3066E] transition-colors font-medium flex items-center gap-3"
+                >
+                  স্কিলস <div className="h-1.5 w-1.5 bg-primary rounded-full" />
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#"
+                  className="hover:text-[#F3066E] transition-colors font-medium flex items-center gap-3"
+                >
+                  ই-বুক
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#"
+                  className="hover:text-[#F3066E] transition-colors"
+                >
+                  ফ্রি নোটস ও গাইড
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#"
+                  className="hover:text-[#F3066E] transition-colors font-medium"
+                >
+                  ফ্রি কোর্স
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#"
+                  className="relative hover:text-[#F3066E] transition-colors"
+                >
+                  চালাক Champs অফার
+                  <div className="absolute">
+                    <svg
+                      className="absolute"
+                      width="32"
+                      height="33"
+                      viewBox="0 0 32 33"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M-0.000462056 5.24779L2.86619 6.42807C3.62939 6.74287 4.21282 7.36455 4.46394 8.13164L5.40613 11.0123L6.62381 8.23025C6.94821 7.48965 7.58747 6.92376 8.37795 6.68007L11.3462 5.76442L8.47958 4.58414C8.10259 4.42893 7.76466 4.19645 7.48893 3.90264C7.2132 3.60883 7.00619 3.26063 6.88211 2.88193L5.93964 -0.000103482L4.72224 2.78331C4.39756 3.52256 3.75718 4.09008 2.9681 4.33349L-0.000462056 5.24779ZM27.5179 6.48759L28.1755 5.88433C28.4734 5.6115 28.8285 5.40442 29.2166 5.2773C29.6047 5.15017 30.0166 5.10601 30.4239 5.14783L31.3233 5.23889L30.7016 4.60077C30.4207 4.31182 30.2075 3.96737 30.0765 3.591C29.9456 3.21464 29.9 2.81525 29.9429 2.4202L30.0368 1.54748L29.3792 2.15074C28.7775 2.70222 27.9562 2.97167 27.1321 2.88696L26.2328 2.79591L26.8544 3.43403C27.4227 4.01787 27.7004 4.81493 27.6131 5.61459L27.5179 6.48759ZM12.6441 30.4951L14.6522 30.4152C15.4807 30.3822 16.2824 30.7007 16.8474 31.2894L18.2179 32.7166L18.1341 30.7683C18.1173 30.371 18.1892 29.9749 18.345 29.6072C18.5007 29.2394 18.7366 28.9087 19.0364 28.6378L20.5058 27.3081L18.498 27.3894C18.089 27.4057 17.6811 27.336 17.3025 27.1851C16.9238 27.0341 16.5833 26.8055 16.3042 26.5149L14.9337 25.0876L15.016 27.0363C15.0331 27.4334 14.9614 27.8294 14.8059 28.1971C14.6504 28.5648 14.4148 28.8955 14.1151 29.1665L12.6441 30.4951Z"
+                        fill="#F3066E"
+                      />
+                    </svg>
+                  </div>
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Company Links */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4 text-black dark:text-white">
-              {isBangla ? "কোম্পানি" : "Company"}
-            </h4>
-            <ul className="space-y-2">
-              {footerData.links.company.map((link, index) => (
-                <li key={index}>
+          {/* OTHER LINKS 2nd */}
+          <div className="space-y-6 dark:text-white text-[#2D2D2D] font-medium">
+            <div>
+              <h3 className=" text-lg font-semibold mb-6  inline-block">
+                অন্যান্য
+              </h3>
+              <ul className="space-y-3 text-sm">
+                <li>
                   <Link
-                    href={link.href}
-                    className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary transition-colors duration-200"
+                    href="#"
+                    className="hover:text-[#F3066E] transition-colors"
                   >
-                    {link.name}
+                    শিক্ষক হিসাবে যোগ দিন
                   </Link>
                 </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Support Links */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4 text-black dark:text-white">
-              {isBangla ? "সমর্থন" : "Support"}
-            </h4>
-            <ul className="space-y-2">
-              {footerData.links.support.map((link, index) => (
-                <li key={index}>
+                <li>
                   <Link
-                    href={link.href}
-                    className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary transition-colors duration-200"
+                    href="#"
+                    className="hover:text-[#F3066E] transition-colors flex items-center gap-2"
                   >
-                    {link.name}
+                    ক্যারিয়ার / নিয়োগ বিজ্ঞপ্তি{" "}
+                    <span className="h-2 w-2 bg-[#06F341] hover:bg-[#F3066E] rounded-full" />
                   </Link>
                 </li>
-              ))}
-            </ul>
+                <li>
+                  <Link
+                    href="#"
+                    className="hover:text-[#F3066E] transition-colors"
+                  >
+                    অ্যাফিলিয়েট রেজিস্ট্রেশন
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="hover:text-[#F3066E] transition-colors"
+                  >
+                    প্রাইভেসি পলিসি
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="hover:text-[#F3066E] transition-colors"
+                  >
+                    ব্যবহারকারীর শর্তাবলি
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="hover:text-[#F3066E] transition-colors"
+                  >
+                    অ্যাফিলিয়েট রেজিস্ট্রেশন
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
 
-          {/* Social Media Icons */}
-          <div className="flex space-x-4">
-            {footerData.social.map((social, index) => (
-              <a
-                key={index}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-full transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white"
-              >
-                <social.icon className="h-5 w-5" />
-              </a>
-            ))}
+          {/* --- contact us 3rd --- */}
+          <div className="space-y-6 dark:text-white text-[#2D2D2D] font-medium">
+            <h3 className=" text-lg font-semibold mb-6  inline-block">
+              যোগাযোগ
+            </h3>
+            <ul className="space-y-3 text-sm">
+              <li className=" flex items-center gap-4 text-[#C6005F]">
+                <div className="bg-[#F3066E4D] p-2 rounded-lg ">
+                  <FaPhone size={18} />{" "}
+                </div>
+
+                <p>
+                  +88 01740176774{" "}
+                  <span className="text-[#2D2D2D66] dark:text-gray-500">
+                    (24x7)
+                  </span>
+                </p>
+              </li>
+              <li className=" flex items-center gap-4 text-[#C6005F]">
+                <div className="bg-[#F3066E4D] p-2 rounded-lg ">
+                  <Mail size={18} />{" "}
+                </div>
+
+                <p>support@chalakchamps.com</p>
+              </li>
+              <li className=" flex items-center gap-4 text-[#C6005F]">
+                <div className="bg-[#F3066E4D] p-2 rounded-lg ">
+                  <MapPinIcon size={18} />{" "}
+                </div>
+
+                <p>
+                  Amin Tower, House - 4 (4th Floor), <br /> Rd 1, Sector 9,
+                  Uttara, Dhaka 1230
+                </p>
+              </li>
+            </ul>
           </div>
         </div>
-      </div>
-
-      {/* Copyright and Back to Top */}
-      <div className="py-6 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-gray-700 dark:text-gray-300 opacity-80">
-            {footerData.copyright.text}
+        <div className="flex justify-end">
+          <div className="bg-linear-to-r from-[#FF8FCA] to-[#D9D9D9] p-0.5 w-fit rounded ">
+            <h5 className="text-[#F3066EB2] bg-white px-2 py-1 text-xs font-medium rounded flex items-center gap-2">
+              কিভাবে সহযোগিতা করতে পারি <HiArrowLongRight size={22} />
+            </h5>
+          </div>
+        </div>
+        {/* --- BOTTOM COPYRIGHT --- */}
+        <div className="flex flex-col  items-center text-sm text-[#2D2D2D]/70">
+          <p className="text-xs font-semibold leading-7 text-center">
+            স্বত্ব &copy; {new Date().getFullYear()}{" "}
+            <span className="text-[#1B386BB2]">Lignual</span>{" "}
+            <span className="text-[#F3066EB2]">Academy</span> এবং{" "}
+            <span className="#1B386BB2">চালাক</span>{" "}
+            <span className="text-[">Champs</span> কর্তৃক
+            <span className="#1B386BB2">চালাক</span>{" "}
+            <span className="text-[#F3066EB2]">Champs</span> কর্তৃক সর্বস্বত্ব
+            সংরক্ষিত
           </p>
-          <div className="flex items-center mt-4 md:mt-0">
-            <span className="text-sm mr-2 text-gray-700 dark:text-gray-300 opacity-80">
-              {isBangla ? "সঙ্গে তৈরি তৈরি করা" : "Made with"}
-            </span>
-            <Heart className="h-4 w-4 text-red-500" />
-            <span className="text-sm ml-2 text-gray-700 dark:text-gray-300 opacity-80">
-              {isBangla ? "চালাক চ্যাম্পসতে" : "by Chalak Champs"}
-            </span>
-          </div>
         </div>
       </div>
-
-      {/* Back to Top Button */}
-      {showBackToTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 p-3 rounded-full shadow-lg transition-all duration-300 z-10 bg-primary text-white hover:-translate-y-1"
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-2px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-          }}
-        >
-          <ArrowUp className="h-5 w-5" />
-        </button>
-      )}
     </footer>
   );
 };
