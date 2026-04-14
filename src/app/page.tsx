@@ -2,6 +2,7 @@
 import Banner from "./components/Banner/Banner";
 import ChalakCourses from "./components/ChalakCourses/ChalakCourses";
 import ChalakLibrary from "./components/ChalakLibrary/ChalakLibrary";
+import CTA from "./components/CTA/CTA";
 import EmailSignup from "./components/EmailSignup/EmailSignup";
 import FAQ from "./components/FAQ/FAQ";
 import FeatureCourses from "./components/FeatureCourses/FeatureCourses";
@@ -20,19 +21,20 @@ export default function Home() {
         backgroundColor: "var(--color-background)",
         color: "var(--color-text)",
       }}
-      className="overflow-hidden space-y-20 tracking-normal px-2 leading-5"
+      className="overflow-hidden space-y-20 tracking-normal px-2 leading-5 min-h-[calc(100vh-500px)]"
     >
       {/* <HeroBanner /> */}
       <Banner />
       <FeatureCourses />
       {/* <FreebookingForm/> */}
       <PopularCourse />
-      <ChalakCourses/>
-      <ChalakLibrary/>
-      <OfflineCourses/>
-      <ImageSlider/>
-      <GallerySlider/>
-      <TestimonialSlider/>
+      <ChalakCourses />
+      <ChalakLibrary />
+      <OfflineCourses />
+      <ImageSlider />
+      <GallerySlider />
+      <TestimonialSlider />
+      <CTA />
       {/* <FAQ /> */}
       {/* <EmailSignup /> */}
     </div>

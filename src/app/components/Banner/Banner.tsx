@@ -9,7 +9,7 @@ const Banner = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   return (
-    <div>
+    <div className="">
       <div className="text-center  px-4 py-10 md:max-w-205 mx-auto font-inter">
         <p className="text-lg mb-2 text-gray-600">আমরা বিশ্বাস করি</p>
 

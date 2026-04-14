@@ -4,72 +4,93 @@ interface CustomButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   icon?: ReactNode;
   iconPosition?: "left" | "right";
+  // Color Props
   bgColor?: string;
+  highlightColor?: string;
+  darkShadowColor?: string;
   textColor?: string;
+  hoverBgColor?: string;
+  hoverTextColor?: string;
+  // Spacing Props
+  px?: string;
+  py?: string;
+  mx?: string;
+  my?: string;
+  fullWidth?: boolean;
 }
 
 const Button: React.FC<CustomButtonProps> = ({
   children,
   icon,
   iconPosition = "left",
-  bgColor = "#F3056D", // Base Pink
+  bgColor = "#214187",
+  highlightColor = "#30A1E6",
+  darkShadowColor = "#001D3A",
   textColor = "#FFFFFF",
+  hoverBgColor = "#FFFFFF", // Dynamic Hover BG
+  hoverTextColor = "#214187", // Dynamic Hover Text
+  px = "px-8",
+  py = "py-2.5",
+  mx = "mx-0",
+  my = "my-0",
+  fullWidth = false,
   className = "",
   ...props
 }) => {
-  // Composite shadow built strictly from the 4 provided screenshots
-  const complexShadows = `
-    /* 1. Outer Soft Glow (From Image 4) */
-    /* X:0, Y:3.01, Blur:7.52, Color: #F3066E (30%) */
-    0 3px 7.5px 0 rgba(243, 6, 110, 0.3),
-
-    /* 2. Sharp Outer Drop (From Image 2) */
-    /* X:0, Y:1.5, Blur:1.5, Color: #F3066E */
-    0 1.5px 1.5px 0 rgba(243, 6, 110, 0.4),
-
-    /* 3. Inner Top Highlight (From Image 1) */
-    /* X:0, Y:1.5, Blur:0, Color: #FF8FCA */
-    inset 0 1.5px 0 0 #FF8FCA,
-
-    /* 4. Inner Border / Bottom Definition (From Image 3) */
-    /* X:0, Y:0, Blur:0, Spread:1.5, Color: #C6005F */
-    inset 0 0 0 1.5px #C6005F
-  `;
+  // Normal and Hover Shadow Logic
+  const shadowStyles = {
+    "--normal-shadow": `
+      inset 0px 1.5px 0px 0px ${highlightColor}, 
+      0px 1.5px 1.5px 0px ${bgColor}B5, 
+      0px 0px 0px 1.5px ${darkShadowColor}, 
+      0px 3.01px 7.52px 0px ${bgColor}4D
+    `.trim(),
+    "--hover-shadow": `
+      0px 1.5px 1.5px 0px ${bgColor}4D, 
+      0px 0px 0px 1.5px ${bgColor}, 
+      0px 3.01px 7.52px 0px ${bgColor}26
+    `.trim(),
+    "--bg-color": bgColor,
+    "--text-color": textColor,
+    "--hover-bg": hoverBgColor,
+    "--hover-text": hoverTextColor,
+  } as React.CSSProperties;
 
   return (
     <button
       {...props}
-      style={
-        {
-          "--theme-color": bgColor,
-          "--text-color": textColor,
-          boxShadow: complexShadows,
-        } as React.CSSProperties
-      }
+      style={shadowStyles}
       className={`
-        group relative flex items-center justify-center gap-2 px-8 py-2
-        rounded-lg font-bold transition-all duration-300 shadow-[inset_0_3px_0_rgba(255,255,255,0.5)] border-none cursor-pointer overflow-hidden
+        group relative flex items-center justify-center gap-2 
+        rounded-lg font-bold transition-all duration-300
         
-        /* Base Colors */
-        bg-[var(--theme-color)] text-[var(--text-color)]
+        /* Base Styles */
+        bg-[var(--bg-color)] text-[var(--text-color)] [box-shadow:var(--normal-shadow)]
         
-        /* Hover State: Inverts colors but keeps the 3D shape */
-        hover:bg-white hover:text-[var(--theme-color)]
+        /* Dynamic Hover State */
+        hover:bg-[var(--hover-bg)] hover:text-[var(--hover-text)] 
+        hover:[box-shadow:var(--hover-shadow)]
         
-        /* Active State */
-        active:scale-95 active:shadow-inner
+        /* Active/Disabled States */
+        active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed
         
+        ${px} ${py} ${mx} ${my}
+        ${fullWidth ? "w-full" : "w-auto"}
         ${className}
       `}
     >
       {icon && iconPosition === "left" && (
-        <span className="w-5 h-5 flex items-center z-10">{icon}</span>
+        <span className="w-5 h-5 flex items-center shrink-0 transition-colors">
+          {icon}
+        </span>
       )}
 
-      <span className="relative z-10 select-none">{children}</span>
+      <span className="relative select-none">{children}</span>
 
       {icon && iconPosition === "right" && (
-        <span className="w-5 h-5 flex items-center z-10">{icon}</span>
+        <span className="w-5 h-5 flex items-center shrink-0 transition-colors">
+          {icon}
+        </span>
       )}
     </button>
   );
