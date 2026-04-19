@@ -12,6 +12,7 @@ import { usePathname } from "next/navigation";
 import Footer from "../components/Footer/Footer";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import Navbar1 from "../components/Navbar/Navbar1";
+import NavHeader from "../components/NavHeader/NavHeader";
 // import { ThemeProvider2 } from "../context/ThemeContext2";
 
 // Type definition for beforeinstallprompt event
@@ -74,7 +75,7 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <LoadingProvider>
         <ThemeProvider>
           <LanguageProvider>
-            {!isDashboard && !isStDashboard && <Navbar1 />}
+            {!isDashboard && !isStDashboard && <NavHeader />}
             {children}
             {!isDashboard && !isStDashboard && <Footer />}
           </LanguageProvider>

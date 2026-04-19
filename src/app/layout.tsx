@@ -40,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme='light'>
       <head>
         {/* Ensure Chrome can detect the PWA manifest */}
         <link rel="manifest" href="/manifest.json" />
@@ -55,7 +55,7 @@ export default function RootLayout({
       <body
         // ADDED BOTH FONT VARIABLES HERE
         cz-shortcut-listen="true"
-        className={`${hindSiliguri.variable} ${googleSans.variable} font-sans antialiased bg-base-100 text-black dark:text-white`}
+        className={`${hindSiliguri.variable}  ${googleSans.variable} font-sans antialiased bg-base-100 text-black dark:text-white`}
       >
         <Providers>{children}</Providers>
       </body>

@@ -5,7 +5,6 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 
-// Swiper styles
 import "swiper/css";
 
 const testimonials = [
@@ -47,13 +46,19 @@ export default function TestimonialSlider() {
         slidesPerView={1}
         loop={true}
         autoplay={{ delay: 3000, disableOnInteraction: false }}
-        // Initialize navigation directly inside onSwiper to avoid useEffect dependency errors
         onSwiper={(swiper) => {
           if (prevRef.current && nextRef.current) {
-            swiper.params.navigation.prevEl = prevRef.current;
-            swiper.params.navigation.nextEl = nextRef.current;
-            swiper.navigation.init();
-            swiper.navigation.update();
+            // FIX: Add 'typeof === "object"' check.
+            // This ensures we don't try to set 'prevEl' on a boolean ('true').
+            if (
+              swiper.params.navigation &&
+              typeof swiper.params.navigation === "object"
+            ) {
+              swiper.params.navigation.prevEl = prevRef.current;
+              swiper.params.navigation.nextEl = nextRef.current;
+              swiper.navigation.init();
+              swiper.navigation.update();
+            }
           }
         }}
         breakpoints={{
@@ -65,7 +70,6 @@ export default function TestimonialSlider() {
       >
         {testimonials.map((item) => (
           <SwiperSlide key={item.id}>
-            {/* Removed the outer wrapper div that had the background color */}
             <div
               className={`relative p-8 rounded-[35px] h-[400px] flex flex-col justify-between text-white bg-gradient-to-br ${item.gradient} shadow-2xl`}
             >

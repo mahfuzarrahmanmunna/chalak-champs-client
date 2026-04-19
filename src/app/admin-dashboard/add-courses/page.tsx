@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import type { OutputData } from "@editorjs/editorjs";
 import {
   Plus,
   Trash2,
@@ -17,14 +19,31 @@ import {
   Video,
   FileText,
 } from "lucide-react";
-import EditorJS, { OutputData } from "@editorjs/editorjs"; // Import OutputData
-import Header from "@editorjs/header";
-import List from "@editorjs/list";
-import ImageTool from "@editorjs/image";
-import CodeTool from "@editorjs/code";
-import Delimiter from "@editorjs/delimiter";
 
-// --- ZOD SCHEMA FOR COURSE INFO ---
+// ✅ Define the props interface
+interface LessonEditorProps {
+  data: OutputData | undefined;
+  onSave: (data: OutputData) => void;
+  onCancel: () => void;
+}
+
+// ✅ FIX: Use explicit props type with dynamic
+const LessonEditor = dynamic<LessonEditorProps>(
+  () => import("../../components/LessonEditor/LessonEditor").then((mod) => mod.default),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="border-l-4 border-blue-500 bg-blue-50/50 p-4 my-4 rounded-r-lg">
+        <div className="flex items-center justify-center h-[300px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-gray-500">Loading editor...</span>
+        </div>
+      </div>
+    ),
+  },
+);
+
+// --- ZOD SCHEMA ---
 const courseFormSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
   description: z.string().min(10, "Description is required"),
@@ -40,8 +59,7 @@ const courseFormSchema = z.object({
 
 type CourseFormData = z.infer<typeof courseFormSchema>;
 
-// --- TYPES FOR CURRICULUM ---
-// Use the official OutputData type from EditorJS
+// --- TYPES ---
 type Lesson = {
   id: string;
   title: string;
@@ -59,136 +77,10 @@ type Module = {
   activeLessonId: string | null;
 };
 
-// --- EDITOR COMPONENT ---
-const LessonEditor = ({
-  data,
-  onSave,
-  onCancel,
-}: {
-  data: OutputData | undefined; // Allow undefined initially
-  onSave: (data: OutputData) => void;
-  onCancel: () => void;
-}) => {
-  const editorRef = useRef<EditorJS | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    if (!editorRef.current) {
-      const editor = new EditorJS({
-        holder: "editorjs-container",
-        placeholder: "Let's write an awesome lesson! Start with a header...",
-        // FIX 1: Ensure data always has a blocks array to satisfy OutputData
-        data: data || { blocks: [], time: Date.now(), version: "2.22.0" },
-        tools: {
-          // FIX 2: Cast tool config to 'any' to resolve type conflicts with plugins
-          header: {
-            class: Header,
-            config: {
-              levels: [1, 2, 3],
-              defaultLevel: 2,
-            },
-          } as any,
-          list: {
-            class: List,
-            inlineToolbar: true,
-          } as any,
-          code: CodeTool as any,
-          delimiter: Delimiter as any,
-          image: {
-            class: ImageTool,
-            config: {
-              endpoints: {
-                byFile: "http://localhost:5000/api/upload/editor",
-              },
-              uploader: {
-                uploadByFile(file: File) {
-                  console.log("Uploading file:", file);
-                  return new Promise((resolve) => {
-                    setTimeout(() => {
-                      resolve({
-                        success: 1,
-                        file: {
-                          url: "https://picsum.photos/800/400",
-                        },
-                      });
-                    }, 1000);
-                  });
-                },
-              },
-            },
-          } as any,
-        },
-        autofocus: true,
-      });
-
-      editorRef.current = editor;
-    }
-
-    return () => {
-      if (editorRef.current && editorRef.current.destroy) {
-        editorRef.current.destroy();
-        editorRef.current = null;
-      }
-    };
-    // NOTE: We intentionally omit 'data' from dependency array to prevent re-initializing
-    // the editor every time the parent updates, which would lose focus.
-    // If you need to update data externally, use editor.render(data).
-  }, []);
-
-  const handleSave = async () => {
-    if (!editorRef.current) return;
-    setIsSaving(true);
-    try {
-      const outputData = await editorRef.current.save();
-      onSave(outputData);
-    } catch (error) {
-      console.error("Saving failed: ", error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  return (
-    <div className="border-l-4 border-blue-500 bg-blue-50/50 p-4 my-4 rounded-r-lg">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-semibold text-blue-700">
-          Editing Content
-        </span>
-        <div className="flex gap-2">
-          <button
-            onClick={onCancel}
-            className="text-xs px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="text-xs px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 rounded flex items-center gap-1"
-          >
-            {isSaving ? (
-              "Saving..."
-            ) : (
-              <>
-                <Save size={12} /> Save Content
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-      <div
-        id="editorjs-container"
-        className="bg-white p-4 rounded border min-h-[300px]"
-      ></div>
-    </div>
-  );
-};
-
 // --- MAIN PAGE ---
 export default function AddCoursePage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [modules, setModules] = useState<Module[]>([]);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
@@ -231,7 +123,6 @@ export default function AddCoursePage() {
     const newLesson: Lesson = {
       id: lessonId,
       title: `Lesson 1`,
-      // Initialize with empty valid data
       content: { blocks: [], time: Date.now(), version: "2.22.0" },
       order: 1,
     };
@@ -312,15 +203,11 @@ export default function AddCoursePage() {
     setIsSubmitting(true);
     try {
       const formData = new FormData();
-
-      // Handle Optional Fields
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== "") {
           formData.append(key, value);
         }
       });
-
-      // Handle Thumbnail
       if (thumbnail) {
         formData.append("thumbnail", thumbnail);
       }
@@ -401,7 +288,7 @@ export default function AddCoursePage() {
       </h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        {/* --- SECTION 1: BASIC INFO --- */}
+        {/* BASIC INFO SECTION */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-blue-600" />
@@ -409,7 +296,6 @@ export default function AddCoursePage() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Title */}
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Course Title <span className="text-red-500">*</span>
@@ -427,7 +313,6 @@ export default function AddCoursePage() {
               )}
             </div>
 
-            {/* Description */}
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Description <span className="text-red-500">*</span>
@@ -445,7 +330,6 @@ export default function AddCoursePage() {
               )}
             </div>
 
-            {/* Category & Level */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Category
@@ -477,7 +361,6 @@ export default function AddCoursePage() {
               </select>
             </div>
 
-            {/* Pricing */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Price ($) <span className="text-red-500">*</span>
@@ -507,7 +390,6 @@ export default function AddCoursePage() {
               />
             </div>
 
-            {/* Duration & Thumbnail */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Total Duration (Hours)
@@ -547,7 +429,7 @@ export default function AddCoursePage() {
           </div>
         </div>
 
-        {/* --- SECTION 2: CURRICULUM BUILDER --- */}
+        {/* CURRICULUM SECTION */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold flex items-center gap-2">
@@ -569,7 +451,6 @@ export default function AddCoursePage() {
                 key={mod.id}
                 className="border border-gray-200 rounded-lg overflow-hidden"
               >
-                {/* Module Header */}
                 <div className="bg-gray-50 p-4 flex justify-between items-center border-b border-gray-200">
                   <div className="flex items-center gap-3 flex-1">
                     <button
@@ -609,7 +490,6 @@ export default function AddCoursePage() {
                   </div>
                 </div>
 
-                {/* Module Content (Lessons) */}
                 {mod.isExpanded && (
                   <div className="p-4 space-y-4">
                     {mod.lessons.map((lesson) => (
@@ -617,7 +497,6 @@ export default function AddCoursePage() {
                         key={lesson.id}
                         className="border-l-2 border-gray-300 pl-4 relative"
                       >
-                        {/* Lesson Header */}
                         <div className="flex justify-between items-center mb-2">
                           <div className="flex items-center gap-2 flex-1">
                             <Video className="w-4 h-4 text-gray-400" />
@@ -643,7 +522,6 @@ export default function AddCoursePage() {
                           </button>
                         </div>
 
-                        {/* EditorJS Instance (Active Lesson Only) */}
                         {mod.activeLessonId === lesson.id && (
                           <LessonEditor
                             data={lesson.content}
@@ -660,7 +538,6 @@ export default function AddCoursePage() {
                           />
                         )}
 
-                        {/* Edit Button (if not active) */}
                         {mod.activeLessonId !== lesson.id && (
                           <button
                             type="button"
@@ -694,7 +571,7 @@ export default function AddCoursePage() {
           </div>
         </div>
 
-        {/* --- SUBMIT BUTTON --- */}
+        {/* SUBMIT BUTTON */}
         <div className="flex justify-end gap-4">
           <button
             type="button"

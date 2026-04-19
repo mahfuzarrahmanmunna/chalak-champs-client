@@ -208,7 +208,6 @@ const OfflineCourses = () => {
                         </defs>
                       </svg>
                     </div>
-                    <p className="text-[#2D2D2D] leading-4 text-sm">
                       <p className="text-[#2D2D2D] leading-4 text-sm">
                         সমগ্র বিশ্বজুড়ে সমাদৃত এবং পরীক্ষিত সবচেয়ে ইফেক্টিভ
                         শেখার পদ্ধতি <br className="hidden md:block" /> হচ্ছে{" "}
@@ -219,7 +218,6 @@ const OfflineCourses = () => {
                         <br className="hidden md:block" /> রেখে বাচ্চাকে
                         প্রয়োগিক শিক্ষায় উদ্বুদ্ধ করি
                       </p>
-                    </p>
                   </div>
                   {/* Third and big card */}
                   <div className="flex gap-3.5 md:p-3.5 border border-[#00477C]/20 shadow-[0px_4px_20px_-5px_rgba(59,130,246,0.15)] rounded-xl">

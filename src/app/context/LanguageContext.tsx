@@ -15,6 +15,7 @@ import mailchimpEnglish from "../data/translations/mailchimp-english.json";
 import mailchimpBangla from "../data/translations/mailchimp-bangla.json";
 
 // Types
+// We keep Translations for the raw JSON types, but restrict the Context output
 type Translations = {
   [key: string]: string | Translations;
 };
@@ -43,7 +44,9 @@ interface HeroData {
 type LanguageContextType = {
   isBangla: boolean;
   toggleLanguage: () => void;
-  t: Translations;
+  // FIX: Explicitly type 't' as a flat Record of strings.
+  // This fixes the error in Navbar1.tsx because 't.courses' will now be known as a string.
+  t: Record<string, string>;
   heroData: HeroData | null;
   isLoading: boolean;
 };
@@ -59,13 +62,15 @@ const getLanguageData = (isBangla: boolean) => {
   const faq = isBangla ? faqBangla : faqEnglish;
   const mailchimp = isBangla ? mailchimpBangla : mailchimpEnglish;
 
-  const merged: Translations = {
-    ...(hero as unknown as Translations),
+  // FIX: Only merge the FLAT translation files (navbar, common, faq, mailchimp) into 't'.
+  // We remove 'hero' from 'merged' because 'hero' contains nested objects (arrays, stats)
+  // which are not strings. 'hero' is already handled by the 'hero' return variable.
+  const merged = {
     ...(navbar as unknown as Translations),
     ...(common as unknown as Translations),
     ...(faq as unknown as Translations),
     ...(mailchimp as unknown as Translations),
-  };
+  } as Record<string, string>;
 
   return { hero, merged };
 };
@@ -73,9 +78,6 @@ const getLanguageData = (isBangla: boolean) => {
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [isBangla, setIsBangla] = useState(false);
 
-  // FIX: Use useMemo instead of useEffect + setState.
-  // This calculates translations instantly when isBangla changes,
-  // preventing "cascading renders" warnings.
   const { hero, merged } = useMemo(() => {
     return getLanguageData(isBangla);
   }, [isBangla]);
@@ -84,8 +86,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     setIsBangla((prev) => !prev);
   };
 
-  // Since data is synchronous (local JSON), we don't need a loading state logic.
-  // We return false for compatibility.
   return (
     <LanguageContext.Provider
       value={{
