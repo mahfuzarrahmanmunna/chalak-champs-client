@@ -2,14 +2,12 @@
   "name": "lingual-academy",
   "version": "0.1.0",
   "private": true,
-  
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
-
   "dependencies": {
     "@editorjs/checklist": "^1.6.0",
     "@editorjs/code": "^2.9.4",
