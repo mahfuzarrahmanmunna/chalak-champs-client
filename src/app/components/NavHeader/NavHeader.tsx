@@ -7,6 +7,7 @@ import DropIcon from "./DropIcon";
 
 const NavHeader = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,14 +22,17 @@ const NavHeader = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
   return (
     <nav
-      className={`md:flex items-center justify-between md:px-20 sticky top-0 z-50 transition-colors duration-300 ${scrolled ? "bg-white/30" : "bg-white"}`}
+      className={`flex items-center justify-between px-4 md:px-20 sticky top-0 z-50 transition-colors duration-300 ${
+        scrolled ? "bg-white/30" : "bg-white"
+      }`}
     >
-      {" "}
       <NavLogo />
-      {/* middle nav dropdown */}
-      <div className="flex  items-center gap-3">
+
+      {/* --- DESKTOP MIDDLE SECTION --- */}
+      <div className="hidden md:flex items-center gap-3">
         <div>
           <button className="cursor-pointer relative px-8 py-3 w-full rounded-[50px] font-bold text-white transition-all duration-300 bg-[#F3056D] shadow-[inset_0_1.5px_0_0_#FF8FCA,0_1.5px_1.5px_0_rgba(243,6,110,0.3),0_0_0_1.5px_#C6005F,0_3.01px_7.52px_0_rgba(243,6,110,0.3)]  hover:bg-white hover:text-[#F3056D]  hover:shadow-[0_1.5px_1.5px_0_rgba(243,6,110,0.2),0_0_0_1.5px_#F3056D,0_3.01px_7.52px_0_rgba(243,6,110,0.1)]">
             <div className="absolute top-1  transition-colors duration-300">
@@ -71,8 +75,9 @@ const NavHeader = () => {
           </button>
         </div>
       </div>
-      {/* Last button */}
-      <div>
+
+      {/* --- DESKTOP RIGHT SECTION --- */}
+      <div className="hidden md:block">
         <div>
           <Button
             icon=<svg
@@ -103,6 +108,125 @@ const NavHeader = () => {
           </Button>
         </div>
       </div>
+
+      {/* --- MOBILE TOGGLE BUTTON --- */}
+      <button
+        className="md:hidden text-primary"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      >
+        {isMobileMenuOpen ? (
+          // Close Icon
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        ) : (
+          // Menu Icon
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        )}
+      </button>
+
+      {/* --- MOBILE MENU CONTENT --- */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 py-6 px-4 flex flex-col gap-6 animate-in slide-in-from-top-2 duration-300">
+          {/* Book A Free Class Button (Full width on mobile) */}
+          <button className="cursor-pointer relative px-8 py-3 w-full rounded-[50px] font-bold text-white transition-all duration-300 bg-[#F3056D] shadow-[inset_0_1.5px_0_0_#FF8FCA,0_1.5px_1.5px_0_rgba(243,6,110,0.3),0_0_0_1.5px_#C6005F,0_3.01px_7.52px_0_rgba(243,6,110,0.3)] hover:bg-white hover:text-[#F3056D] hover:shadow-[0_1.5px_1.5px_0_rgba(243,6,110,0.2),0_0_0_1.5px_#F3056D,0_3.01px_7.52px_0_rgba(243,6,110,0.1)]">
+            <div className="absolute top-1 transition-colors duration-300">
+              <svg
+                width="32"
+                height="33"
+                viewBox="0 0 32 33"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M-0.000367234 5.24803L2.85291 6.42831C3.61254 6.74311 4.19326 7.3648 4.44321 8.13188L5.381 11.0126L6.593 8.2305C6.91588 7.48989 7.55216 6.924 8.33896 6.68032L11.2934 5.76467L8.44011 4.58439C8.06488 4.42917 7.72852 4.19669 7.45408 3.90288C7.17963 3.60907 6.9736 3.26088 6.85009 2.88217L5.91202 0.000140662L4.7003 2.78356C4.37713 3.52281 3.73975 4.09033 2.95434 4.33374L-0.000367234 5.24803ZM27.3896 6.48784L28.0441 5.88457C28.3406 5.61174 28.6941 5.40467 29.0804 5.27754C29.4667 5.15042 29.8766 5.10625 30.2821 5.14808L31.1772 5.23913L30.5585 4.60101C30.2789 4.31207 30.0666 3.96761 29.9363 3.59125C29.806 3.21488 29.7606 2.8155 29.8033 2.42045L29.8967 1.54772L29.2422 2.15099C28.6434 2.70247 27.8258 2.97191 27.0056 2.88721L26.1105 2.79615L26.7292 3.43427C27.2949 4.01811 27.5712 4.81517 27.4844 5.61484L27.3896 6.48784ZM12.5852 30.4953L14.5839 30.4154C15.4086 30.3824 16.2065 30.7009 16.7689 31.2897L18.133 32.7169L18.0496 30.7685C18.0329 30.3712 18.1044 29.9751 18.2595 29.6074C18.4145 29.2397 18.6493 28.909 18.9477 28.638L20.4102 27.3083L18.4118 27.3896C18.0047 27.406 17.5987 27.3363 17.2218 27.1853C16.8449 27.0344 16.506 26.8057 16.2282 26.5151L14.8641 25.0879L14.9461 27.0365C14.9631 27.4337 14.8917 27.8297 14.7369 28.1974C14.5822 28.5651 14.3476 28.8958 14.0494 29.1668L12.5852 30.4953Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+            Book A Free Class
+          </button>
+
+          <div className="border-t border-gray-200"></div>
+
+          <div className="flex flex-col gap-4 items-center">
+            <button className="flex items-center justify-center gap-2 text-[#F3066E] hover:bg-white hover:border hover:border-primary bg-[#F3066E]/20 cursor-pointer px-6 py-3 rounded-lg w-full">
+              All Courses{" "}
+              <div className="w-1.5 h-1.5 rounded-full bg-[#F3066E] absolute right-6"></div>
+              <DropIcon />
+            </button>
+
+            <button className="flex items-center justify-center gap-2 text-[#F3066E] w-full">
+              Skills <DropIcon />
+            </button>
+
+            <div className="flex items-center justify-center gap-2 text-primary w-full">
+              <span>Kids English</span>
+              <div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
+            </div>
+
+            <button className="flex items-center justify-center gap-2 text-primary w-full">
+              More
+              <DropIcon />
+            </button>
+          </div>
+
+          <div className="border-t border-gray-200"></div>
+
+          {/* Call Us Button (Full width on mobile) */}
+          <Button
+            icon=<svg
+              width="15"
+              height="15"
+              viewBox="0 0 15 15"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g clip-path="url(#clip0_627_2541)">
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M3.41923 1.24088C3.36389 1.16969 3.29403 1.11109 3.2143 1.06897C3.13456 1.02685 3.04678 1.00218 2.95678 0.99659C2.86678 0.991004 2.77662 1.00463 2.69229 1.03657C2.60796 1.0685 2.53139 1.11802 2.46767 1.18182L1.49829 2.15213C1.04548 2.60588 0.878605 3.24807 1.07642 3.81151C1.89742 6.14362 3.23294 8.26097 4.98392 10.0065C6.72947 11.7575 8.84682 13.093 11.1789 13.914C11.7424 14.1118 12.3845 13.9449 12.8383 13.4921L13.8077 12.5228C13.8715 12.459 13.921 12.3825 13.9529 12.2981C13.9849 12.2138 13.9985 12.1236 13.9929 12.0336C13.9873 11.9436 13.9626 11.8559 13.9205 11.7761C13.8784 11.6964 13.8198 11.6265 13.7486 11.5712L11.5858 9.88932C11.5097 9.83033 11.4213 9.78938 11.3271 9.76957C11.2329 9.74976 11.1354 9.75159 11.042 9.77494L8.98892 10.2878C8.71487 10.3563 8.42775 10.3526 8.15552 10.2772C7.88329 10.2018 7.63523 10.0572 7.43548 9.85744L5.13298 7.55401C4.93308 7.35435 4.78829 7.10633 4.71271 6.8341C4.63714 6.56187 4.63335 6.2747 4.70173 6.00057L5.21548 3.94745C5.23883 3.85407 5.24067 3.7566 5.22086 3.66241C5.20104 3.56822 5.1601 3.47975 5.10111 3.40369L3.41923 1.24088ZM1.75986 0.474945C1.92391 0.310835 2.12101 0.183504 2.33805 0.101408C2.55509 0.0193121 2.78711 -0.015671 3.01871 -0.00121825C3.25031 0.0132345 3.47619 0.0767925 3.68134 0.185235C3.88649 0.293678 4.06622 0.444524 4.20861 0.627757L5.89048 2.78963C6.19892 3.18619 6.30767 3.70276 6.18579 4.19026L5.67298 6.24338C5.64647 6.34972 5.6479 6.46111 5.67714 6.56674C5.70638 6.67236 5.76243 6.76863 5.83986 6.8462L8.14329 9.14963C8.22095 9.22721 8.31738 9.28336 8.42318 9.3126C8.52899 9.34185 8.64056 9.34319 8.74704 9.31651L10.7992 8.8037C11.0398 8.74354 11.2909 8.73887 11.5336 8.79003C11.7762 8.84119 12.004 8.94685 12.1999 9.09901L14.3617 10.7809C15.1389 11.3856 15.2102 12.534 14.5145 13.2287L13.5452 14.1981C12.8514 14.8918 11.8145 15.1965 10.848 14.8562C8.37409 13.9858 6.12792 12.5695 4.27611 10.7124C2.41919 8.8609 1.00293 6.61506 0.132356 4.14151C-0.207019 3.17588 0.0976681 2.13807 0.791418 1.44432L1.76079 0.474945H1.75986ZM10.3061 0.464632C10.3061 0.340312 10.3555 0.221083 10.4434 0.133176C10.5313 0.045268 10.6505 -0.00411799 10.7749 -0.00411799H14.5249C14.6492 -0.00411799 14.7684 0.045268 14.8563 0.133176C14.9442 0.221083 14.9936 0.340312 14.9936 0.464632V4.21463C14.9936 4.33895 14.9442 4.45818 14.8563 4.54609C14.7684 4.634 14.6492 4.68338 14.5249 4.68338C14.4005 4.68338 14.2813 4.634 14.1934 4.54609C14.1055 4.45818 14.0561 4.33895 14.0561 4.21463V1.59619L10.1692 5.48401C10.0812 5.57203 9.96183 5.62147 9.83736 5.62147C9.71288 5.62147 9.5935 5.57203 9.50548 5.48401C9.41746 5.39599 9.36801 5.27661 9.36801 5.15213C9.36801 5.02766 9.41746 4.90828 9.50548 4.82026L13.3933 0.933382H10.7749C10.6505 0.933382 10.5313 0.883996 10.4434 0.796088C10.3555 0.708181 10.3061 0.588952 10.3061 0.464632V0.464632Z"
+                  fill="white"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_627_2541">
+                  <rect width="15" height="15" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
+            px="px-2"
+            hoverTextColor="#214187"
+            className="w-full"
+          >
+            Call Us
+          </Button>
+        </div>
+      )}
     </nav>
   );
 };
