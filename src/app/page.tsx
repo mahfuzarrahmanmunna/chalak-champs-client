@@ -10,6 +10,8 @@ import FeatureCourses from "./components/FeatureCourses/FeatureCourses";
 import GallerySlider from "./components/GallerySlider/GallerySlider";
 // import HeroBanner from "./components/Hero/Hero";
 import ImageSlider from "./components/ImageSlider/ImageSlider";
+import FirstLogo from "./components/LittleChamps/FirstLogo";
+import LittleChamps from "./components/LittleChamps/LittleChamps";
 import OfflineCourses from "./components/OfflineCourses/OfflineCourses";
 import PopularCourse from "./components/PopularCourse/PopularCourse";
 import TestimonialSlider from "./components/TestimonialSlider/TestimonialSlider";
@@ -17,11 +19,7 @@ import TestimonialSlider from "./components/TestimonialSlider/TestimonialSlider"
 export default function Home() {
   return (
     <div
-      style={{
-        backgroundColor: "var(--color-background)",
-        color: "var(--color-text)",
-      }}
-      className="overflow-hidden space-y-20 tracking-normal px-2 leading-5 min-h-[calc(100vh-500px)]"
+      className="overflow-hidden bg-white space-y-20 tracking-normal px-2 leading-5 min-h-[calc(100vh-500px)]"
     >
       {/* <HeroBanner /> */}
       <Banner />
@@ -30,7 +28,9 @@ export default function Home() {
       <PopularCourse />
       <ChalakCourses />
       <ChalakLibrary />
+      <LittleChamps/>
       <OfflineCourses />
+      {/* <FirstLogo/> */}
       <ImageSlider />
       <GallerySlider />
       <TestimonialSlider />

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useTheme } from "@/app/context/ThemeContext";
 import { Phone, User, ChevronDown, Search } from "lucide-react"; // Added Search and ChevronDown
 import Link from "next/link";
+import Image from "next/image";
 
 interface FreebookingProps {
   isOpen: boolean;
@@ -136,6 +137,22 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="absolute bottom-0 -right-14">
+          <Image
+            src={"/liveicon.webp"}
+            width={120}
+            height={120}
+            alt="live Icon"
+          />
+        </div>
+        <div className="absolute top-12 -left-8">
+          <Image
+            src={"/bellicon.webp"}
+            width={60}
+            height={80}
+            alt="live Icon"
+          />
+        </div>
         {/* Header / Close Button */}
         <div className="flex text-primary justify-between items-start mb-6">
           <div>
@@ -143,28 +160,76 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
               ফ্রি ডেমো ক্লাস বুক করতে রেজিস্ট্রেশন করো
             </h2>
           </div>
-          <button
-            onClick={() => {
-              onClose();
-              setIsDropdownOpen(false);
-            }}
-            className="p-1 absolute text-white -top-4 -right-4 bg-radial form-[#FF8FCA]/20 to-[#D9D9D9] rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-            style={{ color: "var(--color-foreground)" }}
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className=" bg-radial from-[#FF8FCA] to-[#D9D9D9] p-px">
+            <button
+              onClick={() => {
+                onClose();
+                setIsDropdownOpen(false);
+              }}
+              className="p-1 absolute  -top-4 -right-4 bg-[#FF8FCA]/70 rounded-full  dark:hover:bg-white/10 transition-colors"
+              style={{ color: "var(--color-foreground)" }}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+              <svg
+                width="28"
+                height="29"
+                viewBox="0 0 28 29"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g filter="url(#filter0_d_462_31722)">
+                  <path
+                    d="M20.0918 7.51514L7.48448 20.5151"
+                    stroke="white"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M7.87695 7.51514L20.4843 20.5151"
+                    stroke="white"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </g>
+                <defs>
+                  <filter
+                    id="filter0_d_462_31722"
+                    x="0"
+                    y="0"
+                    width="27.9688"
+                    height="28.0303"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood flood-opacity="0" result="BackgroundImageFix" />
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    />
+                    <feOffset />
+                    <feGaussianBlur stdDeviation="3.25" />
+                    <feComposite in2="hardAlpha" operator="out" />
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 0.129412 0 0 0 0 0.254902 0 0 0 0 0.529412 0 0 0 0.4 0"
+                    />
+                    <feBlend
+                      mode="normal"
+                      in2="BackgroundImageFix"
+                      result="effect1_dropShadow_462_31722"
+                    />
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="effect1_dropShadow_462_31722"
+                      result="shape"
+                    />
+                  </filter>
+                </defs>
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Form */}
@@ -241,7 +306,7 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
             </label>
 
             <div
-              className="flex rounded-lg border overflow-hidden focus-within:ring-2 focus-within:ring-[var(--color-primary)] transition-all"
+              className="flex rounded-lg border focus-within:ring-2 focus-within:ring-[var(--color-primary)] transition-all"
               style={{ borderColor: "var(--color-border)" }}
             >
               {/* Country Selector Wrapper */}
@@ -249,10 +314,12 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                 <button
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full h-full flex items-center justify-between px-2 bg-gray-100 dark:bg-gray-800 border-r transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+                  className="w-full h-full flex items-center justify-between px-2 border-r transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
                   style={{
                     borderColor: "var(--color-border)",
                     backgroundColor: "var(--color-background)",
+                    borderTopLeftRadius: "0.5rem", // Add radius to left side
+                    borderBottomLeftRadius: "0.5rem",
                   }}
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
@@ -328,7 +395,7 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder=""
-                className="flex-1 px-4 py-2.5 outline-none bg-transparent"
+                className="flex-1 px-4 py-2.5 outline-none bg-transparent rounded-r-lg" // Added rounded-r-lg for right side corners
                 style={{ color: "var(--color-foreground)" }}
               />
             </div>

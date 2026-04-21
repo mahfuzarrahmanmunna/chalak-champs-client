@@ -1,10 +1,19 @@
+import Button from "@/app/ui/button/Button";
 import { Eye, ArrowRight, ArrowLeft } from "lucide-react";
 import Image from "next/image";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, TouchEvent } from "react";
+
+// Types
+interface LibraryItem {
+  id: number;
+  image: string;
+  category: string;
+  title: string;
+}
 
 const ChalakLibrary = () => {
   // Data Array
-  const libraryData = [
+  const libraryData: LibraryItem[] = [
     {
       id: 1,
       image: "/kidsbook.png",
@@ -35,42 +44,56 @@ const ChalakLibrary = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState("right");
 
-  // NEW: State to store calculated width and visible count
-  const [cardWidth, setCardWidth] = useState(328); // Default fallback (304px card + 24px gap)
-  const [visibleCount, setVisibleCount] = useState(3); // Default to 3 for desktop
+  // Dynamic Dimensions State
+  // cardWidthStep = Width of card + Gap (used for sliding calculation)
+  const [cardWidthStep, setCardWidthStep] = useState(328);
+  // centerOffset = Pixels to shift the slider so the active card is centered
+  const [centerOffset, setCenterOffset] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(3);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Refs
   const sliderRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const touchStartRef = useRef<number>(0);
+  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
 
-  // NEW: Calculate dynamic width and visible count based on screen size
+  // --- 1. Responsive Dimensions Calculation ---
   useEffect(() => {
     const updateDimensions = () => {
-      // 1. Measure the actual width of the card + gap
-      if (cardRef.current) {
-        const width = cardRef.current.offsetWidth + 24; // 24 is gap-6
-        setCardWidth(width);
+      const screenWidth = window.innerWidth;
+      const isMobile = screenWidth < 768; // Tailwind md breakpoint
+
+      // Determine how many cards are visible
+      const newVisibleCount = isMobile ? 1 : 3;
+      setVisibleCount(newVisibleCount);
+
+      let calculatedStep = 328; // Default desktop (304px card + 24px gap)
+      let calculatedOffset = 0; // Default desktop (No offset, align left)
+
+      if (isMobile) {
+        // Mobile Logic: Center the active card
+        const cardWidth = screenWidth * 0.85; // Card takes 85% of screen width
+        calculatedStep = cardWidth + 24; // Step includes the gap (24px)
+
+        // Calculate how much space is left on the screen to center the card
+        // Offset = (Screen Width - Card Width) / 2
+        calculatedOffset = (screenWidth - cardWidth) / 2;
       }
 
-      // 2. Determine how many cards are visible (Responsive Logic)
-      if (window.innerWidth < 768) {
-        // Tailwind 'md' breakpoint (768px)
-        setVisibleCount(1); // Small device: Show 1 card
-      } else {
-        setVisibleCount(3); // Large device: Show 3 cards
-      }
+      setCardWidthStep(calculatedStep);
+      setCenterOffset(calculatedOffset);
     };
 
-    // Initial measurement
     updateDimensions();
 
-    // Resize Observer to track card size changes
+    // Re-calculate on resize
     const resizeObserver = new ResizeObserver(updateDimensions);
     if (cardRef.current) {
       resizeObserver.observe(cardRef.current);
     }
 
-    // Window resize listener to track viewport changes
+    // Also listen to window resize to catch viewport changes affecting breakpoints
     window.addEventListener("resize", updateDimensions);
 
     return () => {
@@ -79,7 +102,7 @@ const ChalakLibrary = () => {
     };
   }, []);
 
-  // Calculate max index based on how many cards are currently visible
+  // --- 2. Slider Logic ---
   const maxIndex = Math.max(0, libraryData.length - visibleCount);
 
   const nextSlide = () => {
@@ -98,37 +121,101 @@ const ChalakLibrary = () => {
     }
   };
 
-  // Auto Slide Logic
-  useEffect(() => {
-    const interval = setInterval(() => {
+  const handleRightClick = () => {
+    setDirection("right");
+    resetAutoplay();
+    nextSlide();
+  };
+
+  const handleLeftClick = () => {
+    setDirection("left");
+    resetAutoplay();
+    prevSlide();
+  };
+
+  // --- 3. Touch / Swipe Logic ---
+  const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
+    touchStartRef.current = e.touches[0].clientX;
+    setIsDragging(true);
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+  };
+
+  const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+  };
+
+  const handleTouchEnd = (e: TouchEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStartRef.current - touchEnd;
+
+    // Threshold for swipe
+    if (diff > 50) {
+      setDirection("right");
+      nextSlide();
+    } else if (diff < -50) {
+      setDirection("left");
+      prevSlide();
+    }
+
+    startAutoplay();
+  };
+
+  // --- 4. Autoplay Logic ---
+  const startAutoplay = () => {
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+    autoplayRef.current = setInterval(() => {
       if (direction === "right") {
         nextSlide();
       } else {
         prevSlide();
       }
     }, 3000);
-
-    return () => clearInterval(interval);
-  }, [currentIndex, direction, maxIndex, nextSlide, prevSlide]);
-
-  const handleRightClick = () => {
-    setDirection("right");
-    nextSlide();
   };
 
-  const handleLeftClick = () => {
-    setDirection("left");
-    prevSlide();
+  const resetAutoplay = () => {
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+    startAutoplay();
+  };
+
+  useEffect(() => {
+    startAutoplay();
+    return () => {
+      if (autoplayRef.current) clearInterval(autoplayRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, direction, maxIndex]);
+
+  // --- 5. Render Helper for Pagination ---
+  const renderPaginationDots = () => {
+    const totalPages = maxIndex + 1;
+    return Array.from({ length: totalPages }).map((_, idx) => (
+      <button
+        key={idx}
+        onClick={() => {
+          setCurrentIndex(idx);
+          resetAutoplay();
+        }}
+        className={`h-2.5 rounded-full transition-all duration-300 ${
+          currentIndex === idx
+            ? "w-6 bg-[#E2136E]" // Active State
+            : "w-2.5 bg-gray-300 hover:bg-gray-400" // Inactive State
+        }`}
+        aria-label={`Go to slide ${idx + 1}`}
+      />
+    ));
   };
 
   return (
-    <div className="max-w-280 overflow-hidden mx-auto">
+    <div className="max-w-[1120px] overflow-hidden mx-auto">
       {/* Header */}
-      <div>
-        <h3 className="font-semibold py-2 leading-5 text-2xl md:text-4xl text-center mb-12">
+      <div className="text-center">
+        <h3 className="font-semibold py-2 leading-5 text-2xl md:text-5xl mb-12">
           <span className="text-secondary">চালাক</span>{" "}
           <span className="text-primary">Champs এর</span>{" "}
-          <span className="relative inline-block px-3 py-4 group">
+          <span className="relative inline-block px-3 py-5 group">
             <span className="absolute inset-0 border-[3px] border-dashed border-pink-500"></span>
             <span className="absolute -top-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -top-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
@@ -153,31 +240,37 @@ const ChalakLibrary = () => {
           <ArrowLeft className="text-gray-700" size={24} />
         </button>
 
-        {/* Slider Viewport */}
-        <div className="overflow-hidden w-full">
+        {/* Slider Viewport with Touch Events */}
+        <div
+          className="overflow-hidden w-full select-none"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div
             ref={sliderRef}
-            className="flex gap-6 transition-transform duration-500 ease-in-out"
+            className="flex gap-6 items-center justify-between transition-transform duration-500 ease-in-out will-change-transform"
             style={{
-              // FIX: Use state variable instead of accessing ref directly
-              transform: `translateX(-${currentIndex * cardWidth}px)`,
+              // Apply centerOffset to shift the start position on mobile
+              transform: `translateX(${centerOffset - currentIndex * cardWidthStep}px)`,
             }}
           >
             {libraryData.map((item, index) => (
               <div
                 key={item.id}
                 ref={index === 0 ? cardRef : null}
-                className="shrink-0 w-[304px]"
+                className="shrink-0 w-[85vw] md:w-[304px]"
               >
                 {/* CARD DESIGN - SAME AS BEFORE */}
-                <div className="max-w-76 h-110 shadow bg-linear-to-b from-[#FF8FCA] to-[#D9D9D9] rounded-[22px] p-1">
+                <div className="max-w-76 h-110 shadow bg-linear-to-b from-[#FF8FCA] to-[#D9D9D9] rounded-[22px] p-0.75">
                   <div className="w-full h-full rounded-[21px] p-2 bg-[#F9FAFC]">
-                    <div className="w-68.5 h-68.5 bg-[#001D3A0D] rounded-2xl">
+                    <div className="w-68.5 h-68.5 bg-[#001D3A0D] rounded-2xl relative overflow-hidden">
                       <Image
                         src={item.image}
                         alt={item.title}
-                        width={366}
-                        height={366}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 85vw, 304px"
                       />
                     </div>
                     <div className="flex flex-col justify-center items-center">
@@ -186,10 +279,10 @@ const ChalakLibrary = () => {
                         <p>{item.category}</p>
                       </div>
                       <div>
-                        <h3 className="text-[#3C4043] leading-[1.4] tracking-normal font-semibold mt-[15px]">
+                        <h3 className="text-[#3C4043] leading-[1.4] tracking-normal font-semibold mt-[15px] text-center px-2">
                           {item.title}
                         </h3>
-                        <button className="flex gap-2 px-4 py-2 text-lg cursor-pointer font-semibold mt-3 items-center bg-[#E2136E] text-white rounded-xl shadow-[inset_0_3px_0_rgba(255,255,255,0.5)] transition-all">
+                        <button className="flex gap-2 px-4 py-2 text-lg cursor-pointer font-semibold mt-3 items-center bg-[#E2136E] text-white rounded-xl shadow-[inset_0_3px_0_rgba(255,255,255,0.5)] transition-all active:scale-95">
                           <span>বিস্তারিত দেখুন</span>
                           <Eye size={18} />
                         </button>
@@ -212,35 +305,21 @@ const ChalakLibrary = () => {
         </button>
       </div>
 
-      {/* Pagination Dots */}
-      <div className="flex justify-center items-center gap-4 mt-8">
-        <button
-          onClick={handleLeftClick}
-          className={`h-2 w-2 rounded-full transition-all duration-300 cursor-pointer ${
-            currentIndex === 0
-              ? "bg-gray-200 opacity-50 cursor-not-allowed"
-              : "bg-gray-300 hover:bg-gray-400"
-          }`}
-          aria-label="Previous"
-        />
-
-        <div className="h-3 w-3 bg-black rounded-full shadow-md" />
-
-        <button
-          onClick={handleRightClick}
-          className={`h-2 w-2 rounded-full transition-all duration-300 cursor-pointer ${
-            currentIndex === maxIndex
-              ? "bg-gray-200 opacity-50 cursor-not-allowed"
-              : "bg-gray-300 hover:bg-gray-400"
-          }`}
-          aria-label="Next"
-        />
+      {/* Professional Pagination Dots */}
+      <div className="flex justify-center items-center gap-3 mt-8">
+        {renderPaginationDots()}
       </div>
 
-      <div className="flex flex-col justify-center items-center mt-6">
-        <button className="text-xl font-bold text-white tracking-normal leading-7 px-12 py-2.5 bg-[#214187] rounded-lg shadow-[inset_0_3px_0_rgba(255,255,255,0.5)] transition-all">
+      {/* Mobile Swipe Hint */}
+      <div className="md:hidden text-center text-gray-400 text-xs mt-2 animate-pulse">
+        Swipe to view more
+      </div>
+
+      <div className="flex flex-col justify-center items-center my-6">
+        {/* <button className="text-xl font-bold text-white tracking-normal leading-7 px-12 py-2.5 bg-[#214187] rounded-lg shadow-[inset_0_3px_0_rgba(255,255,255,0.5)] transition-all active:scale-95 hover:bg-[#1a366e]">
           আরও দেখুন
-        </button>
+        </button> */}
+        <Button px="px-18" textSize="xl" py="py-3">আরও দেখুন</Button>
       </div>
     </div>
   );

@@ -5,7 +5,6 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 
-import "swiper/css";
 
 const testimonials = [
   {
@@ -39,7 +38,7 @@ export default function TestimonialSlider() {
   const nextRef = useRef<HTMLButtonElement>(null);
 
   return (
-    <div className="relative w-full max-w-7xl mx-auto group">
+    <div className="relative w-full container mx-auto  ">
       <Swiper
         modules={[Navigation, Autoplay]}
         spaceBetween={20}
@@ -66,12 +65,12 @@ export default function TestimonialSlider() {
           768: { slidesPerView: 2 },
           1024: { slidesPerView: 3 },
         }}
-        className="bg-white"
+        className=""
       >
         {testimonials.map((item) => (
           <SwiperSlide key={item.id}>
             <div
-              className={`relative p-8 rounded-[35px] h-[400px] flex flex-col justify-between text-white bg-gradient-to-br ${item.gradient} shadow-2xl`}
+              className={`relative shadow-[inset_2px_4px_16px_rgba(255,255,255,0.2),inset_4px_8px_16px_rgba(255,255,255,0.2)] p-8 rounded-[35px] flex flex-col justify-between text-white bg-linear-to-br ${item.gradient}`}
             >
               {/* Quote Icon */}
               <div className="mb-4">

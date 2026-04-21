@@ -5,22 +5,17 @@ import { FaPhone } from "react-icons/fa6";
 import { Mail, MapPinIcon } from "lucide-react";
 import { FaFacebookF, FaFacebookMessenger, FaInstagram, FaWhatsapp, FaYoutube } from "react-icons/fa";
 import { HiArrowLongRight } from "react-icons/hi2";
+import MessangerIcon from "./MessangerIcon";
 
 const Footer = () => {
   return (
-    <footer
-      style={{
-        backgroundColor: "var(--color-background)",
-        color: "var(--color-text)",
-      }}
-      className=" pt-16 pb-8 text-black dark:text-white"
-    >
+    <footer className="bg-white pt-16 pb-8 text-black dark:text-white">
       <div className="container mx-auto px-6 text-base font-inter">
         {/* --- MAIN GRID LAYOUT --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[3fr_2fr_2fr_3fr] gap-12 mb-12">
           {/* --- COLUMN 1: BRAND & INTRO --- */}
           <div className="space-y-6">
-            <div className="flex items-center gap-3">
+            <Link href={"/"} className="flex items-center gap-3">
               {/* Ensure you have logo.png in your public folder */}
               <Image
                 src="/logo.png"
@@ -29,7 +24,7 @@ const Footer = () => {
                 height={106.328125}
                 className="rounded-lg"
               />
-            </div>
+            </Link>
             <p className="text-xs leading-5 tracking-normal text-[#2D2D2D] dark:text-white">
               Chalak Champs একটি আধুনিক Skill-Based EdTech Platform, যেখানে ৩–১৫
               বছর বয়সী শিশুদের Spoken English, Abacus, Programming সহ বিভিন্ন
@@ -147,15 +142,14 @@ const Footer = () => {
                   ফ্রি কোর্স
                 </Link>
               </li>
-              <li>
+              <li className="relative">
                 <Link
                   href="#"
-                  className="relative hover:text-[#F3066E] transition-colors"
+                  className="relative bg-linear-to-r from-[#C6005F] to-[#00477C] bg-clip-text text-transparent hover:text-[#F3066E] transition-colors"
                 >
                   চালাক Champs অফার
-                  <div className="absolute">
+                  <div className="absolute -top-1.25 -left-3">
                     <svg
-                      className="absolute"
                       width="32"
                       height="33"
                       viewBox="0 0 32 33"
@@ -244,40 +238,63 @@ const Footer = () => {
                   <FaPhone size={18} />{" "}
                 </div>
 
-                <p>
-                  +88 01740176774{" "}
-                  <span className="text-[#2D2D2D66] dark:text-gray-500">
-                    (24x7)
-                  </span>
-                </p>
+                <a
+                  href="tel:+8801740176774"
+                  className="hover:text-[#F3066E] transition-colors duration-300"
+                >
+                  <p>
+                    +88 01740176774{" "}
+                    <span className="text-[#2D2D2D66] dark:text-gray-500">
+                      (24x7)
+                    </span>
+                  </p>
+                </a>
               </li>
               <li className=" flex items-center gap-4 text-[#C6005F]">
                 <div className="bg-[#F3066E4D] p-2 rounded-lg ">
                   <Mail size={18} />{" "}
                 </div>
 
-                <p>support@chalakchamps.com</p>
+                <a
+                  href="mailto:support@chalakchamps.com"
+                  className="hover:underline transition-all duration-300"
+                >
+                  <p>support@chalakchamps.com</p>
+                </a>
               </li>
+              {/* Address linked up */}
               <li className=" flex items-center gap-4 text-[#C6005F]">
                 <div className="bg-[#F3066E4D] p-2 rounded-lg ">
-                  <MapPinIcon size={18} />{" "}
+                  <svg
+                    width="13"
+                    height="18"
+                    viewBox="0 0 13 18"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M6.4538 0C2.89517 0 0 2.89518 0 6.4538C0 10.8702 5.77556 17.3537 6.02139 17.6275C6.25234 17.8847 6.65561 17.8843 6.88621 17.6275C7.13213 17.3537 12.9076 10.8702 12.9076 6.4538C12.9076 2.89518 10.0124 0 6.4538 0ZM6.4538 9.70093C4.6633 9.70093 3.20676 8.24429 3.20676 6.4538C3.20676 4.66339 4.66339 3.20676 6.4538 3.20676C8.2442 3.20676 9.70084 4.66339 9.70084 6.4538C9.70084 8.24429 8.2442 9.70093 6.4538 9.70093Z"
+                      fill="#F3066E"
+                    />
+                  </svg>
                 </div>
 
-                <p>
-                  Amin Tower, House - 4 (4th Floor), <br /> Rd 1, Sector 9,
-                  Uttara, Dhaka 1230
-                </p>
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=Amin+Tower+Sector+9+Uttara+Dhaka"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline cursor-pointer"
+                >
+                  <p>
+                    Amin Tower, House - 4 (4th Floor), <br /> Rd 1, Sector 9,
+                    Uttara, Dhaka 1230
+                  </p>
+                </a>
               </li>
             </ul>
           </div>
         </div>
-        <div className="flex justify-end">
-          <div className="bg-linear-to-r from-[#FF8FCA] to-[#D9D9D9] p-0.5 w-fit rounded ">
-            <h5 className="text-[#F3066EB2] bg-white px-2 py-1 text-xs font-medium rounded flex items-center gap-2">
-              কিভাবে সহযোগিতা করতে পারি <HiArrowLongRight size={22} />
-            </h5>
-          </div>
-        </div>
+       
         {/* --- BOTTOM COPYRIGHT --- */}
         <div className="flex flex-col  items-center text-sm text-[#2D2D2D]/70">
           <p className="text-xs font-semibold leading-7 text-center">

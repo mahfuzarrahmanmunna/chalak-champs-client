@@ -10,39 +10,50 @@ const Banner = () => {
 
   return (
     <div className="">
-      <div className="text-center  px-4 py-10 md:max-w-205 mx-auto font-inter">
+      <div className="text-center py-10 md:max-w-205 mx-auto font-inter">
         <p className="text-lg mb-2 text-gray-600">আমরা বিশ্বাস করি</p>
 
         <div className="flex flex-col relative items-center justify-center">
-          {/* Fixed: Removed the outer <h1> tag to prevent nesting error */}
-          <h1
-            className="text-3xl md:text-5xl z-10 font-bold flex flex-wrap items-center justify-center gap-2 
-             bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#00477C] to-[#F3066E]  text-pink-600
-             "
-          >
-            {/* The text inherits transparency from h1 */}
-            <span>Every Child Is A</span>
+          <div className="relative flex flex-wrap items-center justify-center gap-2">
+            <h1
+              className="text-3xl md:text-6xl font-bold bg-[radial-gradient(circle_at_top,_#00477C_0%,_#F3066E_100%)] 
+                 text-transparent bg-clip-text leading-relaxed pointer-events-none"
+            >
+              Every Child Is A <br className="flex md:hidden" />{" "}
+              <span className="ml-2">Champ</span>
+            </h1>
 
-            <span className="relative inline-block px-3 py-2">
-              {/* Box Decorations (Ensure these are behind or don't block text) */}
-              <span className="absolute inset-0 border-2 border-dashed border-pink-500 pointer-events-none"></span>
-              <span className="absolute -top-1 -left-1 w-3 h-3 bg-pink-500"></span>
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500"></span>
-              <span className="absolute -bottom-1 -left-1 w-3 h-3 bg-pink-500"></span>
-              <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-pink-500"></span>
-
-              {/* The text here will now show the h1's radial gradient */}
-              <span>Champ</span>
-            </span>
-          </h1>
+            <div
+              className="absolute pointer-events-none flex items-center justify-center
+             right-10 bottom-0.5 w-32.5 h-11.5 
+             md:right-[calc(50%-360px)] md:bottom-2.25 md:w-57.5 md:h-17.5 "
+            >
+              <div className="w-full h-full border-2 border-dashed border-[#F3066E] relative z-0">
+                <span className="absolute -top-1 -left-1 w-2.5 h-2.5 bg-[#F3066E]"></span>
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#F3066E]"></span>
+                <span className="absolute -bottom-1 -left-1 w-2.5 h-2.5 bg-[#F3066E]"></span>
+                <span className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-[#F3066E]"></span>
+              </div>
+            </div>
+          </div>
 
           {/* King Image moved outside the H1 tag for better layout control */}
-          <div className="absolute -top-10 right-20 z-0 ">
-            <Image src="/king.png" width={50} height={50} alt="King Icon" />
+          <div
+            className="absolute md:-top-5 z-10 
+             right-[60%]  -bottom-6
+             md:right-[calc(50%-390px)]"
+          >
+            <Image
+              src="/king.png"
+              width={50}
+              height={50}
+              className="w-[35px] z-10 h-[35px] md:w-[50px] md:h-[50px]"
+              alt="King Icon"
+            />
           </div>
         </div>
 
-        <p className="my-6 text-gray-700 tracking-normal leading-5 text-sm md:text-base">
+        <p className="my-6 text-gray-700 tracking-normal leading-5 text-base md:text-base">
           <span className="text-secondary font-bold">Chalak</span>{" "}
           <span className="text-primary font-bold"> Champs</span> একটি আনন্দময়
           ও আধুনিক Skill-Based EdTech Platform, যেখানে ৩–১৫ বছর বয়সী শিশুদের
@@ -54,9 +65,10 @@ const Banner = () => {
 
         <button
           onClick={() => setIsBookingOpen(true)}
-          className="group relative overflow-hidden  rounded-lg bg-primary py-4 px-16 text-lg font-bold text-white transition-all duration-500 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,143,202,0.5)] active:scale-95"
+          className="group relative overflow-hidden rounded-lg bg-primary py-4 px-16 text-lg font-bold text-white transition-all duration-500 hover:shadow-[0_0_20px_rgba(255,143,202,0.5)] active:scale-95"
+          style={{ animation: "pulseScale 4s infinite ease-in-out" }}
         >
-          {/* Shimmering layer - optimized with a smoother gradient and group-hover speed-up */}
+          {/* Shimmering layer */}
           <span
             className="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/40 to-transparent"
             style={{
@@ -65,7 +77,7 @@ const Banner = () => {
             }}
           ></span>
 
-          {/* Button Text - added a slight lift effect on hover */}
+          {/* Button Text */}
           <span className="relative z-10 text-white transition-transform duration-300 group-hover:translate-y-[-1px] inline-block">
             ১ ফ্রি ক্লাস বুক করুন
           </span>
@@ -74,11 +86,16 @@ const Banner = () => {
           <style
             dangerouslySetInnerHTML={{
               __html: `
-      @keyframes shimmer {
-        0% { transform: translateX(-100%) skewX(-45deg); }
-        40%, 100% { transform: translateX(150%) skewX(-45deg); }
-      }
-    `,
+    @keyframes shimmer {
+      0% { transform: translateX(-100%) skewX(-45deg); }
+      40%, 100% { transform: translateX(150%) skewX(-45deg); }
+    }
+    
+    @keyframes pulseScale {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); } 
+    }
+  `,
             }}
           />
         </button>

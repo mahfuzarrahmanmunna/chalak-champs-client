@@ -163,14 +163,11 @@ const ChalakCourses = () => {
   );
 
   return (
-    <section className="max-w-300 mx-auto bg-[#D81B60] p-6 md:p-12 rounded-[40px] relative overflow-hidden">
+    <section className="container mx-auto bg-[#D81B60] p-6 md:p-12 rounded-[40px] relative overflow-hidden">
       {/* --- Header Section --- */}
       <div className="text-center mb-8">
-        <h2 className="text-white text-2xl md:text-3xl font-bold flex items-center justify-center gap-2">
-          <span className="bg-linear-to-br from-secondary to-[#6392b2] bg-clip-text text-transparent font-bold">
-            চালাক
-          </span>
-          Champs এর
+        <h2 className="text-white text-2xl md:text-5xl font-medium flex items-center justify-center gap-2">
+            চালাক Champs এর
           <div className="relative inline-block px-6 py-3 bg-[#D81B60]">
             {/* Dashed Border */}
             <div className="absolute inset-0 border-2 border-dashed border-white m-1"></div>
@@ -182,7 +179,7 @@ const ChalakCourses = () => {
             <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-white"></div>
 
             {/* Text Content */}
-            <h2 className="relative text-white text-3xl font-bold tracking-wide">
+            <h2 className="relative tracking-wide">
               কোর্সসমূহ
             </h2>
           </div>

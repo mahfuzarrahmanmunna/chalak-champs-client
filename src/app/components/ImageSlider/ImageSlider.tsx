@@ -24,8 +24,7 @@ const ImageSlider: React.FC = () => {
 
   return (
     <div
-      style={{ backgroundColor: "var(--color-background)" }}
-      className="sflex flex-col gap-8 w-300 mx-auto rounded-4xl overflow-hidden"
+      className="flex flex-col gap-8 container mx-auto rounded-4xl overflow-hidden"
     >
       {/* --- ROW 1: LEFT TO RIGHT (Reversed via dir="rtl") --- */}
       <div dir="rtl" className="w-full rounded-4xl">

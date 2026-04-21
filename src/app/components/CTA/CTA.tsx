@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { User, Phone, ChevronDown, Search } from "lucide-react";
 import Image from "next/image";
 import Button from "@/app/ui/button/Button";
+import BirdIcon from "./BirdIcon";
 
 // Types
 interface Country {
@@ -92,23 +93,26 @@ const CTA = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-10">
+    <div className="container mx-auto py-10">
       {/* MAIN SHELL (Your Pink Gradient Wrapper) */}
-      <div className="w-full bg-gradient-to-b from-[#F3066E] to-[#FF8FCA] rounded-4xl p-0.5 shadow-2xl">
-        <div className="bg-[#F3066E] md:p-16 p-4 rounded-[30px] flex justify-between items-center">
+      <div className="w-full relative bg-linear-to-b from-[#F3066E] to-[#FF8FCA] rounded-4xl p-0.5 ">
+        <div className="bg-[#F3066E] md:p-16 md:space-y-0 space-y-6 p-4 rounded-[30px] md:flex justify-between items-center">
           {/* REAL FORM COMPONENT (White Card) */}
-          <div className=" text-black">
+          <div className="relative text-black md:w-120">
+            <div className="absolute -top-24.5 -rotate-2 right-16">
+              <BirdIcon />
+            </div>
             <form
               onSubmit={handleSubmit}
-              className="space-y-4 max-w-87 bg-white rounded-3xl p-6 text-sm shadow-xl"
+              className="space-y-4 md:max-w-100 bg-white h-full rounded-3xl p-6 text-sm "
             >
-              <h4 className="text-lg font-semibold text-[#F3066E] leading-6">
+              <h4 className="text-xl font-semibold text-[#F3066E] leading-6">
                 ফ্রি ডেমো ক্লাস বুক করতে রেজিস্ট্রেশন করো
               </h4>
 
               {/* Student Name */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
+                <label className="text-sm font-semibold  text-gray-700">
                   শিক্ষার্থীর নাম <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -126,7 +130,7 @@ const CTA = () => {
 
               {/* Father's Name */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
+                <label className="text-sm font-semibold  text-gray-700">
                   শিক্ষার্থীর অভিভাবকের নাম{" "}
                   <span className="text-red-500">*</span>
                 </label>
@@ -145,10 +149,12 @@ const CTA = () => {
 
               {/* Phone Number with Flag */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
+                <label className="text-sm font-semibold pb-2 text-gray-700">
                   ফোন নাম্বার <span className="text-red-500">*</span>
                 </label>
-                <div className="flex rounded-xl border border-gray-200 overflow-hidden bg-gray-50 focus-within:ring-2 focus-within:ring-[#F3066E] focus-within:border-transparent transition-all relative z-0">
+
+                {/* REMOVED 'overflow-hidden' from here */}
+                <div className="flex rounded-xl border border-gray-200 bg-gray-50 focus-within:ring-2 focus-within:ring-[#F3066E] focus-within:border-transparent transition-all relative z-0">
                   {/* Country Selector */}
                   <div className="relative w-20 shrink-0 bg-white z-10">
                     <button
@@ -171,61 +177,67 @@ const CTA = () => {
                       <ChevronDown size={14} className="text-gray-400" />
                     </button>
 
-                    {/* Dropdown - Fixed Z-Index */}
+                    {/* Dropdown - Ensure z-index is high */}
                     {isDropdownOpen && (
-                      <div className="absolute top-full left-0 w-full mt-1 bg-white shadow-xl border border-gray-100 rounded-xl max-h-60 overflow-y-auto z-[100]">
-                        <div className="sticky top-0 bg-white p-2 border-b border-gray-100">
+                      <div className="absolute bottom-full   left-0 w-50 mt-1 bg-white shadow-xl border border-gray-100 rounded-xl max-h-60 overflow-y-auto z-50">
+                        {/* Search Bar */}
+                        <div className="sticky top-0 bg-white p-2 border-b border-gray-100 z-10">
                           <div className="flex items-center gap-2 px-2 py-1 bg-gray-50 rounded-md">
                             <Search size={12} className="text-gray-400" />
                             <input
                               type="text"
-                              placeholder="দেশ খুঁজুন..."
+                              placeholder="Search country..."
                               className="bg-transparent border-none outline-none text-xs w-full"
                               value={searchTerm}
                               onChange={(e) => setSearchTerm(e.target.value)}
                             />
                           </div>
                         </div>
-                        {filteredCountries.map((country) => (
-                          <button
-                            type="button"
-                            key={country.cca2}
-                            onClick={() => {
-                              setSelectedCountry(country);
-                              setIsDropdownOpen(false);
-                              setSearchTerm("");
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left transition-colors"
-                          >
-                            <img
-                              src={country.flag}
-                              alt="flag"
-                              className="w-5 h-4 object-cover rounded-sm"
-                            />
-                            <span className="text-xs font-medium text-gray-700">
-                              {country.name}
-                            </span>
-                          </button>
-                        ))}
+                        <div className="z-100">
+                          {/* Country List */}
+                          {filteredCountries.map((country) => (
+                            <button
+                              type="button"
+                              key={country.cca2}
+                              onClick={() => {
+                                setSelectedCountry(country);
+                                setIsDropdownOpen(false);
+                                setSearchTerm("");
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left transition-colors"
+                            >
+                              <img
+                                src={country.flag}
+                                alt="flag"
+                                className="w-5 h-4 object-cover rounded-sm"
+                              />
+                              <span className="text-xs font-medium text-gray-700">
+                                {country.name}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
 
                   {/* Phone Input */}
+                  {/* Added 'pl-2' for spacing and removed rounded-tl/bl-xl because the flag has them */}
                   <input
                     type="tel"
                     name="phone"
                     required
                     value={formData.phone}
                     onChange={handleChange}
-                    className="  py-3 bg-transparent outline-none"
+                    className="w-full py-3 bg-transparent outline-none px-2"
+                    placeholder="1XXXXXXXXXX"
                   />
                 </div>
               </div>
 
               {/* Class */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
+              <div className="space-y-2 z-0">
+                <label className="text-sm  font-semibold pb-2 text-gray-700">
                   শিক্ষার্থীর ক্লাস <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -254,7 +266,7 @@ const CTA = () => {
 
               {/* Course */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
+                <label className="text-sm font-semibold pb-2 text-gray-700">
                   শিক্ষার্থী কোন কোর্সটি করতে আগ্রহী{" "}
                   <span className="text-red-500">*</span>
                 </label>
@@ -279,82 +291,118 @@ const CTA = () => {
               <button
                 type="submit"
                 disabled={!isFormValid}
-                className={`w-full font-bold text-lg py-4 rounded-xl shadow-lg transform active:scale-[0.98] transition-all duration-300 ${
+                className={`w-full font-bold text-lg leading-7.5 py-2.25  rounded-xl  transform active:scale-[0.98] transition-all duration-300 ${
                   isFormValid
-                    ? "bg-gradient-to-r from-[#F3066E] to-[#D946EF] hover:from-[#D946EF] hover:to-[#F3066E] text-white cursor-pointer"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    ? "bg-[#F3056D] text-white cursor-pointer shadow-[inset_0px_1.5px_0px_#FF8FCA,inset_0px_1.5px_1.5px_rgba(243,6,110,0.3),inset_0px_0px_0px_1.5px_#C6005F,inset_0px_3.01px_7.52px_0px_rgba(243,6,110,0.3)] "
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed shadow-[inset_0px_1.5px_0px_#D9D9D9,inset_0px_1.5px_1.5px_rgba(217,217,217,0.3),inset_0px_0px_1.5px_#D9D9D9,inset_0px_3.01px_7.52px_rgba(217,217,217,0.3)]"
                 }`}
               >
                 সাবমিট করো
               </button>
             </form>
           </div>
-          <div>
+          {/* right side content */}
+          <div className="z-10">
             <div className="bg-linear-to-r mb-5 from-[#FFFFFF] to-[#C7EAFF] rounded-[30px]">
-              <div className="flex ">
-                <div className="pl-5 py-1.5 ">
-                  <div className="md:py-2">
+              <div className="flex justify-between">
+                <div className="pl-5 md:py-1.5">
+                  <div className="md:py-2 pt-5">
                     <h4 className="text-[#F3066E] text-3xl font-semibold leading-7 tracking-normal mt-1.5">
                       যেকোনো প্রয়োজনে কল করো <br className="hidden md:block" />{" "}
                       এখনই
                     </h4>
-                    <p className="text-[#2D2D2D] text-sm leading-3.5">
+                    <p className="text-[#2D2D2D] text-sm leading-3.5 mt-2">
                       চালাক Champs এর যেকোনো কোর্স বা স্কিল প্রোগ্রাম কিংবা
                       ব্যাচ/ক্লাস সহ <br className="hidden md:block" /> যেকোনো
                       তথ্যের জন্য আমরা 24/7 আপনার পাশে
                     </p>
-                    <Button
-                      className="mt-6"
-                      bgColor="#F3056D"
-                      highlightColor="#FF8FCA"
-                      darkShadowColor="#F3066E"
-                      icon={
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
+                    <div className="flex ">
+                      <div className="flex flex-col">
+                        {/* <Button
+                          className="mt-6"
+                          bgColor="#F3056D"
+                          highlightColor="#FF8FCA"
+                          darkShadowColor="#F3066E"
+                          icon={
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 20 20"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M18.3706 14.6C17.8244 14.1419 14.6206 12.1131 14.0881 12.2063C13.8381 12.2506 13.6469 12.4638 13.135 13.0744C12.8983 13.3749 12.6383 13.6564 12.3575 13.9163C11.843 13.792 11.345 13.6074 10.8738 13.3663C9.0258 12.4666 7.53289 10.9732 6.63375 9.125C6.39265 8.65379 6.20804 8.15576 6.08375 7.64125C6.34358 7.36044 6.62507 7.10047 6.92563 6.86375C7.53562 6.35188 7.74938 6.16187 7.79375 5.91062C7.88688 5.37687 5.85625 2.17437 5.4 1.62813C5.20875 1.40188 5.035 1.25 4.8125 1.25C4.1675 1.25 1.25 4.8575 1.25 5.325C1.25 5.36313 1.3125 9.11875 6.05562 13.9444C10.8813 18.6875 14.6369 18.75 14.675 18.75C15.1425 18.75 18.75 15.8325 18.75 15.1875C18.75 14.965 18.5981 14.7913 18.3706 14.6Z"
+                                fill="white"
+                              />
+                              <path
+                                d="M14.375 9.375H15.625C15.6235 8.04937 15.0962 6.77847 14.1589 5.84111C13.2215 4.90375 11.9506 4.37649 10.625 4.375V5.625C11.6193 5.62599 12.5725 6.0214 13.2756 6.72445C13.9786 7.42749 14.374 8.38074 14.375 9.375Z"
+                                fill="white"
+                              />
+                              <path
+                                d="M17.5 9.375H18.75C18.7475 7.22088 17.8907 5.15569 16.3675 3.6325C14.8443 2.1093 12.7791 1.25248 10.625 1.25V2.5C12.4477 2.50215 14.1951 3.22717 15.484 4.51602C16.7728 5.80486 17.4978 7.5523 17.5 9.375Z"
+                                fill="white"
+                              />
+                            </svg>
+                          }
                         >
-                          <path
-                            d="M18.3706 14.6C17.8244 14.1419 14.6206 12.1131 14.0881 12.2063C13.8381 12.2506 13.6469 12.4638 13.135 13.0744C12.8983 13.3749 12.6383 13.6564 12.3575 13.9163C11.843 13.792 11.345 13.6074 10.8738 13.3663C9.0258 12.4666 7.53289 10.9732 6.63375 9.125C6.39265 8.65379 6.20804 8.15576 6.08375 7.64125C6.34358 7.36044 6.62507 7.10047 6.92563 6.86375C7.53562 6.35188 7.74938 6.16187 7.79375 5.91062C7.88688 5.37687 5.85625 2.17437 5.4 1.62813C5.20875 1.40188 5.035 1.25 4.8125 1.25C4.1675 1.25 1.25 4.8575 1.25 5.325C1.25 5.36313 1.3125 9.11875 6.05562 13.9444C10.8813 18.6875 14.6369 18.75 14.675 18.75C15.1425 18.75 18.75 15.8325 18.75 15.1875C18.75 14.965 18.5981 14.7913 18.3706 14.6Z"
-                            fill="white"
-                          />
-                          <path
-                            d="M14.375 9.375H15.625C15.6235 8.04937 15.0962 6.77847 14.1589 5.84111C13.2215 4.90375 11.9506 4.37649 10.625 4.375V5.625C11.6193 5.62599 12.5725 6.0214 13.2756 6.72445C13.9786 7.42749 14.374 8.38074 14.375 9.375Z"
-                            fill="white"
-                          />
-                          <path
-                            d="M17.5 9.375H18.75C18.7475 7.22088 17.8907 5.15569 16.3675 3.6325C14.8443 2.1093 12.7791 1.25248 10.625 1.25V2.5C12.4477 2.50215 14.1951 3.22717 15.484 4.51602C16.7728 5.80486 17.4978 7.5523 17.5 9.375Z"
-                            fill="white"
-                          />
-                        </svg>
-                      }
-                    >
-                      {/* Text ta ekhane thakbe */}
-                      +88 01740176774
-                    </Button>
-                    <div>
-                      <p className="text-[#2D2D2D]/50 leading-4 mt-2 text-sm">
-                        * যেকোনো নাম্বার থেকে আমাদের কল করুন
-                      </p>
+                          +88 01740176774
+                        </Button> */}
+                        <button className="bg-primary text-xs px-1.25 py-1 md:text-xl font-medium flex items-center md:px-6 md:py-3.5 rounded mt-4 md:rounded-xl md:mt-8">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M18.3706 14.6C17.8244 14.1419 14.6206 12.1131 14.0881 12.2063C13.8381 12.2506 13.6469 12.4638 13.135 13.0744C12.8983 13.3749 12.6383 13.6564 12.3575 13.9163C11.843 13.792 11.345 13.6074 10.8738 13.3663C9.0258 12.4666 7.53289 10.9732 6.63375 9.125C6.39265 8.65379 6.20804 8.15576 6.08375 7.64125C6.34358 7.36044 6.62507 7.10047 6.92563 6.86375C7.53562 6.35188 7.74938 6.16187 7.79375 5.91062C7.88688 5.37687 5.85625 2.17437 5.4 1.62813C5.20875 1.40188 5.035 1.25 4.8125 1.25C4.1675 1.25 1.25 4.8575 1.25 5.325C1.25 5.36313 1.3125 9.11875 6.05562 13.9444C10.8813 18.6875 14.6369 18.75 14.675 18.75C15.1425 18.75 18.75 15.8325 18.75 15.1875C18.75 14.965 18.5981 14.7913 18.3706 14.6Z"
+                              fill="white"
+                            />
+                            <path
+                              d="M14.375 9.375H15.625C15.6235 8.04937 15.0962 6.77847 14.1589 5.84111C13.2215 4.90375 11.9506 4.37649 10.625 4.375V5.625C11.6193 5.62599 12.5725 6.0214 13.2756 6.72445C13.9786 7.42749 14.374 8.38074 14.375 9.375Z"
+                              fill="white"
+                            />
+                            <path
+                              d="M17.5 9.375H18.75C18.7475 7.22088 17.8907 5.15569 16.3675 3.6325C14.8443 2.1093 12.7791 1.25248 10.625 1.25V2.5C12.4477 2.50215 14.1951 3.22717 15.484 4.51602C16.7728 5.80486 17.4978 7.5523 17.5 9.375Z"
+                              fill="white"
+                            />
+                          </svg>
+                          +88 01740176774
+                        </button>
+                        <div>
+                          <p className="text-[#2D2D2D]/50 leading-4 mt-2 text-sm">
+                            * যেকোনো নাম্বার থেকে আমাদের কল করুন
+                          </p>
+                        </div>
+                      </div>
+                      <div className="rounded-xl bottom-0 md:hidden flex">
+                        <Image
+                          src={"/girls.png"}
+                          width={240}
+                          height={225}
+                          alt="girls image"
+                          className="rounded-xl "
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="rounded-xl bottom-0">
+                <div className="rounded-xl bottom-0 hidden md:flex">
                   <Image
                     src={"/girls.png"}
                     width={240}
                     height={225}
                     alt="girls image"
-                    className="rounded-xl"
+                    className="rounded-xl "
                   />
                 </div>
               </div>
             </div>
-            <div className="flex gap-5">
-              <div className="bg-linear-to-r pb-5 w-[45%] from-[#FFD0CD] to-[#FFC9C9] md:px-5 pt-5 rounded-2xl">
-                <div className="flex ">
+            <div className="md:flex gap-5 z-10 md:mt-9 space-y-6 md:space-y-0">
+              <div className="bg-linear-to-r p-3 pb-5 md:w-[45%] from-[#FFD0CD] to-[#FFC9C9] md:px-5 pt-5 rounded-2xl">
+                <div className="flex z-10">
                   <div>
                     <h4 className="text-secondary font-semibold text-lg leading-8">
                       ফ্রি ভিডিও লাইব্রেরি
@@ -363,7 +411,11 @@ const CTA = () => {
                       ভিডিও দেখো{" "}
                     </button> */}
                     <div className="mt-5.5">
-                      <Button>ভিডিও দেখো</Button>
+                      <a href="https://www.youtube.com/@chalakchamps" target="_blank">
+                        <Button textSize="sm" px="px-6">
+                          ভিডিও দেখো
+                        </Button>
+                      </a>
                     </div>
                   </div>
 
@@ -385,11 +437,11 @@ const CTA = () => {
                   </div>
                 </div>
               </div>
-              <div className="w-[55%] bg-linear-to-r from-[#C8E4FF] to-[#C9DBFF] rounded-3xl p-5">
-                <div className="flex">
+              <div className="md:w-[55%] bg-linear-to-r from-[#C8E4FF] to-[#C9DBFF] rounded-3xl p-5">
+                <div className="flex z-10">
                   <div>
                     <div className="flex gap-3 items-center">
-                      <h5 className="text-xl font-semibold leading-8 text-[#232C6A]">
+                      <h5 className="text-lg font-semibold leading-8 text-[#232C6A]">
                         চালাক Champs ফেসবুক{" "}
                       </h5>
                       <svg
@@ -467,13 +519,21 @@ const CTA = () => {
                     {/* <button className="text-sm  font-bold text-white px-5 py-2.5 rounded-lg bg-[#F3056D] shadow-[inset_0_3px_0_rgba(255,255,255,0.5)] transition-all ">
                       লাইভ দেখো{" "}
                     </button> */}
-                    <Button
-                      bgColor="#F3056D"
-                      highlightColor="#FF8FCA"
-                      darkShadowColor="#F3066E"
-                    >
-                      লাইভ দেখো
-                    </Button>
+                    <div className="mt-4">
+                      <a
+                        href="https://www.facebook.com/chalakchampsbd"
+                        target="_blank"
+                      >
+                        <Button
+                          bgColor="#F3056D"
+                          highlightColor="#FF8FCA"
+                          darkShadowColor="#F3066E"
+                          hoverTextColor="#F3056D"
+                        >
+                          লাইভ দেখো
+                        </Button>
+                      </a>
+                    </div>
                   </div>
                   <div>
                     <Image
@@ -484,33 +544,19 @@ const CTA = () => {
                     />
                   </div>
                 </div>
-                {/* svg Facebook */}
               </div>
             </div>
           </div>
         </div>
+        <div className="absolute bottom-0 right-0 z-0">
+          <Image
+            src={"/maskgroup.webp"}
+            width={500}
+            height={500}
+            alt="group bird"
+          />{" "}
+        </div>
       </div>
-      {/* <button
-        className="
-  px-6 py-2.5 
-  bg-[#214187] 
-  text-white 
-  font-medium 
-  rounded-lg 
-  transition-all
-  active:scale-95
-"
-        style={{
-          boxShadow: `
-    inset 0px 1.5px 0px 0px #30A1E6,
-    0px 1.5px 1.5px 0px rgba(33, 65, 135, 0.71),
-    0px 0px 0px 1.5px #001D3A,
-    0px 3.01px 7.52px 0px rgba(33, 65, 135, 0.3)
-  `,
-        }}
-      >
-        Click Here
-      </button> */}
     </div>
   );
 };

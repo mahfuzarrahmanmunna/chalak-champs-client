@@ -17,6 +17,8 @@ interface CustomButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   mx?: string;
   my?: string;
   fullWidth?: boolean;
+  // Text Size Prop
+  textSize?: string;
 }
 
 const Button: React.FC<CustomButtonProps> = ({
@@ -27,13 +29,14 @@ const Button: React.FC<CustomButtonProps> = ({
   highlightColor = "#30A1E6",
   darkShadowColor = "#001D3A",
   textColor = "#FFFFFF",
-  hoverBgColor = "#FFFFFF", // Dynamic Hover BG
-  hoverTextColor = "#214187", // Dynamic Hover Text
+  hoverBgColor = "#FFFFFF",
+  hoverTextColor = "#214187",
   px = "px-8",
   py = "py-2.5",
   mx = "mx-0",
   my = "my-0",
   fullWidth = false,
+  textSize = "text-base", // Added default text size
   className = "",
   ...props
 }) => {
@@ -61,10 +64,11 @@ const Button: React.FC<CustomButtonProps> = ({
       {...props}
       style={shadowStyles}
       className={`
-        group relative flex items-center justify-center gap-2 
+        group relative cursor-pointer flex items-center justify-center gap-2 
         rounded-lg font-bold transition-all duration-300
         
         /* Base Styles */
+        ${textSize} /* Dynamic Text Size applied here */
         bg-[var(--bg-color)] text-[var(--text-color)] [box-shadow:var(--normal-shadow)]
         
         /* Dynamic Hover State */

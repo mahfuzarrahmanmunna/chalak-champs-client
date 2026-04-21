@@ -13,6 +13,8 @@ import Footer from "../components/Footer/Footer";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import Navbar1 from "../components/Navbar/Navbar1";
 import NavHeader from "../components/NavHeader/NavHeader";
+import FooterMassenger from "../components/Footer/FooterMassenger";
+import PromoModal from "../components/PromoModal/PromoModal";
 // import { ThemeProvider2 } from "../context/ThemeContext2";
 
 // Type definition for beforeinstallprompt event
@@ -78,6 +80,8 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             {!isDashboard && !isStDashboard && <NavHeader />}
             {children}
             {!isDashboard && !isStDashboard && <Footer />}
+            <FooterMassenger />
+            <PromoModal/>
           </LanguageProvider>
         </ThemeProvider>
       </LoadingProvider>

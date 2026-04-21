@@ -491,8 +491,8 @@ const NavLogo = () => {
             y2="47.1261"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stop-color="#0073C7" />
-            <stop offset="1" stop-color="#21CEFF" />
+            <stop stopColor="#0073C7" />
+            <stop offset="1" stopColor="#21CEFF" />
           </linearGradient>
         </defs>
       </svg>
