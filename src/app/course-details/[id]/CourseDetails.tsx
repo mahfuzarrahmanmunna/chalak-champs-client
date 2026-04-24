@@ -38,6 +38,8 @@ import {
   Award,
   Zap,
 } from "lucide-react";
+import NeedCall from "@/app/components/CTA/NeedCall";
+import IncludesCard from "./IncludesCard";
 
 // --- Validation Schemas ---
 const commentSchema = yup.object().shape({
@@ -280,19 +282,7 @@ export default function CourseDetailsPage() {
     >
       {/* --- HERO SECTION (Full Width) --- */}
       <div className="relative">
-        <div className="absolute inset-0">
-          <Image
-            src={course.thumbnail}
-            alt={course.title}
-            fill
-            className="object-cover"
-            unoptimized
-          />
-          <div
-            className="absolute inset-0"
-            style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
-          ></div>
-        </div>
+        
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row gap-8">
             <div className="flex-1">
@@ -551,7 +541,7 @@ export default function CourseDetailsPage() {
         <div className="lg:col-span-8 space-y-12">
           {/* Sticky Navigation Tabs */}
           <div
-            className="sticky top-16 z-30 border-b mb-8 bg-base-100/95 backdrop-blur"
+            className="sticky top-26 z-30 border-b mb-8 bg-base-100/95 backdrop-blur"
             style={{
               borderColor: "var(--color-border)",
               backgroundColor: "var(--color-background)",
@@ -1099,60 +1089,8 @@ export default function CourseDetailsPage() {
             </div>
 
             {/* This Course Includes Card */}
-            <div
-              className="rounded-lg p-6 shadow-sm border"
-              style={{
-                backgroundColor: "var(--color-card)",
-                borderColor: "var(--color-border)",
-              }}
-            >
-              <h3
-                className="text-xl font-bold mb-6"
-                style={{ color: "var(--color-foreground)" }}
-              >
-                This course includes:
-              </h3>
-              <ul
-                className="space-y-4 text-sm"
-                style={{ color: "var(--color-foreground)", opacity: 0.8 }}
-              >
-                <li className="flex items-start gap-3">
-                  <Video
-                    className="h-5 w-5 flex-shrink-0 mt-0.5"
-                    style={{ color: "var(--color-primary)" }}
-                  />
-                  <span>12 hours of video content</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <List
-                    className="h-5 w-5 flex-shrink-0 mt-0.5"
-                    style={{ color: "var(--color-primary)" }}
-                  />
-                  <span>15 lessons</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Download
-                    className="h-5 w-5 flex-shrink-0 mt-0.5"
-                    style={{ color: "var(--color-primary)" }}
-                  />
-                  <span>Downloadable resources</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Award
-                    className="h-5 w-5 flex-shrink-0 mt-0.5"
-                    style={{ color: "var(--color-primary)" }}
-                  />
-                  <span>Certificate of completion</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Languages
-                    className="h-5 w-5 flex-shrink-0 mt-0.5"
-                    style={{ color: "var(--color-primary)" }}
-                  />
-                  <span>Subtitles: English, Spanish, French</span>
-                </li>
-              </ul>
-            </div>
+            <IncludesCard/>
+            <NeedCall/>
           </div>
         </div>
       </div>

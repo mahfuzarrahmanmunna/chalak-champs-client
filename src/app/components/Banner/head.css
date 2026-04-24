@@ -1,0 +1,5 @@
+.my-class {
+  /* background-color: radial-gradient(circle at top, #00477C 0%, #F3066E 100%); */
+  /* To make it small, add size: */
+  background: radial-gradient(circle closest-side at top, #00477C 0%, #F3066E 100%);
+}

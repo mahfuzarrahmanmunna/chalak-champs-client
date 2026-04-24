@@ -29,8 +29,8 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
   const isDashboard = pathname.startsWith("/admin-dashboard");
   const isStDashboard = pathname.startsWith("/dashboard");
-  const { currentUser } = useCurrentUser();
-  console.log(currentUser);
+  // const { currentUser } = useCurrentUser();
+  // console.log(currentUser);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -81,7 +81,7 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             {children}
             {!isDashboard && !isStDashboard && <Footer />}
             <FooterMassenger />
-            <PromoModal/>
+            {/* <PromoModal/> */}
           </LanguageProvider>
         </ThemeProvider>
       </LoadingProvider>

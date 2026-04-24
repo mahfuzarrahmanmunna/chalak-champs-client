@@ -180,14 +180,14 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                   <path
                     d="M20.0918 7.51514L7.48448 20.5151"
                     stroke="white"
-                    stroke-width="2"
-                    stroke-linecap="round"
+                    strokeWidth="2"
+                    strokeLinecap="round"
                   />
                   <path
                     d="M7.87695 7.51514L20.4843 20.5151"
                     stroke="white"
-                    stroke-width="2"
-                    stroke-linecap="round"
+                    strokeWidth="2"
+                    strokeLinecap="round"
                   />
                 </g>
                 <defs>
@@ -198,9 +198,9 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                     width="27.9688"
                     height="28.0303"
                     filterUnits="userSpaceOnUse"
-                    color-interpolation-filters="sRGB"
+                    colorInterpolationFilters="sRGB"
                   >
-                    <feFlood flood-opacity="0" result="BackgroundImageFix" />
+                    <feFlood floodOpacity="0" result="BackgroundImageFix" />
                     <feColorMatrix
                       in="SourceAlpha"
                       type="matrix"

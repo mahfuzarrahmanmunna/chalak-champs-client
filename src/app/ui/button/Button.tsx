@@ -65,7 +65,7 @@ const Button: React.FC<CustomButtonProps> = ({
       style={shadowStyles}
       className={`
         group relative cursor-pointer flex items-center justify-center gap-2 
-        rounded-lg font-bold transition-all duration-300
+        rounded-lg font-bold active:animate-pulse transition-all duration-300
         
         /* Base Styles */
         ${textSize} /* Dynamic Text Size applied here */

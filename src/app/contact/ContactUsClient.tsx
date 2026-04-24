@@ -19,6 +19,11 @@ import {
   Building,
   Map,
 } from "lucide-react";
+import BackSpace from "../components/Icon/BackSpace";
+import Button from "../ui/button/Button";
+import { useCurrentPath } from "../hooks/useCurrentPath";
+import Link from "next/link";
+import CTA from "../components/CTA/CTA";
 
 // Country Interface
 interface Country {
@@ -43,7 +48,6 @@ interface ContactFormInputs {
 }
 
 // Validation Schema
-// Validation Schema
 const contactSchema = yup.object().shape({
   fullName: yup.string().required("Full name is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -64,7 +68,6 @@ const contactSchema = yup.object().shape({
     .test(
       "is-not-empty",
       "Message cannot be empty",
-      // FIX: Added !!value to ensure the return type is always boolean
       (value) => !!value && value.trim().length > 0,
     ),
 });
@@ -127,6 +130,9 @@ export default function ContactUsClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Use Custom Hook
+  const pathname = useCurrentPath();
+
   useEffect(() => {
     const fetchCountries = async () => {
       try {
@@ -135,20 +141,27 @@ export default function ContactUsClient() {
         );
         const data = await response.json();
         const formattedCountries: Country[] = data
-          .map((country: {idd: {root: string, suffixes?: string[]}, name: {common: string}, cca2: string, flags: {svg?: string, png?: string}}) => {
-            let dialCode = "";
-            if (country.idd && country.idd.root) {
-              dialCode = country.idd.root;
-              if (country.idd.suffixes && country.idd.suffixes.length > 0)
-                dialCode += country.idd.suffixes[0];
-            }
-            return {
-              name: country.name.common,
-              code: country.cca2,
-              dial_code: dialCode,
-              flag: country.flags.svg || country.flags.png,
-            };
-          })
+          .map(
+            (country: {
+              idd: { root: string; suffixes?: string[] };
+              name: { common: string };
+              cca2: string;
+              flags: { svg?: string; png?: string };
+            }) => {
+              let dialCode = "";
+              if (country.idd && country.idd.root) {
+                dialCode = country.idd.root;
+                if (country.idd.suffixes && country.idd.suffixes.length > 0)
+                  dialCode += country.idd.suffixes[0];
+              }
+              return {
+                name: country.name.common,
+                code: country.cca2,
+                dial_code: dialCode,
+                flag: country.flags.svg || country.flags.png,
+              };
+            },
+          )
           .filter((c: Country) => c.dial_code)
           .sort((a: Country, b: Country) => a.name.localeCompare(b.name));
         setCountries(formattedCountries);
@@ -213,7 +226,7 @@ export default function ContactUsClient() {
       if (!response.ok) throw new Error("Network response was not ok");
 
       setIsSubmitted(true);
-      reset(); // Reset form
+      reset();
       setTimeout(() => setIsSubmitted(false), 5000);
     } catch (error) {
       console.error("Submission error:", error);
@@ -239,512 +252,101 @@ export default function ContactUsClient() {
       className="min-h-screen"
       style={{ backgroundColor: colors.background }}
     >
-      {/* Hero Section */}
-      <section className="relative py-20 md:py-28 overflow-hidden">
+      <section className="relative w-full min-h-[60vh] overflow-hidden">
+        {/* --- BACKGROUND MAP LAYER --- */}
         <div className="absolute inset-0 z-0">
-          <Image
-            src="https://images.unsplash.com/photo-1423666639041-f56000c27a9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
-            alt="Contact Background"
-            fill
-            className="object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[rgb(243,6,110)] to-[rgb(33,65,135)] opacity-90"></div>
+          {/* Google Maps Iframe */}
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3648.4130676384407!2d90.39479788263974!3d23.874967028785555!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755c7e2811c6fa9%3A0x26e930dd6cd19c39!2sLingual%20Academy!5e0!3m2!1sen!2sus!4v1776978476223!5m2!1sen!2sus"
+            width="100%"
+            height="100%"
+            style={{ border: 0, height: "100%" }}
+            // allowFullScreen=""
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          ></iframe>
+
+          {/* Overlay: Ensures text readability */}
+          {/* FIX: Changed inset-100 to inset-0 to cover the full map */}
+          {/* <div className="absolute "></div> */}
         </div>
-        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Get In Touch With Us
-          </h1>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto opacity-90">
-            Have questions about our courses or need assistance? Our team is
-            ready to help.
-          </p>
+
+        {/* --- CONTENT LAYER --- */}
+        <div className="relative z-10 px-6 max-w-7xl mx-auto min-h-[60vh] flex flex-col justify-center py-20 md:py-0">
+          {/* Back Button Area */}
+          <div className="mb-8 flex items-center gap-4 text-sm animate-fade-in-up">
+            {/* Back Button */}
+            <Link
+              href="/"
+              className="group flex items-center gap-2 font-medium text-gray-600 hover:text-black transition-colors duration-200"
+            >
+              <div className="p-1.5 rounded-full bg-white/50 backdrop-blur-md border border-white/20 group-hover:bg-white group-hover:shadow-md transition-all">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+              </div>
+              <span className="bg-white/40 px-2 py-1 rounded backdrop-blur-sm">
+                Back
+              </span>
+            </Link>
+
+            {/* Vertical Divider */}
+            <div className="h-4 w-[1px] bg-gray-400 mx-1"></div>
+
+            {/* Pathname Display */}
+            <nav aria-label="Breadcrumb">
+              <span className="flex items-center">
+                <span className="text-xs font-bold tracking-widest uppercase text-white bg-pink-500/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-pink-400/50">
+                  {pathname.replace("/", "") || "Home"}
+                </span>
+              </span>
+            </nav>
+          </div>
+
+          {/* Main Content */}
+          <div className="text-center">
+            <h1 className="text-4xl md:text-7xl font-bold text-secondary flex flex-wrap items-center justify-center gap-4 drop-shadow-sm tracking-tight">
+              <span>Let&apos;s Get In</span>
+
+              {/* Frosted Glass Container for "Touch" */}
+              <div className="relative px-6 py-2 mt-2 md:mt-0">
+                {/* Dashed Border Overlay */}
+                <span className="absolute inset-0 border-2 border-dashed border-pink-600 pointer-events-none rounded-lg"></span>
+
+                {/* Corner Dots */}
+                <span className="absolute -top-1.5 -left-1.5 w-2.5 h-2.5 bg-pink-700 rounded-full shadow-sm"></span>
+                <span className="absolute -top-1.5 -right-1.5 w-2.5 h-2.5 bg-pink-700 rounded-full shadow-sm"></span>
+                <span className="absolute -bottom-1.5 -left-1.5 w-2.5 h-2.5 bg-pink-700 rounded-full shadow-sm"></span>
+                <span className="absolute -bottom-1.5 -right-1.5 w-2.5 h-2.5 bg-pink-700 rounded-full shadow-sm"></span>
+
+                {/* Gradient Text */}
+                <span className="relative bg-gradient-to-r from-pink-600 to-pink-500 bg-clip-text text-transparent">
+                  Touch
+                </span>
+              </div>
+            </h1>
+
+            {/* Optional Description */}
+            <p className="mt-6 text-lg text-gray-700 max-w-2xl leading-relaxed mx-auto font-medium drop-shadow-sm bg-white/30 backdrop-blur-sm p-4 rounded-xl border border-white/40 inline-block">
+              Have questions? We&apos;d love to hear from you. Send us a message
+              and we&apos;ll respond as soon as possible.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Main Content */}
       <section className="py-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Info */}
-            <div className="lg:col-span-1 space-y-6">
-              <h2
-                className="text-2xl font-bold mb-6"
-                style={{ color: colors.foreground }}
-              >
-                Contact Information
-              </h2>
-              <ContactCard
-                icon={<Phone className="h-6 w-6" />}
-                title="Phone"
-                content="+880 1700-000000"
-                subContent="Sun-Thu 9am to 6pm"
-              />
-              <ContactCard
-                icon={<Mail className="h-6 w-6" />}
-                title="Email"
-                content="support@chalakchamps.com"
-                subContent="We reply within 24 hours"
-              />
-              <ContactCard
-                icon={<MapPin className="h-6 w-6" />}
-                title="Head Office"
-                content="House 12, Road 5, Dhanmondi"
-                subContent="Dhaka, Bangladesh"
-              />
-            </div>
-
-            {/* Right Form */}
-            <div className="lg:col-span-2">
-              <div
-                className="p-8 rounded-2xl shadow-lg border"
-                style={{
-                  backgroundColor: colors.card,
-                  borderColor: colors.border,
-                }}
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <MessageSquare
-                    className="h-6 w-6"
-                    style={{ color: colors.primary }}
-                  />
-                  <h2
-                    className="text-2xl font-bold"
-                    style={{ color: colors.foreground }}
-                  >
-                    Send us a Message
-                  </h2>
-                </div>
-
-                {isSubmitted ? (
-                  <div className="text-center py-12">
-                    <CheckCircle
-                      className="h-16 w-16 mx-auto mb-4"
-                      style={{ color: colors.success || "#10b981" }}
-                    />
-                    <h3
-                      className="text-xl font-semibold mb-2"
-                      style={{ color: colors.foreground }}
-                    >
-                      Message Sent Successfully!
-                    </h3>
-                    <p style={{ color: colors.muted }}>
-                      We have sent a confirmation email to you.
-                    </p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    {/* Row 1: Name & Email */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label
-                          className="block text-sm font-medium mb-2"
-                          style={{ color: colors.foreground }}
-                        >
-                          Full Name{" "}
-                          <span style={{ color: colors.primary }}>*</span>
-                        </label>
-                        <input
-                          type="text"
-                          {...register("fullName")}
-                          placeholder="John Doe"
-                          className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
-                          style={inputStyle(!!errors.fullName)}
-                        />
-                        {errors.fullName && (
-                          <p
-                            className="mt-1 text-sm"
-                            style={{ color: colors.destructive }}
-                          >
-                            {errors.fullName.message}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label
-                          className="block text-sm font-medium mb-2"
-                          style={{ color: colors.foreground }}
-                        >
-                          Email Address{" "}
-                          <span style={{ color: colors.primary }}>*</span>
-                        </label>
-                        <input
-                          type="email"
-                          {...register("email")}
-                          placeholder="john@example.com"
-                          className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
-                          style={inputStyle(!!errors.email)}
-                        />
-                        {errors.email && (
-                          <p
-                            className="mt-1 text-sm"
-                            style={{ color: colors.destructive }}
-                          >
-                            {errors.email.message}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Row 2: Company & City */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label
-                          className="block text-sm font-medium mb-2"
-                          style={{ color: colors.foreground }}
-                        >
-                          Company Name{" "}
-                          <span style={{ color: colors.primary }}>*</span>
-                        </label>
-                        <div className="relative">
-                          <Building
-                            className="absolute left-3 top-3.5 h-5 w-5 opacity-50"
-                            style={{ color: colors.muted }}
-                          />
-                          <input
-                            type="text"
-                            {...register("companyName")}
-                            placeholder="e.g. Acme Corp"
-                            className="w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
-                            style={inputStyle(!!errors.companyName)}
-                          />
-                        </div>
-                        {errors.companyName && (
-                          <p
-                            className="mt-1 text-sm"
-                            style={{ color: colors.destructive }}
-                          >
-                            {errors.companyName.message}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label
-                          className="block text-sm font-medium mb-2"
-                          style={{ color: colors.foreground }}
-                        >
-                          City <span style={{ color: colors.primary }}>*</span>
-                        </label>
-                        <input
-                          type="text"
-                          {...register("city")}
-                          placeholder="Dhaka"
-                          className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
-                          style={inputStyle(!!errors.city)}
-                        />
-                        {errors.city && (
-                          <p
-                            className="mt-1 text-sm"
-                            style={{ color: colors.destructive }}
-                          >
-                            {errors.city.message}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Row 2.5: Address */}
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-2"
-                        style={{ color: colors.foreground }}
-                      >
-                        Address <span style={{ color: colors.primary }}>*</span>
-                      </label>
-                      <div className="relative">
-                        <Map
-                          className="absolute left-3 top-3.5 h-5 w-5 opacity-50"
-                          style={{ color: colors.muted }}
-                        />
-                        <input
-                          type="text"
-                          {...register("address")}
-                          placeholder="House 12, Road 5..."
-                          className="w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
-                          style={inputStyle(!!errors.address)}
-                        />
-                      </div>
-                      {errors.address && (
-                        <p
-                          className="mt-1 text-sm"
-                          style={{ color: colors.destructive }}
-                        >
-                          {errors.address.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Row 3: Phone & Language */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label
-                          className="block text-sm font-medium mb-2"
-                          style={{ color: colors.foreground }}
-                        >
-                          Phone Number{" "}
-                          <span style={{ color: colors.primary }}>*</span>
-                        </label>
-                        <div className="flex">
-                          <div
-                            ref={dropdownRef}
-                            className="relative"
-                            style={{ width: "130px" }}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                              className="flex items-center justify-between w-full h-full px-2 py-3 rounded-l-lg border-r-0 border focus:outline-none focus:ring-2"
-                              style={{
-                                backgroundColor: colors.background,
-                                borderColor: errors.phone
-                                  ? colors.destructive
-                                  : colors.border,
-                                color: colors.foreground,
-                              }}
-                            >
-                              {selectedCountry ? (
-                                <div className="flex items-center gap-2 overflow-hidden">
-                                  <img
-                                    src={selectedCountry.flag}
-                                    alt={selectedCountry.name}
-                                    className="w-5 h-4 object-cover rounded-sm"
-                                  />
-                                  <span className="text-xs whitespace-nowrap">
-                                    {selectedCountry.dial_code}
-                                  </span>
-                                </div>
-                              ) : (
-                                <span className="text-xs">Select...</span>
-                              )}
-                              <ChevronDown className="h-4 w-4 opacity-70 ml-1" />
-                            </button>
-                            {isDropdownOpen && (
-                              <div
-                                className="absolute z-20 w-72 mt-1 rounded-lg shadow-lg border overflow-hidden"
-                                style={{
-                                  backgroundColor: colors.card,
-                                  borderColor: colors.border,
-                                }}
-                              >
-                                <div
-                                  className="p-2 border-b"
-                                  style={{ borderColor: colors.border }}
-                                >
-                                  <div className="relative">
-                                    <Search className="absolute left-2 top-2.5 h-4 w-4 opacity-50" />
-                                    <input
-                                      type="text"
-                                      placeholder="Search country..."
-                                      value={searchQuery}
-                                      onChange={(e) =>
-                                        setSearchQuery(e.target.value)
-                                      }
-                                      className="w-full pl-8 pr-2 py-2 text-sm rounded border focus:outline-none focus:ring-1"
-                                      style={{
-                                        backgroundColor: colors.background,
-                                        borderColor: colors.border,
-                                        color: colors.foreground,
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                                <div className="max-h-60 overflow-y-auto">
-                                  {filteredCountries.map((country) => (
-                                    <button
-                                      type="button"
-                                      key={country.code}
-                                      onClick={() => {
-                                        setSelectedCountry(country);
-                                        setIsDropdownOpen(false);
-                                        setSearchQuery("");
-                                      }}
-                                      className="flex items-center gap-3 w-full px-4 py-2 text-left hover:bg-opacity-50 transition-colors"
-                                      style={{
-                                        color: colors.foreground,
-                                        backgroundColor:
-                                          selectedCountry?.code === country.code
-                                            ? colors.primary + "20"
-                                            : "transparent",
-                                      }}
-                                    >
-                                      <img
-                                        src={country.flag}
-                                        alt={country.name}
-                                        className="w-5 h-4 object-cover rounded-sm"
-                                      />
-                                      <span className="flex-1 text-sm truncate">
-                                        {country.name}
-                                      </span>
-                                      <span
-                                        className="text-xs"
-                                        style={{ opacity: 0.7 }}
-                                      >
-                                        {country.dial_code}
-                                      </span>
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          <input
-                            type="tel"
-                            {...register("phone")}
-                            placeholder="171234567"
-                            className="flex-1 px-4 py-3 rounded-r-lg border focus:outline-none focus:ring-2"
-                            style={inputStyle(!!errors.phone)}
-                          />
-                        </div>
-                        {errors.phone && (
-                          <p
-                            className="mt-1 text-sm"
-                            style={{ color: colors.destructive }}
-                          >
-                            {errors.phone.message}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label
-                          className="block text-sm font-medium mb-2"
-                          style={{ color: colors.foreground }}
-                        >
-                          Preferred Language{" "}
-                          <span style={{ color: colors.primary }}>*</span>
-                        </label>
-                        <select
-                          {...register("preferredLanguage")}
-                          className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
-                          style={inputStyle(!!errors.preferredLanguage)}
-                        >
-                          <option value="">Select Language</option>
-                          <option value="English">English</option>
-                          <option value="Bangla">Bangla</option>
-                        </select>
-                        {errors.preferredLanguage && (
-                          <p
-                            className="mt-1 text-sm"
-                            style={{ color: colors.destructive }}
-                          >
-                            {errors.preferredLanguage.message}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Row 4: Inquiry Type & Subject */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label
-                          className="block text-sm font-medium mb-2"
-                          style={{ color: colors.foreground }}
-                        >
-                          Inquiry Type{" "}
-                          <span style={{ color: colors.primary }}>*</span>
-                        </label>
-                        <select
-                          {...register("inquiryType")}
-                          className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
-                          style={inputStyle(!!errors.inquiryType)}
-                        >
-                          <option value="">Select Type</option>
-                          <option value="General Inquiry">
-                            General Inquiry
-                          </option>
-                          <option value="Course Information">
-                            Course Information
-                          </option>
-                          <option value="Technical Support">
-                            Technical Support
-                          </option>
-                          <option value="Feedback">Feedback</option>
-                        </select>
-                        {errors.inquiryType && (
-                          <p
-                            className="mt-1 text-sm"
-                            style={{ color: colors.destructive }}
-                          >
-                            {errors.inquiryType.message}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label
-                          className="block text-sm font-medium mb-2"
-                          style={{ color: colors.foreground }}
-                        >
-                          Subject{" "}
-                          <span style={{ color: colors.primary }}>*</span>
-                        </label>
-                        <input
-                          type="text"
-                          {...register("subject")}
-                          placeholder="How can we help?"
-                          className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2"
-                          style={inputStyle(!!errors.subject)}
-                        />
-                        {errors.subject && (
-                          <p
-                            className="mt-1 text-sm"
-                            style={{ color: colors.destructive }}
-                          >
-                            {errors.subject.message}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Row 5: Message (TEXTAREA REPLACEMENT) */}
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-2"
-                        style={{ color: colors.foreground }}
-                      >
-                        Message <span style={{ color: colors.primary }}>*</span>
-                      </label>
-                      <textarea
-                        {...register("message")}
-                        rows={6}
-                        placeholder="Write your message here..."
-                        className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 resize-y"
-                        style={inputStyle(!!errors.message)}
-                      />
-                      {errors.message && (
-                        <p
-                          className="mt-1 text-sm"
-                          style={{ color: colors.destructive }}
-                        >
-                          {errors.message.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="text-right">
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="inline-flex items-center justify-center px-8 py-3 rounded-lg font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
-                        style={{ backgroundColor: colors.primary }}
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                            Sending...
-                          </>
-                        ) : (
-                          <>
-                            <Send className="h-5 w-5 mr-2" />
-                            Send Message
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        <CTA />
       </section>
     </div>
   );

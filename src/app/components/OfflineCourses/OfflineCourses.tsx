@@ -4,11 +4,11 @@ import React from "react";
 
 const OfflineCourses = () => {
   return (
-    <div className="relative overflow-hidden bg-linear-to-b mx-auto from-[#FF8FCA] to-[#010D3E]/11 container rounded-4xl p-0.5">
-      <div className="absolute  -rotate-15 z-0 h-110 w-236 bg-[#ff268459] rounded-4xl top-80 -left-160 blur-[135.45px]"></div>
-      <div className="bg-white pb-8 rounded-[30px] font-semibold leading-10">
+    <div className=" overflow-hidden bg-linear-to-b mx-auto from-[#FF8FCA] to-[#010D3E]/11 container rounded-[80px] p-0.5">
+      <div className="bg-white relative pb-12.5 rounded-[78px] font-semibold leading-10">
+        <div className="absolute  -rotate-15 z-0 h-110 w-236 bg-[#ff268459] rounded-4xl top-80 -left-160 blur-[135.45px]"></div>
         <div className="px-4">
-          <h3 className="text-2xl md:text-5xl font-semibold text-center pt-6">
+          <h3 className="text-2xl md:text-5xl font-bold text-center pt-6">
             <span className="text-[#00477C]">অফলাইনে শেখা,</span>{" "}
             <span className="text-[#F3066E]">আরও</span>{" "}
             <span className="relative inline-block px-2 py-3 md:px-3 md:py-4 group">
@@ -25,20 +25,20 @@ const OfflineCourses = () => {
           </h3>
         </div>
 
-        <div className="z-10 px-4">
+        <div className="z-10 md:px-10.5">
           <div className="flex flex-col md:flex-row items-center justify-center mt-8 md:mt-12 gap-8 md:gap-12">
             {/* First Card */}
             <div className="w-full max-w-[290px]">
-              <div className="bg-linear-to-br rounded-3xl from-[#FF8FCA] to-[#D9D9D9] p-1 overflow-hidden">
+              <div className="border-3 rounded-3xl border-[#FF8FCA] overflow-hidden">
                 <Image
                   src={"/groupchair.webp"}
                   width={290}
                   height={281}
                   alt="group chair image"
-                  className="rounded-2xl w-full h-auto"
+                  className=" "
                 />
               </div>
-              <h4 className="text-[#F3066E] leading-7 tracking-normal text-lg md:text-xl mt-6 mb-3 text-center md:text-left">
+              <h4 className="text-[#F3066E] leading-8  tracking-[0px] text-lg md:text-xl mt-6 mb-3 text-center md:text-left">
                 দেশসেরা টিচারদের প্যানেল
               </h4>
               <p className="leading-5 md:leading-4 font-normal text-sm text-[#000000]/70 text-center md:text-left">
@@ -57,7 +57,7 @@ const OfflineCourses = () => {
                   className="rounded-2xl w-full h-auto"
                 />
               </div>
-              <h4 className="text-[#F3066E] leading-7 tracking-normal text-lg md:text-xl mt-6 mb-3 text-center md:text-left">
+              <h4 className="text-[#F3066E] leading-8  tracking-[0px] text-lg md:text-xl mt-6 mb-3 text-center md:text-left">
                 দেশসেরা টিচারদের প্যানেল
               </h4>
               <p className="leading-5 md:leading-4 font-normal text-sm text-[#000000]/70 text-center md:text-left">
@@ -76,7 +76,7 @@ const OfflineCourses = () => {
                   className="rounded-2xl w-full h-auto"
                 />
               </div>
-              <h4 className="text-[#F3066E] leading-7 tracking-normal text-lg md:text-xl mt-6 mb-3 text-center md:text-left">
+              <h4 className="text-[#F3066E] leading-8  tracking-[0px] text-lg md:text-xl mt-6 mb-3 text-center md:text-left">
                 দেশসেরা টিচারদের প্যানেল
               </h4>
               <p className="leading-5 md:leading-4 font-normal text-sm text-[#000000]/70 text-center md:text-left">
@@ -90,9 +90,9 @@ const OfflineCourses = () => {
           </div>
         </div>
 
-        <div className="px-4 md:px-6">
+        <div className="px-4 md:px-6 md:px-10.5">
           <div>
-            <h4 className="text-2xl md:text-3xl text-center font-semibold leading-15 tracking-[-5%] text-[#00477C]">
+            <h4 className="text-2xl md:text-5xl text-center font-bold  leading-17 tracking-[-5%] text-[#00477C]">
               আপনার সন্তানকে গড়ে তুলতে{" "}
               <span className="bg-linear-to-r from-[#F3066D]/52 to-[#FC7CB4]/84 bg-clip-text text-transparent">
                 কেন
@@ -111,90 +111,96 @@ const OfflineCourses = () => {
               </span>
             </h4>
           </div>
-          <div className="mt-8  md:mt-12 border-2 border-[#F3066E33] rounded-4xl shadow-[0px_25px_50px_-12px_rgba(255,143,202,0.35)]">
+          <div className="mt-8   md:mt-12 border-2 border-[#F3066E33] rounded-[50px] shadow-[0px_25px_50px_-12px_rgba(255,143,202,0.35)]">
             <div className="flex flex-col md:flex-row gap-1 justify-between p-4 md:p-8">
               <div className="flex flex-col gap-2 w-full md:w-1/2">
                 {/* first card */}
                 <div className="flex gap-3.5 p-3.5">
-                  <div className="p-2 bg-radial from-[#FFFFFF]/60 to-[#FF8FCA]/25 rounded-lg shrink-0">
-                    <svg
-                      width="32"
-                      height="32"
-                      viewBox="0 0 32 32"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M29.3337 13.3333V21.3333M29.3337 13.3333L16.0003 6.66667L2.66699 13.3333L16.0003 20L29.3337 13.3333Z"
-                        stroke="#2D2D2D"
-                        strokeWidth="2.66667"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M8 16V22.6667C8 25.3333 10.6667 26.6667 16 26.6667C21.3333 26.6667 24 25.3333 24 22.6667V16"
-                        stroke="#2D2D2D"
-                        strokeWidth="2.66667"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                  <div className="shrink-0">
+                    <div className="p-2 bg-radial from-[#FFFFFF]/60 to-[#FF8FCA]/25 rounded-lg shrink-0">
+                      <svg
+                        width="32"
+                        height="32"
+                        viewBox="0 0 32 32"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M29.3337 13.3333V21.3333M29.3337 13.3333L16.0003 6.66667L2.66699 13.3333L16.0003 20L29.3337 13.3333Z"
+                          stroke="#2D2D2D"
+                          strokeWidth="2.66667"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M8 16V22.6667C8 25.3333 10.6667 26.6667 16 26.6667C21.3333 26.6667 24 25.3333 24 22.6667V16"
+                          stroke="#2D2D2D"
+                          strokeWidth="2.66667"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
                   </div>
-                  <p className="text-[#2D2D2D] leading-5 text-sm">
-                    আমাদের প্রতিটি কোর্স{" "}
-                    <span className="text-[#001D3A] font-semibold">
-                      আন্তর্জাতিক মানসম্পন্ন ও বৈজ্ঞানিকভাবে প্রমাণিত শিক্ষণ
-                    </span>{" "}
-                    পদ্ধতি এবং শিশুদের বয়স অনুযায়ী উপযোগী শেখার কৌশল অনুসরণ
-                    করে পরিকল্পিতভাবে তৈরি করা হয়েছে।
-                  </p>
+                  <div>
+                    <p className="text-[#2D2D2D] leading-5 text-sm">
+                      আমাদের প্রতিটি কোর্স{" "}
+                      <span className="text-[#001D3A] font-semibold">
+                        আন্তর্জাতিক মানসম্পন্ন ও বৈজ্ঞানিকভাবে প্রমাণিত শিক্ষণ
+                      </span>{" "}
+                      পদ্ধতি এবং শিশুদের বয়স অনুযায়ী উপযোগী শেখার কৌশল অনুসরণ
+                      করে পরিকল্পিতভাবে তৈরি করা হয়েছে।
+                    </p>
+                  </div>
                 </div>
                 {/* second Card */}
                 <div className="flex gap-3.5 p-3.5">
-                  <div className="p-2 bg-radial from-[#FFFFFF]/60 to-[#FF8FCA]/25 rounded-lg shrink-0">
-                    <svg
-                      width="32"
-                      height="32"
-                      viewBox="0 0 32 32"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g clipPath="url(#clip0_627_2931)">
-                        <path
-                          d="M22.6663 28V25.3333C22.6663 23.9188 22.1044 22.5623 21.1042 21.5621C20.1041 20.5619 18.7475 20 17.333 20H6.66634C5.25185 20 3.8953 20.5619 2.89511 21.5621C1.89491 22.5623 1.33301 23.9188 1.33301 25.3333V28"
-                          stroke="#2D2D2D"
-                          strokeWidth="2.66667"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M12.0003 14.6667C14.9458 14.6667 17.3337 12.2789 17.3337 9.33333C17.3337 6.38781 14.9458 4 12.0003 4C9.05481 4 6.66699 6.38781 6.66699 9.33333C6.66699 12.2789 9.05481 14.6667 12.0003 14.6667Z"
-                          stroke="#2D2D2D"
-                          strokeWidth="2.66667"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M30.667 28V25.3333C30.6661 24.1516 30.2728 23.0037 29.5488 22.0698C28.8248 21.1358 27.8112 20.4688 26.667 20.1733"
-                          stroke="#2D2D2D"
-                          strokeWidth="2.66667"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M21.333 4.17334C22.4802 4.46707 23.4971 5.13427 24.2232 6.06975C24.9493 7.00523 25.3435 8.15578 25.3435 9.34001C25.3435 10.5242 24.9493 11.6748 24.2232 12.6103C23.4971 13.5457 22.4802 14.2129 21.333 14.5067"
-                          stroke="#2D2D2D"
-                          strokeWidth="2.66667"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_627_2931">
-                          <rect width="32" height="32" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
+                  <div className="shrink-0">
+                    <div className="p-2 bg-radial from-[#FFFFFF]/60 to-[#FF8FCA]/25 rounded-lg shrink-0">
+                      <svg
+                        width="32"
+                        height="32"
+                        viewBox="0 0 32 32"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g clipPath="url(#clip0_627_2931)">
+                          <path
+                            d="M22.6663 28V25.3333C22.6663 23.9188 22.1044 22.5623 21.1042 21.5621C20.1041 20.5619 18.7475 20 17.333 20H6.66634C5.25185 20 3.8953 20.5619 2.89511 21.5621C1.89491 22.5623 1.33301 23.9188 1.33301 25.3333V28"
+                            stroke="#2D2D2D"
+                            strokeWidth="2.66667"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M12.0003 14.6667C14.9458 14.6667 17.3337 12.2789 17.3337 9.33333C17.3337 6.38781 14.9458 4 12.0003 4C9.05481 4 6.66699 6.38781 6.66699 9.33333C6.66699 12.2789 9.05481 14.6667 12.0003 14.6667Z"
+                            stroke="#2D2D2D"
+                            strokeWidth="2.66667"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M30.667 28V25.3333C30.6661 24.1516 30.2728 23.0037 29.5488 22.0698C28.8248 21.1358 27.8112 20.4688 26.667 20.1733"
+                            stroke="#2D2D2D"
+                            strokeWidth="2.66667"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M21.333 4.17334C22.4802 4.46707 23.4971 5.13427 24.2232 6.06975C24.9493 7.00523 25.3435 8.15578 25.3435 9.34001C25.3435 10.5242 24.9493 11.6748 24.2232 12.6103C23.4971 13.5457 22.4802 14.2129 21.333 14.5067"
+                            stroke="#2D2D2D"
+                            strokeWidth="2.66667"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_627_2931">
+                            <rect width="32" height="32" fill="white" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+                    </div>
                   </div>
                   <p className="text-[#2D2D2D] leading-5 text-sm">
                     সমগ্র বিশ্বজুড়ে সমাদৃত এবং পরীক্ষিত সবচেয়ে ইফেক্টিভ শেখার

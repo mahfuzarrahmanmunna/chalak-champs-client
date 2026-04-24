@@ -104,7 +104,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/contact"
                   className="hover:text-[#F3066E] transition-colors font-medium"
                 >
                   যোগাযোগ করুন
@@ -142,9 +142,9 @@ const Footer = () => {
                   ফ্রি কোর্স
                 </Link>
               </li>
-              <li className="relative">
+              <li >
                 <Link
-                  href="#"
+                  href="/"
                   className="relative bg-linear-to-r from-[#C6005F] to-[#00477C] bg-clip-text text-transparent hover:text-[#F3066E] transition-colors"
                 >
                   চালাক Champs অফার
@@ -280,7 +280,7 @@ const Footer = () => {
                 </div>
 
                 <a
-                  href="https://www.google.com/maps/search/?api=1&query=Amin+Tower+Sector+9+Uttara+Dhaka"
+                  href="https://maps.app.goo.gl/y91UcDooycaHRaWE9"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:underline cursor-pointer"
@@ -294,7 +294,7 @@ const Footer = () => {
             </ul>
           </div>
         </div>
-       
+
         {/* --- BOTTOM COPYRIGHT --- */}
         <div className="flex flex-col  items-center text-sm text-[#2D2D2D]/70">
           <p className="text-xs font-semibold leading-7 text-center">

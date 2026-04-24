@@ -1,10 +1,9 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
-
 
 const testimonials = [
   {
@@ -33,12 +32,81 @@ const testimonials = [
   },
 ];
 
+// Sub-component to handle the spotlight effect for individual cards
+const SpotlightCard = ({ item }: { item: any }) => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePosition({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  return (
+    <div
+      className="relative w-full h-full rounded-[35px] overflow-hidden shadow-[inset_2px_4px_16px_rgba(255,255,255,0.2),inset_4px_8px_16px_rgba(255,255,255,0.2)]"
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* 1. The Base Gradient Background */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient}`} />
+
+      {/* 2. The Animated Spotlight/Overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-300 ease-out"
+        style={{
+          opacity: isHovered ? 1 : 0,
+          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(255, 143, 202, 0.4)
+, transparent 40%)`,
+        }}
+      />
+
+      {/* 3. The Content (Sits on top) */}
+      <div className="relative z-20 flex h-full flex-col justify-between p-8 text-white">
+        {/* Quote Icon */}
+        <div className="mb-4">
+          <Quote
+            size={40}
+            className="rotate-180 fill-yellow-400 text-yellow-400"
+          />
+        </div>
+
+        {/* Testimonial Text */}
+        <p
+          className="mb-6 text-lg font-light leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: item.text }}
+        ></p>
+
+        {/* User Info */}
+        <div className="mt-auto flex items-center gap-4">
+          <div className="relative h-14 w-14 overflow-hidden rounded-full border-2 border-white/30">
+            <Image
+              src={item.image}
+              alt={item.name}
+              fill
+              className="object-cover"
+            />
+          </div>
+          <div>
+            <h4 className="text-xl font-bold">{item.name}</h4>
+            <p className="text-sm text-white/70">{item.title}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function TestimonialSlider() {
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
 
   return (
-    <div className="relative w-full container mx-auto  ">
+    <div className="relative w-full container mx-auto">
       <Swiper
         modules={[Navigation, Autoplay]}
         spaceBetween={20}
@@ -47,8 +115,6 @@ export default function TestimonialSlider() {
         autoplay={{ delay: 3000, disableOnInteraction: false }}
         onSwiper={(swiper) => {
           if (prevRef.current && nextRef.current) {
-            // FIX: Add 'typeof === "object"' check.
-            // This ensures we don't try to set 'prevEl' on a boolean ('true').
             if (
               swiper.params.navigation &&
               typeof swiper.params.navigation === "object"
@@ -69,38 +135,9 @@ export default function TestimonialSlider() {
       >
         {testimonials.map((item) => (
           <SwiperSlide key={item.id}>
-            <div
-              className={`relative shadow-[inset_2px_4px_16px_rgba(255,255,255,0.2),inset_4px_8px_16px_rgba(255,255,255,0.2)] p-8 rounded-[35px] flex flex-col justify-between text-white bg-linear-to-br ${item.gradient}`}
-            >
-              {/* Quote Icon */}
-              <div className="mb-4">
-                <Quote
-                  size={40}
-                  className="text-yellow-400 rotate-180 fill-yellow-400"
-                />
-              </div>
-
-              {/* Testimonial Text */}
-              <p
-                className="text-lg leading-relaxed font-light mb-6"
-                dangerouslySetInnerHTML={{ __html: item.text }}
-              ></p>
-
-              {/* User Info */}
-              <div className="flex items-center gap-4 mt-auto">
-                <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white/30">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <h4 className="font-bold text-xl">{item.name}</h4>
-                  <p className="text-sm text-white/70">{item.title}</p>
-                </div>
-              </div>
+            {/* Using the new SpotlightCard component here */}
+            <div className="h-auto py-4">
+              <SpotlightCard item={item} />
             </div>
           </SwiperSlide>
         ))}
@@ -109,14 +146,14 @@ export default function TestimonialSlider() {
       {/* Navigation Buttons */}
       <button
         ref={prevRef}
-        className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg text-gray-800 hover:bg-gray-100 transition-all sm:flex hidden"
+        className="absolute left-[-20px] top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-800 shadow-lg transition-all hover:bg-gray-100 sm:flex"
       >
         <ChevronLeft size={24} />
       </button>
 
       <button
         ref={nextRef}
-        className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg text-gray-800 hover:bg-gray-100 transition-all sm:flex hidden"
+        className="absolute right-[-20px] top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-800 shadow-lg transition-all hover:bg-gray-100 sm:flex"
       >
         <ChevronRight size={24} />
       </button>

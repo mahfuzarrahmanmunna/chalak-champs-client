@@ -55,7 +55,7 @@ const FooterMassenger = () => {
 
         <div
           onClick={() => setIsOpen(!isOpen)}
-          className={`cursor-pointer transition-all duration-300 hover:scale-110 active:scale-95 drop-shadow-md ${isOpen ? "rotate-90" : "rotate-0"}`}
+          className={`cursor-pointer transition-all duration-300 hover:scale-110 active:scale-95 drop-shadow-md ${isOpen ? "rotate-0" : "rotate-0"}`}
         >
           <MessangerIcon />
         </div>

@@ -25,28 +25,28 @@ const FeatureCourses: React.FC = () => {
         <div className="relative z-10 bg-primary  mx-auto p-3 md:p-4 md:pl-10 rounded-[38px] flex flex-col md:flex-row items-center gap-6">
           {/* Left Side: 60% width on desktop */}
           <div className="space-y-4 w-full md:w-[60%]">
-            <div>
-              <h2 className="text-2xl md:text-3xl leading-[1.3] font-bold text-white">
+            <div className="leading-[130%] tracking-[-4%]">
+              <h2 className="text-2xl md:text-4xl leading-[1.3] font-bold text-white">
                 কিডস অনর্গল English কোর্সে
               </h2>
-              <div className="flex items-center gap-4 mt-4">
-                <h2 className="bg-secondary text-xl md:text-2xl font-bold p-2 rounded-xl shadow-lg">
+              <div className="flex relative items-center gap-4 mt-1">
+                <h2 className="bg-secondary  text-xl md:text-4xl font-bold p-2 rounded-xl shadow-lg">
                   30% মূল্য ছাড়
                 </h2>
-                <p className="text-white/90 text-sm md:text-base">
+                <p className="text-white/90 absolute right-62 bottom-2 text-sm md:text-base">
                   (সীমিত সিট)
                 </p>
               </div>
             </div>
 
-            <p className="text-white/90 text-sm md:text-sm leading-relaxed tracking-normal">
+            <p className="text-white/90 text-sm md:text-sm leading-auto tracking-[0px]">
               আপনার সন্তানের ইংলিশ বলা শুরু হোক জীবনের প্রথম ধাপেই, আগামীদিনে
               আপনার সন্তান হবে আপনার এবং চালাক Champs এর গর্ব
             </p>
 
             <div>
               <div className="flex flex-wrap gap-2 bg-[#e91e63] rounded-xl">
-                <div className="relative p-0.5 rounded-full">
+                <div className="relative bg-transparent p-0.5 rounded-full">
                   <div className="flex items-center gap-2 px-3 py-0.5 rounded-full bg-transparent border-b-2 border-b-white/90 border-t-2 border-t-black">
                     <span className="w-3 h-3 bg-white rounded-full"></span>
                     <span className="text-white font-regular text-xs">

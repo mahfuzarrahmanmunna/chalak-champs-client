@@ -212,7 +212,7 @@ const ChalakLibrary = () => {
     <div className="max-w-[1120px] overflow-hidden mx-auto">
       {/* Header */}
       <div className="text-center">
-        <h3 className="font-semibold py-2 leading-5 text-2xl md:text-5xl mb-12">
+        <h3 className="font-bold tracking-[-5%] py-2 leading-5 text-2xl md:text-5xl mb-12">
           <span className="text-secondary">চালাক</span>{" "}
           <span className="text-primary">Champs এর</span>{" "}
           <span className="relative inline-block px-3 py-5 group">
@@ -262,7 +262,7 @@ const ChalakLibrary = () => {
                 className="shrink-0 w-[85vw] md:w-[304px]"
               >
                 {/* CARD DESIGN - SAME AS BEFORE */}
-                <div className="max-w-76 h-110 shadow bg-linear-to-b from-[#FF8FCA] to-[#D9D9D9] rounded-[22px] p-0.75">
+                <div className="max-w-76 h-110 shadow bg-linear-to-b from-[#FF8FCA]  to-[#D9D9D9] rounded-[22px] p-0.5">
                   <div className="w-full h-full rounded-[21px] p-2 bg-[#F9FAFC]">
                     <div className="w-68.5 h-68.5 bg-[#001D3A0D] rounded-2xl relative overflow-hidden">
                       <Image
@@ -319,7 +319,9 @@ const ChalakLibrary = () => {
         {/* <button className="text-xl font-bold text-white tracking-normal leading-7 px-12 py-2.5 bg-[#214187] rounded-lg shadow-[inset_0_3px_0_rgba(255,255,255,0.5)] transition-all active:scale-95 hover:bg-[#1a366e]">
           আরও দেখুন
         </button> */}
-        <Button px="px-18" textSize="xl" py="py-3">আরও দেখুন</Button>
+        <Button px="px-18" textSize="xl" py="py-3">
+          আরও দেখুন
+        </Button>
       </div>
     </div>
   );

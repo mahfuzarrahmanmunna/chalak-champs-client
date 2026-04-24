@@ -12,7 +12,7 @@ const SecondLLogo = () => {
           xmlns:xlink="http://www.w3.org/1999/xlink"
         >
           <g filter="url(#filter0_i_627_2639)">
-            <g clip-path="url(#clip0_627_2639)">
+            <g clipPath="url(#clip0_627_2639)">
               <path
                 d="M0 40C0 17.9086 17.9086 0 40 0H276.58C298.671 0 316.58 17.9086 316.58 40V261C316.58 283.091 298.671 301 276.58 301H40C17.9086 301 0 283.091 0 261V40Z"
                 fill="url(#paint0_radial_627_2639)"
@@ -32,7 +32,7 @@ const SecondLLogo = () => {
               d="M40 1.5H276.58C297.843 1.50005 315.08 18.7371 315.08 40V261C315.08 282.263 297.843 299.5 276.58 299.5H40C18.737 299.5 1.5 282.263 1.5 261V40C1.5 18.737 18.737 1.5 40 1.5Z"
               stroke="url(#paint1_linear_627_2639)"
               stroke-opacity="0.4"
-              stroke-width="3"
+              strokeWidth="3"
             />
           </g>
           <defs>
@@ -43,9 +43,9 @@ const SecondLLogo = () => {
               width="316.58"
               height="301"
               filterUnits="userSpaceOnUse"
-              color-interpolation-filters="sRGB"
+              colorInterpolationFilters="sRGB"
             >
-              <feFlood flood-opacity="0" result="BackgroundImageFix" />
+              <feFlood floodOpacity="0" result="BackgroundImageFix" />
               <feBlend
                 mode="normal"
                 in="SourceGraphic"
@@ -88,9 +88,9 @@ const SecondLLogo = () => {
               width="316.58"
               height="301"
               filterUnits="userSpaceOnUse"
-              color-interpolation-filters="sRGB"
+              colorInterpolationFilters="sRGB"
             >
-              <feFlood flood-opacity="0" result="BackgroundImageFix" />
+              <feFlood floodOpacity="0" result="BackgroundImageFix" />
               <feBlend
                 mode="normal"
                 in="SourceGraphic"

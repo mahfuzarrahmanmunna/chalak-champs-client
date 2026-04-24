@@ -10,6 +10,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import Button from "@/app/ui/button/Button";
+import EyeIcon from "./EyeIcon";
 
 const ChalakCourses = () => {
   // 1. State to track the active tab
@@ -163,11 +164,11 @@ const ChalakCourses = () => {
   );
 
   return (
-    <section className="container mx-auto bg-[#D81B60] p-6 md:p-12 rounded-[40px] relative overflow-hidden">
+    <section className="container mx-auto border-2 border-[#FF8FCA] bg-[#D81B60] p-6 md:p-12 rounded-[80px] relative overflow-hidden">
       {/* --- Header Section --- */}
       <div className="text-center mb-8">
-        <h2 className="text-white text-2xl md:text-5xl font-medium flex items-center justify-center gap-2">
-            চালাক Champs এর
+        <h2 className="text-white text-2xl md:text-5xl font-bold tracking-[0%] flex items-center justify-center gap-2">
+          চালাক Champs এর
           <div className="relative inline-block px-6 py-3 bg-[#D81B60]">
             {/* Dashed Border */}
             <div className="absolute inset-0 border-2 border-dashed border-white m-1"></div>
@@ -179,9 +180,7 @@ const ChalakCourses = () => {
             <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-white"></div>
 
             {/* Text Content */}
-            <h2 className="relative tracking-wide">
-              কোর্সসমূহ
-            </h2>
+            <h2 className="relative tracking-wide">কোর্সসমূহ</h2>
           </div>
         </h2>
       </div>
@@ -223,7 +222,7 @@ const ChalakCourses = () => {
           {filteredCourses.map((course) => (
             <div
               key={course.id}
-              className="bg-white rounded-xl p-2 pb-5 shadow-xl flex flex-col items-center hover:-translate-y-2 transition-transform duration-300"
+              className="bg-white rounded-[30px] border-2 border-[#FF8FCA] p-2 pb-5 shadow-xl flex flex-col items-center hover:-translate-y-2 transition-transform duration-300"
             >
               {/* Image Container with Radial Gradient Background */}
               <div className="w-full aspect-4/3 rounded-[25px] overflow-hidden relative mb-4">
@@ -237,23 +236,39 @@ const ChalakCourses = () => {
 
               {/* Badges/Tags */}
               <div className="flex gap-2 mb-3">
-                <span className="bg-pink-100 text-pink-600 text-[10px] px-2 py-0.5 rounded-full border border-pink-200">
+                <span className="bg-pink-100 text-pink-600 text-[10px] px-3 leading-6 rounded-full border border-pink-200">
                   {course.tag1}
                 </span>
-                <span className="bg-blue-100 text-blue-600 text-[10px] px-2 py-0.5 rounded-full border border-blue-200">
+                <span className="bg-blue-100 text-blue-600 text-[10px] px-3 leading-6 rounded-full border border-blue-200">
+                  {course.tag2}
+                </span>
+                <span className="bg-blue-100 text-blue-600 text-[10px] px-3 leading-6 rounded-full border border-blue-200">
                   {course.tag2}
                 </span>
               </div>
 
               {/* Course Title */}
-              <h3 className="text-gray-800 font-bold text-lg mb-4 text-center">
+              <h3 className="text-[#3C4043] tracking-[0%] leading-[140%] font-semibold text-2xl mb-4 text-center">
                 {course.title}
               </h3>
 
               {/* Action Button */}
-              <button className="bg-[#E91E63] text-white px-8 py-2 rounded-full text-sm font-semibold hover:bg-pink-700 transition-colors shadow-md">
+              {/* <button className="bg-[#E91E63] text-white px-8 py-2 rounded-full text-sm font-semibold hover:bg-pink-700 transition-colors shadow-md">
                 বিস্তারিত দেখুন →
-              </button>
+              </button> */}
+
+              <Button
+                bgColor="#F3056D"
+                highlightColor="#FF8FCA"
+                darkShadowColor="#F3066E"
+                textColor="white"
+                hoverTextColor="#F3056D"
+                textSize="24px"
+                icon=<EyeIcon />
+                iconPosition="right"
+              >
+                বিস্তারিত দেখুন
+              </Button>
             </div>
           ))}
         </div>

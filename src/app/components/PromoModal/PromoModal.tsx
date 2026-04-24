@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { X, Download, Gift, Sparkles } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 const PromoModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-
+  const pathname = usePathname();
   // 1. Check if it's the user's first visit
   useEffect(() => {
     const hasSeenModal = localStorage.getItem("hasSeenDownloadModal");
@@ -29,22 +30,21 @@ const PromoModal = () => {
 
   // 2. Listen for PWA Installation Prompt
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent the mini-infobar from appearing on mobile
-      e.preventDefault();
-      // Save the event so it can be triggered later.
-      setDeferredPrompt(e);
-    };
+    const isStandalone = window.matchMedia(
+      "(display-mode: standalone)",
+    ).matches;
 
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    if (!isStandalone && pathname === "/") {
+      // delay দিলে UX smooth হয়
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+      }, 1000);
 
-    return () => {
-      window.removeEventListener(
-        "beforeinstallprompt",
-        handleBeforeInstallPrompt,
-      );
-    };
-  }, []);
+      return () => clearTimeout(timer);
+    } else {
+      setIsOpen(false);
+    }
+  }, [pathname]);
 
   const handleClose = () => {
     setIsOpen(false);

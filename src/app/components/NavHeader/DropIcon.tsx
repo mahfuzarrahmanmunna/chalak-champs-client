@@ -13,9 +13,9 @@ const DropIcon = () => {
           <path
             d="M2.66699 6L8.00033 11.3333L13.3337 6"
             stroke="#F3066E"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       </div>

@@ -23,15 +23,15 @@ const ImageSlider: React.FC = () => {
   ];
 
   return (
-    <div
-      className="flex flex-col gap-8 container mx-auto rounded-4xl overflow-hidden"
-    >
+    <div className="flex flex-col gap-8 container mx-auto rounded-4xl overflow-hidden">
       {/* --- ROW 1: LEFT TO RIGHT (Reversed via dir="rtl") --- */}
       <div dir="rtl" className="w-full rounded-4xl">
         <Swiper
           modules={[Autoplay]}
           spaceBetween={20}
-          slidesPerView={3}
+          modules={[Autoplay]}
+          spaceBetween={20}
+          slidesPerView={2}
           loop={true}
           speed={3000}
           autoplay={{
@@ -39,13 +39,25 @@ const ImageSlider: React.FC = () => {
             disableOnInteraction: false,
           }}
           allowTouchMove={false}
+          breakpoints={{
+            640: {
+              // sm+
+              slidesPerView: 2,
+              spaceBetween: 20,
+            },
+            768: {
+              // md+
+              slidesPerView: 3,
+              spaceBetween: 20,
+            },
+          }}
           className="w-full"
         >
           {imageData.map((item) => (
-            <SwiperSlide key={item.id} className="!h-auto rounded-2xl">
+            <SwiperSlide key={item.id} className="!h-auto py-2 rounded-2xl">
               <div
                 // Added bg-pink-100 temporarily so you can SEE the slide even if image is broken
-                className="relative h-64 w-full rounded-xl overflow-hidden shadow-md border border-gray-100 bg-pink-100"
+                className="relative h-64  w-full rounded-[10px]  overflow-hidden p-0 m-0 shadow-md border-2 border-[#FF8FCA]  bg-pink-100"
               >
                 <Image
                   src={item.src}
@@ -66,7 +78,7 @@ const ImageSlider: React.FC = () => {
         <Swiper
           modules={[Autoplay]}
           spaceBetween={20}
-          slidesPerView={3}
+          slidesPerView={2}
           loop={true}
           speed={3000}
           autoplay={{
@@ -74,11 +86,23 @@ const ImageSlider: React.FC = () => {
             disableOnInteraction: false,
           }}
           allowTouchMove={false}
+          breakpoints={{
+            640: {
+              // sm+
+              slidesPerView: 2,
+              spaceBetween: 20,
+            },
+            768: {
+              // md+
+              slidesPerView: 3,
+              spaceBetween: 20,
+            },
+          }}
           className="w-full"
         >
           {imageData.map((item) => (
-            <SwiperSlide key={`row2-${item.id}`} className="!h-auto">
-              <div className="relative h-64 w-full rounded-2xl overflow-hidden shadow-md border border-gray-100 bg-pink-100">
+            <SwiperSlide key={`row2-${item.id}`} className="h-auto">
+              <div className="relative h-64 w-full rounded-[10px] overflow-hidden shadow-md border-2 border-[#FF8FCA] bg-pink-100">
                 <Image
                   src={item.src}
                   alt={item.alt}

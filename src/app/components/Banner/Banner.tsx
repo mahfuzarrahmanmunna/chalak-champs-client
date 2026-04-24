@@ -11,22 +11,23 @@ const Banner = () => {
   return (
     <div className="">
       <div className="text-center py-10 md:max-w-205 mx-auto font-inter">
-        <p className="text-lg mb-2 text-gray-600">আমরা বিশ্বাস করি</p>
+        <p className="text-2xl text-gray-600 leading-18.75">আমরা বিশ্বাস করি</p>
 
         <div className="flex flex-col relative items-center justify-center">
           <div className="relative flex flex-wrap items-center justify-center gap-2">
-            <h1
-              className="text-3xl md:text-6xl font-bold bg-[radial-gradient(circle_at_top,_#00477C_0%,_#F3066E_100%)] 
-                 text-transparent bg-clip-text leading-relaxed pointer-events-none"
-            >
+            {/* <h1 className="text-3xl md:text-6xl font-bold   bg-[radial-gradient(circle,_#00477C_0%,_#F3066E_100%)] text-transparent bg-clip-text leading-relaxed pointer-events-none">
               Every Child Is A <br className="flex md:hidden" />{" "}
               <span className="ml-2">Champ</span>
+            </h1> */}
+            <h1 className="text-3xl md:text-6xl font-bold text-[#00477C]  pointer-events-none tracking-[-4px] leading-18.75">
+              Every Child Is A <br className="flex md:hidden" />{" "}
+              <span className="ml-2 text-[#F3066E]">Champ</span>
             </h1>
 
             <div
-              className="absolute pointer-events-none flex items-center justify-center
+              className="absolute pointer-events-none flex items-center justify-center z-10
              right-10 bottom-0.5 w-32.5 h-11.5 
-             md:right-[calc(50%-360px)] md:bottom-2.25 md:w-57.5 md:h-17.5 "
+             md:right-[calc(50%-330px)] md:bottom-0 md:w-57.5 md:h-17.5 "
             >
               <div className="w-full h-full border-2 border-dashed border-[#F3066E] relative z-0">
                 <span className="absolute -top-1 -left-1 w-2.5 h-2.5 bg-[#F3066E]"></span>
@@ -39,15 +40,15 @@ const Banner = () => {
 
           {/* King Image moved outside the H1 tag for better layout control */}
           <div
-            className="absolute md:-top-5 z-10 
+            className="absolute md:-top-8  z-0
              right-[60%]  -bottom-6
-             md:right-[calc(50%-390px)]"
+             md:right-[calc(50%-360px)]"
           >
             <Image
               src="/king.png"
               width={50}
               height={50}
-              className="w-[35px] z-10 h-[35px] md:w-[50px] md:h-[50px]"
+              className="w-[35px]  h-[35px] md:w-[50px] md:h-[50px]"
               alt="King Icon"
             />
           </div>
@@ -66,7 +67,7 @@ const Banner = () => {
         <button
           onClick={() => setIsBookingOpen(true)}
           className="group relative overflow-hidden rounded-lg bg-primary py-4 px-16 text-lg font-bold text-white transition-all duration-500 hover:shadow-[0_0_20px_rgba(255,143,202,0.5)] active:scale-95"
-          style={{ animation: "pulseScale 4s infinite ease-in-out" }}
+          style={{ animation: "pulseScale 2.5s infinite ease-in-out" }}
         >
           {/* Shimmering layer */}
           <span
@@ -78,7 +79,7 @@ const Banner = () => {
           ></span>
 
           {/* Button Text */}
-          <span className="relative z-10 text-white transition-transform duration-300 group-hover:translate-y-[-1px] inline-block">
+          <span className="relative tracking-[-2%] px-24 z-10 text-white transition-transform duration-300 group-hover:translate-y-[-1px] inline-block">
             ১ ফ্রি ক্লাস বুক করুন
           </span>
 
@@ -100,10 +101,10 @@ const Banner = () => {
           />
         </button>
 
-        <p className="text-gray-600 text-sm mt-4">
+        <p className="text-[#000000]/50 font-medium text-base mt-4 tracking-[-2%]">
           Booked a Class already?{" "}
-          <Link className="text-secondary font-bold underline" href={"/signup"}>
-            Join now
+          <Link className="text-secondary font-bold" href={"/signup"}>
+            JOIN NOw
           </Link>
         </p>
       </div>

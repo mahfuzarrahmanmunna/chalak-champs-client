@@ -38,7 +38,7 @@ const PopularCourse = () => {
     <section className="px-4">
       {/* --- Heading Section --- */}
       <div className="text-center mb-12">
-        <h2 className="text-secondary font-medium text-xl md:text-5xl">
+        <h2 className="text-secondary font-bold leading-auto tracking-[-5%] text-xl md:text-5xl">
           সেরা ও জনপ্রিয়{" "}
           <span className="relative inline-block px-3 py-3 group">
             {/* Dashed Border */}
@@ -74,16 +74,16 @@ const PopularCourse = () => {
                     src={course.image}
                     alt={course.title}
                     fill
-                    className="object-cover p-0.5 rounded-3xl"
+                    className="object-cover p-0.5 rounded-2xl"
                   />
                 </div>
 
                 {/* Text Content */}
                 <div className="mt-6 text-center">
-                  <h3 className="text-[#E91E63] text-base md:text-[20px] font-extrabold leading-tight">
+                  <h3 className="text-[#E91E63] tracking-[-2%] text-base md:text-[20px] font-semibold leading-tight">
                     {course.title}
                   </h3>
-                  <p className="text-gray-800 text-xs md:text-sm font-semibold mt-1">
+                  <p className="text-gray-800 text-sm tracking-[-2%] md:text-sm font-semibold mt-1">
                     {course.subtitle}
                   </p>
                 </div>
@@ -105,6 +105,8 @@ const PopularCourse = () => {
           darkShadowColor="#F3066E"
           highlightColor="#FF8FCA"
           hoverTextColor="#F3056D"
+          px="px-[46px]"
+          py="py-[10px]"
           icon=<svg
             width="13"
             height="13"
@@ -113,8 +115,8 @@ const PopularCourse = () => {
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
+              fillRule="evenodd"
+              clipRule="evenodd"
               d="M11.3755 2.03125C11.3755 1.92351 11.3327 1.82017 11.2565 1.74399C11.1803 1.6678 11.077 1.625 10.9693 1.625H6.09426C5.98652 1.625 5.88319 1.6678 5.807 1.74399C5.73081 1.82017 5.68801 1.92351 5.68801 2.03125C5.68801 2.13899 5.73081 2.24233 5.807 2.31851C5.88319 2.3947 5.98652 2.4375 6.09426 2.4375H9.98858L1.74414 10.6811C1.70637 10.7189 1.6764 10.7637 1.65596 10.8131C1.63552 10.8624 1.625 10.9153 1.625 10.9687C1.625 11.0222 1.63552 11.0751 1.65596 11.1244C1.6764 11.1738 1.70637 11.2186 1.74414 11.2564C1.78191 11.2941 1.82675 11.3241 1.8761 11.3445C1.92545 11.365 1.97835 11.3755 2.03176 11.3755C2.08518 11.3755 2.13807 11.365 2.18742 11.3445C2.23678 11.3241 2.28162 11.2941 2.31939 11.2564L10.563 3.01194V6.90625C10.563 7.01399 10.6058 7.11733 10.682 7.19351C10.7582 7.2697 10.8615 7.3125 10.9693 7.3125C11.077 7.3125 11.1803 7.2697 11.2565 7.19351C11.3327 7.11733 11.3755 7.01399 11.3755 6.90625V2.03125Z"
               fill="white"
             />
