@@ -1,527 +1,196 @@
-// src/app/courses/CoursesContent.tsx
-
 "use client";
 
-import React, { useState, useMemo } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useTheme } from "@/app/context/ThemeContext";
-import {
-  Search,
-  Filter,
-  Clock,
-  Users,
-  Star,
-  BookOpen,
-  ChevronRight,
-  CheckCircle,
-  ShoppingCart,
-} from "lucide-react";
-import { coursesData } from "../../../data/coursesData";
-import { categories } from "../../../data/blogData";
+import React, { useState, useEffect } from "react";
+import { Search, Filter, BookOpen } from "lucide-react";
+import CourseCard from "./CourseCard";
+import CourseStats from "./CourseStats";
 
-// FIXED IMPORT: Use @ alias for consistency
-// import { coursesData, categories, levels, Course } from "@/data/coursesData";
+interface Course {
+  id: number;
+  title: string;
+  subtitle: string;
+  description: string;
+  badge: string;
+  badgeColor: string;
+  image: string | null;
+  age: string;
+  duration: string;
+  schedule: string;
+  mode: string;
+  fee: string;
+  buttonText: string;
+  faqs?: Array<{ id: string; question: string; answer: string }>;
+  [key: string]: any;
+}
 
-export default function CoursesContent() {
-  const { theme, colors } = useTheme();
+export default function CoursesPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedLevel, setSelectedLevel] = useState("All");
-  const [showFilters, setShowFilters] = useState(false);
-  const [sortBy, setSortBy] = useState("popular");
-  const [enrolledCourses, setEnrolledCourses] = useState<Set<string>>(
-    new Set(),
-  );
-  const [enrollingCourses, setEnrollingCourses] = useState<Set<string>>(
-    new Set(),
-  );
-  const [cartCourses, setCartCourses] = useState<Set<string>>(new Set());
-  const [addingToCart, setAddingToCart] = useState<Set<string>>(new Set());
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Filter and sort courses
-  const filteredAndSortedCourses = useMemo(() => {
-    let filtered = coursesData.filter((course) => {
-      const matchesSearch =
-        course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.instructor.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "All" || course.category === selectedCategory;
-      const matchesLevel =
-        selectedLevel === "All" || course.level === selectedLevel;
-      return matchesSearch && matchesCategory && matchesLevel;
-    });
-
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "newest":
-          return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
-        case "price-low":
-          return a.price - b.price;
-        case "price-high":
-          return b.price - a.price;
-        case "rating":
-          return b.rating - a.rating;
-        case "popular":
-        default:
-          return b.enrolledCount - a.enrolledCount;
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch("./courses.json");
+        if (!response.ok) throw new Error("Failed to fetch courses data");
+        const data: Course[] = await response.json();
+        setCourses(data);
+      } catch (err) {
+        console.error("Error loading courses:", err);
+        setError("Failed to load courses. Please try again later.");
+      } finally {
+        setIsLoading(false);
       }
-    });
+    };
+    fetchCourses();
+  }, []);
 
-    return filtered;
-  }, [searchTerm, selectedCategory, selectedLevel, sortBy]);
+  const filteredCourses = courses.filter((course) => {
+    const matchesSearch =
+      course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.subtitle.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      filterCategory === "all" ||
+      course.subtitle.toLowerCase().includes(filterCategory);
+    return matchesSearch && matchesCategory;
+  });
 
-  const handleEnroll = async (courseId: string) => {
-    setEnrollingCourses((prev) => new Set(prev).add(courseId));
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setEnrolledCourses((prev) => new Set(prev).add(courseId));
-      alert("Successfully enrolled in the course!");
-    } catch (error) {
-      alert("Failed to enroll in the course.");
-    } finally {
-      setEnrollingCourses((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(courseId);
-        return newSet;
-      });
-    }
-  };
-
-  const handleAddToCart = async (courseId: string) => {
-    setAddingToCart((prev) => new Set(prev).add(courseId));
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setCartCourses((prev) => new Set(prev).add(courseId));
-      alert("Course added to cart!");
-    } catch (error) {
-      alert("Failed to add course to cart.");
-    } finally {
-      setAddingToCart((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(courseId);
-        return newSet;
-      });
-    }
-  };
+  // --- FIX: Define the variables that were missing ---
+  const totalCourses = courses.length;
+  // Note: Since your course interface doesn't have a 'students' field,
+  // I am hardcoding this number. Change this as needed.
+  const studentsCount = 1200;
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ backgroundColor: "var(--color-background)" }}
-    >
-      <div className="relative h-64 md:h-80 overflow-hidden">
-        <Image
-          src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
-          alt="Courses"
-          fill
-          className="object-cover"
-          priority
-          unoptimized // Recommended if you haven't configured next.config.js for unsplash
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[rgb(243,6,110)] to-[rgb(33,65,135)] opacity-80"></div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white p-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">All Courses</h1>
-            <p className="text-xl max-w-2xl mx-auto">
-              Explore our comprehensive collection of English language courses
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50 font-sans pb-20">
+      {/* --- HERO SECTION --- */}
+      <section className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <span className="text-2xl text-gray-600 leading-18.75 ">
+            আমাদের কোর্স
+          </span>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-secondary mb-6 leading-tight">
+            আপনার বাচ্চার{" "}
+            <span className="relative inline-block px-3 py-2 group">
+              <span className="absolute inset-0 border-[3px] border-dashed border-pink-500"></span>
+              <span className="absolute -top-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
+              <span className="absolute -top-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
+              <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
+              <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
+              <span className="text-primary "> ভবিষ্যত</span>
+            </span>{" "}
+            তৈরি করুন
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed">
+            বিশ্বমানের সেরা শিক্ষা প্রতিষ্ঠান আমরা অনলাইন। চালাক চ্যাম্পসে।
+            আপনার বাচ্চাকে আগ্রহ ও দক্ষতা বাড়ানোর জন্য। বাংলাদেশের মেধাবী
+            শিক্ষার্থীদের জন্য আত্মবিশ্বাসী ও দক্ষতার পূর্ণ পাঠ্যায় করি।ে
+            পারবেন।
+          </p>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search and Sort Controls */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search
-                className="h-5 w-5"
-                style={{ color: "var(--color-foreground)" }}
-                opacity={0.5}
-              />
+          {/* Search Bar */}
+          <div className="max-w-lg mx-auto relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400 group-focus-within:text-[#F3056D]" />
             </div>
             <input
               type="text"
-              placeholder="Search for courses..."
+              placeholder="কোর্স খুঁজুন..."
+              className="w-full text-gray-700 pl-12 pr-4 py-4 rounded-xl border-2 border-gray-200 focus:border-[#F3056D] focus:ring-4 focus:ring-[#F3056D]/10 outline-none text-lg transition-all shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2"
-              style={{
-                backgroundColor: "var(--color-card)",
-                borderColor: "var(--color-border)",
-                color: "var(--color-foreground)",
-              }}
             />
           </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="md:hidden flex items-center justify-center px-4 py-3 rounded-md border"
-            style={{
-              backgroundColor: "var(--color-card)",
-              borderColor: "var(--color-border)",
-              color: "var(--color-foreground)",
-            }}
-          >
-            <Filter className="h-5 w-5 mr-2" />
-            Filters
-          </button>
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="appearance-none pl-4 pr-10 py-3 rounded-md border focus:outline-none focus:ring-2"
-              style={{
-                backgroundColor: "var(--color-card)",
-                borderColor: "var(--color-border)",
-                color: "var(--color-foreground)",
-              }}
-            >
-              <option value="popular">Most Popular</option>
-              <option value="newest">Newest</option>
-              <option value="rating">Highest Rated</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-              <ChevronRight
-                className="h-5 w-5"
-                style={{ color: "var(--color-foreground)" }}
-                opacity={0.5}
-              />
-            </div>
-          </div>
-        </div>
 
-        {/* Filters Panel */}
-        <div
-          className={`${showFilters ? "block" : "hidden"} md:block mb-8 p-4 rounded-lg`}
-          style={{ backgroundColor: "var(--color-card)" }}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3
-                className="text-lg font-medium mb-3"
-                style={{ color: "var(--color-foreground)" }}
+          {/* Quick Filters */}
+          <div className="flex flex-wrap justify-center gap-3 mt-8">
+            {["all", "academic", "skill", "language"].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setFilterCategory(cat)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all border ${
+                  filterCategory === cat
+                    ? "bg-[#F3056D] text-white border-[#F3056D] shadow-md"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                }`}
               >
-                Category
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                      selectedCategory === category ? "text-white" : ""
-                    }`}
-                    style={{
-                      backgroundColor:
-                        selectedCategory === category
-                          ? "var(--color-primary)"
-                          : "var(--color-background)",
-                      color:
-                        selectedCategory === category
-                          ? "white"
-                          : "var(--color-foreground)",
-                      border: `1px solid ${
-                        selectedCategory === category
-                          ? "var(--color-primary)"
-                          : "var(--color-border)"
-                      }`,
-                    }}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h3
-                className="text-lg font-medium mb-3"
-                style={{ color: "var(--color-foreground)" }}
-              >
-                Level
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {/* {levels.map((level) => (
-                  <button
-                    key={level}
-                    onClick={() => setSelectedLevel(level)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                      selectedLevel === level ? "text-white" : ""
-                    }`}
-                    style={{
-                      backgroundColor:
-                        selectedLevel === level
-                          ? "var(--color-primary)"
-                          : "var(--color-background)",
-                      color:
-                        selectedLevel === level
-                          ? "white"
-                          : "var(--color-foreground)",
-                      border: `1px solid ${
-                        selectedLevel === level
-                          ? "var(--color-primary)"
-                          : "var(--color-border)"
-                      }`,
-                    }}
-                  >
-                    {level}
-                  </button>
-                ))} */}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-sm" style={{ color: "var(--color-foreground)" }}>
-            Showing{" "}
-            <span className="font-medium">
-              {filteredAndSortedCourses.length}
-            </span>{" "}
-            courses
-          </p>
-        </div>
-
-        {/* Course Grid */}
-        {filteredAndSortedCourses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredAndSortedCourses.map((course) => (
-              <div
-                key={course.id}
-                className="rounded-lg overflow-hidden shadow-md transition-transform duration-300 hover:shadow-xl hover:-translate-y-1"
-                style={{ backgroundColor: "var(--color-card)" }}
-              >
-                <div className="relative h-48">
-                  <Link href={`/course-details/${course.id}`}>
-                    <Image
-                      src={course.thumbnail}
-                      alt={course.title}
-                      fill
-                      className="object-cover cursor-pointer"
-                      unoptimized
-                    />
-                  </Link>
-                  <div className="absolute top-2 left-2 flex flex-col gap-1">
-                    {course.isBestseller && (
-                      <span
-                        className="px-2 py-1 text-xs font-medium rounded"
-                        style={{ backgroundColor: "#f59e0b", color: "white" }}
-                      >
-                        Bestseller
-                      </span>
-                    )}
-                    {course.isNew && (
-                      <span
-                        className="px-2 py-1 text-xs font-medium rounded"
-                        style={{ backgroundColor: "#10b981", color: "white" }}
-                      >
-                        New
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span
-                      className="text-xs font-medium px-2 py-1 rounded"
-                      style={{
-                        backgroundColor: "var(--color-accent)",
-                        color: "var(--color-background)",
-                      }}
-                    >
-                      {course.category}
-                    </span>
-                    <span
-                      className="text-xs font-medium"
-                      style={{ color: "var(--color-secondary)" }}
-                    >
-                      {course.level}
-                    </span>
-                  </div>
-
-                  <Link href={`/course-details/${course.id}`}>
-                    <h3
-                      className="font-semibold text-lg mb-2 line-clamp-2 cursor-pointer hover:underline"
-                      style={{ color: "var(--color-foreground)" }}
-                    >
-                      {course.title}
-                    </h3>
-                  </Link>
-
-                  <p
-                    className="text-sm mb-3 line-clamp-2"
-                    style={{ color: "var(--color-foreground)", opacity: 0.7 }}
-                  >
-                    {course.description}
-                  </p>
-
-                  <div className="flex items-center mb-3">
-                    <Image
-                      src={course.instructor.avatar}
-                      alt={course.instructor.name}
-                      width={24}
-                      height={24}
-                      className="rounded-full mr-2"
-                      unoptimized
-                    />
-                    <span
-                      className="text-sm"
-                      style={{ color: "var(--color-foreground)" }}
-                    >
-                      {course.instructor.name}
-                    </span>
-                  </div>
-
-                  <div
-                    className="flex items-center justify-between text-xs mb-3"
-                    style={{ color: "var(--color-foreground)", opacity: 0.7 }}
-                  >
-                    <div className="flex items-center">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {course.duration}h
-                    </div>
-                    <div className="flex items-center">
-                      <BookOpen className="h-3 w-3 mr-1" />
-                      {course.lessons} lessons
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="h-3 w-3 mr-1" />
-                      {course.enrolledCount.toLocaleString()}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center mb-3">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-4 w-4 ${
-                            i < Math.floor(course.rating) ? "fill-current" : ""
-                          }`}
-                          style={{
-                            color:
-                              i < Math.floor(course.rating)
-                                ? "#f59e0b"
-                                : "var(--color-border)",
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <span
-                      className="text-sm ml-2"
-                      style={{ color: "var(--color-foreground)" }}
-                    >
-                      {course.rating}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <span
-                        className="text-lg font-bold"
-                        style={{ color: "var(--color-primary)" }}
-                      >
-                        ${course.price}
-                      </span>
-                      {course.originalPrice && (
-                        <span
-                          className="text-sm ml-2 line-through"
-                          style={{
-                            color: "var(--color-foreground)",
-                            opacity: 0.5,
-                          }}
-                        >
-                          ${course.originalPrice}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    {enrolledCourses.has(course.id) ? (
-                      <Link
-                        href={`/course-details/${course.id}`}
-                        className="flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-medium text-white"
-                        style={{ backgroundColor: "#10b981" }}
-                      >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Go to Course
-                      </Link>
-                    ) : (
-                      <button
-                        onClick={() => handleEnroll(course.id)}
-                        disabled={enrollingCourses.has(course.id)}
-                        className="flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-medium text-white disabled:opacity-50"
-                        style={{ backgroundColor: "var(--color-primary)" }}
-                      >
-                        {enrollingCourses.has(course.id) ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Enrolling...
-                          </>
-                        ) : (
-                          "Enroll Now"
-                        )}
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleAddToCart(course.id)}
-                      disabled={
-                        addingToCart.has(course.id) ||
-                        cartCourses.has(course.id) ||
-                        enrolledCourses.has(course.id)
-                      }
-                      className="p-2 rounded-md border disabled:opacity-50"
-                      style={{
-                        backgroundColor: cartCourses.has(course.id)
-                          ? "var(--color-primary)"
-                          : "transparent",
-                        color: cartCourses.has(course.id)
-                          ? "white"
-                          : "var(--color-foreground)",
-                        borderColor: "var(--color-border)",
-                      }}
-                      title={
-                        cartCourses.has(course.id) ? "In Cart" : "Add to Cart"
-                      }
-                    >
-                      {addingToCart.has(course.id) ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                      ) : cartCourses.has(course.id) ? (
-                        <CheckCircle className="h-4 w-4" />
-                      ) : (
-                        <ShoppingCart className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
+                {cat === "all"
+                  ? "সব কোর্স"
+                  : cat === "academic"
+                    ? "একাডেমিক"
+                    : cat === "skill"
+                      ? "স্কিল ডেভেলপমেন্ট"
+                      : "ভাষা"}
+              </button>
             ))}
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-lg" style={{ color: "var(--color-foreground)" }}>
-              No courses found matching your criteria.
-            </p>
-            <button
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedCategory("All");
-                setSelectedLevel("All");
-              }}
-              className="mt-4 px-4 py-2 rounded-md text-sm font-medium text-white"
-              style={{ backgroundColor: "var(--color-primary)" }}
-            >
-              Clear Filters
-            </button>
+        </div>
+      </section>
+
+      {/* --- COURSES GRID SECTION --- */}
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-[#111827] flex items-center gap-2">
+              <BookOpen className="w-7 h-7 text-[#F3056D]" />
+              জনপ্রিয়ি কোর্স
+            </h2>
+            <span className="text-sm text-gray-500">
+              মোট {filteredCourses.length}টি কোর্স পাওয়া গেছে
+            </span>
           </div>
-        )}
-      </div>
+
+          {isLoading ? (
+            <div className="text-center py-20 flex justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F3056D]"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-20">
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                দুঃখা হয়েছে!
+              </h3>
+              <p className="text-gray-500">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-4 px-6 py-2 bg-[#F3056D] text-white rounded-lg hover:bg-[#D6005C]"
+              >
+                আবার চেষ্টা করুন
+              </button>
+            </div>
+          ) : filteredCourses.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredCourses.map((course) => (
+                <CourseCard key={course.id} course={course} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <div className="inline-block p-6 bg-gray-100 rounded-full mb-4">
+                <Filter className="w-10 h-10 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                কোন কোর্স পাওয়া যায়নি
+              </h3>
+              <p className="text-gray-500 mb-6">
+                আপনার অনুসন্ধ কি ঠিক খুঁজছেন।
+              </p>
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setFilterCategory("all");
+                }}
+                className="mt-6 px-6 py-2 bg-[#F3056D] text-white rounded-lg hover:bg-[#D6005C]"
+              >
+                ফিল্টার মুছুন
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <CourseStats totalCourses={totalCourses} studentsCount={studentsCount} />
     </div>
   );
 }

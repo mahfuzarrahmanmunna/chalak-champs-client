@@ -32,7 +32,7 @@ const NavHeader = () => {
     <nav
       className={`sticky top-0 z-50 px-2 transition-all duration-300 ${
         scrolled
-          ? "bg-white/30 backdrop-blur-xl border border-white/40 shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
+          ? "bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
           : "bg-white "
       }`}
     >

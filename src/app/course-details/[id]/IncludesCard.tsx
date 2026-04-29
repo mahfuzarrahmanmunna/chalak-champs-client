@@ -1,63 +1,38 @@
-import { Award, Download, Languages, List, Video } from 'lucide-react';
-import React from 'react';
+"use client";
+
+import React from "react";
+import { Award, Download, Target, Video, Zap } from "lucide-react";
 
 const IncludesCard = () => {
-    return (
-      <div
-        className="rounded-lg p-6 shadow-sm border"
-        style={{
-          backgroundColor: "var(--color-card)",
-          borderColor: "var(--color-border)",
-        }}
-      >
-        <h3
-          className="text-xl font-bold mb-6"
-          style={{ color: "var(--color-foreground)" }}
-        >
-          This course includes:
-        </h3>
-        <ul
-          className="space-y-4 text-sm"
-          style={{ color: "var(--color-foreground)", opacity: 0.8 }}
-        >
-          <li className="flex items-start gap-3">
-            <Video
-              className="h-5 w-5 flex-shrink-0 mt-0.5"
-              style={{ color: "var(--color-primary)" }}
-            />
-            <span>12 hours of video content</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <List
-              className="h-5 w-5 flex-shrink-0 mt-0.5"
-              style={{ color: "var(--color-primary)" }}
-            />
-            <span>15 lessons</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <Download
-              className="h-5 w-5 flex-shrink-0 mt-0.5"
-              style={{ color: "var(--color-primary)" }}
-            />
-            <span>Downloadable resources</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <Award
-              className="h-5 w-5 flex-shrink-0 mt-0.5"
-              style={{ color: "var(--color-primary)" }}
-            />
-            <span>Certificate of completion</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <Languages
-              className="h-5 w-5 flex-shrink-0 mt-0.5"
-              style={{ color: "var(--color-primary)" }}
-            />
-            <span>Subtitles: English, Spanish, French</span>
-          </li>
-        </ul>
+  const includes = [
+    { icon: <Video className="w-5 h-5" />, text: "24 hours on-demand video" },
+    {
+      icon: <Download className="w-5 h-5" />,
+      text: "10 downloadable resources",
+    },
+    { icon: <Target className="w-5 h-5" />, text: "10 articles" },
+    { icon: <Zap className="w-5 h-5" />, text: "Access on mobile and TV" },
+    { icon: <Award className="w-5 h-5" />, text: "Certificate of completion" },
+  ];
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-white">
+        This course includes:
+      </h3>
+      <div className="space-y-3">
+        {includes.map((item, index) => (
+          <div
+            key={index}
+            className="flex items-center text-sm text-gray-600 dark:text-gray-300"
+          >
+            <div className="mr-3">{item.icon}</div>
+            <span>{item.text}</span>
+          </div>
+        ))}
       </div>
-    );
+    </div>
+  );
 };
 
 export default IncludesCard;

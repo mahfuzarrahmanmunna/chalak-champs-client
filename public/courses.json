@@ -1,62 +1,548 @@
 [
   {
     "id": 1,
-    "title": "Kids English",
-    "subtitle": "For Children (3-12 Years)",
-    "description": "Interactive learning to build strong English foundations with fun activities.",
-    "tag": "30% Help Available",
-    "badgeColor": "bg-pink-100 text-pink-600",
+    "title": "Kids অনর্গল English",
+    "subtitle": "Spoken কোর্স",
+    "description": "'Kids অনর্গল English' এর Online Batch এ যুক্ত করে আপনার বাচ্চাকে শুদ্ধ উচ্চারণে অনর্গল ইংরেজিতে কথা বলা এবং Basic Grammar শেখান একদম শূন্য থেকে।",
+    "badge": "Best Seller",
+    "benefit": "১ম ৩ মাসে প্রতিমাসে 6000 tk করে Installment সুবিধা",
+    "badgeColor": "bg-purple-100 text-purple-600",
     "image": "/kids-english-girl.png",
-    "buttonText": "Demo Class"
+    "age": "Class 1 থেকে Class 4 এবং Class 5 থেকে Class 8",
+    "duration": "৬ মাস",
+    "schedule": "সপ্তাহে ৩ দিন",
+    "mode": "Online Live Class",
+    "startDate": "10 January, 2026",
+    "features": [
+      "Colorful Course Material",
+      "ক্লাসে মজার Game এবং Fun Activity এর মাধ্যমে পড়ানো হয়",
+      "Dynamic Exam and Competitions",
+      "প্রতিটি ক্লাসের পড়া ক্লাসেই চর্চা করিয়ে নেয়া হয়",
+      "Language Club এ Fun Activity এর মাধ্যেমে চর্চার সুযোগ",
+      "Parents দের সাথে নিয়মিত Consultation করে বাচ্চার Improvement সম্পর্কে আপডেট দেয়া হয়",
+      "যেকোনো বিষয়ের উপর প্রেসজেন্টেশন দেয়া কিংবা English Olympiad এ অংশগ্রহণ করার উপযোগী করে তোলা হয়",
+      "কোর্স শেষে থাকবে Certificate"
+    ],
+    "syllabus": [
+      "Level 1: Basic Phonetics + Basic Spoken",
+      "Level 2: Advanced Phonetics + Advance Spoken + Accent Training + Basic Grammar"
+    ],
+    "fee": "18,000 Tk",
+    "installment": "প্রথম ৩ মাসে প্রতিমাসে 6000 tk করে Installment সুবিধা",
+    "offer": "একসাথে কোর্সের শুরুতেই পরিশোধ করলে ৩ হাজার টাকা ছাড়ে ফি 15000 Tk",
+    "contact": "01740176774",
+    "buttonText": "Demo Class",
+    "faqs": [
+      {
+        "id": "1",
+        "question": "আমার বাচ্চার ইংরেজি ভীতি আছে, এই কোর্সে ভালো হবে?",
+        "answer": "অবশ্যই। আমাদের কোর্সটি গেম এবং ফান অ্যাক্টিভিটির মাধ্যমে ডিজাইন করা, তাই বাচ্চারা পড়ার চাপে না পড়ে খেলার ছলে ইংরেজি শিখবে।"
+      },
+      {
+        "id": "2",
+        "question": "ক্লাসগুলো কি রেকর্ডেড নাকি লাইভ?",
+        "answer": "ক্লাসগুলো সম্পূর্ণ লাইভ হবে। তবে বাচ্ছার অনুপস্থিতির ক্ষেত্রে রেকর্ডিং দেওয়ার ব্যবস্থা আছে।"
+      },
+      {
+        "id": "3",
+        "question": "কোর্স মেটিরিয়াল কিভাবে পাবো?",
+        "answer": "কোর্স শুরুর আগে আমরা প্যারেন্টসকে পিডিএফ ফরম্যাটে কোর্স মেটিরিয়াল এবং ওয়ার্কশিট প্রদান করবো।"
+      }
+    ]
   },
   {
     "id": 2,
-    "title": "Abacus Math",
-    "subtitle": "Brain Development",
-    "description": "Boost mental calculation speed and concentration with our proven Abacus method.",
-    "tag": "Best Seller",
-    "badgeColor": "bg-purple-100 text-purple-600",
-    "image": "/abacus-boy.png",
-    "buttonText": "Book Now"
+    "title": "KIDS’ Drawing Course",
+    "subtitle": "Creative Skills",
+    "description": "আপনার বাচ্চার কল্পনাশক্তি, সৃজনশীলতা এবং পর্যবেক্ষণ ক্ষমতা বাড়াতে Drawing একটি অসাধারণ মাধ্যম। Chalak Champs Drawing Course-এ বাচ্চারা ধাপে ধাপে সহজ ও মজার পদ্ধতিতে আঁকা শিখবে এবং নিজের কল্পনাকে ছবির মাধ্যমে প্রকাশ করতে পারবে।",
+    "badge": "Fun Activity",
+    "badgeColor": "bg-green-100 text-green-600",
+    "image": "/girl.png",
+    "age": "৪ বছর থেকে ১২ বছর",
+    "duration": "৫ মাস",
+    "schedule": "সপ্তাহে ২ দিন",
+    "mode": "Online Live Class",
+    "features": [
+      "Step-by-step Drawing শেখানো",
+      "Basic Shape থেকে Character Drawing",
+      "Coloring Technique শেখানো",
+      "Fun Art Activity এবং Creative Exercise",
+      "প্রতিটি ক্লাসে আঁকা Practice করানো",
+      "Drawing Challenge এবং Mini Competition",
+      "বাচ্চাদের Creative Thinking উন্নত করার বিশেষ Activity",
+      "কোর্স শেষে থাকবে Certificate"
+    ],
+    "syllabus": [
+      "Basic Shapes Drawing",
+      "Object Drawing (Fruit, Animal, Nature)",
+      "Cartoon & Character Drawing",
+      "Creative Coloring Technique",
+      "Story Based Drawing",
+      "Creative Scene Drawing"
+    ],
+    "fee": "৪,০০০ Tk (Total)",
+    "monthlyFee": "800 Tk",
+    "contact": "01740176774",
+    "buttonText": "View Details",
+    "faqs": [
+      {
+        "id": "1",
+        "question": "আঁকার জন্য কি কি সরঞ্জাম লাগবে?",
+        "answer": "শুরুতে শুধুমাত্র একটি পেন্সিল, রাবার এবং কাগজ দরকার হবে। কোর্সের মাঝখানে রঙ পেন্সিল বা কালার ব্যবহারের জন্য বলা হবে।"
+      },
+      {
+        "id": "2",
+        "question": "বাচ্চা যদি আগে আঁকতে না জানে?",
+        "answer": "কোনো সমস্যা নেই, আমরা বেসিক শেইপ থেকে শুরু করি, তাই আগে আঁকার অভিজ্ঞতা থাকার প্রয়োজন নেই।"
+      },
+      {
+        "id": "3",
+        "question": "ক্লাসের সময় কতটুকু?",
+        "answer": "প্রতিটি ক্লাস প্রায় ৪৫ মিনিট থেকে ১ ঘণ্টা স্থায়ী হবে।"
+      }
+    ]
   },
   {
     "id": 3,
-    "title": "Programming",
-    "subtitle": "Future Skills",
-    "description": "Learn logic and coding through games and block-based programming.",
-    "tag": "New Course",
-    "badgeColor": "bg-blue-100 text-blue-600",
-    "image": "/coding-kid.png",
-    "buttonText": "Start Free"
+    "title": "Phonetics & Accent Training",
+    "subtitle": "For Kids",
+    "description": "আপনার বাচ্চাকে শিখান শুদ্ধ উচ্চারণে ইংরেজি বলা। অনেক সময় বাচ্চারা ইংরেজি পড়তে পারে কিন্তু সঠিক pronunciation এবং accent না জানার কারণে আত্মবিশ্বাসের সাথে বলতে পারে না। Chalak Champs Phonetics & Accent Training Course বাচ্চাদের একদম শুরু থেকে সঠিক উচ্চারণ, phonetic sound এবং fluent speaking শেখাতে সাহায্য করবে।",
+    "badge": "Popular",
+    "badgeColor": "bg-pink-100 text-pink-600",
+    "image": "/kids-english-girl.png",
+    "age": "৬ – ১৫ বছর",
+    "duration": "৬ মাস",
+    "schedule": "সপ্তাহে ২ দিন",
+    "mode": "Online Interactive Class",
+    "features": [
+      "International Phonetic Sound শেখানো",
+      "Correct Pronunciation Practice",
+      "Accent Training",
+      "Listening & Speaking Practice",
+      "Fun Activity এর মাধ্যমে Pronunciation Practice",
+      "Story Reading & Speaking Practice",
+      "Class এ Live Practice এবং Correction",
+      "কোর্স শেষে থাকবে Certificate"
+    ],
+    "syllabus": [
+      "English Phonetic Sounds",
+      "Word Pronunciation",
+      "Sentence Stress & Intonation",
+      "Accent Development",
+      "Confident English Speaking",
+      "Listening Skill Improvement"
+    ],
+    "fee": "18,000 Tk",
+    "contact": "01740176774",
+    "buttonText": "Enroll Now",
+    "faqs": [
+      {
+        "id": "1",
+        "question": "Phonetics কি?",
+        "answer": "Phonetics হলো শব্দের সঠিক উচ্চারণ শেখার বিজ্ঞান। এটি শিখলে বাচ্চা অভিধান না দেখেই সঠিক উচ্চারণ করতে পারবে।"
+      },
+      {
+        "id": "2",
+        "question": "এই কোর্সটি কি ছোট বাচ্চাদের জন্য?",
+        "answer": "জি, ৬ বছর থেকে ১৫ বছরের বাচ্চারা এই কোর্সে ভর্তি হতে পারবে।"
+      },
+      {
+        "id": "3",
+        "question": "Accent Training কি জরুরি?",
+        "answer": "আন্তর্জাতিক মানের যোগাযোগ এবং উচ্চিক্ষার জন্য সঠিক একসেন্ট খুবই জরুরি।"
+      }
+    ]
   },
   {
     "id": 4,
-    "title": "Olympiad Prep",
-    "subtitle": "Math & Science",
-    "description": "Prepare for global competitions with advanced problem-solving techniques.",
-    "tag": "Advanced",
-    "badgeColor": "bg-yellow-100 text-yellow-600",
-    "image": "/olympiad-student.png",
-    "buttonText": "Join Class"
+    "title": "ছোটদের কুরআন শিক্ষা কোর্স",
+    "subtitle": "Religious Studies",
+    "description": "আপনার বাচ্চাকে ছোটবেলা থেকেই শুদ্ধভাবে কুরআন পড়া এবং ইসলামের মৌলিক শিক্ষা শেখানোর একটি সুন্দর সুযোগ। Chalak Champs-এর এই কোর্সে বাচ্চারা ধাপে ধাপে আরবি হরফ, তাজবীদসহ কুরআন পড়া শিখবে সহজ ও আনন্দময় পদ্ধতিতে।",
+    "badge": "Religious",
+    "badgeColor": "bg-teal-100 text-teal-600",
+    "image": "/quran-boy.png",
+    "age": "৫ – ১২ বছর",
+    "duration": "৬ মাস",
+    "schedule": "সপ্তাহে ২ দিন",
+    "mode": "Online Live Class",
+    "features": [
+      "নূরানী কায়দা থেকে ধাপে ধাপে কুরআন শিক্ষা",
+      "তাজবীদসহ শুদ্ধ উচ্চারণ শেখানো",
+      "নিয়মিত তিলাওয়াত প্র্যাকটিস",
+      "ছোট ছোট দোয়া ও সূরা শেখানো",
+      "বাচ্চাদের জন্য সহজ ও আনন্দময় শেখানোর পদ্ধতি",
+      "নিয়মিত অগ্রগতি মূল্যায়ন",
+      "কোর্স শেষে থাকবে Certificate"
+    ],
+    "syllabus": [
+      "আরবি হরফ ও সঠিক উচ্চারণ",
+      "নূরানী কায়দা",
+      "তাজবীদের বেসিক নিয়ম",
+      "ছোট ছোট সূরা ও দোয়া",
+      "শুদ্ধভাবে কুরআন তিলাওয়াত"
+    ],
+    "fee": "1000 Tk (Monthly)",
+    "contact": "01740176774",
+    "buttonText": "Enroll Now",
+    "faqs": [
+      {
+        "id": "1",
+        "question": "আপনারা কি নূরানী কায়দা দিয়ে শেখান?",
+        "answer": "জি, আমরা সম্পূর্ণ নূরানী কায়দা পদ্ধতি অনুসরণ করে শুদ্ধ উচ্চারণের ওপর জোর দেই।"
+      },
+      {
+        "id": "2",
+        "question": "মহিলা শিক্ষক পাওয়া যাবে?",
+        "answer": "জি, আমাদের আছে অভিজ্ঞ মহিলা শিক্ষকা যারা বাচ্চাদের খুব যত্ন নিয়ে পড়াবেন।"
+      },
+      {
+        "id": "3",
+        "question": "ক্লাসের সময় কি ফিক্সড?",
+        "answer": "সপ্তাহে ২ দিন ক্লাস হবে। সময়সূচি আগে থেকেই জানিয়ে দেওয়া হবে।"
+      }
+    ]
   },
   {
     "id": 5,
-    "title": "Art & Drawing",
-    "subtitle": "Creative Skills",
-    "description": "Unleash creativity with step-by-step drawing and coloring techniques.",
-    "tag": "Fun Activity",
-    "badgeColor": "bg-green-100 text-green-600",
-    "image": "/art-girl.png",
-    "buttonText": "View Details"
+    "title": "Abacus Mind Math",
+    "subtitle": "Brain Development",
+    "description": "গণিতকে সহজ, দ্রুত এবং মজার করে শেখানোর জন্য Abacus Mind Math একটি বিশ্বব্যাপী জনপ্রিয় পদ্ধতি। Chalak Champs-এর এই কোর্সে বাচ্চারা Abacus এর মাধ্যমে দ্রুত হিসাব করা, মনোযোগ বৃদ্ধি এবং Brain Development এর দক্ষতা অর্জন করবে।",
+    "badge": "Best Seller",
+    "badgeColor": "bg-purple-100 text-purple-600",
+    "image": "/abacus-boy.png",
+    "age": "৫ – ১২ বছর",
+    "duration": "৬ মাস",
+    "schedule": "সপ্তাহে ২ দিন",
+    "mode": "Online Live Class",
+    "features": [
+      "Abacus এর মাধ্যমে দ্রুত গণনা শেখানো",
+      "Brain Development Activity",
+      "Concentration এবং Memory Power বৃদ্ধি",
+      "Fun Math Game এর মাধ্যমে শেখানো",
+      "ধাপে ধাপে Mental Math Skill Development",
+      "নিয়মিত Practice ও Assessment",
+      "কোর্স শেষে থাকবে Certificate"
+    ],
+    "syllabus": [
+      "Abacus Basic Operation",
+      "Addition & Subtraction",
+      "Multiplication & Division",
+      "Mental Calculation Technique",
+      "Speed & Accuracy Improvement"
+    ],
+    "fee": "18,000 Tk",
+    "contact": "01740176774",
+    "buttonText": "Book Now",
+    "faqs": [
+      {
+        "id": "1",
+        "question": "Abacus কি?",
+        "answer": "Abacus হলো একটি প্রাচীন গণনা যন্ত্র যা বর্তমানে শিশুদের মস্তিষ্ক বিকাশ ও দ্রুত গণিত শেখাতে ব্যবহৃত হয়।"
+      },
+      {
+        "id": "2",
+        "question": "এটি কি স্কুলের পড়ার ক্ষতি করবে?",
+        "answer": "মোটেও না। বরং এটি গণিতের ভীতি দূর করে কনসেনট্রেশন বাৃদ্ধি করে, যা পড়াশোনার সব বিষয়ে সাহায্য করে।"
+      },
+      {
+        "id": "3",
+        "question": "আমাকে কি Abacus Tool কিনতে হবে?",
+        "answer": "কোর্সের শুরুতে আমরা বা আপনি একটি ভালো মানের Abacus সংগ্রহ করবেন। আমরা গাইডলাইন দেব।"
+      }
+    ]
   },
   {
     "id": 6,
-    "title": "Quran Learning",
-    "subtitle": "Religious Studies",
-    "description": "Learn to read the Quran with proper Tajweed and meaning.",
-    "tag": "Popular",
-    "badgeColor": "bg-teal-100 text-teal-600",
-    "image": "/quran-boy.png",
-    "buttonText": "Enroll Now"
+    "title": "Road to Cadet College",
+    "subtitle": "Admission Preparation",
+    "description": "বাংলাদেশের মেধাবী শিক্ষার্থীদের জন্য ক্যাডেট কলেজে ভর্তি হওয়া একটি বড় লক্ষ্য। কিন্তু সঠিক গাইডলাইন, পরিকল্পিত প্রস্তুতি এবং নিয়মিত অনুশীলনের অভাবে অনেক মেধাবী শিক্ষার্থী পিছিয়ে যায়। Chalak Champs-এর Road to Cadet College Course শিক্ষার্থীদের ধাপে ধাপে প্রস্তুত করে Cadet College Admission Test-এ সফল হওয়ার জন্য।",
+    "badge": "Advanced",
+    "badgeColor": "bg-yellow-100 text-yellow-600",
+    "image": "/cadet-student.png",
+    "age": "Class 5 – Class 7",
+    "duration": "১২ মাস",
+    "schedule": "সপ্তাহে ২ দিন",
+    "mode": "Online Live Class",
+    "features": [
+      "Cadet College Admission Test ভিত্তিক প্রস্তুতি",
+      "Math, English এবং General Knowledge এর বিশেষ প্রস্তুতি",
+      "নিয়মিত Model Test ও Assessment",
+      "Problem Solving Technique শেখানো",
+      "Discipline ও Leadership Skill উন্নয়নে বিশেষ দিকনির্দেশনা",
+      "Interview ও Viva Preparation",
+      "কোর্স শেষে থাকবে Certificate"
+    ],
+    "syllabus": [
+      "Advanced Math Problem Solving",
+      "English Grammar & Comprehension",
+      "Vocabulary Development",
+      "General Knowledge Preparation",
+      "Model Test & Exam Strategy"
+    ],
+    "fee": "25,000 Tk",
+    "contact": "01740176774",
+    "buttonText": "Join Class",
+    "faqs": [
+      {
+        "id": "1",
+        "question": "ক্লাস ৫ বা ৬ এ ভর্তি করলে কি লাভ?",
+        "answer": "ক্যাডেট কলেজে ভর্তি পরীক্ষার প্রস্তুতি অনেক সময় লাগে। তাই ক্লাস ৫ বা ৬ থেকেই ফাউন্ডেশন শক্ত করা জরুরি।"
+      },
+      {
+        "id": "2",
+        "question": "মডেল টেস্ট কি নিয়মিত হবে?",
+        "answer": "জি, আমরা নিয়মিত মডেল টেস্ট নেব এবং বাস্তবসম্মত পরীক্ষার পরিবেশ তৈরি করে বাচ্চাদের প্রস্তুত করবো।"
+      },
+      {
+        "id": "3",
+        "question": "ইন্টারভিউ প্রস্তুতি কি দেওয়া হবে?",
+        "answer": "হ্যাঁ, লিখিত পরীক্ষার পাশাপাশি ভাইভা বা ইন্টারভিউয়ের জন্যও বিশেষ ক্লাস এবং গাইডলাইন দেওয়া হবে।"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "title": "English Olympiad Preparation",
+    "subtitle": "Math & Science",
+    "description": "ইংরেজি অলিম্পিয়াডে ভালো করার জন্য প্রয়োজন strong vocabulary, grammar skill এবং analytical thinking। সঠিক গাইডলাইন এবং নিয়মিত প্র্যাকটিস থাকলে শিক্ষার্থীরা সহজেই Olympiad Level English আয়ত্ত করতে পারে। Chalak Champs-এর English Olympiad Preparation Course শিক্ষার্থীদের বিশেষভাবে প্রস্তুত করবে বিভিন্ন National ও International English Olympiad-এ অংশগ্রহণের জন্য।",
+    "badge": "Advanced",
+    "badgeColor": "bg-yellow-100 text-yellow-600",
+    "image": "/olympiad-student.png",
+    "age": "Class 3 – Class 8",
+    "duration": "৫ মাস",
+    "schedule": "সপ্তাহে ২ দিন",
+    "mode": "Online Live Class",
+    "features": [
+      "Olympiad Pattern অনুযায়ী ক্লাস",
+      "Advanced Vocabulary Development",
+      "Grammar Problem Solving",
+      "Reading Comprehension Practice",
+      "নিয়মিত Quiz ও Practice Test",
+      "Olympiad Strategy শেখানো",
+      "কোর্স শেষে থাকবে Certificate"
+    ],
+    "syllabus": [
+      "Advanced Grammar",
+      "Vocabulary Building",
+      "Reading Comprehension",
+      "Logical Language Problem Solving",
+      "Olympiad Exam Strategy"
+    ],
+    "fee": "12,000 Tk",
+    "contact": "01740176774",
+    "buttonText": "Join Class",
+    "faqs": [
+      {
+        "id": "1",
+        "question": "English Olympiad কি?",
+        "answer": "এটি ইংরেজি ভাষা এবং গ্রামারের উপর দক্ষতা যাচাইয়ের একটি আন্তর্জাতিক প্রতিযোগিতা।"
+      },
+      {
+        "id": "2",
+        "question": "এই কোর্সটি কি সাধারণ স্কুলের ইংরেজি পড়ানো হয়?",
+        "answer": "না, এখানে স্কুল সিলেবাসের বাইরেও অ্যাডভান্সড গ্রামার, কমপ্রিহেনশন এবং লজিক্যাল প্রবলেম সলভিং শেখানো হয়।"
+      },
+      {
+        "id": "3",
+        "question": "কোন ক্লাসের বাচ্চা ভর্তি হতে পারবে?",
+        "answer": "ক্লাস ৩ থেকে ক্লাস ৮ পর্যন্তের শিক্ষার্থীরা এই কোর্সে ভর্তি হতে পারবে।"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "title": "KIDS’ Programming",
+    "subtitle": "Future Skills",
+    "description": "বর্তমান যুগে Programming এবং Technology Skill শিশুদের ভবিষ্যতের জন্য অত্যন্ত গুরুত্বপূর্ণ। ছোটবেলা থেকেই Programming শেখা বাচ্চাদের logical thinking, problem solving এবং creativity উন্নত করতে সাহায্য করে। Chalak Champs-এর Kids’ Programming Course বাচ্চাদের সহজ ও মজার পদ্ধতিতে Coding এবং Programming এর বেসিক শেখাবে।",
+    "badge": "New Course",
+    "badgeColor": "bg-blue-100 text-blue-600",
+    "image": "/coding-kid.png",
+    "age": "৮ – ১৫ বছর",
+    "duration": "৬ মাস",
+    "schedule": "সপ্তাহে ২ দিন",
+    "mode": "Online Live Class",
+    "features": [
+      "Beginner Friendly Programming Course",
+      "Step-by-step Coding শেখানো",
+      "Fun Project এর মাধ্যমে Programming শেখা",
+      "Logical Thinking এবং Problem Solving Skill Development",
+      "Interactive Class ও Practice Session",
+      "Real Mini Project তৈরি করার সুযোগ",
+      "কোর্স শেষে থাকবে Certificate"
+    ],
+    "syllabus": [
+      "Programming Basics",
+      "Block Based Coding",
+      "Logical Thinking Development",
+      "Simple Game & Animation Project",
+      "Problem Solving Technique"
+    ],
+    "fee": "25,000 Tk",
+    "contact": "01740176774",
+    "buttonText": "Start Free",
+    "faqs": [
+      {
+        "id": "1",
+        "question": "প্রোগ্রামিং শেখার জন্য আগে কোনো অভিজ্ঞতা লাগবে?",
+        "answer": "না, আমাদের কোর্সটি সম্পূর্ণ বিগিনার ফ্রেন্ডলি। আমরা ব্লক কোডিং দিয়ে শুরু করবো।"
+      },
+      {
+        "id": "2",
+        "question": "কোর্স শেষে বাচ্চা কি গেম বানাতে পারবে?",
+        "answer": "জি, বেসিক লেভেলের ছোট ছোট গেম এবং অ্যানিমেশন বানাতে পারবে।"
+      },
+      {
+        "id": "3",
+        "question": "কম্পিউটার কি বাধ্যতামূলক?",
+        "answer": "ল্যাপটপ বা কম্পিউটার থাকলে ভালো, তবে ট্যাবেও ক্লাস করা সম্ভব।"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "title": "ACADEMIC PREPARATION COURSE (Class 6 & 7)",
+    "subtitle": "School Curriculum",
+    "description": "স্কুলের পড়াশোনায় শক্ত ভিত্তি তৈরি করা এবং নিয়মিত গাইডলাইন পাওয়া শিক্ষার্থীদের সফলতার জন্য খুবই গুরুত্বপূর্ণ। Chalak Champs-এর Academic Preparation Course শিক্ষার্থীদের Class 6 ও Class 7 এর গুরুত্বপূর্ণ বিষয়গুলোতে শক্ত ভিত্তি তৈরি করতে সাহায্য করবে।",
+    "badge": "Foundation",
+    "badgeColor": "bg-gray-100 text-gray-600",
+    "image": null,
+    "age": "Class 6 – Class 7",
+    "duration": "১২ মাস",
+    "schedule": "সপ্তাহে ২ দিন",
+    "mode": "Online Live Class",
+    "features": [
+      "School Curriculum ভিত্তিক ক্লাস",
+      "Math ও English এ বিশেষ গুরুত্ব",
+      "Concept Clear করার উপর গুরুত্ব",
+      "নিয়মিত Practice ও Assignment",
+      "Monthly Test ও Performance Evaluation",
+      "Exam Preparation Strategy",
+      "কোর্স শেষে থাকবে Certificate"
+    ],
+    "syllabus": [
+      "Math Concept Development",
+      "English Grammar & Writing Skill",
+      "Problem Solving Skill",
+      "Regular Practice & Assessment",
+      "Exam Preparation Technique"
+    ],
+    "fee": "12,000 Tk",
+    "contact": "01740176774",
+    "buttonText": "Enroll Now",
+    "faqs": [
+      {
+        "id": "1",
+        "question": "এই কোর্সটি কি স্কুলের পড়ার বিকল্প?",
+        "answer": "না, এটি স্কুলের পাশাপাশি স্কুল সিলেবাসের ওপর আরও ভালো গ্রিপ এবং প্র্যাকটিসের জন্য তৈরি।"
+      },
+      {
+        "id": "2",
+        "question": "একাডেমিক সাবজেক ছাড়া অন্য কিছু থাকবে?",
+        "answer": "আমরা প্রধানত স্কুলের ম্যাথ এবং ইংলিশের ওপর ফোকাস করবো।"
+      },
+      {
+        "id": "3",
+        "question": "বাবা-মাকে কি কিছু করতে হবে?",
+        "answer": "বাচ্চাকে নিয়মিত ক্লাসে দেওয়া এবং আমাদের দেওয়া অ্যাসাইনমেন্টগুলো চেক করলেই হবে।"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "title": "ACADEMIC PREPARATION COURSE (Class 8)",
+    "subtitle": "School Curriculum",
+    "description": "Class 8 শিক্ষার্থীদের জন্য এটি একটি গুরুত্বপূর্ণ সময়, কারণ এই সময়েই তাদের Academic Foundation, Conceptual Understanding এবং Exam Preparation আরও শক্ত করা প্রয়োজন। Chalak Champs-এর Academic Preparation Course for Class 8 শিক্ষার্থীদের পরিকল্পিতভাবে পড়াশোনা করতে সাহায্য করবে এবং তাদের একাডেমিক দক্ষতা উন্নত করবে।",
+    "badge": "Foundation",
+    "badgeColor": "bg-gray-100 text-gray-600",
+    "image": null,
+    "age": "Class 8",
+    "duration": "১২ মাস",
+    "schedule": "সপ্তাহে ২ দিন",
+    "mode": "Online Live Class",
+    "features": [
+      "School Curriculum ভিত্তিক ক্লাস",
+      "Math ও English এ বিশেষ গুরুত্ব",
+      "Concept Clear করার উপর গুরুত্ব",
+      "নিয়মিত Practice ও Assignment",
+      "Monthly Test ও Performance Evaluation",
+      "Exam Preparation Strategy",
+      "কোর্স শেষে থাকবে Certificate"
+    ],
+    "syllabus": [
+      "Advanced Math Concept",
+      "English Grammar & Writing Skill",
+      "Problem Solving Technique",
+      "Regular Practice & Assessment",
+      "Exam Preparation Strategy"
+    ],
+    "fee": "12,000 Tk",
+    "contact": "01740176774",
+    "buttonText": "Enroll Now",
+    "faqs": [
+      {
+        "id": "1",
+        "question": "Class 8 এর জন্য এই কোর্স কেন বিশেষ?",
+        "answer": "Class 8 থেকেই অনেকে বড় পরীক্ষার প্রস্তুতি শুরু করে। তাই এই সময় কনসেপ্ট ক্লিয়ার রাখা খুব জরুরি।"
+      },
+      {
+        "id": "2",
+        "question": "বিজ্ঞান ও অন্যান্য বিষয় থাকবে?",
+        "answer": "এই ব্যাচে আমরা প্রধানত Math এবং English নিয়ে কাজ করবো, যা সব বিষয়ের ভিতি।"
+      },
+      {
+        "id": "3",
+        "question": "মাসিক পরীক্ষা নেওয়া হবে?",
+        "answer": "জি, মাসিক টেস্টের মাধ্যমে আমরা বাচ্চার অগ্রগতি যাচাই করবো।"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "title": "শুদ্ধ উচ্চারণে বাংলা",
+    "subtitle": "Bengali Language Skill",
+    "description": "অনেক সময় বাচ্চারা বাংলা পড়তে পারলেও শুদ্ধ উচ্চারণ, স্পষ্টভাবে কথা বলা এবং সঠিক শব্দ ব্যবহার করতে পারে না। Chalak Champs-এর শুদ্ধ উচ্চারণে বাংলা কোর্স বাচ্চাদের বাংলা ভাষা পরিষ্কার, সুন্দর এবং আত্মবিশ্বাসের সাথে বলার দক্ষতা তৈরি করবে।",
+    "badge": "Language",
+    "badgeColor": "bg-orange-100 text-orange-600",
+    "image": null,
+    "age": "৫ – ১৫ বছর",
+    "duration": "৬ মাস",
+    "schedule": "সপ্তাহে ২ দিন",
+    "mode": "Online Live Class",
+    "features": [
+      "শুদ্ধ বাংলা উচ্চারণ শেখানো",
+      "বাচনভঙ্গি ও পরিষ্কারভাবে কথা বলার অনুশীলন",
+      "কবিতা ও গল্প পাঠের মাধ্যমে প্র্যাকটিস",
+      "Presentation ও Public Speaking Practice",
+      "Fun Activity এর মাধ্যমে ভাষা চর্চা",
+      "নিয়মিত Practice ও Feedback",
+      "কোর্স শেষে থাকবে Certificate"
+    ],
+    "syllabus": [
+      "শুদ্ধ বাংলা উচ্চারণ",
+      "শব্দের সঠিক ব্যবহার",
+      "পরিষ্কারভাবে কথা বলা",
+      "আবৃত্তি ও গল্প বলা",
+      "Presentation Skill"
+    ],
+    "fee": "12,000 Tk",
+    "contact": "01740176774",
+    "buttonText": "Enroll Now",
+    "faqs": [
+      {
+        "id": "1",
+        "question": "বাচ্চা তো বাংলা বলতে পারে, তবু কোর্স কেন?",
+        "answer": "অনেকেই বাচ্চা বাংলা বলতে পারলেও শুদ্ধ উচ্চারণ, স্পষ্টভাবে কথা বলা এবং সঠিক শব্দ ব্যবহার করতে পারে না। এই কোর্সে আমরা সেটি শুধরে দেবো।"
+      },
+      {
+        "id": "2",
+        "question": "সাহিত্য পজানো হবে?",
+        "answer": "জি, আমরা বয়স অনুযায়ী সহজ কবিতা ও ছোটগল্প পাঠের মাধ্যমে বাচ্চার ভাষার প্রতি আগ্রহ তৈরি করবো।"
+      },
+      {
+        "id": "3",
+        "question": "ক্লাসগুলো কেমন হবে?",
+        "answer": "ক্লাসগুলো হবে খুবই ইন্টারঅ্যাক্টিভ, যেখানে বাচ্চারা কথা বলবে এবং উপস্থাপন করবে।"
+      }
+    ]
   }
 ]

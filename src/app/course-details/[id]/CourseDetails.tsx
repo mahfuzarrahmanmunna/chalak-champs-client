@@ -4,99 +4,172 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { useTheme } from "@/app/context/ThemeContext";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { format } from "date-fns";
 import {
-  coursesData,
-  Course,
-  Review,
-  mockReviews,
-} from "../../../../data/coursesData";
-import {
   ArrowLeft,
   BookOpen,
-  Calendar,
   CheckCircle,
+  ChevronDown,
   ChevronRight,
   Clock,
-  CreditCard,
   Download,
   Globe,
   Heart,
-  Languages,
-  List,
   Play,
-  Share2,
   Star,
   Target,
   ThumbsUp,
   Users,
   Video,
   Award,
-  Zap,
+  X,
+  Phone,
+  CreditCard,
+  LayoutGrid,
+  ListChecks,
+  HelpCircle,
+  LayoutList,
+  Calendar,
+  Plus,
+  Minus,
 } from "lucide-react";
-import NeedCall from "@/app/components/CTA/NeedCall";
+
+import NeedCall from "./NeedCall";
 import IncludesCard from "./IncludesCard";
+import EnrollmentCard from "./EnrollmentCard";
+import FAQ from "./FAQ";
 
-// --- Validation Schemas ---
-const commentSchema = yup.object().shape({
-  comment: yup
-    .string()
-    .required("Comment is required")
-    .min(10, "Comment must be at least 10 characters"),
-  rating: yup
-    .number()
-    .required("Rating is required")
-    .min(1, "Please select a rating")
-    .max(5, "Maximum rating is 5"),
-});
+// --- TYPES & INTERFACES ---
 
-const enrollmentSchema = yup.object().shape({
-  firstName: yup.string().required("First name is required"),
-  lastName: yup.string().required("Last name is required"),
-  email: yup.string().email("Invalid email").required("Email is required"),
-  phone: yup.string().required("Phone number is required"),
-  paymentMethod: yup.string().required("Payment method is required"),
-  cardNumber: yup.string().when("paymentMethod", {
-    is: "card",
-    then: (schema) =>
-      schema
-        .required("Card number is required")
-        .matches(/^[0-9]{16}$/, "Card number must be 16 digits"),
-  }),
-  expiryDate: yup.string().when("paymentMethod", {
-    is: "card",
-    then: (schema) =>
-      schema
-        .required("Expiry date is required")
-        .matches(
-          /^(0[1-9]|1[0-2])\/\d{2}$/,
-          "Expiry date must be in MM/YY format",
-        ),
-  }),
-  cvv: yup.string().when("paymentMethod", {
-    is: "card",
-    then: (schema) =>
-      schema
-        .required("CVV is required")
-        .matches(/^[0-9]{3,4}$/, "CVV must be 3 or 4 digits"),
-  }),
-  agreeToTerms: yup
-    .boolean()
-    .oneOf([true], "You must agree to the terms and conditions"),
-});
+interface CourseData {
+  id: number;
+  title: string;
+  subtitle: string;
+  description: string;
+  badge: string;
+  badgeColor: string;
+  image: string;
+  age: string;
+  duration: string;
+  schedule: string;
+  faqs: string;
+  mode: string;
+  features: string[];
+  syllabus?: string[];
+  fee: string;
+  installment?: string;
+  contact: string;
+  buttonText: string;
+}
+
+interface Course {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  schedule: string;
+  fullDescription: string;
+  isBestseller: boolean;
+  isNew: boolean;
+  syllabus?: string[];
+  category: string;
+  level: string;
+  rating: number;
+  mode: string;
+  faqs: string;
+  reviewsCount: number;
+  enrolledCount: number;
+  duration: string;
+  language: string;
+  lastUpdated: string;
+  price: number;
+  originalPrice?: number;
+  thumbnail: string;
+  previewVideo: string;
+  whatYouLearn: string[];
+  requirements: string[];
+  curriculum: Section[];
+  instructor: Instructor;
+  fee: string;
+  installment?: string;
+}
+
+interface Section {
+  id: string;
+  title: string;
+  duration: string;
+  lessons: Lesson[];
+}
+
+interface Lesson {
+  id: string;
+  title: string;
+  duration: string;
+  isPreview: boolean;
+}
+
+interface Instructor {
+  name: string;
+  bio: string;
+  avatar: string;
+  rating: number;
+  studentsCount: number;
+}
+
+interface Review {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  rating: number;
+  comment: string;
+  date: string;
+  helpfulCount: number;
+  isHelpful: boolean;
+}
+
+// --- THEME & COLORS ---
+const colors = {
+  primary: "#F3056D",
+  secondary: "#214187",
+  background: "#ffffff",
+  foreground: "#1f2937",
+  card: "#f9fafb",
+  border: "#e5e7eb",
+  accent: "#fbbf24",
+};
+
+// --- MAIN COMPONENT ---
 
 export default function CourseDetailsPage() {
-  const { theme, colors } = useTheme();
   const params = useParams();
   const router = useRouter();
-  const courseId = params.id as string;
+  const courseId = (params.id as string) || "1";
+
+  // State for FAQ Accordion
+  const [activeFaq, setActiveFaq] = useState<string | null>(null);
 
   const [course, setCourse] = useState<Course | null>(null);
-  const [reviews, setReviews] = useState<Review[]>(mockReviews);
+
+  // Updated Tabs with Icons
+  const [activeTab, setActiveTab] = useState("overview");
+
+  const [reviews, setReviews] = useState<Review[]>([
+    {
+      id: "1",
+      userId: "u1",
+      userName: "Rahim Uddin",
+      userAvatar: "https://randomuser.me/api/portraits/men/32.jpg",
+      rating: 5,
+      comment: "My child loves this course! Very interactive and helpful.",
+      date: "2023-11-01",
+      helpfulCount: 24,
+      isHelpful: false,
+    },
+  ]);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
@@ -105,18 +178,18 @@ export default function CourseDetailsPage() {
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
 
+  // Sections configuration with Icons
   const sections = [
-    { id: "overview", label: "Overview" },
-    { id: "curriculum", label: "Curriculum" },
-    { id: "instructor", label: "Instructor" },
-    { id: "reviews", label: "Reviews" },
+    { id: "overview", label: "Overview", icon: LayoutGrid },
+    { id: "curriculum", label: "Curriculum", icon: BookOpen },
+    { id: "instructor", label: "Instructor", icon: Users },
   ];
 
-  // Refs for smooth scrolling
+  // Refs
   const overviewRef = useRef<HTMLDivElement>(null);
   const curriculumRef = useRef<HTMLDivElement>(null);
   const instructorRef = useRef<HTMLDivElement>(null);
-  const reviewsRef = useRef<HTMLDivElement>(null);
+  // Removed reviewsRef as requested
 
   // --- Form Hooks ---
   const {
@@ -127,7 +200,15 @@ export default function CourseDetailsPage() {
     setValue: setCommentValue,
     watch: watchComment,
   } = useForm({
-    resolver: yupResolver(commentSchema),
+    resolver: yupResolver(
+      yup.object().shape({
+        comment: yup
+          .string()
+          .required("Comment is required")
+          .min(10, "Comment must be at least 10 characters"),
+        rating: yup.number().required("Rating is required").min(1).max(5),
+      }),
+    ),
     defaultValues: { comment: "", rating: 5 },
   });
 
@@ -138,39 +219,161 @@ export default function CourseDetailsPage() {
     reset: resetEnrollmentForm,
     watch: watchEnrollment,
   } = useForm({
-    resolver: yupResolver(enrollmentSchema),
+    resolver: yupResolver(
+      yup.object().shape({
+        firstName: yup.string().required("First name is required"),
+        lastName: yup.string().required("Last name is required"),
+        email: yup
+          .string()
+          .email("Invalid email")
+          .required("Email is required"),
+        phone: yup.string().required("Phone number is required"),
+        agreeToTerms: yup
+          .boolean()
+          .oneOf([true], "You must agree to terms and conditions"),
+      }),
+    ),
     defaultValues: {
       firstName: "",
       lastName: "",
       email: "",
       phone: "",
-      paymentMethod: "card",
-      cardNumber: "",
-      expiryDate: "",
-      cvv: "",
       agreeToTerms: false,
     },
   });
 
-  // --- Effects & Handlers ---
+  // --- Scroll Spy (Active Tab Logic) ---
   useEffect(() => {
-    setTimeout(() => {
-      const foundCourse = coursesData.find((c) => c.id === courseId);
-      if (foundCourse) {
-        setCourse(foundCourse);
-      } else {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveTab(entry.target.id);
+          }
+        });
+      },
+      { threshold: 0.5 },
+    );
+
+    const refs = [
+      { current: overviewRef.current, id: "overview" },
+      { current: curriculumRef.current, id: "curriculum" },
+      { current: instructorRef.current, id: "instructor" },
+    ];
+
+    refs.forEach((ref) => {
+      if (ref.current) observer.observe(ref.current);
+    });
+
+    return () => {
+      refs.forEach((ref) => {
+        if (ref.current) observer.unobserve(ref.current);
+      });
+    };
+  }, []);
+
+  // --- Data Fetching ---
+  useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        const res = await fetch("/courses.json");
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data: CourseData[] = await res.json();
+        const foundRaw = data.find((c) => c.id.toString() === courseId);
+
+        if (foundRaw) {
+          // --- DATA TRANSFORMATION ---
+          const transformedCourse: Course = {
+            id: foundRaw.id.toString(),
+            title: foundRaw.title,
+            subtitle: foundRaw.subtitle,
+            description: foundRaw.description,
+            fullDescription: foundRaw.description,
+            isBestseller: foundRaw.badge.toLowerCase().includes("best"),
+            isNew: foundRaw.badge.toLowerCase().includes("new"),
+            category: foundRaw.subtitle || "Kids Education",
+            level: foundRaw.age.includes("-") ? "Beginner" : "Intermediate",
+            rating: 4.8,
+            reviewsCount: 120,
+            enrolledCount: 450,
+            duration: foundRaw.duration,
+            language: "Bengali / English",
+            lastUpdated: new Date().toISOString(),
+            price: parseInt(foundRaw.fee.replace(/[^0-9]/g, "")),
+            faqs: foundRaw.faqs || [],
+            originalPrice: foundRaw.fee.includes("(")
+              ? parseInt(
+                  foundRaw.fee
+                    .match(/\(([^)]+)\)/)?.[1]
+                    ?.replace(/[^0-9]/g, "") || "",
+                )
+              : undefined,
+            thumbnail: foundRaw.image.startsWith("http")
+              ? foundRaw.image
+              : `https://placehold.co/600x400/${colors.primary.slice(1)}/FFF?text=${foundRaw.title}`,
+            previewVideo: "https://www.w3schools.com/html/mov_bbb.mp4",
+            whatYouLearn: foundRaw.features,
+            requirements: [
+              `Age: ${foundRaw.age}`,
+              `Schedule: ${foundRaw.schedule}`,
+              "A computer or mobile device with internet connection",
+            ],
+            curriculum: (foundRaw.syllabus || []).map((item, idx) => ({
+              id: `section-${idx}`,
+              title: item,
+              duration: "2 hrs",
+              lessons: [
+                {
+                  id: `l1-${idx}`,
+                  title: "Introduction",
+                  duration: "10 min",
+                  isPreview: idx === 0,
+                },
+                {
+                  id: `l2-${idx}`,
+                  title: "Core Concepts",
+                  duration: "30 min",
+                  isPreview: false,
+                },
+                {
+                  id: `l3-${idx}`,
+                  title: "Practice & Quiz",
+                  duration: "20 min",
+                  isPreview: false,
+                },
+              ],
+            })),
+            instructor: {
+              name: "Chalak Champs Team",
+              bio: "Expert educators dedicated to developing your child's full potential.",
+              avatar: "https://randomuser.me/api/portraits/lego/1.jpg",
+              rating: 4.9,
+              studentsCount: 5000,
+            },
+            fee: foundRaw.fee,
+            installment: foundRaw.installment,
+          };
+          setCourse(transformedCourse);
+        } else {
+          router.push("/courses");
+        }
+      } catch (error) {
+        console.error("Error fetching course:", error);
         router.push("/courses");
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }, 500);
+    };
+
+    fetchCourse();
   }, [courseId, router]);
 
+  // --- Handlers ---
   const scrollToSection = (id: string) => {
     const refs: { [key: string]: React.RefObject<HTMLDivElement | null> } = {
       overview: overviewRef,
       curriculum: curriculumRef,
       instructor: instructorRef,
-      reviews: reviewsRef,
     };
     const ref = refs[id];
     if (ref && ref.current) {
@@ -186,15 +389,13 @@ export default function CourseDetailsPage() {
     );
   };
 
-  const onCommentSubmit: SubmitHandler<yup.InferType<typeof commentSchema>> = (
-    data,
-  ) => {
+  const onCommentSubmit: SubmitHandler<any> = (data) => {
     setIsSubmittingReview(true);
     setTimeout(() => {
       const newReview: Review = {
         id: `review-${Date.now()}`,
         userId: "current-user",
-        userName: "Current User",
+        userName: "You",
         userAvatar: "https://randomuser.me/api/portraits/lego/1.jpg",
         rating: data.rating,
         comment: data.comment,
@@ -208,16 +409,16 @@ export default function CourseDetailsPage() {
     }, 1000);
   };
 
-  const onEnrollmentSubmit: SubmitHandler<
-    yup.InferType<typeof enrollmentSchema>
-  > = (data) => {
+  const onEnrollmentSubmit: SubmitHandler<any> = (data) => {
     setIsEnrolling(true);
     setTimeout(() => {
       setIsEnrolled(true);
       setShowEnrollmentModal(false);
       resetEnrollmentForm();
       setIsEnrolling(false);
-      alert("Enrollment successful! You can now access the course.");
+      alert(
+        `Enrollment successful for ${course?.title}! We will contact you at ${data.phone}.`,
+      );
     }, 2000);
   };
 
@@ -238,35 +439,24 @@ export default function CourseDetailsPage() {
     );
   };
 
-  // --- Loading State ---
   if (isLoading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "var(--color-background)" }}
-      >
-        <span className="loading loading-spinner loading-lg text-primary"></span>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2"></div>
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "var(--color-background)" }}
-      >
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h1
-            className="text-2xl font-bold mb-4"
-            style={{ color: "var(--color-foreground)" }}
-          >
+          <h1 className="text-2xl font-bold mb-4 text-gray-800">
             Course Not Found
           </h1>
           <Link
             href="/courses"
-            className="px-4 py-2 rounded-md text-white font-medium"
-            style={{ backgroundColor: "var(--color-primary)" }}
+            className="px-6 py-3 rounded-md text-white font-medium hover:opacity-90 transition"
           >
             Browse All Courses
           </Link>
@@ -276,1080 +466,465 @@ export default function CourseDetailsPage() {
   }
 
   return (
-    <div
-      className="min-h-screen pb-20 text-base-content"
-      style={{ backgroundColor: "var(--color-background)" }}
-    >
-      {/* --- HERO SECTION (Full Width) --- */}
-      <div className="relative">
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col md:flex-row gap-8">
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-20">
+      {/* --- HERO SECTION --- */}
+      <div className="relative bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex flex-col lg:flex-row gap-12">
+            {/* Left Content */}
             <div className="flex-1">
-              <div className="mb-4">
+              <div className="mb-6">
                 <Link
                   href="/courses"
-                  className="inline-flex items-center text-sm font-medium mb-4 text-white hover:underline"
+                  className="inline-flex items-center text-sm font-medium mb-4 text-gray-500 hover:opacity-70 transition-colors"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-1" /> Back to Courses
+                  <ArrowLeft className="h-4 w-4 mr-2" /> Back to Courses
                 </Link>
 
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-6">
                   {course.isBestseller && (
-                    <span
-                      className="px-2 py-1 text-xs font-medium rounded"
-                      style={{ backgroundColor: "#f59e0b", color: "white" }}
-                    >
+                    <span className="px-3 py-1 text-xs font-bold tracking-wide uppercase rounded-full bg-[#F3056D]/10 text-[#F3056D] border border-[#F3056D]">
                       Bestseller
                     </span>
                   )}
-                  {course.isNew && (
-                    <span
-                      className="px-2 py-1 text-xs font-medium rounded"
-                      style={{ backgroundColor: "#10b981", color: "white" }}
-                    >
-                      New
-                    </span>
-                  )}
-                  <span
-                    className="px-2 py-1 text-xs font-medium rounded"
-                    style={{
-                      backgroundColor: "var(--color-accent)",
-                      color: "var(--color-background)",
-                    }}
-                  >
+                  <span className="px-3 py-1 text-xs font-bold tracking-wide uppercase rounded-full bg-gray-100 text-gray-800 border border-gray-200">
                     {course.category}
                   </span>
-                  <span
-                    className="px-2 py-1 text-xs font-medium rounded"
-                    style={{
-                      backgroundColor: "var(--color-secondary)",
-                      color: "white",
-                    }}
-                  >
+                  <span className="px-3 py-1 text-xs font-bold tracking-wide uppercase rounded-full bg-blue-50 text-blue-700 border border-blue-100">
                     {course.level}
                   </span>
                 </div>
 
-                <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+                <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900 leading-tight">
                   {course.title}
                 </h1>
-
-                <p className="text-lg text-white mb-6 opacity-90">
+                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
                   {course.description}
                 </p>
 
-                <div className="flex flex-wrap items-center gap-4 text-white">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-5 w-5 ${i < Math.floor(course.rating) ? "fill-current" : ""}`}
-                        style={{
-                          color:
-                            i < Math.floor(course.rating)
-                              ? "#f59e0b"
-                              : "rgba(255, 255, 255, 0.5)",
-                        }}
-                      />
-                    ))}
-                    <span className="ml-2 font-medium">{course.rating}</span>
-                    <span className="ml-1 opacity-75">
+                <div className="flex flex-wrap items-center gap-6 text-sm font-medium text-gray-600 mb-6 border-t border-b border-gray-100 py-4">
+                  <div className="flex items-center text-yellow-500">
+                    <Star className="h-5 w-5 fill-current mr-1.5" />
+                    <span className="text-gray-900 font-bold mr-1">
+                      {course.rating}
+                    </span>
+                    <span className="text-gray-500">
                       ({course.reviewsCount} ratings)
                     </span>
                   </div>
                   <div className="flex items-center">
-                    <Users className="h-5 w-5 mr-1" />
+                    <Users className="h-5 w-5 mr-1.5 text-gray-400" />
                     <span>
                       {course.enrolledCount.toLocaleString()} students
                     </span>
                   </div>
                   <div className="flex items-center">
-                    <Clock className="h-5 w-5 mr-1" />
-                    <span>{course.duration} hours</span>
+                    <Globe className="h-5 w-5 mr-1.5 text-gray-400" />
+                    <span>{course.language}</span>
                   </div>
-                  {course.language && (
-                    <div className="flex items-center">
-                      <Globe className="h-5 w-5 mr-1" />
-                      <span>{course.language}</span>
-                    </div>
-                  )}
-                  {course.lastUpdated && (
-                    <div className="flex items-center">
-                      <Calendar className="h-5 w-5 mr-1" />
-                      <span>
-                        Updated{" "}
-                        {format(new Date(course.lastUpdated), "MMM dd, yyyy")}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-center">
+                    <Clock className="h-5 w-5 mr-1.5 text-gray-400" />
+                    <span>{course.duration}</span>
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-500">
+                  Created by{" "}
+                  <span className="font-semibold hover:underline cursor-pointer">
+                    {course.instructor.name}
+                  </span>
+                  <span className="mx-2">•</span>
+                  Last updated{" "}
+                  {format(new Date(course.lastUpdated), "MMM dd, yyyy")}
                 </div>
               </div>
             </div>
 
-            {/* Mobile Enroll Card (Shows in Header on Desktop usually, but here in header) */}
-            <div className="w-full md:w-96">
-              <div
-                className="rounded-lg overflow-hidden shadow-lg"
-                style={{ backgroundColor: "var(--color-card)" }}
-              >
-                {course.previewVideo ? (
-                  <div className="relative h-48">
-                    <Image
-                      src={course.thumbnail}
-                      alt={course.title}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
-                      <button className="p-3 rounded-full bg-white bg-opacity-80 hover:bg-opacity-100 transition-all">
-                        <Play
-                          className="h-6 w-6 text-gray-800"
-                          fill="currentColor"
-                        />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    className="h-48 flex items-center justify-center"
-                    style={{ backgroundColor: "var(--color-background)" }}
-                  >
-                    <Play
-                      className="h-12 w-12"
-                      style={{ color: "var(--color-foreground)" }}
-                      opacity={0.5}
-                    />
-                  </div>
-                )}
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      {course.originalPrice ? (
-                        <>
-                          <span
-                            className="text-2xl font-bold"
-                            style={{ color: "var(--color-primary)" }}
-                          >
-                            ${course.price}
-                          </span>
-                          <span
-                            className="text-lg ml-2 line-through"
-                            style={{
-                              color: "var(--color-foreground)",
-                              opacity: 0.5,
-                            }}
-                          >
-                            ${course.originalPrice}
-                          </span>
-                        </>
-                      ) : (
-                        <span
-                          className="text-2xl font-bold"
-                          style={{ color: "var(--color-primary)" }}
-                        >
-                          ${course.price}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setIsWishlisted(!isWishlisted)}
-                        className="p-2 rounded-full"
-                        style={{ backgroundColor: "var(--color-background)" }}
-                      >
-                        <Heart
-                          className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`}
-                          style={{
-                            color: isWishlisted
-                              ? "#ef4444"
-                              : "var(--color-foreground)",
-                          }}
-                        />
-                      </button>
-                      <button
-                        className="p-2 rounded-full"
-                        style={{ backgroundColor: "var(--color-background)" }}
-                      >
-                        <Share2
-                          className="h-5 w-5"
-                          style={{ color: "var(--color-foreground)" }}
-                        />
-                      </button>
-                    </div>
-                  </div>
-                  {isEnrolled ? (
-                    <button
-                      className="w-full py-3 rounded-md text-white font-medium"
-                      style={{ backgroundColor: "#10b981" }}
-                    >
-                      Go to Course
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setShowEnrollmentModal(true)}
-                      className="w-full py-3 rounded-md text-white font-medium mb-3"
-                      style={{ backgroundColor: "var(--color-primary)" }}
-                    >
-                      Enroll Now
-                    </button>
-                  )}
-                  <button
-                    className="w-full py-3 rounded-md font-medium border"
-                    style={{
-                      backgroundColor: "transparent",
-                      color: "var(--color-foreground)",
-                      borderColor: "var(--color-border)",
-                    }}
-                  >
-                    Add to Cart
-                  </button>
-                  <div className="mt-4 space-y-2">
-                    <div
-                      className="flex items-center text-sm"
-                      style={{ color: "var(--color-foreground)" }}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      <span>30-day money back guarantee</span>
-                    </div>
-                    <div
-                      className="flex items-center text-sm"
-                      style={{ color: "var(--color-foreground)" }}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      <span>Certificate of completion</span>
-                    </div>
-                    <div
-                      className="flex items-center text-sm"
-                      style={{ color: "var(--color-foreground)" }}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      <span>Lifetime access</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Right Enrollment Card */}
+            <EnrollmentCard
+              course={course}
+              setShowEnrollmentModal={setShowEnrollmentModal}
+            />
           </div>
         </div>
       </div>
 
-      {/* --- MAIN CONTENT GRID (Layout: Left 70%, Right 30%) --- */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* LEFT COLUMN (Content) - Approx 70% */}
-        <div className="lg:col-span-8 space-y-12">
-          {/* Sticky Navigation Tabs */}
-          <div
-            className="sticky top-26 z-30 border-b mb-8 bg-base-100/95 backdrop-blur"
-            style={{
-              borderColor: "var(--color-border)",
-              backgroundColor: "var(--color-background)",
-            }}
-          >
-            <nav className="-mb-px flex space-x-8 overflow-x-auto">
-              {sections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => scrollToSection(section.id)}
-                  className="py-4 px-1 border-b-2 font-medium text-sm capitalize whitespace-nowrap transition-colors"
-                  style={{
-                    borderColor: "transparent",
-                    color: "var(--color-foreground)",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.color = "var(--color-primary)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.color = "var(--color-foreground)")
-                  }
-                >
-                  {section.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {/* 1. OVERVIEW & DESCRIPTION */}
-          <div ref={overviewRef} id="overview" className="space-y-8 mb-16">
-            <div className="prose max-w-none">
-              <h2
-                className="text-2xl font-bold mb-4"
-                style={{ color: "var(--color-foreground)" }}
-              >
-                Description
-              </h2>
-              <p style={{ color: "var(--color-foreground)", opacity: 0.8 }}>
-                {course.fullDescription}
-              </p>
-              <p
-                style={{ color: "var(--color-foreground)", opacity: 0.8 }}
-                className="mt-4"
-              >
-                This course focuses on the specific English language skills
-                needed in a business environment. You will learn how to
-                communicate effectively in meetings, write professional emails,
-                and present ideas with confidence.
-              </p>
+      {/* --- MAIN CONTENT GRID --- */}
+      <div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column (Main Content) */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* --- NAVIGATION BAR --- */}
+            <div className="sticky top-24 rounded-2xl z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <nav className="flex space-x-8 overflow-x-auto no-scrollbar py-4">
+                  {sections.map((section) => {
+                    const Icon = section.icon;
+                    return (
+                      <button
+                        key={section.id}
+                        onClick={() => scrollToSection(section.id)}
+                        className={`py-2 px-5 rounded-xl border-b-2 font-medium bg-primary text-white text-base whitespace-nowrap transition-colors flex items-center ${
+                          activeTab === section.id
+                            ? `text-bg-secondary border border-primary text-white`
+                            : "text-gray-500 border-transparent "
+                        }`}
+                      >
+                        <Icon className="h-4 w-4 mr-2" />
+                        {section.label}
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
             </div>
 
-            {course.whatYouLearn && (
-              <div>
-                <h2
-                  className="text-2xl font-bold mb-4"
-                  style={{ color: "var(--color-foreground)" }}
-                >
-                  What you will learn
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {course.whatYouLearn.map((item, index) => (
-                    <div key={index} className="flex items-start">
-                      <CheckCircle className="h-5 w-5 mr-2 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span
-                        style={{
-                          color: "var(--color-foreground)",
-                          opacity: 0.8,
-                        }}
-                      >
-                        {item}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {course.requirements && (
-              <div>
-                <h2
-                  className="text-2xl font-bold mb-4"
-                  style={{ color: "var(--color-foreground)" }}
-                >
-                  Requirements
-                </h2>
-                <ul className="space-y-2">
-                  {course.requirements.map((req, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start"
-                      style={{
-                        color: "var(--color-foreground)",
-                        opacity: 0.8,
-                      }}
-                    >
-                      <span className="mr-2">•</span>
-                      <span>{req}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          <div className="divider"></div>
-
-          {/* 2. CURRICULUM */}
-          {course.curriculum && (
+            {/* 1. OVERVIEW (With Bengali Sections) */}
             <div
-              ref={curriculumRef}
-              id="curriculum"
-              className="mb-16 scroll-mt-32"
+              ref={overviewRef}
+              id="overview"
+              className="scroll-mt-24 space-y-6"
             >
-              <h2
-                className="text-2xl font-bold mb-6"
-                style={{ color: "var(--color-foreground)" }}
-              >
-                Course Content
+              <h2 className="text-2xl font-bold mb-6 text-gray-900 border-l-4 pl-4">
+                Overview
               </h2>
-              <div className="space-y-4">
-                {course.curriculum.map((section) => (
-                  <div
-                    key={section.id}
-                    className="rounded-lg overflow-hidden"
-                    style={{ backgroundColor: "var(--color-card)" }}
-                  >
-                    <button
-                      onClick={() => toggleSection(section.id)}
-                      className="w-full p-4 flex items-center justify-between text-left"
-                    >
-                      <div className="flex items-center">
-                        <div
-                          className="p-2 rounded mr-3"
-                          style={{
-                            backgroundColor: "var(--color-background)",
-                          }}
-                        >
-                          <BookOpen
-                            className="h-5 w-5"
-                            style={{ color: "var(--color-primary)" }}
-                          />
-                        </div>
-                        <div>
-                          <h3
-                            className="font-medium"
-                            style={{ color: "var(--color-foreground)" }}
-                          >
-                            {section.title}
-                          </h3>
-                          <p
-                            className="text-sm"
-                            style={{
-                              color: "var(--color-foreground)",
-                              opacity: 0.7,
-                            }}
-                          >
-                            {section.lessons.length} lessons •{" "}
-                            {section.duration}
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronRight
-                        className={`h-5 w-5 transition-transform ${expandedSections.includes(section.id) ? "transform rotate-90" : ""}`}
-                        style={{ color: "var(--color-foreground)" }}
-                      />
-                    </button>
 
-                    {expandedSections.includes(section.id) && (
-                      <div
-                        className="border-t"
-                        style={{ borderColor: "var(--color-border)" }}
-                      >
-                        {section.lessons.map((lesson) => (
-                          <div
-                            key={lesson.id}
-                            className="flex items-center justify-between p-4"
-                            style={{
-                              backgroundColor: "var(--color-background)",
-                            }}
+              <div className="grid grid-cols-1 gap-6">
+                {/* Card 1: কোর্স যেভাবে সাজানো হয়েছে */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <LayoutGrid className="h-5 w-5" />
+                    <h3 className="font-bold text-lg text-gray-900">
+                      কোর্স যেভাবে সাজানো হয়েছে
+                    </h3>
+                  </div>
+                  <div className="space-y-3 text-sm text-gray-700">
+                    <div className="flex items-center">
+                      <Globe className="h-4 w-4 mr-2 text-gray-400" />
+                      <span>{course.mode}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-2 text-gray-400" />
+                      <span>{course.duration}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                      <span>{course.schedule}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. CURRICULUM (Course Content Section) - Now separate for scroll spy */}
+                {course.curriculum && (
+                  <div
+                    ref={curriculumRef}
+                    id="curriculum"
+                    className="scroll-mt-24 space-y-6"
+                  >
+                    <h2 className="text-2xl font-bold mb-6 text-gray-900 border-l-4 pl-4">
+                      Course Content
+                    </h2>
+                    <div className="space-y-3">
+                      {course.curriculum.map((section) => (
+                        <div
+                          key={section.id}
+                          className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
+                        >
+                          <button
+                            onClick={() => toggleSection(section.id)}
+                            className="w-full p-5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
                           >
                             <div className="flex items-center">
-                              {lesson.isPreview ? (
-                                <Play
-                                  className="h-4 w-4 mr-3"
-                                  style={{ color: "var(--color-primary)" }}
-                                />
-                              ) : (
-                                <div
-                                  className="h-4 w-4 mr-3 rounded-full border-2"
-                                  style={{
-                                    borderColor: "var(--color-border)",
-                                  }}
-                                ></div>
-                              )}
-                              <span
-                                style={{ color: "var(--color-foreground)" }}
-                              >
-                                {lesson.title}
-                              </span>
-                              {lesson.isPreview && (
-                                <span
-                                  className="ml-2 px-2 py-1 text-xs rounded"
-                                  style={{
-                                    backgroundColor: "var(--color-accent)",
-                                    color: "var(--color-background)",
-                                  }}
-                                >
-                                  Preview
-                                </span>
-                              )}
+                              <div className="p-2 bg-gray-100 rounded-lg mr-4 text-gray-600">
+                                <BookOpen className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <h3 className="font-bold text-gray-900">
+                                  {section.title}
+                                </h3>
+                                <p className="text-sm text-gray-500 mt-1">
+                                  {section.lessons.length} lessons •{" "}
+                                  {section.duration}
+                                </p>
+                              </div>
                             </div>
-                            <span
-                              className="text-sm"
-                              style={{
-                                color: "var(--color-foreground)",
-                                opacity: 0.7,
-                              }}
-                            >
-                              {lesson.duration}
-                            </span>
-                          </div>
-                        ))}
+                            <ChevronDown
+                              className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${expandedSections.includes(section.id) ? "rotate-180" : ""}`}
+                            />
+                          </button>
+
+                          {expandedSections.includes(section.id) && (
+                            <div className="border-t border-gray-100 bg-gray-50/50">
+                              {section.lessons.map((lesson) => (
+                                <div
+                                  key={lesson.id}
+                                  className="flex items-center justify-between p-4 border-b border-gray-100 last:border-0 hover:bg-white/60 transition-colors"
+                                >
+                                  <div className="flex items-center">
+                                    <div
+                                      className={`p-1.5 rounded-full mr-3 ${lesson.isPreview ? "bg-blue-100 text-blue-600" : "bg-gray-200 text-gray-500"}`}
+                                    >
+                                      {lesson.isPreview ? (
+                                        <Play className="h-3 w-3 fill-current" />
+                                      ) : (
+                                        <div className="h-3 w-3 rounded-full border-2 border-gray-400" />
+                                      )}
+                                    </div>
+                                    <span className="font-medium text-gray-700">
+                                      {lesson.title}
+                                    </span>
+                                    {lesson.isPreview && (
+                                      <span className="ml-3 px-2 py-0.5 text-xs font-bold rounded bg-blue-100 text-blue-700 uppercase tracking-wide">
+                                        Preview
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-sm text-gray-400 font-mono">
+                                    {lesson.duration}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Card 2: কোর্স সিলেবাস */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <BookOpen className="h-5 w-5" />
+                    <h3 className="font-bold text-lg text-gray-900">
+                      কোর্স সিলেবাস
+                    </h3>
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    {(course.syllabus || []).slice(0, 4).map((item, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <CheckCircle className="h-4 w-4 mr-2 mt-0.5 text-gray-400 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Card 3: */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <ListChecks className="h-5 w-5" />
+                    <h3 className="font-bold text-lg text-gray-900">
+                      ক্লাস করার জন্য প্রয়োজন হবে
+                    </h3>
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    {course.requirements.map((req, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <ArrowLeft className="h-4 w-4 mr-2 mt-0.5 text-gray-400 rotate-180" />
+                        <span>{req}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Card 4: যেভাবে পেমেন্ট করবেন */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CreditCard className="h-5 w-5" />
+                    <h3 className="font-bold text-lg text-gray-900">
+                      যেভাবে পেমেন্ট করবেন
+                    </h3>
+                  </div>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between p-2 bg-gray-50 rounded border border-gray-100">
+                      <span className="text-gray-600">কোর্স ফি:</span>
+                      <span className="font-bold text-gray-900">
+                        {course.fee}
+                      </span>
+                    </div>
+                    {course.installment && (
+                      <div className="flex justify-between p-2 bg-gray-50 rounded border border-gray-100">
+                        <span className="text-gray-600">ইনস্টলমেন্ট:</span>
+                        <span className="font-bold text-gray-900">
+                          {course.installment}
+                        </span>
                       </div>
                     )}
                   </div>
-                ))}
+                </div>
+
+                {/* Card 5: সাধারণ জিজ্ঞাসা */}
+                <FAQ faqs={course.faqs} />
               </div>
             </div>
-          )}
 
-          <div className="divider"></div>
+            <div className="border-t border-gray-200"></div>
 
-          {/* 3. INSTRUCTOR */}
-          <div
-            ref={instructorRef}
-            id="instructor"
-            className="mb-16 scroll-mt-32"
-          >
-            <h2
-              className="text-2xl font-bold mb-6"
-              style={{ color: "var(--color-foreground)" }}
-            >
-              Your Instructor
-            </h2>
-            <div
-              className="p-6 rounded-lg"
-              style={{ backgroundColor: "var(--color-card)" }}
-            >
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="w-24 h-24 rounded-full overflow-hidden flex-shrink-0">
-                  <img
-                    src={course.instructor.avatar}
-                    alt={course.instructor.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <h3
-                    className="text-xl font-bold mb-2"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
+            <div className="border-t border-gray-200"></div>
+
+            {/* 3. INSTRUCTOR */}
+            <div ref={instructorRef} id="instructor" className="scroll-mt-24">
+              <h2 className="text-2xl font-bold mb-6 text-gray-900 border-l-4 pl-4">
+                Instructor
+              </h2>
+              <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row items-center md:items-start gap-6">
+                <img
+                  src={course.instructor.avatar}
+                  alt={course.instructor.name}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
+                />
+                <div className="flex-1 text-center md:text-left">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
                     {course.instructor.name}
                   </h3>
-                  <p
-                    style={{
-                      color: "var(--color-foreground)",
-                      opacity: 0.8,
-                    }}
-                    className="mb-4"
-                  >
-                    {course.instructor.bio}
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="flex items-center">
-                      <div
-                        className="p-2 rounded mr-3"
-                        style={{
-                          backgroundColor: "var(--color-background)",
-                        }}
-                      >
-                        <Star
-                          className="h-5 w-5"
-                          style={{ color: "#f59e0b" }}
-                        />
-                      </div>
-                      <div>
-                        <p
-                          className="font-medium"
-                          style={{ color: "var(--color-foreground)" }}
-                        >
-                          {course.instructor.rating} Rating
-                        </p>
-                        <p
-                          className="text-sm"
-                          style={{
-                            color: "var(--color-foreground)",
-                            opacity: 0.7,
-                          }}
-                        >
-                          {course.reviewsCount} Reviews
-                        </p>
+                  <p className="text-gray-600 mb-6">{course.instructor.bio}</p>
+                  <div className="flex flex-col sm:flex-row gap-6 justify-center md:justify-start">
+                    <div className="flex items-center justify-center gap-2">
+                      <Star className="h-5 w-5 text-yellow-500 fill-current" />
+                      <div className="text-sm">
+                        <span className="font-bold text-gray-900">
+                          {course.instructor.rating}
+                        </span>
+                        <span className="text-gray-500 ml-1">
+                          Instructor Rating
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center">
-                      <div
-                        className="p-2 rounded mr-3"
-                        style={{
-                          backgroundColor: "var(--color-background)",
-                        }}
-                      >
-                        <Users
-                          className="h-5 w-5"
-                          style={{ color: "var(--color-primary)" }}
-                        />
-                      </div>
-                      <div>
-                        <p
-                          className="font-medium"
-                          style={{ color: "var(--color-foreground)" }}
-                        >
-                          {course.instructor.studentsCount.toLocaleString()}{" "}
-                          Students
-                        </p>
+                    <div className="flex items-center justify-center gap-2">
+                      <Users className="h-5 w-5 text-[#214187]" />
+                      <div className="text-sm">
+                        <span className="font-bold text-gray-900">
+                          {course.instructor.studentsCount.toLocaleString()}
+                        </span>
+                        <span className="text-gray-500 ml-1">Students</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            <div className="border-t border-gray-200"></div>
           </div>
 
-          <div className="divider"></div>
-
-          {/* 4. REVIEWS */}
-          <div ref={reviewsRef} id="reviews" className="scroll-mt-32">
-            <h2
-              className="text-2xl font-bold mb-6"
-              style={{ color: "var(--color-foreground)" }}
-            >
-              Student Reviews
-            </h2>
-
-            {/* Write Review Form */}
-            <div
-              className="p-6 rounded-lg mb-8"
-              style={{ backgroundColor: "var(--color-card)" }}
-            >
-              <h3
-                className="text-lg font-medium mb-4"
-                style={{ color: "var(--color-foreground)" }}
-              >
-                Write a Review
-              </h3>
-              <form onSubmit={handleCommentSubmit(onCommentSubmit)}>
-                <div className="mb-4">
-                  <label
-                    className="block text-sm font-medium mb-2"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    Rating
-                  </label>
-                  <div className="flex items-center">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <button
-                        key={rating}
-                        type="button"
-                        onClick={() => setCommentValue("rating", rating)}
-                        className="mr-1"
-                      >
-                        <Star
-                          className={`h-6 w-6 ${rating <= (watchComment("rating") || 0) ? "fill-current" : ""}`}
-                          style={{
-                            color:
-                              rating <= (watchComment("rating") || 0)
-                                ? "#f59e0b"
-                                : "var(--color-border)",
-                          }}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="mb-4">
-                  <textarea
-                    rows={4}
-                    className="w-full px-3 py-2 border rounded-md"
-                    style={{
-                      backgroundColor: "var(--color-background)",
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-foreground)",
-                    }}
-                    placeholder="Share your experience..."
-                    {...registerComment("comment")}
-                  ></textarea>
-                </div>
-                <button
-                  type="submit"
-                  disabled={isSubmittingReview}
-                  className="px-4 py-2 rounded-md text-white font-medium disabled:opacity-50"
-                  style={{ backgroundColor: "var(--color-primary)" }}
-                >
-                  {isSubmittingReview ? "Submitting..." : "Submit Review"}
-                </button>
-              </form>
+          {/* Right Sidebar */}
+          <div className="lg:col-span-1 lg:w-[400px]">
+            <div className="sticky top-24 space-y-6">
+              <IncludesCard />
+              <NeedCall />
             </div>
-
-            {/* Reviews List */}
-            <div className="space-y-6">
-              {reviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="p-6 rounded-lg"
-                  style={{ backgroundColor: "var(--color-card)" }}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                        <img
-                          src={review.userAvatar}
-                          alt={review.userName}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <h4
-                          className="font-medium"
-                          style={{ color: "var(--color-foreground)" }}
-                        >
-                          {review.userName}
-                        </h4>
-                        <div className="flex items-center">
-                          <div className="flex items-center mr-2">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-4 w-4 ${i < Math.floor(review.rating) ? "fill-current" : ""}`}
-                                style={{
-                                  color:
-                                    i < Math.floor(review.rating)
-                                      ? "#f59e0b"
-                                      : "var(--color-border)",
-                                }}
-                              />
-                            ))}
-                          </div>
-                          <span
-                            className="text-sm"
-                            style={{
-                              color: "var(--color-foreground)",
-                              opacity: 0.7,
-                            }}
-                          >
-                            {format(new Date(review.date), "MMM dd, yyyy")}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <p
-                    className="mb-4"
-                    style={{
-                      color: "var(--color-foreground)",
-                      opacity: 0.8,
-                    }}
-                  >
-                    {review.comment}
-                  </p>
-                  <div className="flex items-center">
-                    <button
-                      onClick={() => toggleHelpful(review.id)}
-                      className="flex items-center text-sm"
-                      style={{
-                        color: review.isHelpful
-                          ? "var(--color-primary)"
-                          : "var(--color-foreground)",
-                        opacity: review.isHelpful ? 1 : 0.7,
-                      }}
-                    >
-                      <ThumbsUp className="h-4 w-4 mr-1" /> Helpful (
-                      {review.helpfulCount})
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN (Sticky Sidebar) - Approx 30% */}
-        <div className="lg:col-span-4 order-first lg:order-last">
-          <div className="sticky top-24 space-y-6">
-            {/* Enroll Card (Sticky) */}
-            <div
-              className="rounded-lg overflow-hidden shadow-xl"
-              style={{ backgroundColor: "var(--color-card)" }}
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    {course.originalPrice ? (
-                      <>
-                        <span
-                          className="text-2xl font-bold"
-                          style={{ color: "var(--color-primary)" }}
-                        >
-                          ${course.price}
-                        </span>
-                        <span
-                          className="text-lg ml-2 line-through"
-                          style={{
-                            color: "var(--color-foreground)",
-                            opacity: 0.5,
-                          }}
-                        >
-                          ${course.originalPrice}
-                        </span>
-                      </>
-                    ) : (
-                      <span
-                        className="text-2xl font-bold"
-                        style={{ color: "var(--color-primary)" }}
-                      >
-                        ${course.price}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                {isEnrolled ? (
-                  <button
-                    className="w-full py-3 rounded-md text-white font-medium mb-3"
-                    style={{ backgroundColor: "#10b981" }}
-                  >
-                    Go to Course
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setShowEnrollmentModal(true)}
-                    className="w-full py-3 rounded-md text-white font-medium mb-3"
-                    style={{ backgroundColor: "var(--color-primary)" }}
-                  >
-                    Enroll Now
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* This Course Includes Card */}
-            <IncludesCard/>
-            <NeedCall/>
           </div>
         </div>
       </div>
 
       {/* Enrollment Modal */}
       {showEnrollmentModal && (
-        <dialog className="modal modal-open">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="modal-box max-w-md rounded-lg overflow-hidden max-h-[90vh] overflow-y-auto"
-            style={{ backgroundColor: "var(--color-card)" }}
-          >
-            <div
-              className="p-6 border-b sticky top-0 z-10"
-              style={{
-                borderColor: "var(--color-border)",
-                backgroundColor: "var(--color-card)",
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <h2
-                  className="text-xl font-bold"
-                  style={{ color: "var(--color-foreground)" }}
-                >
-                  Enroll in {course.title}
-                </h2>
-                <button
-                  onClick={() => setShowEnrollmentModal(false)}
-                  className="p-1 rounded-full"
-                  style={{ backgroundColor: "var(--color-background)" }}
-                >
-                  <svg
-                    className="w-5 h-5"
-                    style={{ color: "var(--color-foreground)" }}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowEnrollmentModal(false)}
+          ></div>
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden relative z-10 flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+              <h2 className="text-xl font-bold text-gray-900">Checkout</h2>
+              <button
+                onClick={() => setShowEnrollmentModal(false)}
+                className="p-2 rounded-full hover:bg-gray-200 transition-colors text-gray-500"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
-            <form
-              onSubmit={handleEnrollmentSubmit(onEnrollmentSubmit)}
-              className="p-6"
-            >
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label
-                    className="block text-sm font-medium mb-1"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border rounded-md"
-                    style={{
-                      backgroundColor: "var(--color-background)",
-                      borderColor: enrollmentErrors.firstName
-                        ? "#ef4444"
-                        : "var(--color-border)",
-                      color: "var(--color-foreground)",
-                    }}
-                    {...registerEnrollment("firstName")}
-                  />
-                </div>
-                <div>
-                  <label
-                    className="block text-sm font-medium mb-1"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border rounded-md"
-                    style={{
-                      backgroundColor: "var(--color-background)",
-                      borderColor: enrollmentErrors.lastName
-                        ? "#ef4444"
-                        : "var(--color-border)",
-                      color: "var(--color-foreground)",
-                    }}
-                    {...registerEnrollment("lastName")}
-                  />
-                </div>
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-sm font-medium mb-1"
-                  style={{ color: "var(--color-foreground)" }}
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  className="w-full px-3 py-2 border rounded-md"
-                  style={{
-                    backgroundColor: "var(--color-background)",
-                    borderColor: enrollmentErrors.email
-                      ? "#ef4444"
-                      : "var(--color-border)",
-                    color: "var(--color-foreground)",
-                  }}
-                  {...registerEnrollment("email")}
+            <div className="overflow-y-auto p-6">
+              <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                <Image
+                  src={course.thumbnail}
+                  alt={course.title}
+                  width={80}
+                  height={60}
+                  className="rounded object-cover"
+                  unoptimized
                 />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-sm font-medium mb-1"
-                  style={{ color: "var(--color-foreground)" }}
-                >
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  className="w-full px-3 py-2 border rounded-md"
-                  style={{
-                    backgroundColor: "var(--color-background)",
-                    borderColor: enrollmentErrors.phone
-                      ? "#ef4444"
-                      : "var(--color-border)",
-                    color: "var(--color-foreground)",
-                  }}
-                  {...registerEnrollment("phone")}
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-sm font-medium mb-1"
-                  style={{ color: "var(--color-foreground)" }}
-                >
-                  Payment Method
-                </label>
-                <div className="space-y-2">
-                  <label
-                    className="flex items-center p-3 border rounded-md cursor-pointer"
-                    style={{ borderColor: "var(--color-border)" }}
-                  >
-                    <input
-                      type="radio"
-                      value="card"
-                      className="mr-3"
-                      {...registerEnrollment("paymentMethod")}
-                    />
-                    <CreditCard
-                      className="h-5 w-5 mr-2"
-                      style={{ color: "var(--color-foreground)" }}
-                    />
-                    <span style={{ color: "var(--color-foreground)" }}>
-                      Credit/Debit Card
-                    </span>
-                  </label>
+                <div>
+                  <h3 className="font-bold text-gray-900 line-clamp-1">
+                    {course.title}
+                  </h3>
+                  <p className="font-bold">
+                    {course.price.toLocaleString()} Tk
+                  </p>
                 </div>
               </div>
-              {watchEnrollment("paymentMethod") === "card" && (
-                <>
-                  <div className="mb-4">
-                    <label
-                      className="block text-sm font-medium mb-1"
-                      style={{ color: "var(--color-foreground)" }}
-                    >
-                      Card Number
+
+              <form
+                onSubmit={handleEnrollmentSubmit(onEnrollmentSubmit)}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
+                      First Name
                     </label>
                     <input
-                      type="text"
-                      placeholder="1234 5678 9012 3456"
-                      className="w-full px-3 py-2 border rounded-md"
-                      style={{
-                        backgroundColor: "var(--color-background)",
-                        borderColor: enrollmentErrors.cardNumber
-                          ? "#ef4444"
-                          : "var(--color-border)",
-                        color: "var(--color-foreground)",
-                      }}
-                      {...registerEnrollment("cardNumber")}
+                      {...registerEnrollment("firstName")}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-1"
-                        style={{ color: "var(--color-foreground)" }}
-                      >
-                        Expiry Date
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="MM/YY"
-                        className="w-full px-3 py-2 border rounded-md"
-                        style={{
-                          backgroundColor: "var(--color-background)",
-                          borderColor: enrollmentErrors.expiryDate
-                            ? "#ef4444"
-                            : "var(--color-border)",
-                          color: "var(--color-foreground)",
-                        }}
-                        {...registerEnrollment("expiryDate")}
-                      />
-                    </div>
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-1"
-                        style={{ color: "var(--color-foreground)" }}
-                      >
-                        CVV
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="123"
-                        className="w-full px-3 py-2 border rounded-md"
-                        style={{
-                          backgroundColor: "var(--color-background)",
-                          borderColor: enrollmentErrors.cvv
-                            ? "#ef4444"
-                            : "var(--color-border)",
-                          color: "var(--color-foreground)",
-                        }}
-                        {...registerEnrollment("cvv")}
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
+                      Last Name
+                    </label>
+                    <input
+                      {...registerEnrollment("lastName")}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                    />
                   </div>
-                </>
-              )}
-              <div className="mb-6">
-                <label className="flex items-center">
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    {...registerEnrollment("email")}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
+                    Phone
+                  </label>
+                  <input
+                    type="tel"
+                    {...registerEnrollment("phone")}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                  />
+                </div>
+
+                <label className="flex items-start gap-2 text-sm text-gray-600 mt-4">
                   <input
                     type="checkbox"
-                    className="mr-2"
                     {...registerEnrollment("agreeToTerms")}
+                    className="mt-1 focus:ring-primary"
                   />
-                  <span
-                    className="text-sm"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    I agree to the Terms and Conditions
+                  <span>
+                    I accept{" "}
+                    <span className="font-bold underline cursor-pointer">
+                      Terms & Conditions
+                    </span>
                   </span>
                 </label>
-              </div>
-              <button
-                type="submit"
-                disabled={isEnrolling}
-                className="w-full py-3 rounded-md text-white font-medium disabled:opacity-50"
-                style={{ backgroundColor: "var(--color-primary)" }}
-              >
-                {isEnrolling ? "Processing..." : "Complete Enrollment"}
-              </button>
-            </form>
+
+                <button
+                  type="submit"
+                  disabled={isEnrolling}
+                  className="w-full py-3.5 rounded-lg text-white font-bold text-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isEnrolling ? "Processing..." : `Enroll Now`}
+                </button>
+              </form>
+            </div>
           </div>
-          <form method="dialog" className="modal-backdrop">
-            <button onClick={() => setShowEnrollmentModal(false)}>close</button>
-          </form>
-        </dialog>
+        </div>
       )}
     </div>
   );

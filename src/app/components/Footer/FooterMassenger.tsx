@@ -1,15 +1,20 @@
 import React, { useState } from "react";
 import { HiArrowLongRight } from "react-icons/hi2";
-import { FaWhatsapp, FaFacebookMessenger } from "react-icons/fa"; // আইকনগুলো ইম্পোর্ট করে নিন
+import { FaWhatsapp, FaFacebookMessenger } from "react-icons/fa";
 import MessangerIcon from "./MessangerIcon";
 
 const FooterMassenger = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 container mx-auto flex flex-col items-end gap-3">
+    // এখানে container সরিয়ে w-fit ব্যবহার করা হয়েছে
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 w-fit">
       <div
-        className={`flex flex-col gap-3 transition-all duration-500 transform ${isOpen ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-10 scale-0 pointer-events-none"}`}
+        className={`flex flex-col gap-3 transition-all duration-500 transform ${
+          isOpen
+            ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
+            : "opacity-0 translate-y-10 scale-0 pointer-events-none"
+        }`}
       >
         {/* WhatsApp Option */}
         <a
@@ -55,7 +60,7 @@ const FooterMassenger = () => {
 
         <div
           onClick={() => setIsOpen(!isOpen)}
-          className={`cursor-pointer transition-all duration-300 hover:scale-110 active:scale-95 drop-shadow-md ${isOpen ? "rotate-0" : "rotate-0"}`}
+          className={`cursor-pointer transition-all duration-300 hover:scale-110 active:scale-95 drop-shadow-md`}
         >
           <MessangerIcon />
         </div>

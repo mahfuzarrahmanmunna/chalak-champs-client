@@ -2,10 +2,10 @@ import React from "react";
 
 const NavLogo = () => {
   return (
-    <div>
+    <div className="">
       <svg
-        width="163"
-        height="98"
+        width="150"
+        height="85"
         viewBox="0 0 163 98"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

@@ -25,5 +25,9 @@ export const metadata = {
 };
 
 export default function ContactUsPage() {
-  return <ContactUsClient />;
+  return (
+    <div className="bg-white">
+      <ContactUsClient />
+    </div>
+  );
 }

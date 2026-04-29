@@ -23,28 +23,26 @@ export const metadata: Metadata = {
   description:
     "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.",
 
-  // --- FIX 1: Browser Tab Icon (Favicon) ---
   icons: {
-    icon: "/icon.png", // This replaces the default Vercel favicon
+    icon: "/icon.png", 
     shortcut: "/icon.png",
     apple: "/icon.png",
   },
   manifest: "/manifest.json",
 
-  // --- FIX 2: Social Media Sharing (WhatsApp, Telegram, Facebook) ---
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://chalakchamps.vercel.app", // Update this if you have a custom domain
+    url: "https://chalakchamps.vercel.app", 
     siteName: "Chalak Champs",
     title: "Chalak Champs - Learn English with Fun",
     description:
       "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.",
     images: [
       {
-        url: "/icon.png", // This image will show in link previews
-        width: 1200, // Recommended width for social sharing
-        height: 630, // Recommended height for social sharing
+        url: "/icon.png", 
+        width: 1200, 
+        height: 630, 
         alt: "Chalak Champs Logo",
       },
     ],

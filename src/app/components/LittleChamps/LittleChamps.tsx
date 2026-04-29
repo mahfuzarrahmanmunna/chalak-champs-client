@@ -7,7 +7,7 @@ const LittleChamps = () => {
       {/* Header */}
       <div>
         <h3 className="text-2xl leading-auto md:text-5xl font-bold tracking-[-5%] text-center">
-          <span className="text-[#00477C]">আমাদের</span> {' '}
+          <span className="text-[#00477C]">আমাদের</span>{" "}
           <span className="relative inline-block px-2 py-3 group">
             <span className="absolute inset-0 border-[3px] border-dashed border-pink-500"></span>
             <span className="absolute -top-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
@@ -15,8 +15,7 @@ const LittleChamps = () => {
             <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="text-primary"> Little Champs&lsquo;রা</span>
-          </span>
-{' '}
+          </span>{" "}
           <span className="bg-linear-to-r from-[#F3066D] to-[#FC7CB4] bg-clip-text text-transparent">
             পাচ্ছে
           </span>
@@ -47,13 +46,15 @@ const LittleChamps = () => {
           <div className="bg-linear-to-b md:w-100 h-97.25 from-[#00477C] to-[#FF8FCA]/30 p-1 rounded-[40px]">
             <div className="bg-[radial-gradient(circle,#DD2675,#00477C)]  w-full h-full rounded-[36px] ">
               <div className="w-full mx-auto p-5.5 relative">
-                <Image
-                  src={"/groupimg.png"}
-                  height={229}
-                  width={351}
-                  alt="group Meeting"
-                  className="object-cover rounded-[26px]"
-                />
+                <div className="h-[229px] w-[351px]">
+                  <Image
+                    src={"/groupimg.png"}
+                    height={229}
+                    width={351}
+                    alt="group Meeting"
+                    className="object-cover rounded-[26px]"
+                  />
+                </div>
                 <div className="absolute -bottom-8">
                   <Image
                     src={"/liveicon.webp"}
