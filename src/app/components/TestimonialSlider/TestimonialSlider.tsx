@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import './testimonial.css'
 
 const testimonials = [
   {
@@ -47,13 +48,13 @@ const SpotlightCard = ({ item }: { item: any }) => {
 
   return (
     <div
-      className="relative w-full h-full rounded-[35px] overflow-hidden shadow-[inset_2px_4px_16px_rgba(255,255,255,0.2),inset_4px_8px_16px_rgba(255,255,255,0.2)]"
+      className="card-flow relative w-full h-full rounded-[35px] overflow-hidden shadow-[inset_2px_4px_16px_rgba(255,255,255,0.2),inset_4px_8px_16px_rgba(255,255,255,0.2)]"
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* 1. The Base Gradient Background */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient}`} />
+      <div className={`absolute inset-0 `} />
 
       {/* 2. The Animated Spotlight/Overlay */}
       <div

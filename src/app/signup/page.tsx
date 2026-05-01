@@ -1,15 +1,154 @@
 "use client";
-
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 import Button from "../ui/button/Button";
 import Image from "next/image";
+import Link from "next/link";
+import { useAuth } from "../context/AuthContext";
 
 const SignUpPage = () => {
+  // Import functions from context
+  const {
+    sendOtpEmail,
+    checkOtpEmail,
+    sendOtpPhone,
+    checkOtpPhone,
+    completeRegistration,
+  } = useAuth();
+
   // State to manage which view is showing on the Left Side
   const [view, setView] = useState<"login" | "otp" | "register">("login");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // State for OTP inputs (Array of 4 strings)
-  const [otp, setOtp] = useState<string[]>(new Array(4).fill(""));
+  // Timer State
+  const [timeLeft, setTimeLeft] = useState(90); // 90 seconds = 1:30
+
+  // Helper function to format seconds into MM:SS
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  // Countdown Effect
+  React.useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
+    if (view === "otp" && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [view, timeLeft]);
+
+  // Initialize React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+    getValues,
+  } = useForm();
+
+  // --- HANDLERS (UPDATED WITH FIREBASE/BACKEND LOGIC) ---
+
+  // 1. Login/Initial Submit Handler
+  const onLoginSubmit = async (data: any) => {
+    setIsLoading(true);
+    const input = data.emailOrPhone;
+
+    // Simple check to see if it's an email or phone number
+    const isEmail = /\S+@\S+\.\S+/.test(input);
+
+    try {
+      if (isEmail) {
+        // Call Email OTP Service
+        await sendOtpEmail(input);
+      } else {
+        // Call Phone OTP Service
+        // Note: 'recaptcha-container' is needed for invisible recaptcha if using Firebase SDK directly
+        await sendOtpPhone(input, "recaptcha-container");
+      }
+
+      // --- RESET TIMER ---
+      setTimeLeft(90); // Reset to 1:30 when code is sent
+
+      // If successful, move to OTP view
+      setView("otp");
+    } catch (error: any) {
+      // Simple alert to keep design unchanged
+      window.alert(
+        error.response?.data?.message ||
+          "Failed to send code. Please try again.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 2. OTP Submit Handler
+  const onOtpSubmit = async (data: any) => {
+    setIsLoading(true);
+
+    // Join: 6 OTP digits
+    const code = `${data.otp[0]}${data.otp[1]}${data.otp[2]}${data.otp[3]}${data.otp[4]}${data.otp[5]}`;
+    const input = watch("emailOrPhone"); // Retrieve: email/phone from step 1
+    const isEmail = /\S+@\S+\.\S+/.test(input);
+
+    try {
+      if (isEmail) {
+        await checkOtpEmail(input, code);
+      } else {
+        await checkOtpPhone(input, code);
+      }
+      // If successful, move to Registration details view
+      setView("register");
+    } catch (error: any) {
+      window.alert(
+        error.response?.data?.message || "Invalid verification code.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 3. Register/Final Submit Handler
+  const onRegisterSubmit = async (data: any) => {
+    setIsLoading(true);
+
+    const input = watch("emailOrPhone");
+    const isEmail = /\S+@\S+\.\S+/.test(input);
+
+    // Split name into first/last (Assuming simple space separation, adjust as needed)
+    const nameParts = data.name.trim().split(" ");
+    const firstName = nameParts[0];
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+    try {
+      await completeRegistration({
+        firstName,
+        lastName,
+        password: data.password,
+        emailOrPhone: input,
+        method: isEmail ? "email" : "phone",
+      });
+      // Context usually handles navigation on success, but we can log here
+      console.log("Registration Successful");
+    } catch (error: any) {
+      window.alert(error.message || "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // --- OTP LOGIC (INTEGRATED WITH RHF) ---
 
   // Handler to update OTP value and move focus
   const handleOtpChange = (
@@ -17,16 +156,13 @@ const SignUpPage = () => {
     index: number,
   ) => {
     const value = e.target.value;
-    // Allow only numbers
-    if (!/^\d*$/.test(value)) return;
-
-    const newOtp = [...otp];
-    // Take the last character entered
-    newOtp[index] = value.slice(-1);
-    setOtp(newOtp);
+    if (!/^\d*$/.test(value)) {
+      e.preventDefault();
+      return;
+    }
 
     // Auto-focus next input
-    if (value && index < 3) {
+    if (value && index < 5) {
       const nextInput = document.getElementById(`otp-${index + 1}`);
       if (nextInput) (nextInput as HTMLInputElement).focus();
     }
@@ -44,13 +180,10 @@ const SignUpPage = () => {
   };
 
   return (
-    <div
-      style={{
-        color: "var(--color-text)",
-        backgroundColor: "var(--color-background)",
-      }}
-      className="w-full"
-    >
+    <div className="w-full bg-white">
+      {/* Recaptcha container (required for Phone Auth - Invisible) */}
+      <div id="recaptcha-container" style={{ display: "none" }}></div>
+
       <div className="flex container mx-auto items-center justify-between min-h-screen">
         {/* LEFT SIDE: Dynamic Content */}
         <div className="w-full flex flex-col justify-center items-center p-6 md:p-12 lg:px-20 relative z-10">
@@ -59,44 +192,46 @@ const SignUpPage = () => {
             {view === "login" && (
               <>
                 <div className="mb-5">
-                  <Button
-                    icon={
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g clipPath="url(#clip0_627_4045)">
-                          <path
-                            d="M8.33333 13.3332L8.33333 14.9998C8.33333 15.4419 8.50893 15.8658 8.82149 16.1783C9.13405 16.4909 9.55797 16.6665 10 16.6665L15.8333 16.6665C16.2754 16.6665 16.6993 16.4909 17.0118 16.1783C17.3244 15.8658 17.5 15.4419 17.5 14.9998L17.5 4.99984C17.5 4.55781 17.3244 4.13389 17.0118 3.82133C16.6993 3.50877 16.2754 3.33317 15.8333 3.33317L10 3.33317C9.55797 3.33317 9.13405 3.50877 8.82149 3.82133C8.50893 4.13389 8.33334 4.55781 8.33334 4.99984L8.33334 6.6665"
-                            stroke="white"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M3.33366 10L14.167 10M14.167 10L11.667 12.5M14.167 10L11.667 7.5"
-                            stroke="white"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </g>
-                        <defs>
-                          <clipPath id="clip0_627_4045">
-                            <rect
-                              width="20"
-                              height="20"
-                              fill="white"
-                              transform="translate(20 20) rotate(-180)"
+                  <Link href="/" className="flex items-center gap-2">
+                    <Button
+                      icon={
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g clipPath="url(#clip0_627_4045)">
+                            <path
+                              d="M8.33333 13.3332L8.33333 14.9998C8.33333 15.4419 8.50893 15.8658 8.82149 16.1783C9.13405 16.4909 9.55797 16.6665 10 16.6665L15.8333 16.6665C16.2754 16.6665 16.6993 16.4909 17.0118 16.1783C17.3244 15.8658 17.5 15.4419 17.5 14.9998L17.5 4.99984C17.5 4.55781 17.3244 4.13389 17.0118 3.82133C16.6993 3.50877 16.2754 3.33317 15.8333 3.33317L10 3.33317C9.55797 3.33317 9.13405 3.50877 8.82149 3.82133C8.50893 4.13389 8.33334 4.55781 8.33334 4.99984L8.33334 6.6665"
+                              stroke="white"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
-                          </clipPath>
-                        </defs>
-                      </svg>
-                    }
-                  >
-                    ওয়েবসাইটে ফিরে যান
-                  </Button>
+                            <path
+                              d="M3.33366 10L14.167 10M14.167 10L11.667 12.5M14.167 10L11.667 7.5"
+                              stroke="white"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </g>
+                          <defs>
+                            <clipPath id="clip0_627_4045">
+                              <rect
+                                width="20"
+                                height="20"
+                                fill="white"
+                                transform="translate(20 20) rotate(-180)"
+                              />
+                            </clipPath>
+                          </defs>
+                        </svg>
+                      }
+                    >
+                      ওয়েবসাইটে ফিরে যান
+                    </Button>
+                  </Link>
                 </div>
 
                 {/* Header */}
@@ -122,21 +257,24 @@ const SignUpPage = () => {
 
                 {/* Form */}
                 <div className="w-full">
-                  <form className="flex flex-col gap-5" action="">
+                  <form
+                    className="flex flex-col gap-5"
+                    onSubmit={handleSubmit(onLoginSubmit)}
+                  >
                     <input
                       type="text"
-                      name=""
-                      id=""
                       placeholder="মোবাইল নাম্বার/ ইমেইল লেখুন"
                       className="placeholder:text-[#8897AD] p-3.5 shadow-[inset_0_0_0_1px_#D1D5DB] rounded-lg w-full text-black outline-none focus:shadow-[inset_0_0_0_2px_#F3066E] transition-all bg-gray-50"
+                      {...register("emailOrPhone", { required: true })}
+                      disabled={isLoading}
                     />
 
                     <button
-                      type="button"
-                      onClick={() => setView("otp")}
-                      className="px-8 w-full py-3 bg-[#2D2D2D] text-[#FFFFFF] rounded-[10px] font-medium transition-all shadow-lg hover:shadow-xl active:scale-95"
+                      type="submit"
+                      disabled={isLoading}
+                      className="px-8 w-full py-3 bg-[#2D2D2D] text-[#FFFFFF] rounded-[10px] font-medium transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      এগিয়ে যান
+                      {isLoading ? "প্রসেসিং..." : "এগিয়ে যান"}
                     </button>
                   </form>
 
@@ -210,7 +348,7 @@ const SignUpPage = () => {
               </>
             )}
 
-            {/* --- VIEW 2: OTP / INFO FORM (New Design from Image) --- */}
+            {/* --- VIEW 2: OTP / INFO FORM --- */}
             {view === "otp" && (
               <>
                 <div className="mb-5">
@@ -239,54 +377,67 @@ const SignUpPage = () => {
                         />
                       </svg>
                     }
-                    onClick={() => setView("login")} // GO BACK TO LOGIN
+                    onClick={() => setView("login")}
                   >
                     পেছনে ফিরে যান
                   </Button>
                 </div>
 
+                {/* 
+                   UPDATED SECTION: 
+                   Here, {watch("emailOrPhone")} retrieves: input value from: Login step 
+                   and displays it dynamically.
+                */}
                 <p className="text-lg font-medium text-[#2D2D2D] leading-6 mb-6">
-                  xxxxxxxxxxx@xxxx নাম্বার/ইমেইল পাঠানো 4 সংখ্যার কোডটি লিখুন
+                  {watch("emailOrPhone")} নাম্বার/ইমেইল পাঠানো 6 সংখ্যার কোডটি
+                  লিখুন
                 </p>
 
-                {/* OTP Section with Real Inputs */}
-                <div className="mb-6">
-                  <p className="text-center text-sm font-medium text-gray-700 mb-3">
-                    4 সংখ্যা চেক করুন
-                  </p>
-                  <div className="flex justify-center gap-4 mb-2 text-[#545454]">
-                    {[0, 1, 2, 3].map((index) => (
-                      <input
-                        key={index}
-                        id={`otp-${index}`}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        value={otp[index]}
-                        onChange={(e) => handleOtpChange(e, index)}
-                        onKeyDown={(e) => handleOtpKeyDown(e, index)}
-                        className={`w-14 h-14 border-2 rounded-xl flex items-center justify-center text-2xl font-bold text-center outline-none transition-colors ${
-                          otp[index]
-                            ? "border-[#2D2D2D]"
-                            : "border-dashed border-gray-400"
-                        } focus:border-[#F3066E]`}
-                      />
-                    ))}
+                {/* OTP Section */}
+                <form onSubmit={handleSubmit(onOtpSubmit)}>
+                  <div className="mb-6">
+                    <p className="text-center text-sm font-medium text-gray-700 mb-3">
+                      6 সংখ্যা চেক করুন
+                    </p>
+                    <div className="flex justify-center gap-4 mb-2 text-[#545454]">
+                      {[0, 1, 2, 3, 4, 5].map((index) => (
+                        <input
+                          key={index}
+                          id={`otp-${index}`}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={1}
+                          disabled={isLoading}
+                          {...register(`otp.${index}`, {
+                            onChange: (e) => handleOtpChange(e, index),
+                            onKeyDown: (e) => handleOtpKeyDown(e, index),
+                            required: true,
+                          })}
+                          className={`w-14 h-14 border-2 rounded-xl flex items-center justify-center text-2xl font-bold text-center outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                            watch(`otp.${index}`)
+                              ? "border-[#2D2D2D]"
+                              : "border-dashed border-gray-400"
+                          } focus:border-[#F3066E]`}
+                        />
+                      ))}
+                    </div>
+                    <div className="text-center">
+                      {/* --- DYNAMIC TIMER --- */}
+                      <span className="text-sm font-bold text-[#F3066D]">
+                        {formatTime(timeLeft)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <span className="text-sm font-bold text-[#F3066D]">
-                      1:25
-                    </span>
-                  </div>
-                </div>
 
-                {/* Submit Button (Navigates to Register) */}
-                <button
-                  onClick={() => setView("register")}
-                  className="w-full bg-[#2D2D2D] text-white font-bold py-3.5 rounded-[10px] hover:bg-black transition-colors shadow-lg mb-6"
-                >
-                  ইনফরমেশন দিন
-                </button>
+                  {/* Submit Button (Navigates to Register) */}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-[#2D2D2D] text-white font-bold py-3.5 rounded-[10px] hover:bg-black transition-colors shadow-lg mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? "যাচাই করা হচ্ছে..." : "ইনফরমেশন দিন"}
+                  </button>
+                </form>
 
                 {/* Divider + Google */}
                 <div className="relative flex items-center py-4">
@@ -356,7 +507,7 @@ const SignUpPage = () => {
               </>
             )}
 
-            {/* --- VIEW 3: REGISTER FORM (Based on New Image) --- */}
+            {/* --- VIEW 3: REGISTER FORM --- */}
             {view === "register" && (
               <>
                 <div className="mb-5">
@@ -385,7 +536,7 @@ const SignUpPage = () => {
                         />
                       </svg>
                     }
-                    onClick={() => setView("otp")} // GO BACK TO OTP
+                    onClick={() => setView("otp")}
                   >
                     পেছনে ফিরে যান
                   </Button>
@@ -398,7 +549,10 @@ const SignUpPage = () => {
                 </div>
 
                 {/* Registration Form */}
-                <form className="flex flex-col gap-5">
+                <form
+                  className="flex flex-col gap-5"
+                  onSubmit={handleSubmit(onRegisterSubmit)}
+                >
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-gray-700">
                       ফোন নাম্বার / ইমেইল
@@ -407,7 +561,8 @@ const SignUpPage = () => {
                       type="text"
                       disabled
                       placeholder="xxxxxxxxxxx@xxxx"
-                      className="placeholder:text-[#8897AD] p-3.5 shadow-[inset_0_0_0_1px_#D1D5DB] rounded-lg w-full text-black outline-none focus:shadow-[inset_0_0_0_2px_#F3066E] transition-all bg-gray-50"
+                      className="placeholder:text-[#8897AD] p-3.5 shadow-[inset_0_0_0_1px_#D1D5DB] rounded-lg w-full text-black outline-none focus:shadow-[inset_0_0_0_2px_#F3066E] transition-all bg-gray-50 disabled:bg-gray-200 disabled:cursor-not-allowed"
+                      {...register("emailOrPhone")}
                     />
                   </div>
                   <div className="space-y-1">
@@ -417,7 +572,9 @@ const SignUpPage = () => {
                     <input
                       type="text"
                       placeholder="শেষ নাম / নাম লিখুন"
+                      disabled={isLoading}
                       className="placeholder:text-[#8897AD] p-3.5 shadow-[inset_0_0_0_1px_#D1D5DB] rounded-lg w-full text-black outline-none focus:shadow-[inset_0_0_0_2px_#F3066E] transition-all bg-gray-50"
+                      {...register("name", { required: true })}
                     />
                   </div>
 
@@ -428,7 +585,9 @@ const SignUpPage = () => {
                     <input
                       type="password"
                       placeholder="********"
+                      disabled={isLoading}
                       className="placeholder:text-[#8897AD] p-3.5 shadow-[inset_0_0_0_1px_#D1D5DB] rounded-lg w-full text-black outline-none focus:shadow-[inset_0_0_0_2px_#F3066E] transition-all bg-gray-50"
+                      {...register("password", { required: true })}
                     />
                   </div>
                   <div className="space-y-1">
@@ -438,15 +597,25 @@ const SignUpPage = () => {
                     <input
                       type="password"
                       placeholder="********"
+                      disabled={isLoading}
                       className="placeholder:text-[#8897AD] p-3.5 shadow-[inset_0_0_0_1px_#D1D5DB] rounded-lg w-full text-black outline-none focus:shadow-[inset_0_0_0_2px_#F3066E] transition-all bg-gray-50"
+                      {...register("confirmPassword", {
+                        required: true,
+                        validate: (val) => {
+                          if (watch("password") != val) {
+                            return "পাসওয়ার্ড মিলছে না";
+                          }
+                        },
+                      })}
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full bg-[#2D2D2D] text-white font-bold py-3.5 rounded-[10px] hover:bg-black transition-colors shadow-lg mt-2"
+                    disabled={isLoading}
+                    className="w-full bg-[#2D2D2D] text-white font-bold py-3.5 rounded-[10px] hover:bg-black transition-colors shadow-lg mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    ফর্ম পদ্ধতি
+                    {isLoading ? "প্রসেসিং..." : "ফর্ম পদ্ধতি"}
                   </button>
                 </form>
               </>
@@ -458,13 +627,13 @@ const SignUpPage = () => {
         <div className="w-full hidden md:flex">
           <div>
             <div className="max-w-118 max-h-121 rounded-2xl ">
-                <Image
-                  src="/signup.webp"
-                  alt="Slide"
-                  width={500}
-                  height={500}
-                  className="w-full h-full object-cover"
-                />
+              <Image
+                src="/signup.webp"
+                alt="Slide"
+                width={500}
+                height={500}
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>

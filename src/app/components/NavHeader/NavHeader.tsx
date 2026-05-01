@@ -9,10 +9,17 @@ import CallIcon from "../Icon/CallIcon";
 import MulStar from "../Icon/MulStar";
 import MenuIcon from "../Icon/MenuIcon";
 import CloseIcon from "../Icon/CloseIcon";
+import BnEnLogo from "./BnEnLogo";
+import UserIcon from "./UserIcon";
+// Import the hook. Make sure the path matches where you saved your context file.
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const NavHeader = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Access language context
+  const { t, isBangla, toggleLanguage } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,13 +66,13 @@ const NavHeader = () => {
                   />
                 </svg>
               </div>
-              Book A Free Class
+              {t?.bookAFreeClass || "Book A Free Class"}
             </button>
           </div>
           <div className="relative ">
             <button className=" flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 text-[#F3066E] hover:bg-white hover:border hover:border-primary  bg-[#F3066E]/20 cursor-pointer px-3.5 py-3 rounded-lg">
               <div className="flex">
-                <p>All Courses </p>
+                <p>{t?.allCourses || "All Courses"}</p>
                 <div>
                   <div className="w-1.5 h-1.5 rounded-full bg-[#F3066E] absolute "></div>
                 </div>
@@ -75,26 +82,52 @@ const NavHeader = () => {
           </div>
           <div>
             <button className="flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 text-[#F3066E] cursor-pointer">
-              Skills <DropIcon />
+              {t?.skills || "Skills"} <DropIcon />
             </button>
           </div>
           <button className="flex text-primary leading-auto tracking-[-2%] text-sm cursor-pointer">
-            <span>Kids English</span>
+            <span>{t?.kidsEnglish || "Kids English"}</span>
             <div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
           </button>
           <div>
             <button className="flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 text-primary cursor-pointer">
-              More
+              {t?.more || "More"}
               <DropIcon />
             </button>
           </div>
         </div>
 
         {/* --- DESKTOP RIGHT SECTION --- */}
-        <div className="hidden md:block">
+        <div className="hidden md:flex items-center gap-4">
           <div>
             <Button icon=<CallIcon /> px="px-2" hoverTextColor="#214187">
-              Call Us
+              {t?.callUs || "Call Us"}
+            </Button>
+          </div>
+          <div onClick={toggleLanguage} className="cursor-pointer">
+            <Button
+              bgColor="#ffffff"
+              textColor="#214187"
+              highlightColor="#001D3A"
+              darkShadowColor="#001D3A"
+              hoverBgColor="#214187"
+              hoverTextColor="white"
+              px="px-3.5"
+              icon=<BnEnLogo />
+            >
+              {isBangla ? "EN" : "BN"}
+            </Button>
+          </div>
+          <div>
+            <Button
+              bgColor="#F3056D"
+              darkShadowColor="#F3066E"
+              highlightColor="#FF8FCA"
+              hoverTextColor="#F3056D"
+              px="px-3.5"
+              icon=<UserIcon />
+            >
+              {t?.login || "Login"}
             </Button>
           </div>
         </div>
@@ -122,29 +155,29 @@ const NavHeader = () => {
             <div className="absolute top-1 transition-colors duration-300">
               <MulStar />
             </div>
-            Book A Free Class
+            {t?.bookAFreeClass || "Book A Free Class"}
           </button>
 
           <div className="border-t border-gray-200"></div>
 
           <div className="flex flex-col gap-4 items-center">
             <button className="flex items-center justify-center gap-2 text-[#F3066E] hover:bg-white hover:border hover:border-primary bg-[#F3066E]/20 cursor-pointer px-6 py-3 rounded-lg w-full">
-              All Courses{" "}
+              {t?.allCourses || "All Courses"}
               <div className="w-1.5 h-1.5 rounded-full bg-[#F3066E] absolute right-6"></div>
               <DropIcon />
             </button>
 
             <button className="flex items-center justify-center gap-2 text-[#F3066E] w-full">
-              Skills <DropIcon />
+              {t?.skills || "Skills"} <DropIcon />
             </button>
 
             <div className="flex items-center justify-center gap-2 text-primary w-full">
-              <span>Kids English</span>
+              <span>{t?.kidsEnglish || "Kids English"}</span>
               <div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
             </div>
 
             <button className="flex items-center justify-center gap-2 text-primary w-full">
-              More
+              {t?.more || "More"}
               <DropIcon />
             </button>
           </div>
@@ -158,7 +191,7 @@ const NavHeader = () => {
             hoverTextColor="#214187"
             className="w-full"
           >
-            Call Us
+            {t?.callUs || "Call Us"}
           </Button>
         </div>
       )}

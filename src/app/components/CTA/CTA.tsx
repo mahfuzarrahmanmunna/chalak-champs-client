@@ -158,11 +158,11 @@ const CTA = () => {
                 {/* REMOVED 'overflow-hidden' from here */}
                 <div className="flex rounded-xl border border-gray-200 bg-gray-50 focus-within:ring-2 focus-within:ring-[#F3066E] focus-within:border-transparent transition-all relative z-0">
                   {/* Country Selector */}
-                  <div className="relative w-20 shrink-0 bg-white z-10">
+                  <div className="relative w-20 active:rounded-2xl hover:rounded-2xl rounded-2xl shrink-0 bg-white z-10">
                     <button
                       type="button"
                       onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className="w-20 h-full flex items-center justify-between px-3 hover:bg-gray-50 transition-colors"
+                      className="w-20 h-full flex items-center justify-between px-3 hover:bg-gray-50 hover:rounded-2xl transition-colors"
                     >
                       <div className="flex items-center gap-2">
                         {selectedCountry && (

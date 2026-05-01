@@ -3,7 +3,6 @@
 import React, { useEffect } from "react";
 import { ThemeProvider } from "@/app/context/ThemeContext";
 import { LanguageProvider } from "@/app/context/LanguageContext";
-import { AuthProvider } from "./FirebaseProvider";
 // import DataLoadedWrapper from "./DataLoadedWrapper";
 // import { DataProvider } from "../context/DataProvider";
 import { LoadingProvider } from "../context/LoadingContext";
@@ -15,6 +14,7 @@ import Navbar1 from "../components/Navbar/Navbar1";
 import NavHeader from "../components/NavHeader/NavHeader";
 import FooterMassenger from "../components/Footer/FooterMassenger";
 import PromoModal from "../components/PromoModal/PromoModal";
+import { AuthProvider } from "../context/AuthContext";
 // import { ThemeProvider2 } from "../context/ThemeContext2";
 
 // Type definition for beforeinstallprompt event

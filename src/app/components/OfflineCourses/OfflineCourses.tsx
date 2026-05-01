@@ -48,7 +48,7 @@ const OfflineCourses = () => {
             </div>
             {/* second Card */}
             <div className="w-full max-w-[290px]">
-              <div className="bg-linear-to-br rounded-3xl from-[#FF8FCA] to-[#D9D9D9] p-1 overflow-hidden">
+              <div className="border-3 rounded-3xl border-[#FF8FCA] overflow-hidden">
                 <Image
                   src={"/groupchair.webp"}
                   width={290}
@@ -58,16 +58,17 @@ const OfflineCourses = () => {
                 />
               </div>
               <h4 className="text-[#F3066E] leading-8  tracking-[0px] text-lg md:text-xl mt-6 mb-3 text-center md:text-left">
-                দেশসেরা টিচারদের প্যানেল
+                1-1 Counselling
               </h4>
               <p className="leading-5 md:leading-4 font-normal text-sm text-[#000000]/70 text-center md:text-left">
-                অনলাইন এবং অফলাইন উভয় ক্ষেত্রে বিশেষজ্ঞ শিক্ষক প্যানেল, যারা
-                আপনার ইংরেজি ভীতি কাটিয়ে উঠতে মেন্টর হিসেবে কাজ করবেন।
+                পিতামাতাদের জন্য 1-1 কাউন্সেলিং সেশন, যেখানে ক্লাস টিচারদের সাথে
+                আপনার সন্তানের অগ্রগতি, শক্তি এবং উন্নতির ক্ষেত্র নিয়ে আলোচনা
+                করতে পারবেন।{" "}
               </p>
             </div>
             {/* Third Card */}
             <div className="w-full max-w-[290px]">
-              <div className="bg-linear-to-br rounded-3xl from-[#FF8FCA] to-[#D9D9D9] p-1 overflow-hidden">
+              <div className="border-3 rounded-3xl border-[#FF8FCA] overflow-hidden">
                 <Image
                   src={"/groupchair.webp"}
                   width={290}
@@ -77,11 +78,12 @@ const OfflineCourses = () => {
                 />
               </div>
               <h4 className="text-[#F3066E] leading-8  tracking-[0px] text-lg md:text-xl mt-6 mb-3 text-center md:text-left">
-                দেশসেরা টিচারদের প্যানেল
+                কাজ করতে করতে শেখা
               </h4>
               <p className="leading-5 md:leading-4 font-normal text-sm text-[#000000]/70 text-center md:text-left">
-                অনলাইন এবং অফলাইন উভয় ক্ষেত্রে বিশেষজ্ঞ শিক্ষক প্যানেল, যারা
-                আপনার ইংরেজি ভীতি কাটিয়ে উঠতে মেন্টর হিসেবে কাজ করবেন।
+                শুধু লেকচার নয়, লার্নিং অ্যাক্টিভিটি এবং গেমের মাধ্যমে শেখার
+                পদ্ধতি, যেখানে শিক্ষার্থীরা শুনে, বুঝে এবং পড়ে ইংরেজি অনুশীলন
+                করতে পারবে।
               </p>
             </div>
           </div>
