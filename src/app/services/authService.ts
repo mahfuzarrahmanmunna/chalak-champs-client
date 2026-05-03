@@ -1,21 +1,6 @@
 import axiosInstance from "@/lib/axios";
-import { User, UserCredential } from "firebase/auth";
 
-// --- INTERFACES ---
-
-export interface RegisterData {
-  uid: string;
-  firstName: string;
-  lastName: string;
-  email?: string;
-  phoneNumber?: string;
-  role?: string;
-}
-
-export interface LoginData {
-  email: string;
-  password: string;
-}
+// --- TYPES ---
 
 export interface UserProfile {
   uid: string;
@@ -26,7 +11,16 @@ export interface UserProfile {
   role: string;
 }
 
-// --- AUTH SERVICES ---
+export interface RegisterData {
+  uid: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phoneNumber?: string;
+  role?: string;
+}
+
+// --- SERVICES ---
 
 // 1. Send Email Verification Code
 export const sendEmailVerificationCode = async (email: string) => {
@@ -62,21 +56,40 @@ export const verifyPhoneCode = async (phoneNumber: string, code: string) => {
   return response.data;
 };
 
-// 5. Register User (After OTP verification or Firebase User creation)
+// 5. Register User
 export const registerUser = async (data: RegisterData) => {
-  const response = await axiosInstance.post("/auth/register", {
-    uid: data.uid, // Important: Required by backend
+  console.log("[AuthService] Registering user with data:", data);
+
+  // Payload Construction with Safety Checks
+  const payload: any = {
+    uid: data.uid,
     firstName: data.firstName,
     lastName: data.lastName,
-    email: data.email,
-    phoneNumber: data.phoneNumber,
     role: data.role || "student",
-  });
+  };
+
+  // Handle Email: Convert empty string to undefined to prevent empty key error
+  if (data.email && data.email.trim().length > 0) {
+    payload.email = data.email.trim();
+  } else {
+    payload.email = undefined;
+  }
+
+  // Handle Phone: Convert empty string to undefined to prevent empty key error
+  if (data.phoneNumber && data.phoneNumber.trim().length > 0) {
+    payload.phoneNumber = data.phoneNumber.trim();
+  } else {
+    payload.phoneNumber = undefined;
+  }
+
+  console.log("[AuthService] Final Payload:", JSON.stringify(payload));
+
+  const response = await axiosInstance.post("/auth/register", payload);
   return response.data;
 };
 
-// 6. Login User (Backend/Password Flow)
-export const loginUser = async (data: LoginData) => {
+// 6. Login User
+export const loginUser = async (data: { email: string; password: string }) => {
   const response = await axiosInstance.post("/auth/login", {
     email: data.email,
     password: data.password,

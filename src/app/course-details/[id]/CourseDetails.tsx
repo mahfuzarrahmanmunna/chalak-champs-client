@@ -41,6 +41,7 @@ import NeedCall from "./NeedCall";
 import IncludesCard from "./IncludesCard";
 import EnrollmentCard from "./EnrollmentCard";
 import FAQ from "./FAQ";
+import CourseDecorate from "./CourseDecorate";
 
 // --- TYPES & INTERFACES ---
 
@@ -183,12 +184,14 @@ export default function CourseDetailsPage() {
     { id: "overview", label: "Overview", icon: LayoutGrid },
     { id: "curriculum", label: "Curriculum", icon: BookOpen },
     { id: "instructor", label: "Instructor", icon: Users },
+    { id: "courseDecorator", label: "Course Decorator", icon: Users },
   ];
 
   // Refs
   const overviewRef = useRef<HTMLDivElement>(null);
   const curriculumRef = useRef<HTMLDivElement>(null);
   const instructorRef = useRef<HTMLDivElement>(null);
+  const courseDecoratorRef = useRef<HTMLDivElement>(null);
   // Removed reviewsRef as requested
 
   // --- Form Hooks ---
@@ -609,7 +612,7 @@ export default function CourseDetailsPage() {
                     </div>
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                      <span>{course.schedule}</span>
+                      <span>{console.log(course)}</span>
                     </div>
                   </div>
                 </div>
@@ -756,6 +759,8 @@ export default function CourseDetailsPage() {
 
                 {/* Card 5: সাধারণ জিজ্ঞাসা */}
                 <FAQ faqs={course.faqs} />
+
+                <CourseDecorate/>
               </div>
             </div>
 

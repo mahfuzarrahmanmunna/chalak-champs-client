@@ -9,6 +9,8 @@ interface CourseType {
   title: string;
   thumbnail: string;
   price: number;
+  fee : number;
+  installment?: string;
   originalPrice?: number;
   duration: string;
 }
@@ -45,7 +47,7 @@ const EnrollmentCard = ({
             {course.originalPrice ? (
               <>
                 <span className="text-3xl font-bold text-gray-900">
-                  {course.price.toLocaleString()} Tk
+                  {course.fee} Tk
                 </span>
                 <span className="text-xl text-gray-400 line-through mb-1.5">
                   {course.originalPrice.toLocaleString()} Tk

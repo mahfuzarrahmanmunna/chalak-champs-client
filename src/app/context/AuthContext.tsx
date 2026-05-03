@@ -1,4 +1,3 @@
-// context/AuthContext.tsx
 "use client";
 
 import React, {
@@ -20,15 +19,12 @@ import {
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { getProfile, registerUser, sendEmailVerificationCode, verifyEmailCode } from "../services/authService";
-// import {
-//   registerUser,
-//   sendEmailVerificationCode,
-//   verifyEmailCode,
-//   sendPhoneVerificationCode,
-//   verifyPhoneCode,
-//   getProfile,
-// } from "@/services/authService";
+import {
+  getProfile,
+  registerUser,
+  sendEmailVerificationCode,
+  verifyEmailCode,
+} from "../services/authService";
 
 // Define User Type (Matches your Backend IUser)
 interface AppUser {
@@ -52,12 +48,17 @@ interface AuthContextType {
     lastName: string,
   ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signInWithPhone: (phone: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   // OTP Flows
   sendOtpEmail: (email: string) => Promise<void>;
   checkOtpEmail: (email: string, code: string) => Promise<void>;
   sendOtpPhone: (phone: string, recaptchaContainer: string) => Promise<void>;
   checkOtpPhone: (phone: string, code: string) => Promise<void>;
+
+  // signInWithEmail: (email: string, password: string) => Promise<void>;
+  // signInWithPhone: (phone: string, password: string) => Promise<void>;
   // Final Step
   completeRegistration: (data: {
     firstName: string;
@@ -73,6 +74,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  // --- Helper: Convert Phone to Email Alias ---
+  // This allows "Phone + Password" login to work on Firebase Email/Password Auth
+  const normalizePhoneToEmail = (phone: string) => {
+    const cleanPhone = phone.replace(/[^0-9]/g, "");
+    return `${cleanPhone}@langual-academy.com`;
+  };
 
   // 1. Initialize Recaptcha for Phone Auth
   const setupRecaptcha = (container: string) => {
@@ -111,20 +119,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return unsubscribe;
   }, []);
 
-  // 3. Standard Login
+  // 3. Standard Login (Internal)
   const login = async (email: string, password: string) => {
     await signInWithEmailAndPassword(auth, email, password);
+    // The useEffect will trigger getProfile() to sync DB automatically
     router.push("/dashboard");
   };
 
-  // 4. Logout
+  // 4. Specific Login Functions for SignInPage
+  const signInWithEmail = async (email: string, password: string) => {
+    await login(email, password);
+  };
+
+  const signInWithPhone = async (phone: string, password: string) => {
+    // To login with Phone + Password, we treat it as an email alias
+    const emailAlias = normalizePhoneToEmail(phone);
+    await login(emailAlias, password);
+  };
+
+  // 5. Logout
   const logout = async () => {
     await signOut(auth);
     setAppUser(null);
     router.push("/");
   };
 
-  // 5. Email/Password Registration (Direct)
+  // 6. Email/Password Registration (Direct)
   const signUp = async (
     email: string,
     password: string,
@@ -148,7 +168,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.push("/dashboard");
   };
 
-  // 6. Custom OTP: Email Flow
+  // 7. Custom OTP: Email Flow
   const sendOtpEmail = async (email: string) => {
     await sendEmailVerificationCode(email);
   };
@@ -158,7 +178,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // OTP Verified. Next step is to collect Name/Password and create Firebase User.
   };
 
-  // 7. Custom OTP: Phone Flow
+  // 8. Custom OTP: Phone Flow
   const confirmationResultRef = React.useRef<any>(null);
 
   const sendOtpPhone = async (phone: string, container: string) => {
@@ -178,7 +198,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Next step: Register in MongoDB.
   };
 
-  // 8. Final Registration Step (Called after OTP is verified and Name/Pass is collected)
+  // 9. Final Registration Step (Called after OTP is verified and Name/Pass is collected)
   const completeRegistration = async (data: {
     firstName: string;
     lastName: string;
@@ -224,12 +244,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading,
         signUp,
         login,
+        // signInWithEmail,
+        // signInWithPhone,
         logout,
         sendOtpEmail,
         checkOtpEmail,
         sendOtpPhone,
         checkOtpPhone,
         completeRegistration,
+        signInWithEmail,
+        signInWithPhone,
       }}
     >
       {children}

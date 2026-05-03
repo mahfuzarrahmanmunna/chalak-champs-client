@@ -58,12 +58,11 @@ const SignInPage = () => {
         // Call Email Login
         await signInWithEmail(input, password);
       } else {
-        // Call Phone Login (Note: Backend Firebase logic must support this)
+        // Call Phone Login (Converts phone to email alias internally)
         await signInWithPhone(input, password);
       }
 
       // If successful, redirect to dashboard
-      // The context function handles the auth logic, but we handle navigation here
       router.push("/dashboard");
     } catch (error: any) {
       console.error("Login failed:", error);
