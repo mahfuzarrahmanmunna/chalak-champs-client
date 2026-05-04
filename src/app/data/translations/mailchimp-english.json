@@ -1,39 +1,75 @@
 {
-  "newsletterTitle": "Stay Updated with Our Latest Courses",
-  "newsletterSubtitle": "Subscribe to our newsletter and be the first to know about new courses, special offers, and learning resources.",
-  "enterEmail": "Enter your email",
-  "subscribe": "Subscribe",
-  "subscribing": "Subscribing...",
-  "subscriptionSuccess": "Thank you for subscribing!",
-  "subscriptionError": "Failed to subscribe. Please try again.",
-  "subscribeAnother": "Subscribe Another Email",
-  "pleaseEnterEmail": "Please enter your email address",
-  "validEmailRequired": "Please enter a valid email address",
-  "privacyNote": "We respect your privacy. Unsubscribe at any time.",
-  "success": "Success!",
-  "hero": {
-    "title": "Learn New Skills with Expert Instructors",
-    "subtitle": "Join thousands of students learning online with our comprehensive courses",
-    "ctaButton": "Browse Courses",
-    "features": [
+  "bookAFreeClass": "Book A Free Class",
+  "allCourses": "All Courses",
+  "skills": "Skills",
+  "kidsEnglish": "Kids English",
+  "more": "More",
+  "callUs": "Call Us",
+  "login": "Login",
+  "menus": {
+    "courses": [
       {
-        "title": "Expert Instructors",
-        "description": "Learn from industry experts with years of experience"
+        "title": "Spoken English",
+        "description": "Fluency for everyday life"
       },
       {
-        "title": "Flexible Learning",
-        "description": "Study at your own pace with our self-paced courses"
+        "title": "Business English",
+        "description": "Professional communication"
       },
       {
-        "title": "Certification",
-        "description": "Get certified upon completion of your courses"
+        "title": "IELTS Prep",
+        "description": "Score 7.0+ guaranteed"
+      },
+      {
+        "title": "Writing Skills",
+        "description": "Master professional writing"
       }
     ],
-    "stats": {
-      "students": "10,000+",
-      "courses": "500+",
-      "instructors": "100+",
-      "languages": "5+"
-    }
+    "skills": [
+      {
+        "title": "Public Speaking",
+        "description": "Speak to crowds confidently"
+      },
+      {
+        "title": "Personality Dev",
+        "description": "Build your soft skills"
+      },
+      {
+        "title": "Interview Prep",
+        "description": "Ace your next job interview"
+      }
+    ],
+    "kids": [
+      {
+        "title": "Junior English (4-6)",
+        "description": "Fun learning for toddlers"
+      },
+      {
+        "title": "Young Learners (7-12)",
+        "description": "Grammar and vocabulary"
+      },
+      {
+        "title": "Teen English (13-17)",
+        "description": "Academic excellence"
+      }
+    ],
+    "more": [
+      {
+        "title": "About Us",
+        "description": "Learn our story and mission"
+      },
+      {
+        "title": "Careers",
+        "description": "Join our growing team"
+      },
+      {
+        "title": "Blog",
+        "description": "Latest tips and articles"
+      },
+      {
+        "title": "Contact",
+        "description": "Get in touch with support"
+      }
+    ]
   }
 }

@@ -15,10 +15,21 @@ import mailchimpEnglish from "../data/translations/mailchimp-english.json";
 import mailchimpBangla from "../data/translations/mailchimp-bangla.json";
 
 // Types
-// We keep Translations for the raw JSON types, but restrict the Context output
 type Translations = {
   [key: string]: string | Translations;
 };
+
+interface MenuItem {
+  title: string;
+  description: string;
+}
+
+interface MenuData {
+  courses: MenuItem[];
+  skills: MenuItem[];
+  kids: MenuItem[];
+  more: MenuItem[];
+}
 
 interface HeroFeature {
   title: string;
@@ -44,11 +55,10 @@ interface HeroData {
 type LanguageContextType = {
   isBangla: boolean;
   toggleLanguage: () => void;
-  // FIX: Explicitly type 't' as a flat Record of strings.
-  // This fixes the error in Navbar1.tsx because 't.courses' will now be known as a string.
   t: Record<string, string>;
   heroData: HeroData | null;
   isLoading: boolean;
+  menuData: MenuData;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -57,33 +67,56 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 
 const getLanguageData = (isBangla: boolean) => {
   const hero = (isBangla ? heroBangla : heroEnglish) as HeroData;
-  const navbar = isBangla ? navbarBangla : navbarEnglish;
+  const navbarFull = isBangla ? navbarBangla : navbarEnglish;
+
+  // FIX: Destructure safely. If navbarFull is null/undefined, default to empty object.
+  const { menus, ...navbarStrings } = navbarFull || {};
+
   const common = isBangla ? commonBangla : commonEnglish;
   const faq = isBangla ? faqBangla : faqEnglish;
   const mailchimp = isBangla ? mailchimpBangla : mailchimpEnglish;
 
-  // FIX: Only merge the FLAT translation files (navbar, common, faq, mailchimp) into 't'.
-  // We remove 'hero' from 'merged' because 'hero' contains nested objects (arrays, stats)
-  // which are not strings. 'hero' is already handled by the 'hero' return variable.
   const merged = {
-    ...(navbar as unknown as Translations),
+    ...(navbarStrings as unknown as Translations),
     ...(common as unknown as Translations),
     ...(faq as unknown as Translations),
     ...(mailchimp as unknown as Translations),
   } as Record<string, string>;
 
-  return { hero, merged };
+  // FIX: Provide a default fallback for menuData to prevent "undefined" errors
+  const defaultMenu: MenuData = {
+    courses: [],
+    skills: [],
+    kids: [],
+    more: [], // Ensures .more exists even if JSON is missing it
+  };
+
+  const menu = { ...defaultMenu, ...(menus as MenuData) };
+
+  return { hero, merged, menu };
 };
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [isBangla, setIsBangla] = useState(false);
+  const [isBangla, setIsBangla] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const storedLang = localStorage.getItem("language");
+      return storedLang === "bangla";
+    }
+    return false;
+  });
 
-  const { hero, merged } = useMemo(() => {
+  const { hero, merged, menu } = useMemo(() => {
     return getLanguageData(isBangla);
   }, [isBangla]);
 
   const toggleLanguage = () => {
-    setIsBangla((prev) => !prev);
+    setIsBangla((prev) => {
+      const newValue = !prev;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("language", newValue ? "bangla" : "english");
+      }
+      return newValue;
+    });
   };
 
   return (
@@ -94,6 +127,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
         t: merged,
         heroData: hero,
         isLoading: false,
+        menuData: menu,
       }}
     >
       {children}

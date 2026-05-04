@@ -1,5 +1,6 @@
 import Image from "next/image";
 import React from "react";
+import HoverGlow from "../HoverGlow/HoverGlow";
 
 const LittleChamps = () => {
   return (
@@ -14,10 +15,10 @@ const LittleChamps = () => {
             <span className="absolute -top-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
-            <span className="text-primary"> Little Champs&lsquo;রা</span>
+            <span className="text-primary"> Little Champs&lsquo;রা {" "}</span>
           </span>{" "}
           <span className="bg-linear-to-r from-[#F3066D] to-[#FC7CB4] bg-clip-text text-transparent">
-            পাচ্ছে
+            পাচ্ছে{" "}
           </span>
         </h3>
       </div>

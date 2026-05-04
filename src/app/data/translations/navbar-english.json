@@ -1,18 +1,75 @@
 {
-  "logo": "/logo.png",
-  "courses": "Book A Free Class",
-  "liveCourses": "Live Courses",
-  "allcourses": "All Courses",
-  "kidenglish": "Kids English",
+  "bookAFreeClass": "Book A Free Class",
+  "allCourses": "All Courses",
+  "skills": "Skills",
+  "kidsEnglish": "Kids English",
   "more": "More",
-  "recordedCourses": "Recorded Courses",
-  "skillDev": "Skill Development",
-  "category": "Categories",
-  "modelTest": "Model Test",
-  "blog": "Blog",
-  "store": "Store",
+  "callUs": "Call Us",
   "login": "Login",
-  "signUp": "Sign Up",
-  "searchPlaceholder": "Search...",
-  "skill": "Skills"
+  "menus": {
+    "courses": [
+      {
+        "title": "Spoken English",
+        "description": "Fluency for everyday life"
+      },
+      {
+        "title": "Business English",
+        "description": "Professional communication"
+      },
+      {
+        "title": "IELTS Prep",
+        "description": "Score 7.0+ guaranteed"
+      },
+      {
+        "title": "Writing Skills",
+        "description": "Master professional writing"
+      }
+    ],
+    "skills": [
+      {
+        "title": "Public Speaking",
+        "description": "Speak to crowds confidently"
+      },
+      {
+        "title": "Personality Dev",
+        "description": "Build your soft skills"
+      },
+      {
+        "title": "Interview Prep",
+        "description": "Ace your next job interview"
+      }
+    ],
+    "kids": [
+      {
+        "title": "Junior English (4-6)",
+        "description": "Fun learning for toddlers"
+      },
+      {
+        "title": "Young Learners (7-12)",
+        "description": "Grammar and vocabulary"
+      },
+      {
+        "title": "Teen English (13-17)",
+        "description": "Academic excellence"
+      }
+    ],
+    "more": [
+      {
+        "title": "About Us",
+        "description": "Learn our story and mission"
+      },
+      {
+        "title": "Careers",
+        "description": "Join our growing team"
+      },
+      {
+        "title": "Blog",
+        "description": "Latest tips and articles"
+      },
+      {
+        "title": "Contact",
+        "description": "Get in touch with support"
+      }
+    ]
+  }
 }

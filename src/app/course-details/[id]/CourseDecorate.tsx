@@ -204,7 +204,7 @@ const CourseDecorate = () => {
   ];
 
   return (
-    <section id="courseDecorator" className="w-full bg-primary border-2 border-[#FF8FCA] rounded-xl p-6  relative overflow-hidden">
+    <section id="courseDecorator" className="w-full bg-secondary border-2 border-[#FF8FCA] rounded-xl p-6  relative overflow-hidden">
       <div className="container mx-auto max-w-6xl relative z-10">
         {/* Section Header */}
         <div className="">

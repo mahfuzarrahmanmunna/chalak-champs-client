@@ -75,6 +75,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  console.log("AuthProvider rendered. Current Firebase User:", currentUser);
+
   // --- Helper: Convert Phone to Email Alias ---
   // This allows "Phone + Password" login to work on Firebase Email/Password Auth
   const normalizePhoneToEmail = (phone: string) => {
@@ -120,11 +122,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // 3. Standard Login (Internal)
-  const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
-    // The useEffect will trigger getProfile() to sync DB automatically
-    router.push("/dashboard");
-  };
+const login = async (email: string, password: string) => {
+  const cleanEmail = email.trim();
+  const cleanPassword = password.trim();
+
+  await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
+
+  // The useEffect will trigger getProfile() to sync DB automatically
+  router.push("/dashboard");
+};
 
   // 4. Specific Login Functions for SignInPage
   const signInWithEmail = async (email: string, password: string) => {

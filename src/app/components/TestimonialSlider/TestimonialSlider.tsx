@@ -48,7 +48,7 @@ const SpotlightCard = ({ item }: { item: any }) => {
 
   return (
     <div
-      className="card-flow relative w-full h-full rounded-[35px] overflow-hidden shadow-[inset_2px_4px_16px_rgba(255,255,255,0.2),inset_4px_8px_16px_rgba(255,255,255,0.2)]"
+      className=" relative w-full h-full rounded-[35px] overflow-hidden shadow-[inset_2px_4px_16px_rgba(255,255,255,0.2),inset_4px_8px_16px_rgba(255,255,255,0.2)]"
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -137,7 +137,7 @@ export default function TestimonialSlider() {
         {testimonials.map((item) => (
           <SwiperSlide key={item.id}>
             {/* Using the new SpotlightCard component here */}
-            <div className="h-auto py-4">
+            <div className="h-auto card-flow">
               <SpotlightCard item={item} />
             </div>
           </SwiperSlide>

@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import { useTheme } from "@/app/context/ThemeContext";
-import { Phone, User, ChevronDown, Search } from "lucide-react"; // Added Search and ChevronDown
+import { Phone, User, ChevronDown, Search } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { createBooking } from "@/app/services/freeBookingService"; // Import API Service
 
 interface FreebookingProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-// Type for Country Data
 interface Country {
   name: string;
   flag: string;
@@ -36,6 +36,9 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
     course: "",
   });
 
+  // Loading State
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // 2. Country Code State
   const [countries, setCountries] = useState<Country[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
@@ -48,16 +51,23 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
       .then((res) => res.json())
       .then((data) => {
         const processed: Country[] = data
-          .map((country: { name: { common: string }; flags: { svg: string }; idd?: { root: string; suffixes?: string[] }; cca2: string }) => {
-            const root = country.idd?.root || "";
-            const suffix = country.idd?.suffixes?.[0] || "";
-            return {
-              name: country.name.common,
-              flag: country.flags.svg,
-              code: root + suffix,
-              cca2: country.cca2,
-            };
-          })
+          .map(
+            (country: {
+              name: { common: string };
+              flags: { svg: string };
+              idd?: { root: string; suffixes?: string[] };
+              cca2: string;
+            }) => {
+              const root = country.idd?.root || "";
+              const suffix = country.idd?.suffixes?.[0] || "";
+              return {
+                name: country.name.common,
+                flag: country.flags.svg,
+                code: root + suffix,
+                cca2: country.cca2,
+              };
+            },
+          )
           .filter((c: Country) => c.code.length > 0)
           .sort((a: Country, b: Country) => a.name.localeCompare(b.name));
 
@@ -90,24 +100,46 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
-      setIsDropdownOpen(false); // Close dropdown when clicking modal backdrop
+      setIsDropdownOpen(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isFormValid && selectedCountry) {
+      setIsSubmitting(true); // Start loading
+
       const fullPhone = `${selectedCountry.code} ${formData.phone}`;
-      console.log("Form Submitted:", { ...formData, fullPhone });
-      alert(`Submitted with Phone: ${fullPhone}`);
-      onClose();
-      setFormData({
-        studentName: "",
-        guardianName: "",
-        phone: "",
-        studentClass: "",
-        course: "",
-      });
+
+      const payload = {
+        ...formData,
+        countryCode: selectedCountry.code,
+        fullPhone: fullPhone,
+      };
+
+      try {
+        // Call the API
+        const response = await createBooking(payload);
+
+        if (response.success) {
+          alert("ডেমো ক্লাস বুক সফলভাবে সম্পন্ন হয়েছে!"); // "Booking completed successfully"
+          onClose();
+          setFormData({
+            studentName: "",
+            guardianName: "",
+            phone: "",
+            studentClass: "",
+            course: "",
+          });
+        } else {
+          alert(response.message || "Submission failed");
+        }
+      } catch (error: any) {
+        console.error("Submission Error:", error);
+        alert("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।"); // "Something went wrong. Try again."
+      } finally {
+        setIsSubmitting(false); // Stop loading
+      }
     }
   };
 
@@ -125,10 +157,10 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={handleBackdropClick}
     >
-      {/* Backdrop Blur (Keeping your exact design) */}
+      {/* Backdrop Blur */}
       <div className="absolute inset-0 bg-[#490023]/15 backdrop-blur-sm transition-opacity" />
 
-      {/* Modal Content (Keeping your exact design) */}
+      {/* Modal Content */}
       <div
         className="relative w-full max-w-md rounded-2xl border-2 border-primary shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in duration-200"
         style={{
@@ -204,7 +236,7 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                     <feColorMatrix
                       in="SourceAlpha"
                       type="matrix"
-                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
                       result="hardAlpha"
                     />
                     <feOffset />
@@ -256,7 +288,8 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                   name="studentName"
                   value={formData.studentName}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all"
+                  disabled={isSubmitting}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all disabled:opacity-50"
                   style={{
                     backgroundColor: "var(--color-background)",
                     borderColor: "var(--color-border)",
@@ -285,7 +318,8 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                   name="guardianName"
                   value={formData.guardianName}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all"
+                  disabled={isSubmitting}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all disabled:opacity-50"
                   style={{
                     backgroundColor: "var(--color-background)",
                     borderColor: "var(--color-border)",
@@ -313,12 +347,15 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
               <div className="relative w-32 md:w-40 shrink-0">
                 <button
                   type="button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full h-full flex items-center justify-between px-2 border-r transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                  onClick={() =>
+                    !isSubmitting && setIsDropdownOpen(!isDropdownOpen)
+                  }
+                  disabled={isSubmitting}
+                  className="w-full h-full flex items-center justify-between px-2 border-r transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
                   style={{
                     borderColor: "var(--color-border)",
                     backgroundColor: "var(--color-background)",
-                    borderTopLeftRadius: "0.5rem", // Add radius to left side
+                    borderTopLeftRadius: "0.5rem",
                     borderBottomLeftRadius: "0.5rem",
                   }}
                 >
@@ -395,7 +432,8 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder=""
-                className="flex-1 px-4 py-2.5 outline-none bg-transparent rounded-r-lg" // Added rounded-r-lg for right side corners
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-2.5 outline-none bg-transparent rounded-r-lg disabled:opacity-50"
                 style={{ color: "var(--color-foreground)" }}
               />
             </div>
@@ -413,7 +451,8 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
               name="studentClass"
               value={formData.studentClass}
               onChange={handleChange}
-              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all"
+              disabled={isSubmitting}
+              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all disabled:opacity-50"
               style={{
                 backgroundColor: "var(--color-background)",
                 borderColor: "var(--color-border)",
@@ -449,7 +488,8 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
               name="course"
               value={formData.course}
               onChange={handleChange}
-              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all"
+              disabled={isSubmitting}
+              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all disabled:opacity-50"
               style={{
                 backgroundColor: "var(--color-background)",
                 borderColor: "var(--color-border)",
@@ -478,27 +518,33 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={!isFormValid}
+            disabled={!isFormValid || isSubmitting}
             className={`w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-xl text-white font-bold text-lg shadow-lg transform active:scale-[0.98] transition-all ${
               isFormValid
                 ? "hover:shadow-xl bg-[var(--color-primary)] cursor-pointer"
                 : "bg-gray-400 opacity-50 cursor-not-allowed"
             }`}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
-            সাবমিট করো
+            {isSubmitting ? (
+              <span>প্রসেসিং...</span>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+                সাবমিট করো
+              </>
+            )}
           </button>
         </form>
 

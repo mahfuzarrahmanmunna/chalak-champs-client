@@ -1,25 +1,25 @@
 "use client";
 
-import Button from "@/app/ui/button/Button";
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useLanguage } from "@/app/context/LanguageContext";
+
+// Placeholder imports
+import Button from "@/app/ui/button/Button";
 import NavLogo from "./logo";
 import DropIcon from "./DropIcon";
-import Link from "next/link";
 import CallIcon from "../Icon/CallIcon";
 import MulStar from "../Icon/MulStar";
 import MenuIcon from "../Icon/MenuIcon";
 import CloseIcon from "../Icon/CloseIcon";
 import BnEnLogo from "./BnEnLogo";
 import UserIcon from "./UserIcon";
-// Import the hook. Make sure the path matches where you saved your context file.
-import { useLanguage } from "@/app/context/LanguageContext";
 
 const NavHeader = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Access language context
-  const { t, isBangla, toggleLanguage } = useLanguage();
+  const { t, isBangla, toggleLanguage, menuData } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,7 +52,7 @@ const NavHeader = () => {
         <div className="hidden md:flex items-center gap-7">
           <div>
             <button className="cursor-pointer leading-auto tracking-[-2%] relative px-3.75  py-3 w-full rounded-[50px] font-bold text-white transition-all duration-300 bg-[#F3056D] shadow-[inset_0_1.5px_0_0_#FF8FCA,0_1.5px_1.5px_0_rgba(243,6,110,0.3),0_0_0_1.5px_#C6005F,0_3.01px_7.52px_0_rgba(243,6,110,0.3)]  hover:bg-white hover:text-[#F3056D]  hover:shadow-[0_1.5px_1.5px_0_rgba(243,6,110,0.2),0_0_0_1.5px_#F3056D,0_3.01px_7.52px_0_rgba(243,6,110,0.1)]">
-              <div className="absolute top-1.5 left-1.5 text-base  transition-colors duration-300">
+              <div className="absolute top-1.75 left-1.5 text-base  transition-colors duration-300">
                 <svg
                   width="32"
                   height="33"
@@ -69,40 +69,159 @@ const NavHeader = () => {
               {t?.bookAFreeClass || "Book A Free Class"}
             </button>
           </div>
-          <div className="relative ">
-            <button className=" flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 text-[#F3066E] hover:bg-white hover:border hover:border-primary  bg-[#F3066E]/20 cursor-pointer px-3.5 py-3 rounded-lg">
+
+          {/* --- ALL COURSES MODAL --- */}
+          <div className="group relative">
+            <button className="flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 text-[#F3066E] hover:bg-white hover:border hover:border-primary font-semibold bg-[#F3066E]/20 cursor-pointer px-3.5 py-3 rounded-lg">
               <div className="flex">
                 <p>{t?.allCourses || "All Courses"}</p>
                 <div>
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#F3066E] absolute "></div>
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#F3066E] absolute"></div>
                 </div>
               </div>{" "}
               <DropIcon />
             </button>
+
+            <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-[600px] hidden group-hover:block animate-in fade-in zoom-in-95 duration-200">
+              <div className="bg-white rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-gray-100 p-6">
+                <div className="grid grid-cols-2 gap-4">
+                  {menuData.courses.map((item, idx) => (
+                    <Link
+                      key={idx}
+                      href="#"
+                      className="flex gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-pink-50 text-[#F3056D] flex items-center justify-center shrink-0">
+                        <span className="text-lg">★</span>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-[#214187] text-sm">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {item.description}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+                  <Link
+                    href="#"
+                    className="text-xs font-bold text-[#F3056D] hover:underline"
+                  >
+                    {isBangla ? "সব কোর্স দেখুন" : "View All Courses"}
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
+
+          {/* --- SKILLS MODAL --- */}
+          <div className="group relative">
             <button className="flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 text-[#F3066E] cursor-pointer">
               {t?.skills || "Skills"} <DropIcon />
             </button>
+
+            <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-[500px] hidden group-hover:block animate-in fade-in zoom-in-95 duration-200">
+              <div className="bg-white rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-gray-100 p-6">
+                <ul className="space-y-3">
+                  {menuData.skills.map((item, idx) => (
+                    <li key={idx}>
+                      <Link
+                        href="#"
+                        className="block p-3 rounded-lg hover:bg-pink-50 transition-colors group/item"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-[#214187] text-sm group-hover/item:text-[#F3056D] transition-colors">
+                            {item.title}
+                          </span>
+                          <span className="text-gray-400 group-hover/item:translate-x-1 transition-transform">
+                            →
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1 pl-1">
+                          {item.description}
+                        </p>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
-          <button className="flex text-primary leading-auto tracking-[-2%] text-sm cursor-pointer">
-            <span>{t?.kidsEnglish || "Kids English"}</span>
-            <div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
-          </button>
-          <div>
+
+          {/* --- KIDS ENGLISH MODAL --- */}
+          <div className="group relative">
+            <button className="flex text-primary leading-auto tracking-[-2%] text-sm cursor-pointer items-center gap-2">
+              <span>{t?.kidsEnglish || "Kids English"}</span>
+              <div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
+            </button>
+
+            <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-[500px] hidden group-hover:block animate-in fade-in zoom-in-95 duration-200">
+              <div className="bg-white rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-gray-100 p-6">
+                <div className="flex gap-4">
+                  {menuData.kids.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex-1 bg-blue-50 rounded-xl p-4 text-center hover:bg-blue-100 transition-colors cursor-pointer"
+                    >
+                      <div className="w-10 h-10 mx-auto bg-white rounded-full shadow-sm flex items-center justify-center text-blue-600 mb-3">
+                        <span>👶</span>
+                      </div>
+                      <h4 className="font-bold text-[#214187] text-sm">
+                        {item.title}
+                      </h4>
+                      <p className="text-xs text-gray-500 mt-2 leading-tight">
+                        {item.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* --- MORE MODAL (FIXED) --- */}
+          <div className="group relative">
             <button className="flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 text-primary cursor-pointer">
               {t?.more || "More"}
               <DropIcon />
             </button>
+
+            <div className="absolute top-full right-0 pt-4 w-[400px] hidden group-hover:block animate-in fade-in zoom-in-95 duration-200">
+              <div className="bg-white rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-gray-100 p-6">
+                <ul className="space-y-1">
+                  {/* FIX: Added optional chaining ?.map to prevent crash if data is missing */}
+                  {menuData.more?.map((item, idx) => (
+                    <li key={idx}>
+                      <Link
+                        href="#"
+                        className="block px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="font-semibold text-[#214187] text-sm hover:text-[#F3056D] transition-colors">
+                          {item.title}
+                        </span>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {item.description}
+                        </p>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* --- DESKTOP RIGHT SECTION --- */}
         <div className="hidden md:flex items-center gap-4">
           <div>
-            <Button icon=<CallIcon /> px="px-2" hoverTextColor="#214187">
-              {t?.callUs || "Call Us"}
-            </Button>
+            <a href="tel:01740176774">
+              <Button icon=<CallIcon /> px="px-2" hoverTextColor="#214187">
+                {t?.callUs || "Call Us"}
+              </Button>
+            </a>
           </div>
           <div onClick={toggleLanguage} className="cursor-pointer">
             <Button
@@ -119,16 +238,18 @@ const NavHeader = () => {
             </Button>
           </div>
           <div>
-            <Button
-              bgColor="#F3056D"
-              darkShadowColor="#F3066E"
-              highlightColor="#FF8FCA"
-              hoverTextColor="#F3056D"
-              px="px-3.5"
-              icon=<UserIcon />
-            >
-              {t?.login || "Login"}
-            </Button>
+            <Link href={"/signin"}>
+              <Button
+                bgColor="#F3056D"
+                darkShadowColor="#F3066E"
+                highlightColor="#FF8FCA"
+                hoverTextColor="#F3056D"
+                px="px-3.5"
+                icon=<UserIcon />
+              >
+                {t?.login || "Login"}
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -137,13 +258,7 @@ const NavHeader = () => {
           className="md:hidden text-primary"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
-          {isMobileMenuOpen ? (
-            // Close Icon
-            <CloseIcon />
-          ) : (
-            // Menu Icon
-            <MenuIcon />
-          )}
+          {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
         </button>
       </div>
 
@@ -161,11 +276,14 @@ const NavHeader = () => {
           <div className="border-t border-gray-200"></div>
 
           <div className="flex flex-col gap-4 items-center">
-            <button className="flex items-center justify-center gap-2 text-[#F3066E] hover:bg-white hover:border hover:border-primary bg-[#F3066E]/20 cursor-pointer px-6 py-3 rounded-lg w-full">
+            <Link
+              href={"/courses"}
+              className="flex items-center justify-center gap-2 text-[#F3066E] hover:bg-white hover:border hover:border-primary bg-[#F3066E]/20 cursor-pointer px-6 py-3 rounded-lg w-full"
+            >
               {t?.allCourses || "All Courses"}
               <div className="w-1.5 h-1.5 rounded-full bg-[#F3066E] absolute right-6"></div>
               <DropIcon />
-            </button>
+            </Link>
 
             <button className="flex items-center justify-center gap-2 text-[#F3066E] w-full">
               {t?.skills || "Skills"} <DropIcon />
@@ -185,14 +303,16 @@ const NavHeader = () => {
           <div className="border-t border-gray-200"></div>
 
           {/* Call Us Button (Full width on mobile) */}
-          <Button
-            icon=<CallIcon />
-            px="px-2"
-            hoverTextColor="#214187"
-            className="w-full"
-          >
-            {t?.callUs || "Call Us"}
-          </Button>
+          <a href="tel:01740176774">
+            <Button
+              icon=<CallIcon />
+              px="px-2"
+              hoverTextColor="#214187"
+              className="w-full"
+            >
+              {t?.callUs || "Call Us"}
+            </Button>
+          </a>
         </div>
       )}
     </nav>

@@ -505,7 +505,7 @@ export default function CourseDetailsPage() {
                   {course.description}
                 </p>
 
-                <div className="flex flex-wrap items-center gap-6 text-sm font-medium text-gray-600 mb-6 border-t border-b border-gray-100 py-4">
+                {/* <div className="flex flex-wrap items-center gap-6 text-sm font-medium text-gray-600 mb-6 border-t border-b border-gray-100 py-4">
                   <div className="flex items-center text-yellow-500">
                     <Star className="h-5 w-5 fill-current mr-1.5" />
                     <span className="text-gray-900 font-bold mr-1">
@@ -529,9 +529,9 @@ export default function CourseDetailsPage() {
                     <Clock className="h-5 w-5 mr-1.5 text-gray-400" />
                     <span>{course.duration}</span>
                   </div>
-                </div>
+                </div> */}
 
-                <div className="text-sm text-gray-500">
+                {/* <div className="text-sm text-gray-500">
                   Created by{" "}
                   <span className="font-semibold hover:underline cursor-pointer">
                     {course.instructor.name}
@@ -539,7 +539,7 @@ export default function CourseDetailsPage() {
                   <span className="mx-2">•</span>
                   Last updated{" "}
                   {format(new Date(course.lastUpdated), "MMM dd, yyyy")}
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -612,7 +612,7 @@ export default function CourseDetailsPage() {
                     </div>
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                      <span>{console.log(course)}</span>
+                      <span>{course.schedule}</span>
                     </div>
                   </div>
                 </div>

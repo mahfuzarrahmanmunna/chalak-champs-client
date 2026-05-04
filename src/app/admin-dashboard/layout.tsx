@@ -7,7 +7,7 @@ import { useTheme } from "@/app/context/ThemeContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { BookOpenIcon, ChartBarIcon, CogIcon, HomeIcon } from "lucide-react";
 import { FaUserGroup, FaXmark } from "react-icons/fa6";
-import { HiAcademicCap, HiQuestionMarkCircle, HiPlus } from "react-icons/hi"; // ADDED HiPlus import
+import { HiAcademicCap, HiQuestionMarkCircle, HiPlus } from "react-icons/hi"; 
 import { GrDocumentText } from "react-icons/gr";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { HiArrowRightOnRectangle } from "react-icons/hi2";
@@ -59,10 +59,16 @@ export default function AdminDashboardLayout({
     },
     // --- NEW LINK ADDED HERE ---
     {
-      name: "Create Course", // You can change to t.createCourse if you have the translation
+      name: "Create Course", 
       href: "/admin-dashboard/courses/create",
       icon: HiPlus,
       current: pathname === "/admin-dashboard/courses/create",
+    },
+    {
+      name: "Manage Leads", 
+      href: "/admin-dashboard/manage-leads-modal",
+      icon: HiPlus,
+      current: pathname === "/admin-dashboard/manage-leads-modal",
     },
     // --------------------------
     {

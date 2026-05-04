@@ -1,6 +1,7 @@
 .card-flow {
   position: relative;
   overflow: hidden;
+  border-radius: 35px;
 }
 
 .card-flow::before {

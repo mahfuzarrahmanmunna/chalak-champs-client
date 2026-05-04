@@ -170,17 +170,7 @@ function UsersPageContent() {
             </p>
           </div>
           <div className="mt-4 sm:mt-0 sm:flex sm:items-center space-x-3">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg border transition-colors"
-              style={{
-                borderColor: colors.border,
-                backgroundColor: colors.card,
-                color: colors.foreground,
-              }}
-            >
-              {isDark ? "☀️" : "🌙"}
-            </button>
+            
             <button
               type="button"
               className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium transition-colors"
