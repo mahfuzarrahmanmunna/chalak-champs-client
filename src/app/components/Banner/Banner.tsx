@@ -1,29 +1,122 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image"; // Fixed: Import from next/image, not lucide-react
+import Image from "next/image";
 import React, { useState } from "react";
 import Videoimg from "./Videoimg";
 import Freebooking from "../Freebooking/Freebooking";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const Banner = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
+  // FIX: Destructure 'currentLang' separately from 'heroData'
+  const { heroData, currentLang } = useLanguage();
+
+  const fullTitle = heroData?.title || "We Believe Every Child Is A Champ";
+
+  // --- 1. Split Title Logic ---
+  let introText = "";
+  let mainTitleText = "";
+
+  if (currentLang === "bn") {
+    // Split Bangla: "আমরা বিশ্বাস করি"
+    const parts = fullTitle.split("আমরা বিশ্বাস করি ");
+    introText = "আমরা বিশ্বাস করি";
+    mainTitleText = parts[1];
+  } else {
+    // Split English: "We Believe"
+    const parts = fullTitle.split("We Believe ");
+    introText = "We Believe";
+    mainTitleText = parts[1];
+  }
+
+  if (!mainTitleText) mainTitleText = "Every Child Is A Champ";
+
+  const titleParts = mainTitleText.split(" Champ");
+  const beforeChamp = titleParts[0];
+
+  // --- 2. Split Description Logic (Bold Courses + Style Brand) ---
+  const description = heroData?.subtitle || "";
+
+  const renderDescription = description
+    .split(
+      /(Spoken English|Abacus Mind Math|Drawing|Programming|Quran Learning|Chalak|Champs)/gi,
+    )
+    .map((part, index) => {
+      const lowerPart = part.toLowerCase();
+
+      // Check for Course Names (Bold)
+      if (lowerPart === "spoken english") {
+        return (
+          <span key={index} className="font-bold">
+            Spoken English
+          </span>
+        );
+      }
+      if (lowerPart === "abacus mind math") {
+        return (
+          <span key={index} className="font-bold">
+            Abacus Mind Math
+          </span>
+        );
+      }
+      if (lowerPart === "drawing") {
+        return (
+          <span key={index} className="font-bold">
+            Drawing
+          </span>
+        );
+      }
+      if (lowerPart === "programming") {
+        return (
+          <span key={index} className="font-bold">
+            Programming
+          </span>
+        );
+      }
+      if (lowerPart === "quran learning") {
+        return (
+          <span key={index} className="font-bold">
+            Quran Learning
+          </span>
+        );
+      }
+
+      // Check for Brand Words (Colors)
+      if (lowerPart === "chalak") {
+        return (
+          <span key={index} className="text-secondary font-bold">
+            Chalak
+          </span>
+        );
+      }
+      if (lowerPart === "champs") {
+        return (
+          <span key={index} className="text-primary font-bold">
+            Champs
+          </span>
+        );
+      }
+
+      // If it's just normal text, return as is
+      return part;
+    });
+
   return (
     <div className="">
       <div className="text-center py-10 md:max-w-205 mx-auto font-inter">
-        <p className="text-2xl text-gray-600 leading-18.75">আমরা বিশ্বাস করি</p>
+        {/* Intro P Tag */}
+        <p className="text-2xl text-gray-600 leading-18.75">{introText}</p>
 
         <div className="flex flex-col relative items-center justify-center">
           <div className="relative flex flex-wrap items-center justify-center gap-2">
-            {/* <h1 className="text-3xl md:text-6xl font-bold   bg-[radial-gradient(circle,_#00477C_0%,_#F3066E_100%)] text-transparent bg-clip-text leading-relaxed pointer-events-none">
-              Every Child Is A <br className="flex md:hidden" />{" "}
-              <span className="ml-2">Champ</span>
-            </h1> */}
-            <h1 className="text-3xl md:text-6xl font-bold text-[#00477C]  pointer-events-none tracking-[-4px] leading-18.75">
-              Every Child Is A <br className="flex md:hidden" />{" "}
+            {/* Main H1 Tag with Champ styling */}
+            <h1 className="text-3xl md:text-6xl font-bold text-[#00477C] pointer-events-none tracking-[-4px] leading-18.75">
+              {beforeChamp} <br className="flex md:hidden" />{" "}
               <span className="ml-2 text-[#F3066E]">Champ</span>
             </h1>
 
+            {/* Dashed Border Box */}
             <div
               className="absolute pointer-events-none flex items-center justify-center z-10
              right-10 bottom-0.5 w-32.5 h-11.5 
@@ -38,7 +131,7 @@ const Banner = () => {
             </div>
           </div>
 
-          {/* King Image moved outside the H1 tag for better layout control */}
+          {/* King Image */}
           <div
             className="absolute md:-top-8  z-0
              right-[60%]  -bottom-6
@@ -54,16 +147,14 @@ const Banner = () => {
           </div>
         </div>
 
+        {/* Description Paragraph with Split Logic */}
         <p className="my-6 text-gray-700 tracking-normal leading-5 text-base md:text-base">
-          <span className="text-secondary font-bold">Chalak</span>{" "}
-          <span className="text-primary font-bold"> Champs</span> একটি আনন্দময়
-          ও আধুনিক Skill-Based EdTech Platform, যেখানে ৩–১৫ বছর বয়সী শিশুদের
-          জন্য Spoken English, Abacus Mind Math, Programming, Olympiad
-          Preparation, Drawing, Quran Learning সহ বিভিন্ন কোর্সের মাধ্যমে
-          শিশুদের সার্বিকভাবে বিকশিত করা হয়। Learning by Doing পদ্ধতিতে শেখার
-          ফলে শিশুরা আত্মবিশ্বাসী, দক্ষ ও বাস্তব জীবনের জন্য প্রস্তুত হয়ে ওঠে।
+          {renderDescription.map((item, index) => (
+            <React.Fragment key={index}>{item}</React.Fragment>
+          ))}
         </p>
 
+        {/* CTA Button */}
         <button
           onClick={() => setIsBookingOpen(true)}
           className="group relative overflow-hidden rounded-lg bg-primary py-4 px-16 text-lg font-bold text-white transition-all duration-500 hover:shadow-[0_0_20px_rgba(255,143,202,0.5)] active:scale-95"
@@ -80,7 +171,7 @@ const Banner = () => {
 
           {/* Button Text */}
           <span className="relative tracking-[-2%] px-24 z-10 text-white transition-transform duration-300 group-hover:translate-y-[-1px] inline-block">
-            ১ ফ্রি ক্লাস বুক করুন
+            {heroData?.ctaButton}
           </span>
 
           {/* Keyframes */}
@@ -101,6 +192,7 @@ const Banner = () => {
           />
         </button>
 
+        {/* Below CTA Text */}
         <p className="text-[#000000]/50 font-medium text-base mt-4 tracking-[-2%]">
           Booked a Class already?{" "}
           <Link className="text-secondary font-bold" href={"/signup"}>

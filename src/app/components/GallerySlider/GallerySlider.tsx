@@ -14,11 +14,11 @@ import "swiper/css";
 import type { Swiper as SwiperClass } from "swiper";
 
 const videoIds = [
-  "DB86hffOdx4",
-  "63YTVw2s5d0",
-  "EYSdPRp9EMU",
-  "HJarDSJ0hq0",
-  "FtyNy9vy9KQ",
+  "rpBie8bhqPk",
+  "rpBie8bhqPk",
+  "rpBie8bhqPk",
+  "rpBie8bhqPk",
+  "rpBie8bhqPk",
 ];
 
 type VideoJsPlayer = ReturnType<typeof videojs>;

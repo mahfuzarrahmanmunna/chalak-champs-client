@@ -15,7 +15,7 @@ const LittleChamps = () => {
             <span className="absolute -top-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
-            <span className="text-primary"> Little Champs&lsquo;রা {" "}</span>
+            <span className="text-primary"> Little Champs&lsquo;রা </span>
           </span>{" "}
           <span className="bg-linear-to-r from-[#F3066D] to-[#FC7CB4] bg-clip-text text-transparent">
             পাচ্ছে{" "}
@@ -28,28 +28,28 @@ const LittleChamps = () => {
         {/* first column */}
         <div className="flex flex-col gap-6">
           {/* first column first card */}
-          <div className="md:w-100 flex justify-center items-center h-46  gap-6 rounded-[40px] bg-[radial-gradient(circle,#001D3A,#214187)] relative overflow-hidden">
+          <div className="md:w-[400px] flex justify-center items-center h-[184px] gap-6 rounded-[40px] bg-[radial-gradient(circle,#001D3A,#214187)] relative overflow-hidden">
             <div className="absolute -top-3 left-0">
               <Image
-                src={"/giftIcon.webp"}
+                src={"/assets/giftIcon.webp"} // CHANGED: Added /assets/
                 height={149}
                 width={149}
                 alt="gift Icon"
               />
             </div>
             <div className="text-center ">
-              <h4 className="text-xl font-semibold">দেশ সেরা</h4>
-              <h3 className="text-2xl font-bold">Teacher Panel</h3>
+              <h4 className="text-3xl font-semibold">দেশ সেরা</h4>
+              <h3 className="text-3xl font-bold">Teacher Panel</h3>
             </div>
           </div>
 
           {/* first column second card */}
-          <div className="bg-linear-to-b md:w-100 h-97.25 from-[#00477C] to-[#FF8FCA]/30 p-1 rounded-[40px]">
+          <div className="bg-linear-to-b md:w-[400px] h-[389px] from-[#00477C] to-[#FF8FCA]/30 p-1 rounded-[40px]">
             <div className="bg-[radial-gradient(circle,#DD2675,#00477C)]  w-full h-full rounded-[36px] ">
               <div className="w-full mx-auto p-5.5 relative">
                 <div className="h-[229px] w-[351px]">
                   <Image
-                    src={"/groupimg.png"}
+                    src={"/assets/groupimg.png"} // CHANGED: Added /assets/
                     height={229}
                     width={351}
                     alt="group Meeting"
@@ -58,7 +58,7 @@ const LittleChamps = () => {
                 </div>
                 <div className="absolute -bottom-8">
                   <Image
-                    src={"/liveicon.webp"}
+                    src={"/assets/liveicon.webp"} // CHANGED: Added /assets/
                     height={120}
                     width={120}
                     alt="live icon"
@@ -75,10 +75,10 @@ const LittleChamps = () => {
         {/* second column */}
         <div className="flex flex-col gap-6 ">
           {/* second column first card*/}
-          <div className="bg-linear-to-b from-[#F3066E] to-[#FFFFFF] md:h-75 md:w-79 rounded-[40px] p-0.5 overflow-hidden">
+          <div className="bg-linear-to-b from-[#F3066E] to-[#FFFFFF] md:h-[300px] md:w-[316px] rounded-[40px] p-0.5 overflow-hidden">
             <div className="flex ">
               <Image
-                src={"/topic.webp"}
+                src={"/assets/topic.png"} // CHANGED: Fixed relative path ./ to absolute /
                 width={300}
                 height={300}
                 alt="topic with a girl"
@@ -87,14 +87,14 @@ const LittleChamps = () => {
             </div>
           </div>
           {/* second column first card*/}
-          <div className="bg-[radial-gradient(circle,_#DD2675_0%,_#DD2675_30%,_#371826_100%)] md:h-67 md:w-79 rounded-[40px] p-0.5 overflow-hidden">
+          <div className="bg-[radial-gradient(circle,_#DD2675_0%,_#DD2675_30%,_#371826_100%)] md:h-[268px] md:w-[316px] rounded-[40px] p-0.5 overflow-hidden">
             <div className="flex items-center justify-center py-7">
               <Image
-                src={"/books.webp"}
+                src={"/assets/books.webp"} // CHANGED: Added /assets/
                 width={148}
                 height={148}
                 alt="books image"
-                className="h-37 w-37 mx-auto "
+                className="h-[148px] w-[148px] mx-auto "
               />
             </div>
             <div className="text-center text-2xl font-semibold pb-3 md:pb-0">
@@ -106,15 +106,15 @@ const LittleChamps = () => {
         {/* Third card */}
         <div className="flex flex-col gap-6">
           {/* third column first card */}
-          <div className="w-full md:w-100 h-82.5 bg-gradient-to-br from-[#06F32E] to-[#ffffff] rounded-[40px] p-0.5">
+          <div className="w-full md:w-[400px] h-[330px] bg-gradient-to-br from-[#06F32E] to-[#ffffff] rounded-[40px] p-0.5">
             <div className="flex h-full w-full overflow-hidden relative  bg-[radial-gradient(circle_at_bottom_left,_#084400_0%,_#33C745_100%)] rounded-[39px] p-2 text-white">
               <div className="absolute top-0 right-0">
                 <Image
-                  src={"/whatsapp.webp"}
+                  src={"/assets/whatsapp.webp"} // CHANGED: Added /assets/
                   width={250}
                   height={250}
                   alt="whats app icon"
-                  className="h-62 w-62"
+                  className="h-[248px] w-[248px]"
                 />
               </div>
               <div className="flex items-end md:ps-8 ps-2 pb-8">
@@ -127,23 +127,23 @@ const LittleChamps = () => {
               </div>
             </div>
           </div>
-          {/* third card second card */}
-          <div className="w-full md:w-100 h-60.5 bg-gradient-to-br from-[#F36D06] to-[#ffffff] rounded-[40px] p-0.5">
+          {/* third column second card */}
+          <div className="w-full md:w-[400px] h-[242px] bg-gradient-to-br from-[#F36D06] to-[#ffffff] rounded-[40px] p-0.5">
             <div className="flex h-full w-full overflow-hidden relative  bg-[radial-gradient(circle,_#EDC16B_0%,_#F1AF1B_100%)] rounded-[39px] p-2 text-white">
               <div className="absolute top-0 left-0">
                 <Image
-                  src={"/image216.webp"}
+                  src={"/assets/image216.webp"} // CHANGED: Added /assets/
                   width={250}
                   height={250}
                   alt="whats app icon"
-                  className="h-62 w-62"
+                  className="h-[248px] w-[248px]"
                 />
               </div>
               <div className="flex text-right justify-end w-full md:pr-8 md:pb-8 pb-3 pr-3 items-end">
                 <h1 className="text-2xl text-white leading-7 font-semibold">
                   অনিবার্য কারণে <br />
                   ক্লাস মিস? <br />
-                  <span className="text-green-300">রেকর্ডেড</span> ক্লাসতো{" "}
+                  <span className="text-secondary">রেকর্ডেড</span> ক্লাসতো{" "}
                   <br />
                   আছেই
                 </h1>

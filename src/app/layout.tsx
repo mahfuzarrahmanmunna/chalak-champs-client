@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Hind_Siliguri, Open_Sans } from "next/font/google";
 import "./globals.css";
-import Providers from "./providers/Providers";
 
 // Configure Fonts
 const hindSiliguri = Hind_Siliguri({
@@ -18,13 +17,18 @@ const googleSans = Open_Sans({
   display: "swap",
 });
 
+// FIX: Ensure metadataBase resolves correctly on all environments
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Chalak Champs - Learn English with Fun",
   description:
     "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.",
 
   icons: {
-    icon: "/icon.png", 
+    icon: "/icon.png",
     shortcut: "/icon.png",
     apple: "/icon.png",
   },
@@ -33,22 +37,22 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://chalakchamps.vercel.app", 
+    url: siteUrl,
     siteName: "Chalak Champs",
     title: "Chalak Champs - Learn English with Fun",
     description:
       "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.",
     images: [
       {
-        url: "/icon.png", 
-        width: 1200, 
-        height: 630, 
+        url: "/icon.png",
+        width: 1200,
+        height: 630,
         alt: "Chalak Champs Logo",
       },
     ],
   },
 
-  // --- FIX 3: Twitter Sharing ---
+  // FIX 3: Twitter Sharing added properly
   twitter: {
     card: "summary_large_image",
     title: "Chalak Champs - Learn English with Fun",
@@ -64,9 +68,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="light">
+    // suppressHydrationWarning is useful when switching lang dynamically
+    <html lang="en" data-theme="light" suppressHydrationWarning>
       <head>
-        {/* Ensure Chrome can detect the PWA manifest */}
+        {/* --- SEO FAVICONS --- */}
+        <link rel="icon" href="/icon.png" type="image/png" sizes="32x32" />
+        <link rel="apple-touch-icon" href="/icon.png" sizes="180x180" />
+
+        {/* --- SEO METADATA --- */}
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#ec4899" />
         <meta name="mobile-web-app-capable" content="yes" />
@@ -75,12 +84,15 @@ export default function RootLayout({
           name="apple-mobile-web-app-status-bar-style"
           content="black-translucent"
         />
+
+        {/* --- GOOGLE VERIFICATION --- */}
+        {/* Replace 'your-google-code' with actual verification code */}
+        <meta name="google-site-verification" content="your-google-code" />
       </head>
       <body
-        cz-shortcut-listen="true"
-        className={`${hindSiliguri.variable}  ${googleSans.variable} font-sans antialiased bg-base-100 text-black dark:text-white`}
+        className={`${hindSiliguri.variable} ${googleSans.variable} font-sans antialiased bg-base-100 text-black dark:text-white`}
       >
-        <Providers>{children}</Providers>
+        {children}
       </body>
     </html>
   );

@@ -1,8 +1,34 @@
+"use client";
 import Button from "@/app/ui/button/Button";
 import Image from "next/image";
 import React from "react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const FeatureCourses: React.FC = () => {
+  // FIX: Access featureCourses directly from context (not t.featureCourses)
+  const { featureCourses } = useLanguage();
+  const data = featureCourses;
+
+  // Helper to render Contact Info
+  const renderContactInfo = () => {
+    if (!data?.contact) return null;
+
+    const parts = data.contact.split(/(Call us:|কল করুন:)/);
+    const textPart = parts[0].trim();
+    const numberPart = parts[1]?.trim() || "";
+
+    return (
+      <p className="text-white/90 text-xs md:text-base mt-4">
+        {textPart}
+        {numberPart && (
+          <a href={`tel:${numberPart}`} className="font-bold">
+            {numberPart}
+          </a>
+        )}
+      </p>
+    );
+  };
+
   return (
     <section className="px-4 relative container mx-auto">
       <div
@@ -16,99 +42,86 @@ const FeatureCourses: React.FC = () => {
         }}
       />
 
-      {/* 
-        Main Card Container:
-        - relative z-10 places it above the gradient.
-        - max-w-209.5 ensures the container is wide enough for the layout.
-      */}
+      {/* Main Card Container */}
       <div className="bg-linear-to-r from-[#FF8FCA] max-w-250.5 mx-auto to-[#D9D9D9] rounded-[40px] p-0.5">
         <div className="relative z-10 bg-primary  mx-auto p-3 md:p-4 md:pl-10 rounded-[38px] flex flex-col md:flex-row items-center gap-6">
           {/* Left Side: 60% width on desktop */}
           <div className="space-y-4 w-full md:w-[60%]">
             <div className="leading-[130%] tracking-[-4%]">
+              {/* Dynamic Title */}
               <h2 className="text-2xl md:text-4xl leading-[1.3] font-bold text-white">
-                কিডস অনর্গল English কোর্সে
+                {data?.title} {data?.suffix}
               </h2>
               <div className="flex relative items-center gap-4 mt-1">
+                {/* Dynamic Discount Badge */}
                 <h2 className="bg-secondary  text-xl md:text-4xl font-bold p-2 rounded-xl shadow-lg">
-                  30% মূল্য ছাড়
+                  {data?.discount}
                 </h2>
+                {/* Dynamic Discount Note */}
                 <p className="text-white/90 absolute right-62 bottom-2 text-sm md:text-base">
-                  (সীমিত সিট)
+                  {data?.discountNote}
                 </p>
               </div>
             </div>
 
+            {/* Dynamic Description */}
             <p className="text-white/90 text-sm md:text-sm leading-auto tracking-[0px]">
-              আপনার সন্তানের ইংলিশ বলা শুরু হোক জীবনের প্রথম ধাপেই, আগামীদিনে
-              আপনার সন্তান হবে আপনার এবং চালাক Champs এর গর্ব
+              {data?.subtitle}
             </p>
 
+            {/* Dynamic Points List */}
             <div>
               <div className="flex flex-wrap gap-2 bg-[#e91e63] rounded-xl">
-                <div className="relative bg-transparent p-0.5 rounded-full">
-                  <div className="flex items-center gap-2 px-3 py-0.5 rounded-full bg-transparent border-b-2 border-b-white/90 border-t-2 border-t-black">
-                    <span className="w-3 h-3 bg-white rounded-full"></span>
-                    <span className="text-white font-regular text-xs">
-                      লাইভ ক্লাস
-                    </span>
+                {data?.points?.map((point, index) => (
+                  <div key={index} className="relative p-0.5 rounded-full">
+                    <div className="flex items-center gap-2 px-3 py-0.5 rounded-full bg-transparent border-b-2 border-b-white/90 border-t-2 border-t-black">
+                      {/* Icons kept exactly as in original code */}
+                      {index === 0 && (
+                        <span className="w-3 h-3 bg-white rounded-full"></span>
+                      )}
+                      {index === 1 && (
+                        <svg
+                          className="w-5 h-5 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          ></path>
+                        </svg>
+                      )}
+                      <span className="text-white font-regular text-xs">
+                        {point}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="relative p-0.5 rounded-full">
-                  <div className="flex items-center gap-2 px-3 py-0.5 rounded-full bg-transparent border-b-2 border-b-white/90 border-t-2 border-t-black">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      ></path>
-                    </svg>
-                    <span className="text-white font-regular text-xs">
-                      5 মাস সময়ব্যাপি
-                    </span>
-                  </div>
-                </div>
-                <div className="relative p-0.5 rounded-full">
-                  <div className="flex items-center gap-2 px-3 py-0.5 rounded-full bg-transparent border-b-2 border-b-white/90 border-t-2 border-t-black">
-                    <span className="text-white font-regular text-xs">
-                      এক ব্যাচে 15 জন
-                    </span>
-                  </div>
-                </div>
-                <div className="relative p-0.5 rounded-full">
-                  <div className="flex items-center gap-2 px-3 py-0.5 rounded-full bg-transparent border-b-2 border-b-white/90 border-t-2 border-t-black">
-                    <span className="text-white font-regular text-xs">
-                      ফ্রি কোর্স ম্যাটিরিয়ালস
-                    </span>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
             <div className="mt-5">
-              {/* <button className="px-8 py-3 cursor-pointer bg-white font-bold rounded-xl text-secondary shadow-[inset_0_3px_0_rgba(0,29,58,0.6)] border-1 border-[rgba(0, 29, 58, 0.6)]">
-              ভর্তি হতে ক্লিক করুন
-            </button> */}
               <Button
                 bgColor="#214187"
                 textColor="white"
                 className="shadow-[inset_0_4px_0_rgba(255,255,255,0.4)] hover:text-black"
               >
-                ভর্তি হতে ক্লিক করুন
+                {/* Dynamic CTA */}
+                {data?.cta}
               </Button>
+
+              {/* Dynamic Contact Info Added Here */}
+              {renderContactInfo()}
             </div>
           </div>
 
           {/* Right Side: 40% width on desktop */}
           <div className="w-full md:w-[40%] flex  items-center justify-center mt-4 md:mt-0 relative z-10">
-            <figure className="relative w-150 bg-linear-to-b from-[#f36ca6]  to-[#FF8FCA] p-0.75 rounded-[27px] h-75 flex items-center justify-center">
+            <figure className="relative w-150 bg-linear-to-b from-[#f36ca6] to-[#FF8FCA] p-0.75 rounded-[27px] h-75 flex items-center justify-center">
               <Image
                 src={"/onorgol.png"}
                 alt="Onorgol"
