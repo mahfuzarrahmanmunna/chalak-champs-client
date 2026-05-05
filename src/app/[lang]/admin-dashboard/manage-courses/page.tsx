@@ -2,7 +2,7 @@
 "use client";
 import React, { useState } from "react";
 // import { useRouter } from "next/router";
-import { useTranslation } from "next-i18next";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { useRouter } from "next/navigation";
 
 interface CourseFormData {
@@ -22,7 +22,7 @@ interface CourseFormData {
 }
 
 const CourseCreationForm: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -75,6 +75,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Prevent Firebase initialization during build time
+  if (typeof window === 'undefined') {
+    return <>{children}</>;
+  }
+
   console.log("AuthProvider rendered. Current Firebase User:", currentUser);
 
   // --- Helper: Convert Phone to Email Alias ---
@@ -270,7 +275,22 @@ const login = async (email: string, password: string) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    // During build time or SSR, return a safe default
+    return {
+      currentUser: null,
+      appUser: null,
+      loading: true,
+      signUp: async () => {},
+      login: async () => {},
+      signInWithEmail: async () => {},
+      signInWithPhone: async () => {},
+      logout: async () => {},
+      sendOtpEmail: async () => {},
+      checkOtpEmail: async () => {},
+      sendOtpPhone: async () => {},
+      checkOtpPhone: async () => {},
+      completeRegistration: async () => {},
+    };
   }
   return context;
 };

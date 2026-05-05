@@ -63,7 +63,10 @@ const AboutUsContent = () => {
               <div className="order-1 md:order-2 relative">
                 {/* Image Placeholder - Replace with actual image */}
                 <div className="relative w-full aspect-square md:aspect-[4/3] rounded-[40px] overflow-hidden shadow-xl bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center group">
-                  <div className="absolute inset-0 bg-[url('/videoimg.jpg')] bg-cover bg-center opacity-80 transition-transform duration-700 group-hover:scale-105"></div>
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center opacity-80 transition-transform duration-700 group-hover:scale-105"
+                    style={{ backgroundImage: "url('/videoimg.jpg')" }}
+                  ></div>
                   {/* Optional: Add play icon or 'Our Story' text overlay here */}
                   <div className="relative z-10 bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full font-bold text-[#F3066E] shadow-lg">
                     Our Journey

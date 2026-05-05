@@ -3,7 +3,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  output: "export", // Cloudflare Pages requires this for static export
+  // Removed output: "export" because the app contains dynamic routes that cannot
+  // be fully statically exported without complete generateStaticParams data.
+  // For Vercel deployments, the default server-enabled output is preferred.
 
   images: {
     unoptimized: true, // Using default optimization

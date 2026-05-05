@@ -3,6 +3,9 @@ import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
+
+// Force dynamic rendering for authenticated pages
+export const dynamic = 'force-dynamic';
 import { BookOpenIcon, ChartBarIcon, CogIcon, HomeIcon } from "lucide-react";
 import { FaUserGroup, FaXmark } from "react-icons/fa6";
 import { HiAcademicCap, HiQuestionMarkCircle, HiPlus } from "react-icons/hi"; 
@@ -19,6 +22,11 @@ export default function AdminDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Prevent rendering during build time
+  if (typeof window === 'undefined') {
+    return <>{children}</>;
+  }
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
