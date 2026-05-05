@@ -1,0 +1,39 @@
+{
+  "title": {
+    "prefix": "আমাদের",
+    "highlight": "Little Champs'রা",
+    "suffix": "পাচ্ছে"
+  },
+  "cards": [
+    {
+      "id": 1,
+      "title": "দেশ সেরা<br />Teacher Panel",
+      "alt": "Best Teacher Panel"
+    },
+    {
+      "id": 2,
+      "title": "হাই কোয়ালিটি অনলাইন<br />লাইভ ক্লাস",
+      "alt": "লাইভ ক্লাস"
+    },
+    {
+      "id": 3,
+      "title": "Topic-wise পরীক্ষায় নিজেকে<br />যাচাই করার সুযোগ",
+      "alt": "Topic wise exam"
+    },
+    {
+      "id": 4,
+      "title": "রঙ্গিন নোট এবং<br />ওয়ার্কশিট",
+      "alt": "রঙ্গিন নোট"
+    },
+    {
+      "id": 5,
+      "title": "২৪ ঘন্টাই শিক্ষক সাথে,<br />ডাউট সলভ হবে<br /><span class='text-green-300'>WhatsApp</span> Secret Group এ",
+      "alt": "হোয়াটসঅ্যাপ গ্রুপ"
+    },
+    {
+      "id": 6,
+      "title": "অনিবার্য কারণে ক্লাস মিস?<br /><span class='text-secondary'>রেকর্ডেড</span> ক্লাসতো<br />আছেই!",
+      "alt": "রেকর্ডেড ক্লাস"
+    }
+  ]
+}
