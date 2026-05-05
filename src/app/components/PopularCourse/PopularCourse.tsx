@@ -1,45 +1,24 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
-import { FaArrowRight, FaLongArrowAltRight } from "react-icons/fa";
-import { HiOutlineArrowLongRight } from "react-icons/hi2";
+import { useLanguage } from "@/app/context/LanguageContext"; // Adjust path as needed
 import Button from "@/app/ui/button/Button";
 
-// 1. Fake Data (Array of Objects)
-const popularCourses = [
-  {
-    id: 1,
-    title: "Kids Spoken English",
-    subtitle: "For KG - Class 5",
-    image: "/onorgol.png", // Your original image path
-  },
-  {
-    id: 2,
-    title: "Web Development",
-    subtitle: "Beginner to Advanced",
-    image: "/onorgol.png", // Replace with actual image path
-  },
-  {
-    id: 3,
-    title: "Graphic Design",
-    subtitle: "Master Creative Skills",
-    image: "/onorgol.png", // Replace with actual image path
-  },
-  {
-    id: 4,
-    title: "Graphic Design",
-    subtitle: "Master Creative Skills",
-    image: "/onorgol.png", // Replace with actual image path
-  },
-];
-
 const PopularCourse = () => {
+  // 1. Get bilingual data from context
+  const { featuresData } = useLanguage();
+
+  // 2. Destructure specific fields for cleaner code
+  const { titlePrefix, titleSuffix, cards, cta } = featuresData;
+
   return (
     <section className="px-4">
       {/* --- Heading Section --- */}
       <div className="text-center mb-12">
         <h2 className="text-secondary font-bold leading-auto tracking-[-5%] text-xl md:text-5xl">
-          সেরা ও জনপ্রিয়{" "}
+          {/* Title Prefix: Best & Popular / সেরা ও জনপ্রিয় */}
+          {titlePrefix}{" "}
           <span className="relative inline-block px-3 py-3 group">
             {/* Dashed Border */}
             <span className="absolute inset-0 border-[3px] border-dashed border-pink-500"></span>
@@ -50,56 +29,54 @@ const PopularCourse = () => {
             <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
 
-            {/* Gradient Text */}
+            {/* Title Suffix: Skill Programs / স্কিল প্রোগ্রামসমূহ */}
             <span className="relativeChamps এর bg-linear-to-r from-pink-500 to-pink-300 bg-clip-text text-transparent ">
-              স্কিল প্রোগ্রামসমূহ
+              {titleSuffix}
             </span>
           </span>
         </h2>
       </div>
 
-      {/* --- Grid Section (1 Line 3 Cards) --- */}
+      {/* --- Grid Section (Centered & Max 4 Cards) --- */}
       <div className="container mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-8">
-          {popularCourses.map((course) => (
-            <div
-              key={course.id}
-              className="relative  rounded-[35px] bg-linear-to-b p-1 from-[#F3066EBF] to-white w-full"
-            >
-              {/* Inner White Content Area */}
-              <div className=" to-[] bg-white rounded-4xl md:p-6 p-3 flex flex-col items-center h-full">
-                {/* Image Wrapper with Light Pink Background/Border */}
-                <div className="relative shadow-[0_4px_27px_4px_rgba(243,6,110,0.2)] w-full aspect-square md:rounded-2xl rounded-3xl overflow-hidden bg-linear-to-b from-[#F3066E] to-[#FF8FCA]  ">
-                  <Image
-                    src={course.image}
-                    alt={course.title}
-                    fill
-                    className="object-cover p-0.5 rounded-2xl"
-                  />
-                </div>
+        {/* Flex wrapper to center the grid horizontally */}
+        <div className="flex justify-center w-full">
+          {/* Inline-grid allows the container to shrink to fit the content (1, 2, 3, or 4 cards) */}
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-8 inline-grid">
+            {cards.map((course) => (
+              <div
+                key={course.id}
+                className="relative rounded-[35px] bg-linear-to-b p-1 from-[#F3066EBF] to-white w-full"
+              >
+                {/* Inner White Content Area */}
+                <div className="bg-white rounded-4xl md:p-6 p-3 flex flex-col items-center h-full">
+                  {/* Image Wrapper with Light Pink Background/Border */}
+                  <div className="relative shadow-[0_4px_27px_4px_rgba(243,6,110,0.2)] w-full aspect-square md:rounded-2xl rounded-3xl overflow-hidden bg-linear-to-b from-[#F3066E] to-[#FF8FCA]">
+                    <Image
+                      src={course.image}
+                      alt={course.title}
+                      fill
+                      className="object-cover p-0.5 rounded-2xl"
+                    />
+                  </div>
 
-                {/* Text Content */}
-                <div className="mt-6 text-center">
-                  <h3 className="text-[#E91E63] tracking-[-2%] text-base md:text-[20px] font-semibold leading-tight">
-                    {course.title}
-                  </h3>
-                  <p className="text-gray-800 text-sm tracking-[-2%] md:text-sm font-semibold mt-1">
-                    {course.subtitle}
-                  </p>
+                  {/* Text Content */}
+                  <div className="mt-6 text-center">
+                    <h3 className="text-[#E91E63] tracking-[-2%] text-base md:text-[20px] font-semibold leading-tight">
+                      {course.title}
+                    </h3>
+                    <p className="text-gray-800 text-sm tracking-[-2%] md:text-sm font-semibold mt-1">
+                      {course.subtitle}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
+
       <div className="flex items-center justify-center mt-14">
-        {/* <button
-          type="button"
-          className="px-8 py-3 font-bold text-xl cursor-pointer rounded-xl text-white bg-primary flex items-center gap-2.5 shadow-[inset_0_4px_0_rgba(255,255,255,0.4)]"
-        >
-          আমাদের সকল স্কিলস
-          <HiOutlineArrowLongRight className="w-6 h-6 -rotate-45" />
-        </button> */}
         <Button
           bgColor="#F3056D"
           darkShadowColor="#F3066E"
@@ -123,7 +100,7 @@ const PopularCourse = () => {
           </svg>
           iconPosition="right"
         >
-          আমাদের সকল স্কিলস
+          {cta}
         </Button>
       </div>
     </section>

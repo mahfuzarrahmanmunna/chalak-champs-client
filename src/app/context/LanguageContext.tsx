@@ -22,6 +22,17 @@ import faqBangla from "../data/translations/faq-bangla.json";
 import mailchimpEnglish from "../data/translations/mailchimp-english.json";
 import mailchimpBangla from "../data/translations/mailchimp-bangla.json";
 
+// --- NEW IMPORTS ---
+import featuresEnglish from "../data/translations/features-english.json";
+import featuresBangla from "../data/translations/features-bangla.json";
+
+import coursesEnglish from "../data/translations/courses-english.json";
+import coursesBangla from "../data/translations/courses-bangla.json";
+
+import libraryEnglish from "../data/translations/library-english.json";
+import libraryBangla from "../data/translations/library-bangla.json";
+
+
 // Types
 type Translations = {
   [key: string]: string | Translations;
@@ -51,6 +62,20 @@ interface FeatureCoursesData {
   contact: string;
 }
 
+// --- NEW INTERFACE FOR FEATURES SECTION ---
+interface FeaturesData {
+  titlePrefix: string;
+  titleSuffix: string;
+  shortDescription: string;
+  cta: string;
+  cards: {
+    id: number;
+    title: string;
+    subtitle: string;
+    image: string;
+  }[];
+}
+
 interface HeroFeature {
   title: string;
   description: string;
@@ -63,7 +88,6 @@ interface HeroStats {
   languages: string;
 }
 
-// --- Fix: Removed 'description' from HeroData ---
 interface HeroData {
   title: string;
   subtitle: string;
@@ -72,6 +96,40 @@ interface HeroData {
   features: HeroFeature[];
   stats: HeroStats;
 }
+
+interface CoursesData {
+  titlePrefix: string;
+  titleSuffix: string;
+  shortDescription: string;
+  tabs: string[];
+  ctaCard: string;
+  ctaFooter: string;
+  footerNote: string;
+  courses: {
+    id: number;
+    title: string;
+    category: string;
+    highlights: string[];
+    image: string;
+  }[];
+}
+
+interface LibraryData {
+  titlePrefix: string;
+  titleSuffix: string;
+  shortDescription: string;
+  ctaCard: string;
+  ctaFooter: string;
+  items: {
+    id: number;
+    image: string;
+    badge: string;
+    title: string;
+  }[];
+}
+
+
+
 
 type LanguageContextType = {
   isBangla: boolean;
@@ -82,7 +140,14 @@ type LanguageContextType = {
   isLoading: boolean;
   menuData: MenuData;
   featureCourses: FeatureCoursesData;
+  // Added featuresData to context type
+  featuresData: FeaturesData;
+  coursesData: CoursesData;
+  libraryData: LibraryData;
 };
+
+
+
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined,
@@ -101,6 +166,14 @@ const getLanguageData = (isBangla: boolean) => {
   // Extract featureCourses from common
   const { featureCourses, ...commonStrings } = common || {};
 
+    const library = (isBangla ? libraryBangla : libraryEnglish) as LibraryData;
+
+
+  // --- GET FEATURES DATA ---
+  const features = (
+    isBangla ? featuresBangla : featuresEnglish
+  ) as FeaturesData;
+
   const merged = {
     ...(navbarStrings as unknown as Translations),
     ...(commonStrings as unknown as Translations),
@@ -117,7 +190,7 @@ const getLanguageData = (isBangla: boolean) => {
 
   const menu = { ...defaultMenu, ...(menus as MenuData) };
 
-  return { hero, merged, menu, featureCourses };
+  return { hero, merged, menu, featureCourses, features, library };
 };
 
 interface LanguageProviderProps {
@@ -140,31 +213,22 @@ export const LanguageProvider = ({
     setIsBangla(initialLang === "bn");
   }, [initialLang]);
 
-  const { hero, merged, menu, featureCourses } = useMemo(() => {
+  const { hero, merged, menu, featureCourses, features, library } = useMemo(() => {
     return getLanguageData(isBangla);
   }, [isBangla]);
 
   const toggleLanguage = () => {
-    // --- FIX FOR SCROLL JUMP ---
-    // 1. Current scroll position save koro
     const scrollY = window.scrollY;
-
-    // Logic to switch /en/ to /bn/ or vice versa
     const currentLang = isBangla ? "bn" : "en";
     const newLang = isBangla ? "en" : "bn";
 
-    // Replace the language segment in the current path
-    // pathname will be something like "/en/courses"
     if (pathname.startsWith(`/${currentLang}`)) {
       const newPath = pathname.replace(`/${currentLang}`, `/${newLang}`);
       router.push(newPath);
     } else {
-      // Fallback
       router.push(`/${newLang}`);
     }
 
-    // 2. Scroll position restore koro
-    // Next.js router push hote some time lag thake, tai setTimeout use kora safe.
     setTimeout(() => {
       window.scrollTo(0, scrollY);
     }, 50);
@@ -181,6 +245,9 @@ export const LanguageProvider = ({
         isLoading: false,
         menuData: menu,
         featureCourses: featureCourses || ({} as FeatureCoursesData),
+        featuresData: features || ({} as FeaturesData), // Pass features data
+        coursesData: (isBangla ? coursesBangla : coursesEnglish) || ({} as CoursesData),
+        libraryData: library || ({} as LibraryData),
       }}
     >
       {children}

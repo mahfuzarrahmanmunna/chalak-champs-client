@@ -14,6 +14,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
+import { useParams } from "next/navigation";
 
 interface DashboardStats {
   totalUsers: number;
@@ -27,6 +28,8 @@ interface DashboardStats {
 export default function AdminDashboardPage() {
   const { currentUser } = useAuth();
   const { t } = useLanguage();
+  const params = useParams<{ lang?: string }>();
+  const lang = params?.lang || "en";
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     totalCourses: 0,
@@ -273,7 +276,7 @@ export default function AdminDashboardPage() {
               </div>
               <div className="mt-6">
                 <Link
-                  href="/admin-dashboard/users"
+                  href={`/${lang}/admin-dashboard/manage-users`}
                   className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                   style={{
                     backgroundColor: "var(--color-primary)",
@@ -351,7 +354,7 @@ export default function AdminDashboardPage() {
               </div>
               <div className="mt-6">
                 <Link
-                  href="/admin-dashboard/courses"
+                  href={`/${lang}/admin-dashboard/manage-courses`}
                   className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                   style={{
                     backgroundColor: "var(--color-primary)",

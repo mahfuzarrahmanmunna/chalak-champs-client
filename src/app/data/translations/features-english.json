@@ -1,0 +1,20 @@
+{
+  "titlePrefix": "Best & Popular",
+  "titleSuffix": "Skill Programs",
+  "shortDescription": "Most Popular Kids Skill Programs in Bangladesh",
+  "cta": "Explore All Skill Programs →",
+  "cards": [
+    {
+      "id": 1,
+      "title": "Kids Spoken English Course",
+      "subtitle": "Class 1 to 8 - Bangla Medium, English Medium, perfect for all",
+      "image": "/onorgol.png"
+    },
+    {
+      "id": 2,
+      "title": "Kids Drawing Course",
+      "subtitle": "Age 4 to 12 - Build creativity alongside every stroke",
+      "image": "/onorgol.png"
+    }
+  ]
+}

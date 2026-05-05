@@ -1,0 +1,20 @@
+{
+  "titlePrefix": "সেরা ও জনপ্রিয়",
+  "titleSuffix": "স্কিল প্রোগ্রামসমূহ",
+  "shortDescription": "Bangladesh-এ সবচেয়ে জনপ্রিয় Kids Skill Programs",
+  "cta": "আমাদের সব Skill Programs দেখুন",
+  "cards": [
+    {
+      "id": 1,
+      "title": "Kids Spoken English Course",
+      "subtitle": "Class 1 থেকে 8 - বাংলা মিডিয়াম, ইংলিশ মিডিয়াম, সবার জন্য",
+      "image": "/onorgol.png"
+    },
+    {
+      "id": 2,
+      "title": "Kids Drawing Course",
+      "subtitle": "বয়স ৪ থেকে ১২ - ছবি আঁকার সাথে creativity-ও বাড়বে!",
+      "image": "/onorgol.png"
+    }
+  ]
+}

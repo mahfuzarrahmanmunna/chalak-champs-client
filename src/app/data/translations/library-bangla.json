@@ -1,0 +1,27 @@
+{
+  "titlePrefix": "চালাক Champs",
+  "titleSuffix": "শপ",
+  "shortDescription": "শেখার সেরা সঙ্গী",
+  "ctaCard": "বিস্তারিত দেখুন",
+  "ctaFooter": "আরও দেখুন",
+  "items": [
+    {
+      "id": 1,
+      "image": "/kidsbook.png",
+      "badge": "প্রিন্টেড কলরফুল বুক, ৩৫% ছাড়",
+      "title": "Kids' অনর্গল English বুক"
+    },
+    {
+      "id": 2,
+      "image": "/kidsbook.png",
+      "badge": "প্রিন্টেড কলরফুল বুক, ৩৫% ছাড়",
+      "title": "KIDS' SMART MATH"
+    },
+    {
+      "id": 3,
+      "image": "/kidsbook.png",
+      "badge": "প্রিন্টেড কলরফুল বুক, ৩৫% ছাড়",
+      "title": "KIDS' BANGLA ABC"
+    }
+  ]
+}

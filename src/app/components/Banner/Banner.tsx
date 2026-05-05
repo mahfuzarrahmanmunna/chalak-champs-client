@@ -111,7 +111,7 @@ const Banner = () => {
         <div className="flex flex-col relative items-center justify-center">
           <div className="relative flex flex-wrap items-center justify-center gap-2">
             {/* Main H1 Tag with Champ styling */}
-            <h1 className="text-3xl md:text-6xl font-bold text-[#00477C] pointer-events-none tracking-[-4px] leading-18.75">
+            <h1 className="text-4xl md:text-6xl font-bold text-[#00477C] pointer-events-none tracking-[-3%] md:tracking-[-4px] leading-12 md:leading-18.75">
               {beforeChamp} <br className="flex md:hidden" />{" "}
               <span className="ml-2 text-[#F3066E]">Champ</span>
             </h1>
@@ -119,7 +119,7 @@ const Banner = () => {
             {/* Dashed Border Box */}
             <div
               className="absolute pointer-events-none flex items-center justify-center z-10
-             right-10 bottom-0.5 w-32.5 h-11.5 
+             right-14 bottom-0.5 w-32.5 h-11.5 
              md:right-[calc(50%-330px)] md:bottom-0 md:w-57.5 md:h-17.5 "
             >
               <div className="w-full h-full border-2 border-dashed border-[#F3066E] relative z-0">
@@ -133,8 +133,8 @@ const Banner = () => {
 
           {/* King Image */}
           <div
-            className="absolute md:-top-8  z-0
-             right-[60%]  -bottom-6
+            className="absolute md:-top-8  z-10
+             right-[62%]  -bottom-7
              md:right-[calc(50%-360px)]"
           >
             <Image
@@ -157,7 +157,7 @@ const Banner = () => {
         {/* CTA Button */}
         <button
           onClick={() => setIsBookingOpen(true)}
-          className="group relative overflow-hidden rounded-lg bg-primary py-4 px-16 text-lg font-bold text-white transition-all duration-500 hover:shadow-[0_0_20px_rgba(255,143,202,0.5)] active:scale-95"
+          className="group  tracking-[-2%] px-6 mt-10 md:px-24 z-10 text-white transition-transform duration-300 group-hover:translate-y-[-1px]  relative overflow-hidden rounded-lg bg-primary py-4  text-lg font-bold  hover:shadow-[0_0_20px_rgba(255,143,202,0.5)] active:scale-95"
           style={{ animation: "pulseScale 2.5s infinite ease-in-out" }}
         >
           {/* Shimmering layer */}
@@ -170,9 +170,7 @@ const Banner = () => {
           ></span>
 
           {/* Button Text */}
-          <span className="relative tracking-[-2%] px-24 z-10 text-white transition-transform duration-300 group-hover:translate-y-[-1px] inline-block">
-            {heroData?.ctaButton}
-          </span>
+          <span className=" ">{heroData?.ctaButton}</span>
 
           {/* Keyframes */}
           <style
@@ -195,7 +193,7 @@ const Banner = () => {
         {/* Below CTA Text */}
         <p className="text-[#000000]/50 font-medium text-base mt-4 tracking-[-2%]">
           Booked a Class already?{" "}
-          <Link className="text-secondary font-bold" href={"/signup"}>
+          <Link className="text-secondary font-bold" href={"/en/signup"}>
             JOIN NOw
           </Link>
         </p>
