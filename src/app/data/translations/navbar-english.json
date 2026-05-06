@@ -9,19 +9,23 @@
   "menus": {
     "courses": [
       {
-        "title": "Spoken English",
+        "title": "Language Learning",
         "description": "Fluency for everyday life"
       },
       {
-        "title": "Business English",
+        "title": "Art & Drawing",
         "description": "Professional communication"
       },
       {
-        "title": "IELTS Prep",
+        "title": "Brain Development ",
         "description": "Score 7.0+ guaranteed"
       },
       {
-        "title": "Writing Skills",
+        "title": "Math Skills",
+        "description": "Master professional writing"
+      },
+      {
+        "title": "Academic Courses",
         "description": "Master professional writing"
       }
     ],
@@ -41,33 +45,37 @@
     ],
     "kids": [
       {
-        "title": "Junior English (4-6)",
+        "title": "Online",
         "description": "Fun learning for toddlers"
       },
       {
-        "title": "Young Learners (7-12)",
+        "title": "Offline ",
         "description": "Grammar and vocabulary"
-      },
-      {
-        "title": "Teen English (13-17)",
-        "description": "Academic excellence"
       }
     ],
     "more": [
       {
-        "title": "About Us",
+        "title": "Free Courses",
         "description": "Learn our story and mission"
       },
       {
-        "title": "Careers",
+        "title": "Live Courses",
         "description": "Join our growing team"
       },
       {
-        "title": "Blog",
+        "title": "Recorded Courses",
         "description": "Latest tips and articles"
       },
       {
-        "title": "Contact",
+        "title": "চালাক Champs",
+        "description": "Get in touch with support"
+      },
+      {
+        "title": "Shop ",
+        "description": "Get in touch with support"
+      },
+      {
+        "title": "Book Store",
         "description": "Get in touch with support"
       }
     ]

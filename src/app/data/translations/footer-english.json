@@ -1,0 +1,37 @@
+{
+  "about": {
+    "title": "Chalak Champs",
+    "tagline": "Bangladesh's most modern Skill-Based EdTech Platforms, helping children aged 3–15 become confident and capable using the \"Learning by Doing\" method."
+  },
+  "links": [
+    {
+      "title": "Skills & Programs",
+      "items": [
+        "Free Courses",
+        "Book Store",
+        "Career / Jobs",
+        "Affiliate Registration"
+      ]
+    },
+    {
+      "title": "About Us",
+      "items": ["Privacy Policy", "Refund Policy", "Terms of Use"]
+    },
+    {
+      "title": "Contact Us",
+      "items": ["Stay Connected", "Help Center"]
+    }
+  ],
+  "contact": {
+    "address": "Amin Tower, House - 4 (4th Floor), Road - 1, Sector - 9, House Building, Uttara, Dhaka 1230",
+    "phone": "+88 01740176774",
+    "email": "support@chalakchamps.com"
+  },
+  "socials": {
+    "facebook": "Facebook",
+    "youtube": "YouTube",
+    "linkedin": "LinkedIn",
+    "instagram": "Instagram"
+  },
+  "copyright": "Copyright © 2026 Lignual Academy & Chalak Champs - All Rights Reserved."
+}

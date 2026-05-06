@@ -160,15 +160,15 @@ const OfflineCourses = () => {
 
         {/* --- Header Section --- */}
         <div className="px-4">
-          <h3 className="text-2xl md:text-5xl font-bold text-center pt-6">
+          <h3 className="text-2xl md:text-5xl font-bold text-center pt-14 leading-14.5 tracking-[0]">
             <span className="text-[#00477C]">{offlineData.header.prefix}</span>{" "}
-<br />            <span className="relative inline-block px-2 py-3 md:px-3 md:py-4 group">
+            <span className="relative inline-block px-2 group">
               <span className="absolute inset-0 border-[3px] border-dashed border-pink-500"></span>
               <span className="absolute -top-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
               <span className="absolute -top-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
               <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
               <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
-              <span className="bg-linear-to-r from-primary via-primary to-[#FC7CB4]-95 bg-clip-text text-transparent">
+              <span className="text-primary">
                 {offlineData.header.highlight}
               </span>
             </span>
@@ -176,10 +176,10 @@ const OfflineCourses = () => {
         </div>
 
         {/* --- Top 3 Cards Grid --- */}
-        <div className="z-10 md:px-10.5">
-          <div className="flex flex-col md:flex-row items-center justify-center mt-8 md:mt-12 gap-8 md:gap-12">
+        <div className="z-10 md:px-10.5 mt-12">
+          <div className="flex flex-col md:flex-row items-center justify-center  gap-8 md:gap-12">
             {offlineData.cards.map((card) => (
-              <div key={card.id} className="w-full max-w-[290px]">
+              <div key={card.id} className="w-full mt-6 max-w-72.5">
                 <div className="border-3 rounded-3xl border-[#FF8FCA] overflow-hidden">
                   <Image
                     src="/groupchair.webp"
@@ -189,7 +189,7 @@ const OfflineCourses = () => {
                     className=" "
                   />
                 </div>
-                <h4 className="text-[#F3066E] leading-8 tracking-[0px] text-lg md:text-xl mt-6 mb-3 text-center md:text-left">
+                <h4 className="text-[#F3066E] font-bold leading-8 tracking-[0px] text-lg md:text-xl mt-6 mb-3 text-center md:text-left">
                   {card.title}
                 </h4>
                 <p className="leading-5 md:leading-4 font-normal text-sm text-[#000000]/70 text-center md:text-left">
@@ -211,7 +211,7 @@ const OfflineCourses = () => {
             <h4 className="text-2xl md:text-5xl text-center font-bold leading-17 tracking-[-5%] text-[#00477C]">
               {offlineData.whyUs.title}{" "}
               <span className="bg-linear-to-r from-[#F3066D]/52 to-[#FC7CB4]/84 bg-clip-text text-transparent">
-                কেন
+                {/* {isbangla ? "কেন" : "Why "} */}
               </span>{" "}
               <br className="hidden md:block" />
               <span className="relative inline-block px-2 py-0.5 md:px-3 group">

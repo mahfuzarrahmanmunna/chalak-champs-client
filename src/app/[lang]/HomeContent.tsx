@@ -1,5 +1,6 @@
 "use client";
 
+import AddsCard from "../components/AddsCard/AddsCard";
 import Banner from "../components/Banner/Banner";
 import ChalakCourses from "../components/ChalakCourses/ChalakCourses";
 import ChalakLibrary from "../components/ChalakLibrary/ChalakLibrary";
@@ -22,6 +23,7 @@ export default function HomeContent() {
 
   return (
     <div className="overflow-hidden bg-white space-y-25 tracking-normal px-2 leading-5 min-h-[calc(100vh-500px)]">
+      <AddsCard/>
       <Banner />
       <FeatureCourses />
       <PopularCourse />

@@ -1,0 +1,25 @@
+{
+  "form": {
+    "title": "Register Now to Book Your Free Demo Class!",
+    "studentName": "Child's Name",
+    "fatherName": "Father's Name",
+    "phone": "Phone Number",
+    "class": "Class",
+    "course": "Select Course",
+    "cta": "Submit →"
+  },
+  "needHelp": {
+    "title": "Need Help? Call Us Right Now",
+    "desc": "Whether it's about a course, a batch schedule, fees, or anything else, we're here for you, 24/7. No question is too small.",
+    "cta": "+88 01740176774",
+    "subCta": "Call from any number"
+  },
+  "videoLibrary": {
+    "title": "Free Video Library",
+    "cta": "Watch Videos →"
+  },
+  "facebook": {
+    "title": "Chalak Champs Facebook Page",
+    "cta": "Watch Live →"
+  }
+}

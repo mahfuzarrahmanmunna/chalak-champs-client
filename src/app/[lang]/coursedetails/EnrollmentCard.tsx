@@ -1,0 +1,265 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+import videojs from "video.js";
+import "video.js/dist/video-js.css";
+// Import YouTube Plugin for Video.js
+import "videojs-youtube";
+import { Play, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import Button from "@/app/ui/button/Button";
+
+// --- Types for Slider Media ---
+export type MediaType = "image" | "video";
+
+export interface MediaAsset {
+  type: MediaType;
+  src: string;
+  poster?: string;
+}
+
+// --- Props Interface ---
+interface EnrollmentCardProps {
+  data: any; // Your SingleCourseData
+  onEnroll: () => void;
+  mediaAssets: MediaAsset[];
+}
+
+const EnrollmentCard = ({
+  data,
+  onEnroll,
+  mediaAssets = [],
+}: EnrollmentCardProps) => {
+  // --- Price Parsing ---
+  const parts = data.quickInfo.offerPrice.split(" ");
+  const originalPrice = parts.length > 2 ? `${parts[0]} ${parts[1]}` : null;
+  const currentPrice =
+    parts.length > 2 ? `${parts[2]} ${parts[3]}` : data.quickInfo.offerPrice;
+
+  // --- Slider Logic ---
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false); // Track play state for custom UI
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % mediaAssets.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex(
+      (prev) => (prev - 1 + mediaAssets.length) % mediaAssets.length,
+    );
+  };
+
+  // --- Video.js Logic (Including YouTube) ---
+  const videoNode = useRef<HTMLVideoElement>(null);
+  const playerRef = useRef<any>(null);
+
+  const currentMedia = mediaAssets[currentIndex];
+  const isVideo = currentMedia?.type === "video";
+
+  useEffect(() => {
+    // 1. Cleanup existing player
+    if (playerRef.current) {
+      playerRef.current.dispose();
+      playerRef.current = null;
+    }
+
+    // 2. Initialize Player if Video Slide
+    if (isVideo && videoNode.current) {
+      playerRef.current = videojs(videoNode.current, {
+        controls: false, // We will use custom play button for cleaner look
+        autoplay: false,
+        preload: "auto",
+        fluid: true, // Maintains aspect ratio
+        responsive: true,
+        fill: true,
+        // YouTube Specific Config
+        techOrder: ["youtube"],
+        sources: [
+          {
+            type: "video/youtube",
+            src: currentMedia.src,
+          },
+        ],
+        youtube: { iv_load_policy: 1 },
+      });
+
+      // Play button click handler
+      const customPlayBtn = document.querySelector(".vjs-custom-play-btn");
+      if (customPlayBtn) {
+        customPlayBtn.addEventListener("click", () => {
+          if (playerRef.current) playerRef.current.play();
+        });
+      }
+
+      // Listen for play/pause events to update state
+      if (playerRef.current) {
+        playerRef.current.on("play", () => setIsPlaying(true));
+        playerRef.current.on("pause", () => setIsPlaying(false));
+        playerRef.current.on("ended", () => setIsPlaying(false));
+      }
+    }
+
+    // Cleanup
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.dispose();
+        playerRef.current = null;
+      }
+    };
+  }, [currentIndex, isVideo, currentMedia?.src]); // Re-run when slide changes
+
+  // Custom Play Button Handler
+  const handlePlayClick = () => {
+    if (playerRef.current) {
+      playerRef.current.play();
+    }
+  };
+
+  return (
+    <div className="">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* --- IMAGE / VIDEO SLIDER SECTION --- */}
+        <div className="relative h-[220px] bg-black group overflow-hidden rounded-t-xl">
+          {/* 1. IMAGE SLIDE */}
+          {!isVideo && currentMedia && (
+            <div className="absolute inset-0 w-full h-full">
+              <Image
+                src={currentMedia.src}
+                alt="Course Preview"
+                fill
+                className="object-cover"
+                priority
+              />
+              {/* Professional Gradient Overlay for Images */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+            </div>
+          )}
+
+          {/* 2. VIDEO SLIDE (Video.js + YouTube) */}
+          {isVideo && currentMedia && (
+            <div
+              data-vjs-player
+              className="absolute inset-0 w-full h-full rounded-t-xl overflow-hidden"
+            >
+              <video
+                ref={videoNode}
+                className="video-js vjs-big-play-centered vjs-show-big-play-button-on-pause w-full h-full"
+                poster={currentMedia.poster}
+              >
+                <source src={currentMedia.src} type="video/youtube" />
+                Your browser does not support the video tag.
+              </video>
+
+              {/* Professional Gradient Overlay for Video */}
+              {!isPlaying && (
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10" />
+              )}
+            </div>
+          )}
+
+          {/* --- PROFESSIONAL CUSTOM PLAY BUTTON --- */}
+          {/* Only show if video, or if image (optional) */}
+          {isVideo && !isPlaying && (
+            <button
+              onClick={handlePlayClick}
+              className="vjs-custom-play-btn absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 md:w-20 md:h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 border-2 border-white/30 z-30 group-hover:bg-white/40"
+            >
+              <Play className="h-8 w-8 text-white fill-white ml-1" />
+            </button>
+          )}
+
+          {/* --- SLIDER CONTROLS --- */}
+
+          {/* Left Arrow */}
+          {mediaAssets.length > 1 && (
+            <button
+              onClick={prevSlide}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white rounded-full p-2 z-40 transition-all backdrop-blur-sm border border-white/20"
+              aria-label="Previous Slide"
+            >
+              <ChevronLeft size={20} />
+            </button>
+          )}
+
+          {/* Right Arrow */}
+          {mediaAssets.length > 1 && (
+            <button
+              onClick={nextSlide}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white rounded-full p-2 z-40 transition-all backdrop-blur-sm border border-white/20"
+              aria-label="Next Slide"
+            >
+              <ChevronRight size={20} />
+            </button>
+          )}
+
+          {/* Pagination Dots */}
+          {mediaAssets.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-40">
+              {mediaAssets.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`h-2 rounded-full transition-all ${
+                    currentIndex === idx ? "w-6 bg-white" : "w-2 bg-white/50"
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* --- CARD CONTENT (Price, Buttons, etc) --- */}
+        <div className="p-6">
+          <div className="flex items-end gap-3 mb-6">
+            <span className="text-3xl font-bold text-gray-900">
+              {currentPrice}
+            </span>
+            {originalPrice && (
+              <span className="text-xl text-gray-400 line-through mb-1.5">
+                {originalPrice}
+              </span>
+            )}
+          </div>
+          <div className="text-sm text-gray-500 mb-6 min-h-[40px]">
+            {data.quickInfo.offerText}
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {/* Primary CTA */}
+            <Button
+              onClick={onEnroll}
+              className="w-full py-3 rounded-lg text-white font-bold text-lg shadow-md hover:shadow-lg transition-all active:scale-95 bg-[#F3056D]"
+            >
+              {data.quickInfo.cta1}
+            </Button>
+
+            {/* Secondary CTA */}
+            <h4 onClick={onEnroll} className="">
+              {data.quickInfo.cta2}
+            </h4>
+          </div>
+
+          <div className="space-y-3 text-sm text-gray-600 mt-6">
+            <p className="font-bold text-gray-900 mb-2">
+              {data.quickInfo.title}
+            </p>
+            {data.quickInfo.items
+              .slice(0, 5)
+              .map((item: string, idx: number) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <span className="mt-0.5">
+                    <Check size={18} className="text-[#F3056D]" />
+                  </span>
+                  <span>{item}</span>
+                </div>
+              ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EnrollmentCard;

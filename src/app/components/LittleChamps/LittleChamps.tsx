@@ -57,30 +57,31 @@ const LittleChamps = () => {
 
           {/* first column second card (Card 2) */}
           <div className="bg-linear-to-b md:w-[400px] h-[389px] from-[#00477C] to-[#FF8FCA]/30 p-1 rounded-[40px]">
-            <div className="bg-[radial-gradient(circle,#DD2675,#00477C)]  w-full h-full rounded-[36px] ">
-              <div className="w-full mx-auto p-5.5 relative">
-                <div className="h-[229px] w-[351px]">
+            <div className="bg-[radial-gradient(circle,#DD2675,#00477C)] overflow-hidden w-full h-full rounded-[36px] ">
+              <div className="w-full mx-auto  relative">
+                <div className="">
                   <Image
-                    src={"/assets/groupimg.png"}
-                    height={229}
-                    width={351}
+                    src={"/highquality.png"}
+                    height={300}
+                    width={400}
                     alt="group Meeting"
                     className="object-cover rounded-[26px]"
                   />
+                  {/* <h4
+                    className="md:text-2xl text-3xl font-semibold text-center mt-12 leading-tight"
+                    dangerouslySetInnerHTML={{ __html: cards[1].title }}
+                  /> */}
                 </div>
-                <div className="absolute -bottom-8">
+
+                {/* <div className="absolute -bottom-8">
                   <Image
                     src={"/assets/liveicon.webp"}
                     height={120}
                     width={120}
                     alt="live icon"
                   />
-                </div>
+                </div> */}
               </div>
-              <h4
-                className="md:text-2xl text-3xl font-semibold text-center mt-12 leading-tight"
-                dangerouslySetInnerHTML={{ __html: cards[1].title }}
-              />
             </div>
           </div>
         </div>
@@ -88,31 +89,31 @@ const LittleChamps = () => {
         {/* second column */}
         <div className="flex flex-col gap-6 ">
           {/* second column first card (Card 3) */}
-          <div className="bg-linear-to-b from-[#F3066E] to-[#FFFFFF] md:h-[300px] md:w-[316px] rounded-[40px] p-0.5 overflow-hidden">
-            <div className="flex ">
+          <div className="bg-linear-to-b from-[#F3066E] to-[#FFFFFF] md:h-[300px] md:w-[316px] rounded-[40px]  overflow-hidden">
+            <div className="flex p-0.5">
               <Image
-                src={"/assets/topic.png"}
+                src={"/topic.png"}
                 width={300}
                 height={300}
                 alt={cards[2].alt}
-                className="w-full"
+                className="w-full rounded-[38px]"
               />
             </div>
           </div>
           {/* second column second card (Card 4) */}
           <div className="bg-[radial-gradient(circle,_#DD2675_0%,_#DD2675_30%,_#371826_100%)] md:h-[268px] md:w-[316px] rounded-[40px] p-0.5 overflow-hidden">
-            <div className="flex items-center justify-center py-7">
+            <div className="flex items-center justify-center flex-col gap2 py-7">
               <Image
-                src={"/assets/books.webp"}
+                src={"/books.webp"}
                 width={148}
                 height={148}
                 alt="books image"
                 className="h-[148px] w-[148px] mx-auto "
               />
-            </div>
-            <div className="text-center text-2xl font-semibold pb-3 md:pb-0">
-              {/* Render HTML for <br /> */}
-              <span dangerouslySetInnerHTML={{ __html: cards[3].title }} />
+              <div className="text-center text-2xl font-semibold mb-3">
+                {/* Render HTML for <br /> */}
+                <span dangerouslySetInnerHTML={{ __html: cards[3].title }} />
+              </div>
             </div>
           </div>
         </div>

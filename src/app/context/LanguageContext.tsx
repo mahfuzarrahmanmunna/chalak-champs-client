@@ -22,7 +22,6 @@ import faqBangla from "../data/translations/faq-bangla.json";
 import mailchimpEnglish from "../data/translations/mailchimp-english.json";
 import mailchimpBangla from "../data/translations/mailchimp-bangla.json";
 
-// --- NEW IMPORTS ---
 import featuresEnglish from "../data/translations/features-english.json";
 import featuresBangla from "../data/translations/features-bangla.json";
 
@@ -37,6 +36,21 @@ import littleChampsBangla from "../data/translations/littlechamps-bangla.json";
 
 import offlineEnglish from "../data/translations/offline-english.json";
 import offlineBangla from "../data/translations/offline-bangla.json";
+
+import ctaEnglish from "../data/translations/cta-english.json";
+import ctaBangla from "../data/translations/cta-bangla.json";
+
+import footerEnglish from "../data/translations/footer-english.json";
+import footerBangla from "../data/translations/footer-bangla.json";
+
+// --- NEW IMPORTS FOR SINGLE COURSE ---
+import singlecourseEnglish from "../data/translations/singlecourse-english.json";
+import singlecourseBangla from "../data/translations/singlecourse-bangla.json";
+
+
+import aboutUsEnglish from "../data/translations/aboutus-english.json";
+import aboutUsBangla from "../data/translations/aboutus-bangla.json";
+
 
 // Types
 type Translations = {
@@ -170,6 +184,182 @@ interface OfflineCoursesData {
   };
 }
 
+interface CTAData {
+  form: {
+    title: string;
+    studentName: string;
+    fatherName: string;
+    phone: string;
+    class: string;
+    course: string;
+    cta: string;
+  };
+  needHelp: {
+    title: string;
+    desc: string;
+    cta: string;
+    subCta: string;
+  };
+  videoLibrary: {
+    title: string;
+    cta: string;
+  };
+  facebook: {
+    title: string;
+    cta: string;
+  };
+}
+
+interface FooterData {
+  about: {
+    title: string;
+    tagline: string;
+  };
+  links: Array<{
+    title: string;
+    items: string[];
+  }>;
+  contact: {
+    address: string;
+    phone: string;
+    email: string;
+  };
+  socials: {
+    facebook: string;
+    youtube: string;
+    linkedin: string;
+    instagram: string;
+  };
+  copyright: string;
+}
+
+export interface AboutUsData {
+  hero: {
+    title: string;
+    subtitle: string;
+  };
+  whoWeAre: {
+    title: string;
+    bangla: string;
+    english: string;
+  };
+  missionVision: {
+    title: string;
+    mission: {
+      title: string;
+      bangla: string;
+      english: string;
+    };
+    vision: {
+      title: string;
+      bangla: string;
+      english: string;
+    };
+    // Adding a 3rd card for balance based on content
+    values: {
+      title: string;
+      bangla: string;
+      english: string;
+    };
+  };
+  whatWeOffer: {
+    title: string;
+    introBangla: string;
+    introEnglish: string;
+    tagsBangla: string;
+    tagsEnglish: string;
+  };
+  cta: {
+    title: string;
+    body: string;
+    cta1: string;
+    cta2: string;
+    below: string;
+  };
+}
+
+// --- NEW INTERFACE FOR SINGLE COURSE PAGE ---
+// Defining it exactly based on your provided JSON structure
+export interface SingleCourseData {
+  breadcrumb: string;
+  hero: {
+    title: string;
+    subtitle: string;
+  };
+  quickInfo: {
+    title: string;
+    items: string[];
+    offerPrice: string;
+    offerText: string;
+    cta1: string;
+    cta2: string;
+    ctaBelow: string;
+  };
+  overview: {
+    title: string;
+    content: string;
+  };
+  levels: {
+    title: string;
+    intro: string;
+    level1: {
+      title: string;
+      for: string;
+      intro: string;
+      items: string[];
+    };
+    level2: {
+      title: string;
+      for: string;
+      intro: string;
+      items: string[];
+    };
+  };
+  whoIsThisFor: {
+    title: string;
+    intro: string;
+    items: string[];
+    boldStatement: string;
+  };
+  features: {
+    title: string;
+    cards: Array<{
+      title: string;
+      body: string;
+    }>;
+  };
+  syllabus: {
+    title: string;
+    content: string;
+  };
+  finalCta: {
+    title: string;
+    body: string;
+    cta1: string;
+    cta2: string;
+    cta3: string;
+    ctaBelow: string;
+  };
+  payment: {
+    title: string;
+    description: string;
+  };
+  instructor: {
+    title: string;
+    info: string;
+  };
+  review: {
+    title: string;
+  };
+  faq: {
+    title: string;
+    items: Array<{
+      q: string;
+      a: string;
+    }>;
+  };
+}
+
 type LanguageContextType = {
   isBangla: boolean;
   currentLang: "en" | "bn";
@@ -179,12 +369,16 @@ type LanguageContextType = {
   isLoading: boolean;
   menuData: MenuData;
   featureCourses: FeatureCoursesData;
-  // Added featuresData to context type
   featuresData: FeaturesData;
   coursesData: CoursesData;
   libraryData: LibraryData;
   littleChampsData: LittleChampsData;
   offlineData: OfflineCoursesData;
+  ctaData: CTAData;
+  footerData: FooterData;
+  // Added singleCourseData to context type
+  singleCourseData: SingleCourseData;
+  aboutUsData: AboutUsData;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -200,11 +394,11 @@ const getLanguageData = (isBangla: boolean) => {
   const common = isBangla ? commonBangla : commonEnglish;
   const faq = isBangla ? faqBangla : faqEnglish;
   const mailchimp = isBangla ? mailchimpBangla : mailchimpEnglish;
-
+  const cta = (isBangla ? ctaBangla : ctaEnglish) as CTAData;
   // Extract featureCourses from common
   const { featureCourses, ...commonStrings } = common || {};
+  const footer = (isBangla ? footerBangla : footerEnglish) as FooterData;
 
-  // --- GET FEATURES DATA ---
   const features = (
     isBangla ? featuresBangla : featuresEnglish
   ) as FeaturesData;
@@ -219,6 +413,13 @@ const getLanguageData = (isBangla: boolean) => {
   ) as OfflineCoursesData;
 
   const courses = (isBangla ? coursesBangla : coursesEnglish) as CoursesData;
+
+  // --- GET SINGLE COURSE DATA ---
+  const singleCourse = (
+    isBangla ? singlecourseBangla : singlecourseEnglish
+  ) as SingleCourseData;
+
+  const aboutUs = (isBangla ? aboutUsBangla : aboutUsEnglish) as AboutUsData;
 
   const merged = {
     ...(navbarStrings as unknown as Translations),
@@ -246,6 +447,10 @@ const getLanguageData = (isBangla: boolean) => {
     library,
     littleChamps,
     offline,
+    cta,
+    footer,
+    singleCourse, // Return the single course data
+    aboutUs,
   };
 };
 
@@ -261,10 +466,8 @@ export const LanguageProvider = ({
   const router = useRouter();
   const pathname = usePathname();
 
-  // Determine state based on the URL 'initialLang' passed from layout
   const [isBangla, setIsBangla] = useState<boolean>(initialLang === "bn");
 
-  // Sync state if URL changes (e.g. via back button)
   useEffect(() => {
     setIsBangla(initialLang === "bn");
   }, [initialLang]);
@@ -279,31 +482,26 @@ export const LanguageProvider = ({
     library,
     littleChamps,
     offline,
+    cta,
+    footer,
+    singleCourse,
+    aboutUs,
   } = useMemo(() => {
     return getLanguageData(isBangla);
   }, [isBangla]);
 
   const toggleLanguage = () => {
-    // --- FIX FOR SCROLL JUMP ---
-    // 1. Current scroll position save koro
     const scrollY = window.scrollY;
-
-    // Logic to switch /en/ to /bn/ or vice versa
     const currentLang = isBangla ? "bn" : "en";
     const newLang = isBangla ? "en" : "bn";
 
-    // Replace the language segment in the current path
-    // pathname will be something like "/en/courses"
     if (pathname.startsWith(`/${currentLang}`)) {
       const newPath = pathname.replace(`/${currentLang}`, `/${newLang}`);
       router.push(newPath);
     } else {
-      // Fallback
       router.push(`/${newLang}`);
     }
 
-    // 2. Scroll position restore koro
-    // Next.js router push hote some time lag thake, tai setTimeout use kora safe.
     setTimeout(() => {
       window.scrollTo(0, scrollY);
     }, 50);
@@ -320,11 +518,15 @@ export const LanguageProvider = ({
         isLoading: false,
         menuData: menu,
         featureCourses: featureCourses || ({} as FeatureCoursesData),
-        featuresData: features || ({} as FeaturesData), // Pass features data
+        featuresData: features || ({} as FeaturesData),
         coursesData: courses || ({} as CoursesData),
         libraryData: library || ({} as LibraryData),
         littleChampsData: littleChamps || ({} as LittleChampsData),
         offlineData: offline || ({} as OfflineCoursesData),
+        ctaData: cta || ({} as CTAData),
+        footerData: footer || ({} as FooterData),
+        singleCourseData: singleCourse || ({} as SingleCourseData), // Provide to context
+        aboutUsData: aboutUs || ({} as AboutUsData),
       }}
     >
       {children}

@@ -1,8 +1,8 @@
 {
   "bookAFreeClass": "একটি ক্লাস বুক করুন",
   "allCourses": "সকল কোর্স",
-  "skills": "দক্ষতা",
   "kidsEnglish": "Kids ইংলিশ",
+  "skills": "স্কিলস",
   "more": "অন্যান্য ",
   "callUs": "কল করুন",
   "login": "লগ ইন",
@@ -51,10 +51,6 @@
       {
         "title": "অফলাইন ",
         "description": "ব্যাকরণ এবং শব্দভান্ডার"
-      },
-      {
-        "title": "টিন ইংরেজি (১৩-১৭)",
-        "description": "একাডেমিক শ্রেষ্ঠত্ব"
       }
     ],
     "more": [

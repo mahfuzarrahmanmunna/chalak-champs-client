@@ -1,0 +1,37 @@
+{
+  "hero": {
+    "title": "About Chalak Champs",
+    "subtitle": "Bangladesh's #1 Skill-Based Kids Learning Platform - where every child becomes future-ready"
+  },
+  "whoWeAre": {
+    "title": "Who We Are",
+     "english": "Chalak Champs is a modern Skill-Based Learning Platform in Bangladesh, built to give children aged 3 to 15 real-life skills they need to thrive in tomorrow's world. We believe academic grades alone don't define a child's future. True growth comes from confidence, communication, creativity, and ability to solve real problems, and that's exactly what every course at Chalak Champs is designed to build."
+  },
+  "missionVision": {
+    "title": "Our Mission & Vision",
+    "mission": {
+      "title": "Our Mission",
+      "english": "To make every child confident, skilled, and future-ready , through learning that is fun, practical, and effective."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "english": "To become Bangladesh's most trusted Skill-Based Learning Platform , where every child is prepared for the future."
+    },
+    "values": {
+      "title": "Our Values",
+       "english": "We believe in building confidence, not just academic scores. We focus on practical skills that matter."
+    }
+  },
+  "whatWeOffer": {
+    "title": "What We Offer",
+    "introEnglish": "Every course at Chalak Champs is carefully designed to be simple, interactive, and practical , so children don't just learn, they apply.",
+    "tagsEnglish": "Each course is tailored to child's age and learning pace , so growth feels natural, not forced."
+  },
+  "cta": {
+    "title": "Start Your Child's Journey Today",
+    "body": "One free demo class is all it takes , see for yourself why thousands of parents across Bangladesh trust Chalak Champs.",
+    "cta1": "Book a Free Class →",
+    "cta2": " +88 01740176774 (24/7)",
+    "below": "Limited seats, confirm today"
+  }
+}

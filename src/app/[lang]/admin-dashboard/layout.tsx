@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -22,17 +22,22 @@ export default function AdminDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Prevent rendering during build time
-  if (typeof window === 'undefined') {
-    return <>{children}</>;
-  }
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser, logout } = useAuth();
   const { t, isBangla } = useLanguage();
-  // const { currentUser } = useCurrentUser();
+
+  // Mount effect to prevent hydration mismatch and check admin status
+  useEffect(() => {
+    setIsMounted(true);
+    
+    // Check if user is admin after mounting
+    if (currentUser && currentUser.role !== "admin") {
+      router.push("/en/admin-dashboard");
+    }
+  }, [currentUser, router]);
 
   const handleLogout = async () => {
     try {
@@ -46,78 +51,77 @@ export default function AdminDashboardLayout({
   const navigation = [
     {
       name: t.dashboard || "Dashboard",
-      href: "/admin-dashboard",
+      href: "/en/admin-dashboard",
       icon: HomeIcon,
-      current: pathname === "/admin-dashboard",
+      current: pathname === "/en/admin-dashboard",
     },
     {
       name: t.users || "Users",
-      href: "/admin-dashboard/manage-users",
+      href: "/en/admin-dashboard/manage-users",
       icon: FaUserGroup,
-      current: pathname === "/admin-dashboard/manage-users",
+      current: pathname === "/en/admin-dashboard/manage-users",
     },
     {
       name: t.courses || "Courses",
-      href: "/admin-dashboard/manage-courses",
+      href: "/en/admin-dashboard/manage-courses",
       icon: HiAcademicCap,
-      current: pathname === "/admin-dashboard/manage-courses",
+      current: pathname === "/en/admin-dashboard/manage-courses",
     },
     // --- NEW LINK ADDED HERE ---
     {
       name: "Create Course", 
-      href: "/admin-dashboard/courses/create",
+      href: "/en/admin-dashboard/courses/create",
       icon: HiPlus,
-      current: pathname === "/admin-dashboard/courses/create",
+      current: pathname === "/en/admin-dashboard/courses/create",
     },
     {
       name: "Manage Leads", 
-      href: "/admin-dashboard/manage-leads-modal",
+      href: "/en/admin-dashboard/manage-leads-modal",
       icon: HiPlus,
-      current: pathname === "/admin-dashboard/manage-leads-modal",
+      current: pathname === "/en/admin-dashboard/manage-leads-modal",
     },
     // --------------------------
     {
       name: t.analytics || "Analytics",
-      href: "/admin-dashboard/analytics",
+      href: "/en/admin-dashboard/analytics",
       icon: ChartBarIcon,
-      current: pathname === "/admin-dashboard/analytics",
+      current: pathname === "/en/admin-dashboard/analytics",
     },
     {
       name: t.content || "Content",
-      href: "/admin-dashboard/content",
+      href: "/en/admin-dashboard/content",
       icon: GrDocumentText,
-      current: pathname === "/admin-dashboard/content",
+      current: pathname === "/en/admin-dashboard/content",
     },
     {
       name: t.lessons || "Lessons",
-      href: "/admin-dashboard/lessons",
+      href: "/en/admin-dashboard/lessons",
       icon: BookOpenIcon,
-      current: pathname === "/admin-dashboard/lessons",
+      current: pathname === "/en/admin-dashboard/lessons",
     },
     {
       name: t.payments || "Payments",
-      href: "/admin-dashboard/payments",
+      href: "/en/admin-dashboard/payments",
       icon: BsCurrencyDollar,
-      current: pathname === "/admin-dashboard/payments",
+      current: pathname === "/en/admin-dashboard/payments",
     },
     {
       name: t.settings || "Settings",
-      href: "/admin-dashboard/settings",
+      href: "/en/admin-dashboard/settings",
       icon: CogIcon,
-      current: pathname === "/admin-dashboard/settings",
+      current: pathname === "/en/admin-dashboard/settings",
     },
     {
       name: t.help || "Help",
-      href: "/admin-dashboard/help",
+      href: "/en/admin-dashboard/help",
       icon: HiQuestionMarkCircle,
-      current: pathname === "/admin-dashboard/help",
+      current: pathname === "/en/admin-dashboard/help",
     },
   ];
 
-  // Check if user is admin
-  if (currentUser && currentUser.role !== "admin") {
-    router.push("/admin-dashboard");
-    return null;
+  // Only render layout after client-side hydration
+  if (!isMounted) {
+    return children;
   }
 
   console.log("AdminDashboardLayout rendered with user:", currentUser);

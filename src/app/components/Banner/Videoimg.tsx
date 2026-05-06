@@ -364,7 +364,7 @@ const Videoimg = () => {
             onContextMenu={handleContextMenu}
           >
             <Image
-              src="/videoimg.jpg"
+              src="/videoimg.png"
               fill
               alt="Video Thumbnail"
               className="object-cover transition-transform duration-500 group-hover:scale-105 pointer-events-none"

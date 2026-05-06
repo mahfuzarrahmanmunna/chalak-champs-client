@@ -1,7 +1,3 @@
-// src/app/course-details/[id]/page.tsx
-
-// import { coursesData } from "@/data/coursesData";
-// import { coursesData } from "../../../../data/coursesData";
 import { coursesData } from "../../../../../data/coursesData";
 import CourseDetails from "./CourseDetails";
 

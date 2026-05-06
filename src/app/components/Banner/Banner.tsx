@@ -104,7 +104,7 @@ const Banner = () => {
 
   return (
     <div className="">
-      <div className="text-center py-10 md:max-w-205 mx-auto font-inter">
+      <div className="text-center md:max-w-205 mx-auto font-inter">
         {/* Intro P Tag */}
         <p className="text-2xl text-gray-600 leading-18.75">{introText}</p>
 
@@ -113,14 +113,14 @@ const Banner = () => {
             {/* Main H1 Tag with Champ styling */}
             <h1 className="text-4xl md:text-6xl font-bold text-[#00477C] pointer-events-none tracking-[-3%] md:tracking-[-4px] leading-12 md:leading-18.75">
               {beforeChamp} <br className="flex md:hidden" />{" "}
-              <span className="ml-2 text-[#F3066E]">Champ</span>
+              <span className="ml-2 mr-0 pr-0 text-[#F3066E]">Champ</span>
             </h1>
 
             {/* Dashed Border Box */}
             <div
               className="absolute pointer-events-none flex items-center justify-center z-10
              right-14 bottom-0.5 w-32.5 h-11.5 
-             md:right-[calc(50%-330px)] md:bottom-0 md:w-57.5 md:h-17.5 "
+             md:right-[calc(50%-325px)] md:bottom-0 md:w-57.5 md:h-17.5 "
             >
               <div className="w-full h-full border-2 border-dashed border-[#F3066E] relative z-0">
                 <span className="absolute -top-1 -left-1 w-2.5 h-2.5 bg-[#F3066E]"></span>

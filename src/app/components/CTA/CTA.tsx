@@ -5,8 +5,8 @@ import { User, Phone, ChevronDown, Search } from "lucide-react";
 import Image from "next/image";
 import Button from "@/app/ui/button/Button";
 import BirdIcon from "./BirdIcon";
-import SpotlightWrapper from "../SpotlightWrapper/SpotlightWrapper";
 import NeedCall from "./NeedCall";
+import { useLanguage } from "@/app/context/LanguageContext"; // Adjust path
 
 // Types
 interface Country {
@@ -17,13 +17,16 @@ interface Country {
 }
 
 const CTA = () => {
+  // 1. Get data from context
+  const { ctaData } = useLanguage();
+
   // --- Form State ---
   const [formData, setFormData] = useState({
     studentName: "",
     fatherName: "",
     phone: "",
-    class: "", // Updated to match your HTML
-    course: "", // Updated to match your HTML
+    class: "",
+    course: "",
   });
 
   // --- Phone & Country State ---
@@ -83,7 +86,6 @@ const CTA = () => {
   };
 
   // --- Validation Logic ---
-  // Checks if every field in formData is not empty
   const isFormValid = Object.values(formData).every(
     (value) => value.trim() !== "",
   );
@@ -98,9 +100,9 @@ const CTA = () => {
     <div className="container mx-auto py-10">
       {/* MAIN SHELL (Your Pink Gradient Wrapper) */}
       <div className="w-full bg-linear-to-b from-[#F3066E] to-[#FF8FCA] rounded-4xl p-0.5 ">
-        <div className="bg-[#F3066E] relative  md:p-16 md:space-y-0 space-y-6 p-4 rounded-[30px] md:flex justify-between items-center">
+        <div className="bg-[#F3066E] relative  md:p-16 md:space-y-0 space-y-6 p-4 rounded-[30px] md:flex gap-12 justify-between items-center">
           {/* REAL FORM COMPONENT (White Card) */}
-          <div className="relative text-black md:w-120">
+          <div className="relative text-black md:w-140">
             <div className="absolute -top-24.5 -rotate-2 right-16">
               <BirdIcon />
             </div>
@@ -109,13 +111,14 @@ const CTA = () => {
               className="space-y-4 md:max-w-100 bg-white h-full rounded-3xl p-6 text-sm "
             >
               <h4 className="text-xl font-semibold text-[#F3066E] leading-6">
-                ফ্রি ডেমো ক্লাস বুক করতে রেজিস্ট্রেশন করো
+                {ctaData.form.title}
               </h4>
 
               {/* Student Name */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold  text-gray-700">
-                  শিক্ষার্থীর নাম <span className="text-red-500">*</span>
+                  {ctaData.form.studentName}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
@@ -133,7 +136,7 @@ const CTA = () => {
               {/* Father's Name */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold  text-gray-700">
-                  শিক্ষার্থীর অভিভাবকের নাম{" "}
+                  {ctaData.form.fatherName}{" "}
                   <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -152,10 +155,9 @@ const CTA = () => {
               {/* Phone Number with Flag */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold pb-2 text-gray-700">
-                  ফোন নাম্বার <span className="text-red-500">*</span>
+                  {ctaData.form.phone} <span className="text-red-500">*</span>
                 </label>
 
-                {/* REMOVED 'overflow-hidden' from here */}
                 <div className="flex rounded-xl border border-gray-200 bg-gray-50 focus-within:ring-2 focus-within:ring-[#F3066E] focus-within:border-transparent transition-all relative z-0">
                   {/* Country Selector */}
                   <div className="relative w-20 active:rounded-2xl hover:rounded-2xl rounded-2xl shrink-0 bg-white z-10">
@@ -224,7 +226,6 @@ const CTA = () => {
                   </div>
 
                   {/* Phone Input */}
-                  {/* Added 'pl-2' for spacing and removed rounded-tl/bl-xl because the flag has them */}
                   <input
                     type="tel"
                     name="phone"
@@ -240,7 +241,7 @@ const CTA = () => {
               {/* Class */}
               <div className="space-y-2 z-0">
                 <label className="text-sm  font-semibold pb-2 text-gray-700">
-                  শিক্ষার্থীর ক্লাস <span className="text-red-500">*</span>
+                  {ctaData.form.class} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <select
@@ -269,8 +270,7 @@ const CTA = () => {
               {/* Course */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold pb-2 text-gray-700">
-                  শিক্ষার্থী কোন কোর্সটি করতে আগ্রহী{" "}
-                  <span className="text-red-500">*</span>
+                  {ctaData.form.course} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <select
@@ -299,12 +299,12 @@ const CTA = () => {
                     : "bg-gray-300 text-gray-500 cursor-not-allowed shadow-[inset_0px_1.5px_0px_#D9D9D9,inset_0px_1.5px_1.5px_rgba(217,217,217,0.3),inset_0px_0px_1.5px_#D9D9D9,inset_0px_3.01px_7.52px_rgba(217,217,217,0.3)]"
                 }`}
               >
-                সাবমিট করো
+                {ctaData.form.cta}
               </button>
             </form>
           </div>
           {/* right side content */}
-         <NeedCall/>
+          <NeedCall />
 
           <div className="absolute bottom-0 right-0 z-0 opacity-50 md:opacity-100">
             <Image

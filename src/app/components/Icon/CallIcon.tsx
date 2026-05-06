@@ -2,7 +2,7 @@ import React from 'react';
 
 const CallIcon = () => {
     return (
-      <div>
+      <div className='hover:text-secondary'>
         <svg
           width="15"
           height="15"
