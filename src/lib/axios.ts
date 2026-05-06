@@ -1,5 +1,5 @@
 // lib/axios.ts
-import axios from "axios";
+import axios, { RawAxiosRequestHeaders } from "axios";
 import { getAuth } from "firebase/auth";
 import app from "./firebase";
 
@@ -16,13 +16,19 @@ const axiosInstance = axios.create({
 // Request Interceptor: Attach Firebase ID Token
 axiosInstance.interceptors.request.use(
   async (config) => {
-    const auth = getAuth(app);
-    const user = auth.currentUser;
+    if (typeof window === "undefined") return config;
+
+    const authInstance = getAuth(app);
+    const user = authInstance.currentUser;
 
     if (user) {
       try {
-        const token = await user.getIdToken(true); // Force refresh to ensure token is valid
-        config.headers.Authorization = `Bearer ${token}`;
+        const token = await user.getIdToken(true);
+        if (config.headers) {
+          config.headers.Authorization = `Bearer ${token}`;
+        } else {
+          config.headers = { Authorization: `Bearer ${token}` } as any;
+        }
       } catch (error) {
         console.error("Error getting token:", error);
       }
@@ -39,9 +45,8 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Optionally trigger a logout here if token is invalid
-      console.error("Unauthorized access - logging out");
-      // You might want to call a logout function from context here
+      // Token is invalid, user needs to re-authenticate
+      // Note: Actual logout is handled by AuthContext when getProfile fails
     }
     return Promise.reject(error);
   },

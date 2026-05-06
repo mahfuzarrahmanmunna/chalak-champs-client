@@ -8,7 +8,7 @@ export interface UserProfile {
   lastName: string;
   email?: string;
   phoneNumber?: string;
-  role: string;
+  role: "student" | "teacher" | "admin";
 }
 
 export interface RegisterData {

@@ -14,6 +14,7 @@ import {
   RecaptchaVerifier,
   onAuthStateChanged,
   User as FirebaseUser,
+  ConfirmationResult,
   signOut,
   updateProfile,
 } from "firebase/auth";
@@ -33,7 +34,7 @@ interface AppUser {
   lastName: string;
   email?: string;
   phoneNumber?: string;
-  role: string;
+  role: "student" | "teacher" | "admin";
 }
 
 interface AuthContextType {
@@ -64,6 +65,8 @@ interface AuthContextType {
     firstName: string;
     lastName: string;
     password?: string;
+    emailOrPhone?: string;
+    method?: "email" | "phone";
   }) => Promise<void>;
 }
 
@@ -74,33 +77,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-
-  // Prevent Firebase initialization during build time
-  if (typeof window === 'undefined') {
-    return <>{children}</>;
-  }
-
-  console.log("AuthProvider rendered. Current Firebase User:", currentUser);
-
-  // --- Helper: Convert Phone to Email Alias ---
-  // This allows "Phone + Password" login to work on Firebase Email/Password Auth
-  const normalizePhoneToEmail = (phone: string) => {
-    const cleanPhone = phone.replace(/[^0-9]/g, "");
-    return `${cleanPhone}@langual-academy.com`;
-  };
-
-  // 1. Initialize Recaptcha for Phone Auth
-  const setupRecaptcha = (container: string) => {
-    if (typeof window === "undefined") return null;
-    try {
-      return new RecaptchaVerifier(auth, container, {
-        size: "invisible",
-      });
-    } catch (error) {
-      console.error("Recaptcha error", error);
-      return null;
-    }
-  };
 
   // 2. Sync Firebase State with Backend
   useEffect(() => {
@@ -126,16 +102,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return unsubscribe;
   }, []);
 
+  console.log("AuthProvider rendered. Current Firebase User:", currentUser);
+
+  // --- Helper: Convert Phone to Email Alias ---
+  // This allows "Phone + Password" login to work on Firebase Email/Password Auth
+  const normalizePhoneToEmail = (phone: string) => {
+    const cleanPhone = phone.replace(/[^0-9]/g, "");
+    return `${cleanPhone}@langual-academy.com`;
+  };
+
+  // 1. Initialize Recaptcha for Phone Auth
+  const setupRecaptcha = (container: string) => {
+    if (typeof window === "undefined") return null;
+    try {
+      return new RecaptchaVerifier(auth, container, {
+        size: "invisible",
+      });
+    } catch (error) {
+      console.error("Recaptcha error", error);
+      return null;
+    }
+  };
+
   // 3. Standard Login (Internal)
-const login = async (email: string, password: string) => {
-  const cleanEmail = email.trim();
-  const cleanPassword = password.trim();
+  const login = async (email: string, password: string) => {
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
 
-  await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
+    await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
 
-  // The useEffect will trigger getProfile() to sync DB automatically
-  router.push("/dashboard");
-};
+    // The useEffect will trigger getProfile() to sync DB automatically
+    router.push("/dashboard");
+  };
 
   // 4. Specific Login Functions for SignInPage
   const signInWithEmail = async (email: string, password: string) => {
@@ -172,7 +170,7 @@ const login = async (email: string, password: string) => {
       uid: cred.user.uid,
       firstName,
       lastName,
-      email: cred.user.email,
+      email: cred.user.email || undefined,
       role: "student",
     });
 
@@ -190,7 +188,7 @@ const login = async (email: string, password: string) => {
   };
 
   // 8. Custom OTP: Phone Flow
-  const confirmationResultRef = React.useRef<any>(null);
+  const confirmationResultRef = React.useRef<ConfirmationResult | null>(null);
 
   const sendOtpPhone = async (phone: string, container: string) => {
     const recaptchaVerifier = setupRecaptcha(container);
@@ -204,7 +202,10 @@ const login = async (email: string, password: string) => {
   };
 
   const checkOtpPhone = async (phone: string, code: string) => {
-    const result = await confirmationResultRef.current.confirm(code);
+    if (!confirmationResultRef.current) {
+      throw new Error("No confirmation result available");
+    }
+    await confirmationResultRef.current.confirm(code);
     // Firebase Phone Auth Successful. User is logged in to Firebase.
     // Next step: Register in MongoDB.
   };
@@ -217,15 +218,18 @@ const login = async (email: string, password: string) => {
     emailOrPhone?: string;
     method?: "email" | "phone";
   }) => {
-    let firebaseUser = currentUser;
+    let firebaseUser = auth?.currentUser || currentUser;
 
     // A. If Email Method, we need to create Firebase User here (since OTP was just validation)
     if (data.method === "email" && data.emailOrPhone && data.password) {
       const cred = await createUserWithEmailAndPassword(
-        auth,
+        auth!,
         data.emailOrPhone,
         data.password,
       );
+      await updateProfile(cred.user, {
+        displayName: `${data.firstName} ${data.lastName}`,
+      });
       firebaseUser = cred.user;
     }
     // B. If Phone Method, Firebase User is already signed in via OTP confirmation
@@ -236,8 +240,8 @@ const login = async (email: string, password: string) => {
         uid: firebaseUser.uid,
         firstName: data.firstName,
         lastName: data.lastName,
-        email: firebaseUser.email,
-        phoneNumber: firebaseUser.phoneNumber,
+        email: firebaseUser.email || undefined,
+        phoneNumber: firebaseUser.phoneNumber || undefined,
         role: "student",
       });
 
@@ -270,7 +274,7 @@ const login = async (email: string, password: string) => {
       {children}
     </AuthContext.Provider>
   );
-};
+};;
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

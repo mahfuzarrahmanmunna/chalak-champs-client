@@ -35,7 +35,10 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+export const auth: Auth =
+  typeof window !== "undefined"
+    ? getAuth(app)
+    : (null as unknown as Auth);
 export const db = getFirestore(app);
 
 // Initialize Analytics (only in browser environment)
@@ -67,7 +70,7 @@ export const setupRecaptcha = (
   try {
     window.recaptchaVerifier = new RecaptchaVerifier(auth, container, {
       size: "invisible",
-      callback: (response: string) => {
+      callback: () => {
         console.log("reCAPTCHA solved, can proceed with sign in.");
       },
       "expired-callback": () => {
