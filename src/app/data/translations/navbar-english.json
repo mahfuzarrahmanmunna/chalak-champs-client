@@ -18,7 +18,8 @@
       },
       {
         "title": "Brain Development ",
-        "description": "Score 7.0+ guaranteed"
+        "description": "Score 7.0+ guaranteed",
+        "icon": "../icon/brain.tsx"
       },
       {
         "title": "Math Skills",

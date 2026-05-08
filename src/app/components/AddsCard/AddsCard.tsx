@@ -21,7 +21,7 @@ const AddsCard = () => {
   if (!isVisible) return null;
 
   return (
-    <section className="relative mt-12 max-w-268 max-h-91 mx-auto bg-linear-to-b from-[#FF8FCA] to-[#D9D9D9] rounded-[53px] group">
+    <section className="relative mt-8 max-w-268 max-h-91 mx-auto  group">
       {/* Cross Icon Button */}
       <button
         onClick={handleClose}
@@ -37,7 +37,7 @@ const AddsCard = () => {
           alt="Adds section image"
           width={1073}
           height={365}
-          className="w-full h-auto rounded-[51px]"
+          className="w-full h-auto rounded-[51px] border-2 border-[#FF8FCA]"
         />
       </figure>
     </section>

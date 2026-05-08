@@ -209,11 +209,7 @@ const OfflineCourses = () => {
         <div className="px-4 md:px-6 md:px-10.5">
           <div>
             <h4 className="text-2xl md:text-5xl text-center font-bold leading-17 tracking-[-5%] text-[#00477C]">
-              {offlineData.whyUs.title}{" "}
-              <span className="bg-linear-to-r from-[#F3066D]/52 to-[#FC7CB4]/84 bg-clip-text text-transparent">
-                {/* {isbangla ? "কেন" : "Why "} */}
-              </span>{" "}
-              <br className="hidden md:block" />
+              {offlineData.whyUs.title} <br />
               <span className="relative inline-block px-2 py-0.5 md:px-3 group">
                 <span className="absolute inset-0 border-[3px] border-dashed border-pink-500"></span>
                 <span className="absolute -top-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
@@ -221,88 +217,63 @@ const OfflineCourses = () => {
                 <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
                 <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
                 <span className="bg-linear-to-r from-primary to-[#FC7CB4] bg-clip-text text-transparent">
-                  {offlineData.whyUs.highlight}
+                  {offlineData.whyUs.highlight
+                    .split("<br/>")
+                    .map((text, index) => (
+                      <React.Fragment key={index}>
+                        {text}
+                        {index !==
+                          offlineData.whyUs.highlight.split("<br/>").length -
+                            1 && <br />}
+                      </React.Fragment>
+                    ))}
                 </span>
               </span>
             </h4>
           </div>
 
-          <div className="mt-8 md:mt-12 border-2 border-[#F3066E33] rounded-[50px] shadow-[0px_25px_50px_-12px_rgba(255,143,202,0.35)]">
-            <div className="flex flex-col md:flex-row gap-1 justify-between p-4 md:p-8">
-              <div className="flex flex-col gap-2 w-full md:w-1/2">
-                {offlineData.whyUs.points.map((point, index) => {
-                  // --- POINT 4 (Quote) ---
-                  if (index === 3) {
-                    return (
-                      <div key={point.id} className="flex gap-3.5 p-3.5">
-                        <div className="shrink-0">
-                          <div className="p-2 bg-radial from-[#FFFFFF]/60 to-[#FF8FCA]/25 rounded-lg">
-                            {renderIcon(index)}
-                          </div>
-                        </div>
-                        <div>
-                          <h5 className="text-[#C6005F] font-semibold text-base md:text-lg leading-6 tracking-normal">
-                            &ldquo;{point.quote}&rdquo;
-                          </h5>
-                          <p className="text-[#2D2D2D] leading-5 text-sm mt-4">
-                            {point.desc}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  }
+          {/* --- MAIN CARD CONTAINER --- */}
+          <div className="relative bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] border border-gray-100 p-6 md:p-10 overflow-hidden mt-8 md:mt-12">
+            {/* --- DECORATIVE BACKGROUND GLOW (Soft & Modern) --- */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-b from-[#F3056D]/5 to-transparent rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
 
-                  // --- POINT 3 (Special Styled Box) ---
-                  if (index === 2) {
-                    return (
-                      <div
-                        key={point.id}
-                        className="flex flex-col gap-3.5 p-3.5 border border-[#00477C]/20 shadow-[0px_4px_20px_-5px_rgba(59,130,246,0.15)] rounded-xl"
-                      >
-                        <div className="flex gap-3.5">
-                          <div className="shrink-0">
-                            <div className="p-2 bg-radial from-[#FFFFFF]/60 to-[#FF8FCA]/25 rounded-lg">
-                              {renderIcon(index)}
-                            </div>
-                          </div>
-                          <p className="text-[#2D2D2D] leading-5 text-sm">
-                            {point.text}
-                          </p>
-                        </div>
-                        {/* Second paragraph for point 3 - if empty in JSON, this might be empty or you can merge text */}
-                        <p className="text-[#2D2D2D] leading-5 text-sm">
-                          {/* Assuming point.text is sufficient, but keeping structure as per request */}
-                        </p>
-                      </div>
-                    );
-                  }
+            {/* --- TOP RIGHT BUBBLE DESIGN --- */}
+            <div className="absolute top-[-12px] right-6 md:right-10 z-20 group">
+              <div className="relative">
+                {/* Bubble Gradient Background */}
+                
+                {/* Subtle glow behind bubble */}
+                <div className="absolute inset-0 bg-[#214187] blur-xl opacity-30 rounded-full -z-10"></div>
+              </div>
+            </div>
+            {/* --- POINTS LIST (Grid Layout) --- */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 relative z-10">
+              {offlineData.whyUs.points.map((point, index) => {
+                return (
+                  <div
+                    key={point.id}
+                    className="group flex items-start gap-4 p-5 rounded-[20px] bg-gray-50/50 hover:bg-white border border-gray-100 hover:border-[#F3056E]/30 hover:shadow-xl hover:shadow-pink-50/50 transition-all duration-300"
+                  >
+                    {/* Icon Container */}
+                    <div className="shrink-0 relative">
+                      {/* Icon Glow Effect */}
+                      <div className="absolute inset-0 bg-[#F3056D]/20 rounded-xl blur-md group-hover:bg-[#F3056D]/30 transition-colors"></div>
 
-                  // --- REGULAR POINTS (1 & 2) ---
-                  return (
-                    <div key={point.id} className="flex gap-3.5 p-3.5">
-                      <div className="shrink-0">
-                        <div className="p-2 bg-radial from-[#FFFFFF]/60 to-[#FF8FCA]/25 rounded-lg">
-                          {renderIcon(index)}
-                        </div>
+                      {/* Actual Icon Box */}
+                      <div className="relative p-2.5 bg-white border border-gray-100 rounded-xl text-[#F3056D] shadow-sm group-hover:scale-110 transition-transform duration-300">
+                        {renderIcon(index)}
                       </div>
-                      <p className="text-[#2D2D2D] leading-5 text-sm">
-                        {point.text}
+                    </div>
+
+                    {/* Text Content */}
+                    <div className="flex-1 pt-1">
+                      <p className="text-[#1F2937] font-semibold text-base leading-relaxed">
+                        {point.text || point.quote}
                       </p>
                     </div>
-                  );
-                })}
-              </div>
-
-              {/* --- Right Column Image --- */}
-              <div className="bg-linear-to-b from-[#F3066E]/20 to-[#FFFFFF] w-full md:w-[35rem] rounded-4xl p-px shadow-[0px_4px_24px_-5px_rgba(243,6,110,0.3)] overflow-hidden mt-8 md:mt-0 mx-auto">
-                <Image
-                  src="/kidsbook.jpg"
-                  width={600}
-                  height={600}
-                  alt={offlineData.whyUs.imageAlt}
-                  className="w-full h-full rounded-[31px] object-cover"
-                />
-              </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

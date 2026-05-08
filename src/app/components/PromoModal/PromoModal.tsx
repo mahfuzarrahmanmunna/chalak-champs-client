@@ -4,9 +4,14 @@ import React, { useState, useEffect } from "react";
 import { X, Download, Gift, Sparkles } from "lucide-react";
 import { usePathname } from "next/navigation";
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
 const PromoModal = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const pathname = usePathname();
   // 1. Check if it's the user's first visit
   useEffect(() => {
@@ -41,10 +46,10 @@ const PromoModal = () => {
       }, 1000);
 
       return () => clearTimeout(timer);
-    } else {
-      setIsOpen(false);
     }
   }, [pathname]);
+
+  const shouldShowModal = isOpen && pathname === "/";
 
   const handleClose = () => {
     setIsOpen(false);

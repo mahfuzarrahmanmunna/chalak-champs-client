@@ -210,6 +210,51 @@ const EnrollmentCard = ({
           )}
         </div>
 
+        {/* --- THUMBNAIL STRIP --- */}
+        {mediaAssets.length > 1 && (
+          <div className="px-4 pt-3 pb-2">
+            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+              {mediaAssets.map((asset, idx) => {
+                const isActive = currentIndex === idx;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentIndex(idx)}
+                    className={`relative w-[80px] h-[60px] flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                      isActive
+                        ? "border-[#F3056D] ring-2 ring-[#F3056D]/20 scale-105 shadow-md"
+                        : "border-transparent hover:border-gray-300 opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    {asset.type === "video" ? (
+                      <Image
+                        src={asset.poster || "/placeholder-video.jpg"}
+                        alt={`Video thumbnail ${idx + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <Image
+                        src={asset.src}
+                        alt={`Image thumbnail ${idx + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    )}
+
+                    {/* Play Icon Overlay for Video Thumbnails */}
+                    {asset.type === "video" && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <Play className="w-6 h-6 text-white fill-white" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* --- CARD CONTENT (Price, Buttons, etc) --- */}
         <div className="p-6">
           <div className="flex items-end gap-3 mb-6">
@@ -230,15 +275,28 @@ const EnrollmentCard = ({
             {/* Primary CTA */}
             <Button
               onClick={onEnroll}
+              bgColor="#F3056D"
+              darkShadowColor="#F3066E"
+              highlightColor="#FF8FCA"
+              hoverTextColor="#F3056D"
               className="w-full py-3 rounded-lg text-white font-bold text-lg shadow-md hover:shadow-lg transition-all active:scale-95 bg-[#F3056D]"
             >
               {data.quickInfo.cta1}
             </Button>
 
             {/* Secondary CTA */}
-            <h4 onClick={onEnroll} className="">
+            <Button
+              bgColor="#ffffff"
+              darkShadowColor="#F3066E"
+              highlightColor="#FF8FCA"
+              hoverTextColor="#ffffff"
+              textColor="#F3056D"
+              hoverBgColor="#F3056D"
+              onClick={onEnroll}
+              className=""
+            >
               {data.quickInfo.cta2}
-            </h4>
+            </Button>
           </div>
 
           <div className="space-y-3 text-sm text-gray-600 mt-6">

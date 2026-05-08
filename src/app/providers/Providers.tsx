@@ -65,18 +65,20 @@ const Providers: React.FC<{
   }, []);
 
   return (
-    <AuthProvider>
-      <LoadingProvider>
-        <ThemeProvider>
-          <LanguageProvider initialLang={initialLang}>
-            {!isDashboard && !isStDashboard && <NavHeader />}
-            {children}
-            {!isDashboard && !isStDashboard && <Footer />}
-            <FooterMassenger />
-          </LanguageProvider>
-        </ThemeProvider>
-      </LoadingProvider>
-    </AuthProvider>
+    <section className="min-h-screen bg-white">
+      <AuthProvider>
+        <LoadingProvider>
+          <ThemeProvider>
+            <LanguageProvider initialLang={initialLang}>
+              {!isDashboard && !isStDashboard && <NavHeader />}
+              {children}
+              {!isDashboard && !isStDashboard && <Footer />}
+              <FooterMassenger />
+            </LanguageProvider>
+          </ThemeProvider>
+        </LoadingProvider>
+      </AuthProvider>
+    </section>
   );
 };
 

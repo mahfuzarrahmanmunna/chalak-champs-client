@@ -57,7 +57,7 @@ const ImageSlider: React.FC = () => {
             <SwiperSlide key={item.id} className="!h-auto py-2 rounded-2xl">
               <div
                 // Added bg-pink-100 temporarily so you can SEE the slide even if image is broken
-                className="relative h-64  w-full rounded-[10px]  overflow-hidden p-0 m-0 shadow-md border-2 border-[#FF8FCA]  bg-pink-100"
+                className="relative h-64  w-full rounded-[10px]  overflow-hidden p-0 m-0 shadow-md border-1 border-[#FF8FCA]/15  bg-pink-100"
               >
                 <Image
                   src={item.src}
@@ -102,7 +102,7 @@ const ImageSlider: React.FC = () => {
         >
           {imageData.map((item) => (
             <SwiperSlide key={`row2-${item.id}`} className="h-auto">
-              <div className="relative h-64 w-full rounded-[10px] overflow-hidden shadow-md border-2 border-[#FF8FCA] bg-pink-100">
+              <div className="relative h-64 w-full rounded-[10px] overflow-hidden shadow-md border-1 border-[#FF8FCA]/15 bg-pink-100">
                 <Image
                   src={item.src}
                   alt={item.alt}

@@ -24,7 +24,6 @@ const ChalakCourses = () => {
   // 1. Get data from context
   const { coursesData } = useLanguage();
 
-  // 2. Find the default tab index (কিডস ইংলিশ / Kids English)
   const defaultTabIndex =
     coursesData.tabs?.findIndex(
       (tab) => tab === "কিডস ইংলিশ" || tab === "Kids English",
@@ -260,7 +259,7 @@ const ChalakCourses = () => {
                     return (
                       <span
                         key={tagIdx}
-                        className={`flex items-center gap-1 ${style.bg} ${style.text} text-[10px] px-3 leading-6 rounded-full border ${style.border}`}
+                        className={`flex items-center gap-1 ${style.bg} ${style.text} text-[14px] px-3 leading-6 rounded-full border ${style.border}`}
                       >
                         {style.icon}
                         {tag}
@@ -269,7 +268,7 @@ const ChalakCourses = () => {
                   })}
                 </div>
 
-                <h3 className="text-[#3C4043] tracking-[0%] leading-[140%] font-semibold text-xl mb-4 text-center px-2 line-clamp-2">
+                <h3 className="text-[#3C4043] tracking-[0%] leading-[140%] font-semibold text-2xl mb-4 text-center px-2 line-clamp-2">
                   {course.title}
                 </h3>
 
@@ -314,7 +313,7 @@ const ChalakCourses = () => {
           {coursesData.ctaFooter}
         </Button>
 
-        <p className="text-white/80 text-xs text-center">
+        <p className="text-white/80 text-base text-center">
           {renderFooterNote()}
         </p>
       </div>

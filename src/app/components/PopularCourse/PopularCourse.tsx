@@ -30,11 +30,12 @@ const PopularCourse = () => {
             <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
 
             {/* Title Suffix: Skill Programs / স্কিল প্রোগ্রামসমূহ */}
-            <span className="relativeChamps এর bg-linear-to-r from-pink-500 to-pink-300 bg-clip-text text-transparent ">
-              {titleSuffix}
-            </span>
+            <span className="text-primary ">{titleSuffix}</span>
           </span>
         </h2>
+        <p className="text-[#3C4043] text-base leading-5 tracking-[-2%] mt-2">
+          {featuresData.shortDescription}
+        </p>
       </div>
 
       {/* --- Grid Section (Centered & Max 4 Cards) --- */}
@@ -42,11 +43,11 @@ const PopularCourse = () => {
         {/* Flex wrapper to center the grid horizontally */}
         <div className="flex justify-center w-full">
           {/* Inline-grid allows the container to shrink to fit the content (1, 2, 3, or 4 cards) */}
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-8 inline-grid">
+          <div className="grid grid-cols-2 col-span-1-span-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-8 inline-grid">
             {cards.map((course) => (
               <div
                 key={course.id}
-                className="relative rounded-[35px] bg-linear-to-b p-1 from-[#F3066EBF] to-white w-full"
+                className="relative  rounded-[35px] bg-linear-to-b p-1 from-[#F3066EBF] to-white w-full"
               >
                 {/* Inner White Content Area */}
                 <div className="bg-white rounded-4xl md:p-6 p-3 flex flex-col items-center h-full">
@@ -65,9 +66,10 @@ const PopularCourse = () => {
                     <h3 className="text-[#E91E63] tracking-[-2%] text-base md:text-[20px] font-semibold leading-tight">
                       {course.title}
                     </h3>
-                    <p className="text-gray-800 text-sm tracking-[-2%] md:text-sm font-semibold mt-1">
-                      {course.subtitle}
-                    </p>
+                    <p
+                      className="text-gray-800 text-sm tracking-[-2%] md:text-sm font-semibold mt-1"
+                      dangerouslySetInnerHTML={{ __html: course.subtitle }}
+                    />
                   </div>
                 </div>
               </div>

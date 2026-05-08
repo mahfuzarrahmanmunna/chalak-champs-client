@@ -114,6 +114,8 @@ interface HeroData {
   secondaryLink: string;
   features: HeroFeature[];
   stats: HeroStats;
+  cta2: string;
+  cta2Btn: string;
 }
 
 interface CoursesData {

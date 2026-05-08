@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import Videoimg from "./Videoimg";
 import Freebooking from "../Freebooking/Freebooking";
 import { useLanguage } from "@/app/context/LanguageContext";
+import AddsCard from "../AddsCard/AddsCard";
 
 const Banner = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -104,9 +105,14 @@ const Banner = () => {
 
   return (
     <div className="">
+      <div className="mb-20">
+        <AddsCard />
+      </div>
       <div className="text-center md:max-w-205 mx-auto font-inter">
         {/* Intro P Tag */}
-        <p className="text-2xl text-gray-600 leading-18.75">{introText}</p>
+        <p className="text-2xl text-gray-600 leading-15 tracking-[0px]">
+          {introText}
+        </p>
 
         <div className="flex flex-col relative items-center justify-center">
           <div className="relative flex flex-wrap items-center justify-center gap-2">
@@ -133,9 +139,9 @@ const Banner = () => {
 
           {/* King Image */}
           <div
-            className="absolute md:-top-8  z-10
+            className="absolute md:-top-8  z-0
              right-[62%]  -bottom-7
-             md:right-[calc(50%-360px)]"
+             md:right-[calc(50%-355px)]"
           >
             <Image
               src="/king.png"
@@ -148,7 +154,7 @@ const Banner = () => {
         </div>
 
         {/* Description Paragraph with Split Logic */}
-        <p className="my-6 text-gray-700 tracking-normal leading-5 text-base md:text-base">
+        <p className="my-6 text-gray-700 tracking-[-2%] leading-5 text-base md:text-base">
           {renderDescription.map((item, index) => (
             <React.Fragment key={index}>{item}</React.Fragment>
           ))}
@@ -192,9 +198,9 @@ const Banner = () => {
 
         {/* Below CTA Text */}
         <p className="text-[#000000]/50 font-medium text-base mt-4 tracking-[-2%]">
-          Booked a Class already?{" "}
+          {heroData.cta2}{" "}
           <Link className="text-secondary font-bold" href={"/en/signup"}>
-            JOIN NOw
+            {heroData.cta2Btn}
           </Link>
         </p>
       </div>

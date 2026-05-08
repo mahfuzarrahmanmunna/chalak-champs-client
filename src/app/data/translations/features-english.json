@@ -7,13 +7,13 @@
     {
       "id": 1,
       "title": "Kids Spoken English Course",
-      "subtitle": "Class 1 to 8 - Bangla Medium, English Medium, perfect for all",
+      "subtitle": "Class 1 to 8 <br/> Bangla Medium, English Medium, perfect for all",
       "image": "/onorgol.png"
     },
     {
       "id": 2,
       "title": "Kids Drawing Course",
-      "subtitle": "Age 4 to 12 - Build creativity alongside every stroke",
+      "subtitle": "Age 4 to 12 <br/> Build creativity alongside every stroke",
       "image": "/onorgol.png"
     }
   ]

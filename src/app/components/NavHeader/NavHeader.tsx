@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -14,6 +14,18 @@ import {
   Award,
   ChevronRight,
   Smile,
+  Palette,
+  Calculator,
+  Music,
+  Puzzle,
+  Sparkles,
+  Brain,
+  Users,
+  Megaphone,
+  Globe,
+  ShoppingBag,
+  Video,
+  Library,
 } from "lucide-react";
 
 // --- Your Local Imports (Kept Same) ---
@@ -25,6 +37,8 @@ import MulStar from "../Icon/MulStar";
 import CloseIcon from "../Icon/CloseIcon";
 import BnEnLogo from "./BnEnLogo";
 import UserIcon from "./UserIcon";
+import { FaMicrophone } from "react-icons/fa6";
+import Freebooking from "../Freebooking/Freebooking";
 
 // --- Modern Menu Icon Component (Custom SVG) ---
 const ModernMenuIcon = () => (
@@ -48,11 +62,14 @@ const ModernMenuIcon = () => (
 const NavHeader = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   // Access language context safely to avoid crash
   const context = useLanguage();
 
-  // Fallback values in case context is undefined (prevents the specific error you faced)
+  // Fallback values in case context is undefined
   const t = context?.t || {};
   const isBangla = context?.isBangla || false;
   const toggleLanguage = context?.toggleLanguage || (() => {});
@@ -63,6 +80,7 @@ const NavHeader = () => {
     more: [],
   };
 
+  // Scroll Effect
   useEffect(() => {
     const handleScroll = () => {
       const offset = window.scrollY;
@@ -77,12 +95,36 @@ const NavHeader = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Click Outside to Close Dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Toggle Dropdown Logic
+  const handleDropdownClick = (name: string) => {
+    if (activeDropdown === name) {
+      setActiveDropdown(null);
+    } else {
+      setActiveDropdown(name);
+    }
+  };
+
   return (
     <nav
-      className={`sticky top-0 z-50 px-2 transition-all duration-300 ${
+      className={`sticky top-0 z-50 px-2 transition-all duration-300 border-b-2 border-white/5 ${
         scrolled
           ? "bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
-          : "bg-white "
+          : "bg-white/80 "
       }`}
     >
       <div className="container mx-auto flex items-center justify-between py-1">
@@ -90,11 +132,20 @@ const NavHeader = () => {
           <NavLogo />
         </Link>
 
-        {/* --- DESKTOP MIDDLE SECTION (UNCHANGED CLASSES) --- */}
-        <div className="hidden md:flex items-center gap-7">
+        {/* --- DESKTOP MIDDLE SECTION (UNCHANGED CLASSES EXCEPT ACTIVE STATE) --- */}
+        <div
+          className="hidden md:flex items-center gap-7"
+          ref={dropdownRef}
+        ></div>
+
+        {/* --- DESKTOP RIGHT SECTION (UNCHANGED) --- */}
+        <div className="hidden md:flex items-center gap-4">
           <div>
-            <button className="cursor-pointer leading-auto tracking-[-2%] relative px-3.75  py-3 w-full rounded-[50px] font-bold text-white transition-all duration-300 bg-[#F3056D] shadow-[inset_0_1.5px_0_0_#FF8FCA,0_1.5px_1.5px_0_rgba(243,6,110,0.3),0_0_0_1.5px_#C6005F,0_3.01px_7.52px_0_rgba(243,6,110,0.3)]  hover:bg-white hover:text-[#F3056D]  hover:shadow-[0_1.5px_1.5px_0_rgba(243,6,110,0.2),0_0_0_1.5px_#F3056D,0_3.01px_7.52px_0_rgba(243,6,110,0.1)]">
-              <div className="absolute top-1.75 left-1.5 text-base  transition-colors duration-300">
+            <button
+              onClick={() => setIsBookingOpen(true)}
+              className="cursor-pointer px-5 leading-auto tracking-[-2%] relative   py-3 w-full rounded-[50px] font-bold text-white transition-all duration-300 bg-[#F3056D] shadow-[inset_0_1.5px_0_0_#FF8FCA,0_1.5px_1.5px_0_rgba(243,6,110,0.3),0_0_0_1.5px_#C6005F,0_3.01px_7.52px_0_rgba(243,6,110,0.3)]  hover:bg-white hover:text-[#F3056D]  hover:shadow-[0_1.5px_1.5px_0_rgba(243,6,110,0.2),0_0_0_1.5px_#F3056D,0_3.01px_7.52px_0_rgba(243,6,110,0.1)]"
+            >
+              <div className="absolute top-1.75 left-3 text-base  transition-colors duration-300">
                 <svg
                   width="32"
                   height="33"
@@ -113,267 +164,420 @@ const NavHeader = () => {
           </div>
 
           {/* --- ALL COURSES MODAL (REDESIGNED) --- */}
-          <div className="group relative">
-            <button className="flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 text-[#F3066E] hover:bg-white hover:border hover:border-primary font-semibold bg-[#F3066E]/20 cursor-pointer px-3.5 py-3 rounded-lg">
-              <div className="flex gap-1">
+          <div className="relative">
+            <button
+              onClick={() => handleDropdownClick("courses")}
+              className={`flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 cursor-pointer px-3.5 py-3 rounded-lg font-semibold transition-all ${
+                activeDropdown === "courses"
+                  ? "bg-[#F3066E] text-white"
+                  : "text-[#F3066E] hover:bg-white hover:border hover:border-primary bg-[#F3066E]/20"
+              }`}
+            >
+              <div className="flex gap-1 relative">
                 <p>{t?.allCourses || "All Courses"}</p>
-                <div>
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#F3066E] absolute"></div>
-                </div>
-              </div>{" "}
-              <DropIcon />
-            </button>
-
-            <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-[600px] hidden group-hover:block animate-in fade-in zoom-in-95 duration-200">
-              <div className="bg-white rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-gray-100 p-6">
-                <div className="grid grid-cols-12 gap-6">
-                  {/* Featured Course Card */}
-                  <div className="col-span-5 bg-gradient-to-br from-pink-50 to-white rounded-xl p-5 border border-pink-100 flex flex-col justify-center hover:shadow-lg transition-shadow duration-300">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="px-2 py-1 bg-[#F3056D] text-white text-[10px] font-bold uppercase rounded-md">
-                        Most Popular
-                      </span>
-                    </div>
-                    <h3 className="text-[#214187] font-bold text-lg mb-1">
-                      Spoken English
-                    </h3>
-                    <p className="text-xs text-gray-500 leading-relaxed mb-4">
-                      Master your fluency with industry experts.
-                    </p>
-                    <Link
-                      href="#"
-                      className="flex items-center gap-2 text-sm font-bold text-[#F3056D] group-hover/link:translate-x-1 transition-transform"
-                    >
-                      Explore Course <ArrowRight size={16} />
-                    </Link>
-                  </div>
-
-                  {/* Course List Grid */}
-                  <div className="col-span-7 grid grid-cols-2 gap-3">
-                    {menuData.courses.length > 0
-                      ? menuData.courses.slice(0, 6).map((item, idx) => (
-                          <Link
-                            key={idx}
-                            href="#"
-                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all group/item border border-transparent hover:border-gray-100"
-                          >
-                            <div className="w-8 h-8 rounded-lg bg-pink-50 text-[#F3056D] flex items-center justify-center shrink-0 group-hover/item:bg-[#F3056D] group-hover/item:text-white transition-colors">
-                              <BookOpen size={16} />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-[#214187] text-sm group-hover/item:text-[#F3056D]">
-                                {item.title}
-                              </h4>
-                            </div>
-                          </Link>
-                        ))
-                      : // Placeholder for visual proof
-                        [1, 2, 3, 4].map((i) => (
-                          <Link
-                            key={i}
-                            href="#"
-                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all group/item border border-transparent hover:border-gray-100"
-                          >
-                            <div className="w-8 h-8 rounded-lg bg-pink-50 text-[#F3056D] flex items-center justify-center shrink-0 group-hover/item:bg-[#F3056D] group-hover/item:text-white transition-colors">
-                              <BookOpen size={16} />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-[#214187] text-sm group-hover/item:text-[#F3056D]">
-                                Business English
-                              </h4>
-                            </div>
-                          </Link>
-                        ))}
-                  </div>
-                </div>
-                <div className="mt-4 pt-4 border-t border-gray-100 flex justify-center">
-                  <Link
-                    href="#"
-                    className="text-xs font-bold text-[#214187] hover:text-[#F3056D] transition-colors"
-                  >
-                    {isBangla ? "সব কোর্স দেখুন" : "View All Courses"}
-                  </Link>
+                <div
+                  className={`transition-transform duration-300 ${
+                    activeDropdown === "courses" ? "rotate-180" : ""
+                  }`}
+                >
+                  <DropIcon />
                 </div>
               </div>
-            </div>
+            </button>
+
+            {activeDropdown === "courses" && (
+              <div className="absolute top-full left-1/2 -translate-x-1/2 pt-5 w-[800px] z-50 animate-in fade-in zoom-in-95 duration-200">
+                <div className="bg-white rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/50 overflow-hidden">
+                  <div className="flex min-h-[400px]">
+                    {/* Left: Featured/Playful Section */}
+                    <div className="w-[35%] bg-gradient-to-br from-[#FFF0F7] to-[#E0F2FE] p-8 flex flex-col justify-between relative">
+                      {/* Decor Elements */}
+                      <div className="absolute top-[-30px] left-[-30px] w-32 h-32 bg-pink-300/20 rounded-full blur-3xl"></div>
+                      <div className="absolute bottom-[-20px] right-[-20px] w-24 h-24 bg-blue-300/20 rounded-full blur-2xl"></div>
+
+                      <div className="relative z-10">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-yellow-400 text-yellow-900 text-[10px] font-black uppercase rounded-full mb-4 shadow-sm">
+                          <Sparkles size={12} /> Popular Now
+                        </div>
+                        <h3 className="text-[#214187] font-black text-[26px] leading-tight mb-3">
+                          Spoken <br />
+                          <span className="text-[#F3056D]">English Fun</span>
+                        </h3>
+                        <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+                          {isBangla
+                            ? "সোনামণিদের সহজ ও মজার ছলে ইংরেজি শেখার সেরা কোর্স!"
+                            : "Interactive sessions designed to boost confidence and fluency!"}
+                        </p>
+
+                        <Link
+                          href="#"
+                          className="inline-flex items-center gap-2 bg-[#214187] text-white px-5 py-3 rounded-xl font-bold text-sm hover:bg-[#F3056D] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+                        >
+                          {isBangla ? "এখনই শুরু করুন" : "Explore Now"}{" "}
+                          <ArrowRight size={18} />
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Right: Course List Grid */}
+                    <div className="w-[65%] p-8 bg-white">
+                      <div className="flex justify-between items-center mb-6">
+                        <h4 className="text-[#214187] font-extrabold text-xl tracking-tight">
+                          {isBangla ? "আমাদের কোর্সসমূহ" : "Browse Categories"}
+                        </h4>
+                        <div className="h-1.5 w-1.5 rounded-full bg-pink-400"></div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        {(menuData.courses.length > 0
+                          ? menuData.courses
+                          : [
+                              {
+                                title: "Language Learning",
+                                description: "Fluency for everyday life",
+                              },
+                              {
+                                title: "Art & Drawing",
+                                description: "Unleash creativity",
+                              },
+                              {
+                                title: "Math Skills",
+                                description: "Logic & numbers",
+                              },
+                              {
+                                title: "Brain Development",
+                                description: "Cognitive skills",
+                              },
+                            ]
+                        ).map((item, idx) => {
+                          // Mapping icons based on index to keep it playful
+                          const icons = [
+                            {
+                              icon: <Globe size={20} />,
+                              color: "text-blue-600",
+                              bg: "bg-blue-50",
+                            },
+                            {
+                              icon: <Palette size={20} />,
+                              color: "text-orange-500",
+                              bg: "bg-orange-50",
+                            },
+                            {
+                              icon: <Calculator size={20} />,
+                              color: "text-green-500",
+                              bg: "bg-green-50",
+                            },
+                            {
+                              icon: <Brain size={20} />,
+                              color: "text-purple-500",
+                              bg: "bg-purple-50",
+                            },
+                          ];
+                          const iconData = icons[idx % icons.length];
+
+                          return (
+                            <Link
+                              key={idx}
+                              href="#"
+                              className="group/item flex items-center gap-4 p-4 rounded-[20px] bg-gray-50/50 border border-gray-100 hover:border-pink-200 hover:bg-white hover:shadow-xl hover:shadow-pink-50/50 transition-all duration-300"
+                            >
+                              <div
+                                className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover/item:scale-110 group-hover/item:-rotate-3 shadow-sm 
+                  ${iconData.bg} ${iconData.color}`}
+                              >
+                                {iconData.icon}
+                              </div>
+
+                              <div className="flex-1">
+                                <h4 className="font-bold text-[#214187] text-[15px] group-hover/item:text-[#F3056D] transition-colors leading-tight">
+                                  {item.title}
+                                </h4>
+                                {/* <span className="text-[10px] text-gray-400 font-medium group-hover/item:text-pink-300 transition-colors uppercase line-clamp-1">
+                                  {item.description}
+                                </span> */}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="bg-gray-50/80 p-5 border-t border-gray-100 flex justify-center items-center">
+                    <Link
+                      href="#"
+                      className="flex items-center gap-2 text-[13px] font-black text-[#214187] hover:text-[#F3056D] transition-all group/all"
+                    >
+                      {isBangla
+                        ? "সবগুলো কোর্স এক সাথে দেখুন"
+                        : "View All Our Fun Courses"}
+                      <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm group-hover/all:translate-x-1 transition-transform">
+                        <ArrowRight size={14} />
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* --- SKILLS MODAL (REDESIGNED) --- */}
-          <div className="group relative">
-            <button className="flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 text-[#F3066E] cursor-pointer">
+          <div className="relative">
+            <button
+              onClick={() => handleDropdownClick("skills")}
+              className={`flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 cursor-pointer font-medium transition-all text-primary`}
+            >
               {t?.skills || "Skills"}
+              <div
+                className={` transition-transform duration-300 ${
+                  activeDropdown === "skills" ? "rotate-180" : ""
+                }`}
+              >
+                <DropIcon />
+              </div>
             </button>
 
-            <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-[500px] hidden group-hover:block animate-in fade-in zoom-in-95 duration-200">
-              <div className="bg-white rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-gray-100 p-6">
-                <div className="flex gap-6 h-full">
-                  {/* Skill Categories */}
-                  <div className="flex-1 space-y-5">
-                    <div>
-                      <h4 className="text-[#214187] font-bold text-sm mb-3 flex items-center gap-2">
-                        <Award size={16} className="text-[#F3056D]" />
-                        Communication
-                      </h4>
-                      <ul className="space-y-2 pl-1">
-                        {["Public Speaking", "Business Writing", "Debate"].map(
-                          (skill, i) => (
-                            <li key={i}>
-                              <Link
-                                href="#"
-                                className="block text-sm text-gray-600 hover:text-[#F3056D] font-medium hover:pl-1 transition-all"
-                              >
-                                {skill}
-                              </Link>
-                            </li>
-                          ),
-                        )}
-                      </ul>
-                    </div>
+            {activeDropdown === "skills" && (
+              <div className="absolute top-full left-1/2 -translate-x-1/2 pt-5 w-[600px] z-50 animate-in fade-in zoom-in-95 duration-200">
+                <div className="bg-white rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/50 p-8">
+                  <div className="grid grid-cols-1 gap-4">
+                    {(menuData.skills.length > 0
+                      ? menuData.skills
+                      : [
+                          {
+                            title: "Public Speaking",
+                            description: "Speak to crowds confidently",
+                          },
+                          {
+                            title: "Personality Dev",
+                            description: "Build your soft skills",
+                          },
+                          {
+                            title: "Interview Prep",
+                            description: "Ace your next job interview",
+                          },
+                        ]
+                    ).map((item, idx) => {
+                      const icons = [
+                        <FaMicrophone size={20} />,
+                        <Users size={20} />,
+                        <Award size={20} />,
+                      ];
+                      const IconComponent = icons[idx % icons.length];
 
-                    <div>
-                      <h4 className="text-[#214187] font-bold text-sm mb-3 flex items-center gap-2">
-                        <GraduationCap size={16} className="text-[#F3056D]" />
-                        Professional
-                      </h4>
-                      <ul className="space-y-2 pl-1">
-                        {["Leadership", "Time Management", "Teamwork"].map(
-                          (skill, i) => (
-                            <li key={i}>
-                              <Link
-                                href="#"
-                                className="block text-sm text-gray-600 hover:text-[#F3056D] font-medium hover:pl-1 transition-all"
-                              >
-                                {skill}
-                              </Link>
-                            </li>
-                          ),
-                        )}
-                      </ul>
-                    </div>
+                      return (
+                        <Link
+                          key={idx}
+                          href="#"
+                          className="group/skill flex items-center gap-4 p-4 rounded-2xl bg-gray-50/50 border border-gray-100 hover:border-blue-200 hover:bg-white hover:shadow-md hover:shadow-blue-50/50 transition-all duration-300"
+                        >
+                          <div className="p-2 rounded-xl bg-blue-50 text-blue-600 group-hover/skill:bg-white group-hover/skill:scale-110 transition-all shadow-sm">
+                            {IconComponent}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-bold text-[#214187] text-sm group-hover/skill:text-blue-600">
+                              {item.title}
+                            </h4>
+                            <p className="text-xs text-gray-500">
+                              {item.description}
+                            </p>
+                          </div>
+                          <ChevronRight
+                            size={16}
+                            className="text-gray-300 group-hover/skill:text-blue-500"
+                          />
+                        </Link>
+                      );
+                    })}
                   </div>
 
-                  {/* Visual CTA Side */}
-                  <div className="w-1/3 bg-[#214187] rounded-xl p-4 flex flex-col items-center justify-center text-center text-white">
-                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-3 backdrop-blur-sm">
-                      <Star size={20} className="text-yellow-400" />
-                    </div>
-                    <h5 className="font-bold text-sm mb-1">Free Assessment</h5>
-                    <p className="text-[10px] text-gray-300 mb-4 leading-tight">
-                      Test your skill level now
+                  {/* Bottom Banner */}
+                  <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+                    <p className="text-xs text-gray-500 mb-2">
+                      {isBangla
+                        ? "আপনার সম্ভাবনার সীমা বাড়ান"
+                        : "Unlock your child's full potential"}
                     </p>
                     <Link
                       href="#"
-                      className="w-full py-1.5 bg-white text-[#214187] text-[10px] font-bold rounded hover:bg-gray-100"
+                      className="text-sm font-bold text-[#F3056D] hover:underline"
                     >
-                      Take Test
+                      {isBangla
+                        ? "স্কিল ব্রোশার ডাউনলোড করুন"
+                        : "Download Skill Brochure"}
                     </Link>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* --- KIDS ENGLISH MODAL (REDESIGNED) --- */}
-          <div className="group relative">
-            <button className="flex text-primary leading-auto tracking-[-2%] text-sm cursor-pointer items-center gap-2">
+          <div className="relative">
+            <button
+              onClick={() => handleDropdownClick("kids")}
+              className={`flex items-center leading-auto tracking-[-2%] text-sm cursor-pointer transition-all ${
+                activeDropdown === "kids" ? "text-[#F3056D]" : "text-primary"
+              }`}
+            >
               <span>{t?.kidsEnglish || "Kids English"}</span>
-              <div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
+              <div className="h-1.5 w-1.5 bg-primary rounded-full ml-1"></div>
             </button>
 
-            <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-[500px] hidden group-hover:block animate-in fade-in zoom-in-95 duration-200">
-              <div className="bg-white rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-gray-100 p-6">
-                <div className="flex gap-4">
-                  {menuData.kids.length > 0
-                    ? menuData.kids.map((item, idx) => (
-                        <div
+            {activeDropdown === "kids" && (
+              <div className="absolute top-full left-1/2 -translate-x-1/2 pt-5 w-[600px] z-50 animate-in fade-in zoom-in-95 duration-200">
+                <div className="bg-white rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/50 overflow-hidden flex">
+                  <div className="flex-[3] p-8 pr-4">
+                    <h3 className="text-[#214187] font-extrabold text-xl mb-6">
+                      {isBangla ? "কোর্স লেভেল" : "English Levels"}
+                    </h3>
+                    <div className="space-y-4">
+                      {(menuData.kids.length > 0
+                        ? menuData.kids
+                        : [
+                            {
+                              title: "Online",
+                              description: "Fun learning for toddlers",
+                            },
+                            {
+                              title: "Offline",
+                              description: "Grammar and vocabulary",
+                            },
+                          ]
+                      ).map((item, idx) => (
+                        <Link
                           key={idx}
-                          className="flex-1 relative group/card cursor-pointer overflow-hidden rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-300"
+                          href="#"
+                          className="group/kid block p-4 rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md hover:bg-blue-50/30 transition-all duration-300 relative overflow-hidden"
                         >
-                          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-white opacity-0 group-hover/card:opacity-100 transition-opacity duration-300"></div>
-                          <div className="relative p-5 flex flex-col items-center text-center">
-                            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-3 group-hover/card:scale-110 transition-transform duration-300 shadow-sm">
+                          <div className="flex items-center gap-4 relative z-10">
+                            <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-blue-600 group-hover/kid:scale-110 transition-transform">
                               {idx === 0 ? (
-                                <Smile size={24} />
-                              ) : idx === 1 ? (
-                                <Award size={24} />
+                                <Video size={20} />
                               ) : (
-                                <Star size={24} />
+                                <Library size={20} />
                               )}
                             </div>
-                            <h4 className="font-bold text-[#214187] text-sm mb-2 group-hover/card:text-blue-600">
-                              {item.title}
-                            </h4>
-                            <p className="text-xs text-gray-500 leading-relaxed mb-4">
-                              {item.description}
-                            </p>
-                            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wide opacity-0 group-hover/card:opacity-100 transform translate-y-2 group-hover/card:translate-y-0 transition-all duration-300">
-                              Learn More
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    : [1, 2].map((i) => (
-                        <div
-                          key={i}
-                          className="flex-1 relative group/card cursor-pointer overflow-hidden rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-300"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-white opacity-0 group-hover/card:opacity-100 transition-opacity duration-300"></div>
-                          <div className="relative p-5 flex flex-col items-center text-center">
-                            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-3 group-hover/card:scale-110 transition-transform duration-300 shadow-sm">
-                              <Smile size={24} />
+                            <div>
+                              <h4 className="font-bold text-[#214187] text-sm">
+                                {item.title}
+                              </h4>
+                              <p className="text-[11px] text-gray-500 mt-0.5">
+                                {item.description}
+                              </p>
                             </div>
-                            <h4 className="font-bold text-[#214187] text-sm mb-2 group-hover/card:text-blue-600">
-                              Juniors English
-                            </h4>
-                            <p className="text-xs text-gray-500 leading-relaxed mb-4">
-                              Fun learning for ages 6-10.
-                            </p>
-                            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wide opacity-0 group-hover/card:opacity-100 transform translate-y-2 group-hover/card:translate-y-0 transition-all duration-300">
-                              Learn More
-                            </span>
                           </div>
-                        </div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-transparent opacity-0 group-hover/kid:opacity-100 transition-opacity duration-300" />
+                        </Link>
                       ))}
+                    </div>
+                  </div>
+
+                  {/* Sidebar: Assessment CTA */}
+                  <div className="flex-2 bg-[#214187] p-6 flex flex-col justify-center items-center text-center text-white relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                    <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4 border border-white/20">
+                      <Brain size={32} className="text-yellow-300" />
+                    </div>
+                    <h5 className="font-bold text-lg mb-2 relative z-10">
+                      {isBangla ? "ফ্রি অ্যাসেসমেন্ট" : "Free Assessment"}
+                    </h5>
+                    <p className="text-xs text-blue-100 mb-6 leading-relaxed relative z-10 max-w-[140px]">
+                      {isBangla
+                        ? "সঠিক লেভেল খুঁজুন"
+                        : "Find the perfect level for your child."}
+                    </p>
+                    <Link
+                      href="#"
+                      className="w-full py-3 bg-white text-[#214187] text-xs font-bold rounded-xl hover:bg-blue-50 transition-colors shadow-lg relative z-10"
+                    >
+                      {isBangla ? "টেস্ট নিন" : "Take Test Now"}
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* --- MORE MODAL (REDESIGNED) --- */}
-          <div className="group relative">
-            <button className="flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 text-primary cursor-pointer">
+          <div className="relative">
+            <button
+              onClick={() => handleDropdownClick("more")}
+              className={`flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 cursor-pointer transition-all ${
+                activeDropdown === "more" ? "text-[#F3056D]" : "text-primary"
+              }`}
+            >
               {t?.more || "More"}
-              <DropIcon />
+              <div
+                className={`transition-transform duration-300 ${
+                  activeDropdown === "more" ? "rotate-180" : ""
+                }`}
+              >
+                <DropIcon />
+              </div>
             </button>
 
-            <div className="absolute top-full right-0 pt-4 w-[400px] hidden group-hover:block animate-in fade-in zoom-in-95 duration-200">
-              <div className="bg-white rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-gray-100 p-6">
-                <ul className="space-y-1">
-                  {menuData.more?.map((item, idx) => (
-                    <li key={idx}>
-                      <Link
-                        href="#"
-                        className="group/item flex items-center justify-between px-4 py-3.5 rounded-lg hover:bg-pink-50/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gray-50 group-hover/item:bg-white group-hover/item:shadow-sm flex items-center justify-center text-gray-400 group-hover/item:text-[#F3056D] transition-all">
-                            <ChevronRight size={16} />
-                          </div>
-                          <span className="font-semibold text-[#214187] text-sm group-hover/item:text-[#F3056D] transition-colors">
-                            {item.title}
-                          </span>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
+            {activeDropdown === "more" && (
+              <div className="absolute top-full right-0 pt-5 w-[320px] z-50 animate-in fade-in zoom-in-95 duration-200">
+                <div className="bg-white rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/50 p-4 overflow-hidden">
+                  <ul className="space-y-1">
+                    {(menuData.more.length > 0
+                      ? menuData.more
+                      : [
+                          {
+                            title: "Free Courses",
+                            description: "Learn our story",
+                          },
+                          {
+                            title: "Live Courses",
+                            description: "Join our team",
+                          },
+                          {
+                            title: "Recorded Courses",
+                            description: "Latest tips",
+                          },
+                          { title: "Shop", description: "Get in touch" },
+                        ]
+                    ).map((item, idx) => {
+                      const icons = [
+                        <ShoppingBag size={16} />,
+                        <Megaphone size={16} />,
+                        <Video size={16} />,
+                        <Globe size={16} />,
+                      ];
+                      const Icon = icons[idx % icons.length];
 
-        {/* --- DESKTOP RIGHT SECTION (UNCHANGED) --- */}
-        <div className="hidden md:flex items-center gap-4">
+                      return (
+                        <li key={idx}>
+                          <Link
+                            href="#"
+                            className="group/item flex items-center gap-3 px-4 py-3.5 rounded-2xl hover:bg-pink-50 transition-all duration-300"
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-gray-50 group-hover/item:bg-white group-hover/item:shadow-sm flex items-center justify-center text-gray-400 group-hover/item:text-[#F3056D] transition-all duration-300">
+                              {Icon}
+                            </div>
+                            <div className="flex-1">
+                              <span className="font-semibold text-[#214187] text-sm group-hover/item:text-[#F3056D] transition-colors block">
+                                {item.title}
+                              </span>
+                              <span className="text-[10px] text-gray-400 group-hover/item:text-pink-300">
+                                {item.description}
+                              </span>
+                            </div>
+                            <ChevronRight
+                              size={14}
+                              className="opacity-0 group-hover/item:opacity-100 transition-all text-[#F3056D]"
+                            />
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
           <div>
             <a href="tel:01740176774">
               <Button px="px-2" hoverTextColor="#214187">
@@ -423,9 +627,9 @@ const NavHeader = () => {
         </button>
       </div>
 
-      {/* --- MOBILE MENU CONTENT (FULL HEIGHT OVERLAY) --- */}
+      {/* --- MOBILE MENU CONTENT (UNCHANGED) --- */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-[72px] bottom-0 z-40 h-[calc(100vh-72px)] w-full bg-white shadow-2xl border-t border-gray-100 overflow-y-auto animate-in slide-in-from-top-2 duration-300">
+        <div className="md:hidden fixed inset-0 top-[72px] bottom-0 z-40 min-h-screen w-full bg-white shadow-2xl border-t border-gray-100 overflow-y-auto animate-in slide-in-from-top-2 duration-300">
           <div className="container mx-auto py-8 px-4 flex flex-col gap-8">
             {/* User Greeting/Login Area */}
             <div className="flex items-center justify-between pb-6 border-b border-gray-100">
@@ -499,6 +703,10 @@ const NavHeader = () => {
           </div>
         </div>
       )}
+      <Freebooking
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+      />
     </nav>
   );
 };
