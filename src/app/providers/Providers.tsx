@@ -9,6 +9,8 @@ import Footer from "../components/Footer/Footer";
 import { usePathname } from "next/navigation";
 import FooterMassenger from "../components/Footer/FooterMassenger";
 import { AuthProvider } from "../context/AuthContext";
+import { BookingProvider } from "./BookingProvider";
+import MobileBottomNav from "../components/MobileBottomNav/MobileBottomNav";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -70,9 +72,14 @@ const Providers: React.FC<{
         <LoadingProvider>
           <ThemeProvider>
             <LanguageProvider initialLang={initialLang}>
-              {!isDashboard && !isStDashboard && <NavHeader />}
-              {children}
-              {!isDashboard && !isStDashboard && <Footer />}
+              <BookingProvider>
+                {!isDashboard && !isStDashboard && <NavHeader />}
+                {children}
+                {!isDashboard && !isStDashboard && <Footer />}
+                <div className="flex md:hidden">
+                  <MobileBottomNav />
+                </div>
+              </BookingProvider>
               <FooterMassenger />
             </LanguageProvider>
           </ThemeProvider>

@@ -2,26 +2,15 @@
   "titlePrefix": "Chalak Champs",
   "titleSuffix": "Shop",
   "shortDescription": "Your Child's Best Learning Companion",
-  "ctaCard": "See Details →",
-  "ctaFooter": "See More →",
+  "ctaCard": "See Details",
+  "ctaFooter": "See More",
   "items": [
     {
       "id": 1,
       "image": "/kidsbook.png",
-      "badge": "Printed Colorful Book | 35% OFF",
+      "badge": "Printed Colorful Book",
+      "badge2":"35% OFF",
       "title": "Kids' অনর্গল English Book"
-    },
-    {
-      "id": 2,
-      "image": "/kidsbook.png",
-      "badge": "Printed Colorful Book | 35% OFF",
-      "title": "Kids' Smart Math"
-    },
-    {
-      "id": 3,
-      "image": "/kidsbook.png",
-      "badge": "Printed Colorful Book | 35% OFF",
-      "title": "Kids' Bangla ABC"
     }
   ]
 }

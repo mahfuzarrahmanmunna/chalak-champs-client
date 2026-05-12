@@ -6,9 +6,11 @@ import Videoimg from "./Videoimg";
 import Freebooking from "../Freebooking/Freebooking";
 import { useLanguage } from "@/app/context/LanguageContext";
 import AddsCard from "../AddsCard/AddsCard";
+import { useBooking } from "@/app/providers/BookingProvider";
 
 const Banner = () => {
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  // const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const {openBooking, toast} = useBooking()
 
   // FIX: Destructure 'currentLang' separately from 'heroData'
   const { heroData, currentLang } = useLanguage();
@@ -118,15 +120,15 @@ const Banner = () => {
           <div className="relative flex flex-wrap items-center justify-center gap-2">
             {/* Main H1 Tag with Champ styling */}
             <h1 className="text-4xl md:text-6xl font-bold text-[#00477C] pointer-events-none tracking-[-3%] md:tracking-[-4px] leading-12 md:leading-18.75">
-              {beforeChamp} <br className="flex md:hidden" />{" "}
-              <span className="ml-2 mr-0 pr-0 text-[#F3066E]">Champ</span>
+              {beforeChamp} {" "} <br className="flex md:hidden" />{"  "}
+              <span className="ml-3 mr-0 pr-0 text-[#F3066E]">Champ</span>
             </h1>
 
             {/* Dashed Border Box */}
             <div
               className="absolute pointer-events-none flex items-center justify-center z-10
              right-14 bottom-0.5 w-32.5 h-11.5 
-             md:right-[calc(50%-325px)] md:bottom-0 md:w-57.5 md:h-17.5 "
+             md:right-[calc(50%-327px)] md:-bottom-1.5 md:w-57 md:h-19 "
             >
               <div className="w-full h-full border-2 border-dashed border-[#F3066E] relative z-0">
                 <span className="absolute -top-1 -left-1 w-2.5 h-2.5 bg-[#F3066E]"></span>
@@ -162,7 +164,7 @@ const Banner = () => {
 
         {/* CTA Button */}
         <button
-          onClick={() => setIsBookingOpen(true)}
+          onClick={openBooking}
           className="group  tracking-[-2%] px-6 mt-10 md:px-24 z-10 text-white transition-transform duration-300 group-hover:translate-y-[-1px]  relative overflow-hidden rounded-lg bg-primary py-4  text-lg font-bold  hover:shadow-[0_0_20px_rgba(255,143,202,0.5)] active:scale-95"
           style={{ animation: "pulseScale 2.5s infinite ease-in-out" }}
         >
@@ -209,10 +211,10 @@ const Banner = () => {
         <Videoimg />
       </div>
 
-      <Freebooking
+      {/* <Freebooking
         isOpen={isBookingOpen}
         onClose={() => setIsBookingOpen(false)}
-      />
+      /> */}
     </div>
   );
 };

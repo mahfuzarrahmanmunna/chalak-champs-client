@@ -1,15 +1,12 @@
-const CACHE_NAME = "chalakchamps-cache-v2"; // Updated to v2 to force a clean update
+const CACHE_NAME = "chalakchamps-cache-v2";
 
-// FIX 1: Added "/en" and "/bn" because those are your new entry points.
-// FIX 2: Removed "/logo.png" because your manifest uses "icon.png".
-// If you actually have "logo.png" in your public folder, uncomment it.
 const URLS_TO_CACHE = [
   "/",
   "/en",
   "/bn",
   "/manifest.json",
-  "/icon-192.png", // From your manifest
-  "/icon-512.png", // From your manifest
+  "/icon.png", // From your manifest
+  "/icon.png", // From your manifest
 ];
 
 self.addEventListener("install", (event) => {

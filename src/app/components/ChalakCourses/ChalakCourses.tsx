@@ -15,10 +15,12 @@ import {
   Gift,
   Info,
   Loader2,
+  PhoneCall,
 } from "lucide-react";
 import Button from "@/app/ui/button/Button";
 import EyeIcon from "./EyeIcon";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { FaPhone } from "react-icons/fa6";
 
 const ChalakCourses = () => {
   // 1. Get data from context
@@ -242,9 +244,9 @@ const ChalakCourses = () => {
             filteredCourses.map((course) => (
               <div
                 key={course.id}
-                className="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] snap-center bg-white rounded-[30px] border-2 border-[#FF8FCA] p-2 pb-5 shadow-xl flex flex-col items-center hover:-translate-y-2 transition-transform duration-300"
+                className="min-w-[300px] w-[300px] md:min-w-[400px] md:w-[340px] snap-center bg-white rounded-[30px] border-2 border-[#FF8FCA] p-2 pb-5 shadow-xl flex flex-col items-center hover:-translate-y-2 transition-transform duration-300"
               >
-                <div className="w-full aspect-4/3 rounded-[25px] overflow-hidden relative mb-4">
+                <div className="w-full aspect-video rounded-[25px] overflow-hidden relative mb-4">
                   <Image
                     src={course.image}
                     alt={course.title}
@@ -313,8 +315,8 @@ const ChalakCourses = () => {
           {coursesData.ctaFooter}
         </Button>
 
-        <p className="text-white/80 text-base text-center">
-          {renderFooterNote()}
+        <p className="text-white/80 flex items-center gap-3 text-base text-center">
+          <FaPhone /> {renderFooterNote()}
         </p>
       </div>
     </section>

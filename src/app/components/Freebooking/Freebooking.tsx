@@ -3,14 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "@/app/context/ThemeContext";
 import { Phone, User, ChevronDown, Search } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
-import { createBooking } from "@/app/services/freeBookingService"; // Import API Service
+import { createBooking } from "@/app/services/freeBookingService";
+import { useBooking } from "@/app/providers/BookingProvider";
 
-interface FreebookingProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+// Removed Props interface as it consumes context now
 
 interface Country {
   name: string;
@@ -19,8 +16,11 @@ interface Country {
   cca2: string;
 }
 
-const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
+const Freebooking: React.FC = () => {
+  // --- USE CONTEXT ---
+  const { isOpen, closeBooking, toast } = useBooking();
   const { colors } = useTheme();
+
   const phoneNumber = "01740176774";
   const message = encodeURIComponent(
     "Hello, I have a question about your service.",
@@ -99,7 +99,7 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
   // Close modal logic
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      closeBooking(); // Use context function
       setIsDropdownOpen(false);
     }
   };
@@ -107,7 +107,7 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isFormValid && selectedCountry) {
-      setIsSubmitting(true); // Start loading
+      setIsSubmitting(true);
 
       const fullPhone = `${selectedCountry.code} ${formData.phone}`;
 
@@ -118,12 +118,12 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
       };
 
       try {
-        // Call the API
         const response = await createBooking(payload);
 
         if (response.success) {
-          alert("ডেমো ক্লাস বুক সফলভাবে সম্পন্ন হয়েছে!"); // "Booking completed successfully"
-          onClose();
+          // USE TOAST INSTEAD OF ALERT
+          toast("ডেমো ক্লাস বুক সফলভাবে সম্পন্ন হয়েছে!", "success");
+          closeBooking(); // Close modal
           setFormData({
             studentName: "",
             guardianName: "",
@@ -132,13 +132,15 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
             course: "",
           });
         } else {
-          alert(response.message || "Submission failed");
+          // USE TOAST INSTEAD OF ALERT
+          toast(response.message || "Submission failed", "error");
         }
       } catch (error: any) {
         console.error("Submission Error:", error);
-        alert("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।"); // "Something went wrong. Try again."
+        // USE TOAST INSTEAD OF ALERT
+        toast("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।", "error");
       } finally {
-        setIsSubmitting(false); // Stop loading
+        setIsSubmitting(false);
       }
     }
   };
@@ -150,11 +152,12 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
       c.code.includes(searchTerm),
   );
 
+  // RETURN NULL IF NOT OPEN (Managed by Provider)
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed overflow-auto opacity-100 inset-0 z-50 flex items-center justify-center p-4"
       onClick={handleBackdropClick}
     >
       {/* Backdrop Blur */}
@@ -162,7 +165,7 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
 
       {/* Modal Content */}
       <div
-        className="relative w-full max-w-md rounded-2xl border-2 border-primary shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in duration-200"
+        className="relative  w-full max-w-md rounded-2xl border-2 border-primary shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in duration-200"
         style={{
           backgroundColor: "var(--color-card)",
           border: `1px solid var(--color-border)`,
@@ -195,7 +198,7 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
           <div className=" bg-radial from-[#FF8FCA] to-[#D9D9D9] p-px">
             <button
               onClick={() => {
-                onClose();
+                closeBooking(); // Use context function
                 setIsDropdownOpen(false);
               }}
               className="p-1 absolute  -top-4 -right-4 bg-[#FF8FCA]/70 rounded-full  dark:hover:bg-white/10 transition-colors"

@@ -12,7 +12,7 @@ const DropIcon = () => {
         >
           <path
             d="M2.66699 6L8.00033 11.3333L13.3337 6"
-            stroke="#F3066E"
+            stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"

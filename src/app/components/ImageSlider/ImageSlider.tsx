@@ -14,12 +14,12 @@ import "swiper/css/autoplay";
 
 const ImageSlider: React.FC = () => {
   const imageData = [
-    { id: 1, src: "/groupimg.png", alt: "Group 1" },
-    { id: 2, src: "/groupimg.png", alt: "Group 2" },
-    { id: 3, src: "/groupimg.png", alt: "Group 3" },
-    { id: 4, src: "/groupimg.png", alt: "Group 4" },
-    { id: 5, src: "/groupimg.png", alt: "Group 5" },
-    { id: 6, src: "/groupimg.png", alt: "Group 6" },
+    { id: 1, src: "/gallary/1st.jpg", alt: "Group 1" },
+    { id: 2, src: "/gallary/2nd.png", alt: "Group 2" },
+    { id: 3, src: "/gallary/3rd.png", alt: "Group 3" },
+    { id: 4, src: "/gallary/4th.png", alt: "Group 4" },
+    { id: 5, src: "/gallary/5th.png", alt: "Group 5" },
+    { id: 6, src: "/gallary/6th.jpg", alt: "Group 6" },
   ];
 
   return (

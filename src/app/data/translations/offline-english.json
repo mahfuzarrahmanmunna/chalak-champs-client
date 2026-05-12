@@ -8,17 +8,20 @@
     {
       "id": 1,
       "title": "Bangladesh's Best Teacher Panel",
-      "desc": "Online or offline, our expert teachers don't just teach, they mentor. They help your child overcome fear, build confidence, and truly enjoy learning English."
+      "desc": "Online or offline, our expert teachers don't just teach, they mentor. They help your child overcome fear, build confidence, and truly enjoy learning English.",
+      "image": "/pannel/teachers.png"
     },
     {
       "id": 2,
       "title": "1-on-1 Parent Counseling",
-      "desc": "How is your child progressing? Where are they strong? Where do they need support? Talk directly with class teacher - complete transparency, every step of way."
+      "desc": "How is your child progressing? Where are they strong? Where do they need support? Talk directly with class teacher - complete transparency, every step of way.",
+      "image": "/pannel/counselling.png"
     },
     {
       "id": 3,
       "title": "Learn by Doing",
-      "desc": "No boring lectures here. Through activities, games, and guided practice, children listen, understand, and speak. That's how children's development becomes natural."
+      "desc": "No boring lectures here. Through activities, games, and guided practice, children listen, understand, and speak. That's how children's development becomes natural.",
+      "image": "/pannel/learnplay.png"
     }
   ],
   "whyUs": {
@@ -39,7 +42,7 @@
       },
       {
         "id": 4,
-        "quote": "Our experienced Mentors build tomorrow's Champs",
+        "quote": "\"Our experienced Mentors build tomorrow's Champs\"",
         "desc": "Our teachers don't just cover syllabus; they unlock every child's hidden potential and guide them toward becoming confident, skilled individuals."
       }
     ],

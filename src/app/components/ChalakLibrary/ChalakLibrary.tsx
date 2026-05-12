@@ -1,16 +1,19 @@
 "use client";
 
 import Button from "@/app/ui/button/Button";
-import { Eye, ArrowRight, ArrowLeft } from "lucide-react";
+import {  ArrowRight, ArrowLeft, Layers, Tag } from "lucide-react"; // Added Layers and Tag icons
 import Image from "next/image";
 import React, { useState, useEffect, useRef, TouchEvent } from "react";
 import { useLanguage } from "@/app/context/LanguageContext"; // Adjust path
+import Link from "next/link";
+import EyeIcon from "../ChalakCourses/EyeIcon";
 
 // Types
 interface LibraryItem {
   id: number;
   image: string;
   badge: string;
+  badge2?: string; // Added badge2 property
   title: string;
 }
 
@@ -203,9 +206,7 @@ const ChalakLibrary = () => {
             <span className="absolute -top-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
-            <span className="bg-linear-to-r from-primary to-[#FC7CB4] bg-clip-text text-transparent">
-              {libraryData.titleSuffix}
-            </span>
+            <span className="text-primary">{libraryData.titleSuffix}</span>
           </span>
         </h3>
         <p className="text-gray-600 mb-8 text-lg">
@@ -249,11 +250,11 @@ const ChalakLibrary = () => {
               <div
                 key={item.id}
                 ref={index === 0 ? cardRef : null}
-                className="shrink-0 w-[85vw] md:w-[304px]"
+                className="shrink-0 w-[86vw] md:w-[304px]"
               >
                 {/* CARD DESIGN */}
-                <div className="max-w-76 h-110 shadow bg-linear-to-b from-[#FF8FCA]  to-[#D9D9D9] rounded-[22px] p-0.5">
-                  <div className="w-full h-full rounded-[21px] p-2 bg-[#F9FAFC]">
+                <div className="max-w-80 h-132 shadow bg-linear-to-b from-[#FF8FCA]  to-[#D9D9D9] rounded-[22px] p-0.5">
+                  <div className="w-full h-full rounded-[20px] p-2 bg-[#F9FAFC]">
                     <div className="w-68.5 h-68.5 bg-[#001D3A0D] rounded-2xl relative overflow-hidden">
                       <Image
                         src={item.image}
@@ -264,29 +265,44 @@ const ChalakLibrary = () => {
                       />
                     </div>
                     <div className="flex flex-col justify-center items-center">
-                      {/* Badge - Using the new highlight field */}
-                      <div className="flex items-center w-fit mt-2 gap-1 text-black dark:text-white text-xs bg-[#1B386B26] rounded-full px-2.5 py-1">
-                        <div className="h-1 w-1 rounded-full bg-black dark:bg-white" />
-                        <p>{item.badge}</p>
+                      {/* --- DOUBLE BADGE SECTION --- */}
+                      <div className="flex items-center justify-center gap-2 mt-2 w-full flex-wrap">
+                        {/* Badge 1: Blue-ish (Book Type) */}
+                        <div className="flex items-center gap-1.5 text-black text-sm bg-[#1B386B26] rounded-full px-3 py-1.5 shadow-sm border border-white/50">
+                          <Layers size={14} className="text-[#1B386B]" />
+                          <p>{item.badge}</p>
+                        </div>
+
+                        {/* Badge 2: Pink-ish (Discount) */}
+                        <div className="flex items-center gap-1.5 text-[#E2136E] text-xs bg-[#FCE7F3] rounded-full px-3 py-1.5 shadow-sm border border-white/50">
+                          <Tag size={14} />
+                          <p>{item.badge2}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-[#3C4043] leading-[1.4] tracking-normal font-semibold mt-[15px] text-center px-2">
+                      {/* --- END DOUBLE BADGE SECTION --- */}
+
+                      <div className="flex  flex-col items-center">
+                        <h3 className="text-[#3C4043] text-2xl leading-[140%] tracking-normal font-semibold mt-[15px] text-center px-2">
                           {item.title}
                         </h3>
                         {/* CTA Button using Button component */}
-                        <Button
-                          bgColor="#E2136E"
-                          highlightColor="#FC7CB4"
-                          darkShadowColor="#B80E5C"
-                          textColor="white"
-                          hoverTextColor="#E2136E"
-                          textSize="lg"
-                          icon={<Eye size={18} />}
-                          iconPosition="right"
-                          className="mt-3 flex items-center gap-2 px-4 py-2 cursor-pointer rounded-xl shadow-[inset_0_3px_0_rgba(255,255,255,0.5)] transition-all active:scale-95"
-                        >
-                          {libraryData.ctaCard}
-                        </Button>
+                        <div>
+                          <Link href={"/en/bookdetails"}>
+                            <Button
+                              bgColor="#E2136E"
+                              highlightColor="#FC7CB4"
+                              darkShadowColor="#B80E5C"
+                              textColor="white"
+                              hoverTextColor="#E2136E"
+                              textSize="lg"
+                              icon={<EyeIcon />}
+                              iconPosition="right"
+                              className="mt-3 flex hover:text-primary text-white items-center gap-2 px-4 py-2 cursor-pointer rounded-xl shadow-[inset_0_3px_0_rgba(255,255,255,0.5)] transition-all active:scale-95"
+                            >
+                              {libraryData.ctaCard}
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -322,7 +338,7 @@ const ChalakLibrary = () => {
 
       <div className="flex flex-col justify-center items-center my-6">
         <Button px="px-18" textSize="xl" py="py-3" bgColor="#214187">
-          {libraryData.ctaFooter}
+          <div>{libraryData.ctaFooter} </div>
         </Button>
       </div>
     </div>

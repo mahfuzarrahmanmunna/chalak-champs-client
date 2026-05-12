@@ -486,7 +486,7 @@ export default function CourseDetailsPage() {
 
                 <div className="flex flex-wrap gap-2 mb-6">
                   {course.isBestseller && (
-                    <span className="px-3 py-1 text-xs font-bold tracking-wide uppercase rounded-full bg-[#F3056D]/10 text-[#F3056D] border border-[#F3056D]">
+                    <span className="px-3 py-1 text-xs font-bold tracking-wide uppercase rounded-full bg-[#F3056D]/10 text-[rgb(243,5,109)] border border-[#F3056D]">
                       Bestseller
                     </span>
                   )}
@@ -498,7 +498,7 @@ export default function CourseDetailsPage() {
                   </span>
                 </div>
 
-                <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900 leading-tight">
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 leading-tight">
                   {course.title}
                 </h1>
                 <p className="text-lg text-gray-600 mb-6 leading-relaxed">

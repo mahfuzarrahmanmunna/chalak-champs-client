@@ -6,18 +6,13 @@ import { useLanguage } from "@/app/context/LanguageContext";
 
 // --- Lucide Icons for Modern Modal Design ---
 import {
-  Star,
-  GraduationCap,
   ArrowRight,
-  Phone,
   BookOpen,
   Award,
   ChevronRight,
   Smile,
   Palette,
   Calculator,
-  Music,
-  Puzzle,
   Sparkles,
   Brain,
   Users,
@@ -26,6 +21,9 @@ import {
   ShoppingBag,
   Video,
   Library,
+  Plus,
+  Minus,
+  X,
 } from "lucide-react";
 
 // --- Your Local Imports (Kept Same) ---
@@ -39,6 +37,7 @@ import BnEnLogo from "./BnEnLogo";
 import UserIcon from "./UserIcon";
 import { FaMicrophone } from "react-icons/fa6";
 import Freebooking from "../Freebooking/Freebooking";
+import { useBooking } from "@/app/providers/BookingProvider";
 
 // --- Modern Menu Icon Component (Custom SVG) ---
 const ModernMenuIcon = () => (
@@ -64,7 +63,12 @@ const NavHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const { toast, openBooking } = useBooking();
+
+  // --- NEW: State for Mobile Dropdowns ---
+  const [activeMobileDropdown, setActiveMobileDropdown] = useState<
+    string | null
+  >(null);
 
   // Access language context safely to avoid crash
   const context = useLanguage();
@@ -107,21 +111,30 @@ const NavHeader = () => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  // Toggle Dropdown Logic
+  // Toggle Desktop Dropdown Logic
+  // This handles: Click "Courses" -> Opens. Click "Courses" again -> Closes.
   const handleDropdownClick = (name: string) => {
-    if (activeDropdown === name) {
-      setActiveDropdown(null);
+    setActiveDropdown((prev) => (prev === name ? null : name));
+  };
+
+  // --- NEW: Toggle Mobile Dropdown Logic ---
+  const handleMobileDropdownClick = (name: string) => {
+    if (activeMobileDropdown === name) {
+      setActiveMobileDropdown(null);
     } else {
-      setActiveDropdown(name);
+      setActiveMobileDropdown(name);
     }
   };
 
   return (
     <nav
-      className={`sticky top-0 z-50 px-2 transition-all duration-300 border-b-2 border-white/5 ${
+      className={`sticky  top-0 z-50 px-2 transition-all duration-300 border-b-2 border-white/5 ${
         scrolled
           ? "bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
           : "bg-white/80 "
@@ -132,17 +145,17 @@ const NavHeader = () => {
           <NavLogo />
         </Link>
 
-        {/* --- DESKTOP MIDDLE SECTION (UNCHANGED CLASSES EXCEPT ACTIVE STATE) --- */}
-        <div
-          className="hidden md:flex items-center gap-7"
-          ref={dropdownRef}
-        ></div>
+        {/* --- DESKTOP MIDDLE SECTION (EMPTY NOW) --- */}
+        <div className="hidden md:flex items-center gap-7">
+          {/* Empty div placeholder if needed for spacing, otherwise removed logic */}
+        </div>
 
-        {/* --- DESKTOP RIGHT SECTION (UNCHANGED) --- */}
-        <div className="hidden md:flex items-center gap-4">
+        {/* --- DESKTOP RIGHT SECTION (UPDATED: dropdownRef MOVED HERE) --- */}
+        {/* We moved ref={dropdownRef} here so it wraps the buttons AND the modals */}
+        <div className="hidden md:flex items-center gap-6" ref={dropdownRef}>
           <div>
             <button
-              onClick={() => setIsBookingOpen(true)}
+              onClick={openBooking}
               className="cursor-pointer px-5 leading-auto tracking-[-2%] relative   py-3 w-full rounded-[50px] font-bold text-white transition-all duration-300 bg-[#F3056D] shadow-[inset_0_1.5px_0_0_#FF8FCA,0_1.5px_1.5px_0_rgba(243,6,110,0.3),0_0_0_1.5px_#C6005F,0_3.01px_7.52px_0_rgba(243,6,110,0.3)]  hover:bg-white hover:text-[#F3056D]  hover:shadow-[0_1.5px_1.5px_0_rgba(243,6,110,0.2),0_0_0_1.5px_#F3056D,0_3.01px_7.52px_0_rgba(243,6,110,0.1)]"
             >
               <div className="absolute top-1.75 left-3 text-base  transition-colors duration-300">
@@ -164,13 +177,16 @@ const NavHeader = () => {
           </div>
 
           {/* --- ALL COURSES MODAL (REDESIGNED) --- */}
-          <div className="relative">
+          {/* <div className="relative">
             <button
-              onClick={() => handleDropdownClick("courses")}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDropdownClick("courses");
+              }}
               className={`flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 cursor-pointer px-3.5 py-3 rounded-lg font-semibold transition-all ${
                 activeDropdown === "courses"
                   ? "bg-[#F3066E] text-white"
-                  : "text-[#F3066E] hover:bg-white hover:border hover:border-primary bg-[#F3066E]/20"
+                  : "text-[#F3066E] hover:bg-white hover:ring-1 hover:ring-primary hover:ring-inset bg-[#F3066E]/20"
               }`}
             >
               <div className="flex gap-1 relative">
@@ -189,9 +205,8 @@ const NavHeader = () => {
               <div className="absolute top-full left-1/2 -translate-x-1/2 pt-5 w-[800px] z-50 animate-in fade-in zoom-in-95 duration-200">
                 <div className="bg-white rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/50 overflow-hidden">
                   <div className="flex min-h-[400px]">
-                    {/* Left: Featured/Playful Section */}
                     <div className="w-[35%] bg-gradient-to-br from-[#FFF0F7] to-[#E0F2FE] p-8 flex flex-col justify-between relative">
-                      {/* Decor Elements */}
+                      
                       <div className="absolute top-[-30px] left-[-30px] w-32 h-32 bg-pink-300/20 rounded-full blur-3xl"></div>
                       <div className="absolute bottom-[-20px] right-[-20px] w-24 h-24 bg-blue-300/20 rounded-full blur-2xl"></div>
 
@@ -219,7 +234,6 @@ const NavHeader = () => {
                       </div>
                     </div>
 
-                    {/* Right: Course List Grid */}
                     <div className="w-[65%] p-8 bg-white">
                       <div className="flex justify-between items-center mb-6">
                         <h4 className="text-[#214187] font-extrabold text-xl tracking-tight">
@@ -292,9 +306,6 @@ const NavHeader = () => {
                                 <h4 className="font-bold text-[#214187] text-[15px] group-hover/item:text-[#F3056D] transition-colors leading-tight">
                                   {item.title}
                                 </h4>
-                                {/* <span className="text-[10px] text-gray-400 font-medium group-hover/item:text-pink-300 transition-colors uppercase line-clamp-1">
-                                  {item.description}
-                                </span> */}
                               </div>
                             </Link>
                           );
@@ -303,7 +314,6 @@ const NavHeader = () => {
                     </div>
                   </div>
 
-                  {/* Footer */}
                   <div className="bg-gray-50/80 p-5 border-t border-gray-100 flex justify-center items-center">
                     <Link
                       href="#"
@@ -320,12 +330,15 @@ const NavHeader = () => {
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* --- SKILLS MODAL (REDESIGNED) --- */}
-          <div className="relative">
+          {/* <div className="relative">
             <button
-              onClick={() => handleDropdownClick("skills")}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDropdownClick("skills");
+              }}
               className={`flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 cursor-pointer font-medium transition-all text-primary`}
             >
               {t?.skills || "Skills"}
@@ -392,7 +405,6 @@ const NavHeader = () => {
                     })}
                   </div>
 
-                  {/* Bottom Banner */}
                   <div className="mt-6 pt-6 border-t border-gray-100 text-center">
                     <p className="text-xs text-gray-500 mb-2">
                       {isBangla
@@ -411,22 +423,31 @@ const NavHeader = () => {
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* --- KIDS ENGLISH MODAL (REDESIGNED) --- */}
           <div className="relative">
             <button
-              onClick={() => handleDropdownClick("kids")}
-              className={`flex items-center leading-auto tracking-[-2%] text-sm cursor-pointer transition-all ${
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDropdownClick("kids");
+              }}
+              className={`flex items-center font-medium flex gap-2 leading-auto tracking-[-2%] text-sm cursor-pointer transition-all ${
                 activeDropdown === "kids" ? "text-[#F3056D]" : "text-primary"
               }`}
             >
               <span>{t?.kidsEnglish || "Kids English"}</span>
-              <div className="h-1.5 w-1.5 bg-primary rounded-full ml-1"></div>
+              <div
+                className={` transition-transform duration-300 ${
+                  activeDropdown === "kids" ? "rotate-180" : ""
+                }`}
+              >
+                <DropIcon />
+              </div>
             </button>
 
             {activeDropdown === "kids" && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 pt-5 w-[600px] z-50 animate-in fade-in zoom-in-95 duration-200">
+              <div className="absolute top-9 left-1/2 -translate-x-1/2 pt-5 w-[600px] z-50 animate-in fade-in zoom-in-95 duration-200">
                 <div className="bg-white rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/50 overflow-hidden flex">
                   <div className="flex-[3] p-8 pr-4">
                     <h3 className="text-[#214187] font-extrabold text-xl mb-6">
@@ -501,10 +522,13 @@ const NavHeader = () => {
           </div>
 
           {/* --- MORE MODAL (REDESIGNED) --- */}
-          <div className="relative">
+          {/* <div className="relative">
             <button
-              onClick={() => handleDropdownClick("more")}
-              className={`flex items-center leading-auto tracking-[-2%] text-sm gap-2.5 cursor-pointer transition-all ${
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDropdownClick("more");
+              }}
+              className={`flex items-center font-medium leading-auto tracking-[-2%] text-sm gap-2.5 cursor-pointer transition-all ${
                 activeDropdown === "more" ? "text-[#F3056D]" : "text-primary"
               }`}
             >
@@ -519,7 +543,7 @@ const NavHeader = () => {
             </button>
 
             {activeDropdown === "more" && (
-              <div className="absolute top-full right-0 pt-5 w-[320px] z-50 animate-in fade-in zoom-in-95 duration-200">
+              <div className="absolute top-9.5 right-0 pt-5 w-[320px] z-50 animate-in fade-in zoom-in-95 duration-200">
                 <div className="bg-white rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/50 p-4 overflow-hidden">
                   <ul className="space-y-1">
                     {(menuData.more.length > 0
@@ -577,12 +601,12 @@ const NavHeader = () => {
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
           <div>
             <a href="tel:01740176774">
-              <Button px="px-2" hoverTextColor="#214187">
+              <Button px="px-3" hoverTextColor="#214187" icon=<CallIcon />>
                 <div className="flex items-center gap-1 ">
-                  <span>{t?.callUs || "Call Us"}</span> <CallIcon />
+                  <span>{t?.callUs || "Call Us"}</span>
                 </div>
               </Button>
             </a>
@@ -627,112 +651,222 @@ const NavHeader = () => {
         </button>
       </div>
 
-      {/* --- MOBILE MENU CONTENT (UNCHANGED) --- */}
+      {/* --- MOBILE MENU CONTENT --- */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-[72px] bottom-0 z-40 min-h-screen w-full bg-white shadow-2xl border-t border-gray-100 overflow-y-auto animate-in slide-in-from-top-2 duration-300">
+        <div className="md:hidden min-h-screen fixed overflow-y-auto overflow-x-hidden inset-0  bottom-0 z-40 w-full bg-white shadow-2xl border-t border-gray-100  animate-in slide-in-from-top-2 duration-300">
           <div className="container mx-auto py-8 px-4 flex flex-col gap-8">
-            {/* User Greeting/Login Area */}
+            {/* Header: Logo, Language, AND Close Button */}
             <div className="flex items-center justify-between pb-6 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
-                  <UserIcon />
-                </div>
-                <span className="text-[#214187] font-bold">Welcome</span>
+                <NavLogo />
               </div>
-              <Link
-                href={`/${isBangla ? "bn" : "en"}/signin`}
-                className="text-sm font-bold text-[#F3056D]"
-              >
-                Login
-              </Link>
+
+              {/* Group Language and Close Button together on the right */}
+              <div className="flex items-center gap-2">
+                <div onClick={toggleLanguage}>
+                  <Button
+                    bgColor="#F3F4F6"
+                    textColor="#214187"
+                    hoverBgColor="#214187"
+                    hoverTextColor="white"
+                    px="px-4"
+                    icon=<BnEnLogo />
+                    className="h-12 flex items-center justify-center"
+                  >
+                    {isBangla ? "English" : "বাংলা"}
+                  </Button>
+                </div>
+
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-3 absolute top-0 right-0 rounded-full bg-radial from-primary to-secondary text-[#872148] hover:bg-[#F3056D] hover:text-white transition-colors duration-300 shadow-sm"
+                  aria-label="Close Menu"
+                >
+                  <X size={24} />
+                </button>
+              </div>
             </div>
 
             {/* Big Book Button */}
-            <button className="w-full cursor-pointer relative px-6 py-4 rounded-[50px] font-bold text-white transition-all duration-300 bg-[#F3056D] shadow-[inset_0_1.5px_0_0_#FF8FCA,0_1.5px_1.5px_0_rgba(243,6,110,0.3),0_0_0_1.5px_#C6005F,0_3.01px_7.52px_0_rgba(243,6,110,0.3)] hover:bg-white hover:text-[#F3056D] hover:shadow-[0_1.5px_1.5px_0_rgba(243,6,110,0.2),0_0_0_1.5px_#F3056D,0_3.01px_7.52px_0_rgba(243,6,110,0.1)] flex items-center justify-center gap-3">
+            <button
+              onClick={() => {
+                openBooking();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full cursor-pointer relative px-6 py-4 rounded-[50px] font-bold text-white transition-all duration-300 bg-[#F3056D] shadow-[inset_0_1.5px_0_0_#FF8FCA,0_1.5px_1.5px_0_rgba(243,6,110,0.3),0_0_0_1.5px_#C6005F,0_3.01px_7.52px_0_rgba(243,6,110,0.3)] hover:bg-white hover:text-[#F3056D] hover:shadow-[0_1.5px_1.5px_0_rgba(243,6,110,0.2),0_0_0_1.5px_#F3056D,0_3.01px_7.52px_0_rgba(243,6,110,0.1)] flex items-center justify-center gap-3"
+            >
               <div className="text-xl text-white transition-colors duration-300">
                 <MulStar />
               </div>
               {t?.bookAFreeClass || "Book A Free Class"}
             </button>
 
-            {/* Mobile Navigation Links */}
-            <div className="flex flex-col gap-3">
-              <MobileMenuItem
-                href={`/${isBangla ? "bn" : "en"}/courses`}
+            {/* Mobile Navigation Links with Dropdowns */}
+            <div className="flex flex-col gap-2">
+              {/* --- All Courses Mobile Dropdown --- */}
+              <MobileNavDropdown
+                title={t?.allCourses || "All Courses"}
                 icon={<BookOpen size={20} />}
-              >
-                {t?.allCourses || "All Courses"}
-              </MobileMenuItem>
-              <MobileMenuItem href="#" icon={<Award size={20} />}>
-                {t?.skills || "Skills"}
-              </MobileMenuItem>
-              <MobileMenuItem href="#" icon={<Smile size={20} />}>
-                {t?.kidsEnglish || "Kids English"}
-              </MobileMenuItem>
-              <MobileMenuItem href="#" icon={<ChevronRight size={20} />}>
-                {t?.more || "More"}
-              </MobileMenuItem>
+                items={
+                  menuData.courses.length > 0
+                    ? menuData.courses
+                    : [
+                        {
+                          title: "Language Learning",
+                          description: "Fluency for everyday life",
+                        },
+                        {
+                          title: "Art & Drawing",
+                          description: "Unleash creativity",
+                        },
+                        {
+                          title: "Math Skills",
+                          description: "Logic & numbers",
+                        },
+                        {
+                          title: "Brain Development",
+                          description: "Cognitive skills",
+                        },
+                      ]
+                }
+                isOpen={activeMobileDropdown === "courses"}
+                onToggle={() => handleMobileDropdownClick("courses")}
+              />
+
+              {/* --- Skills Mobile Dropdown --- */}
+              <MobileNavDropdown
+                title={t?.skills || "Skills"}
+                icon={<Award size={20} />}
+                items={
+                  menuData.skills.length > 0
+                    ? menuData.skills
+                    : [
+                        {
+                          title: "Public Speaking",
+                          description: "Speak to crowds confidently",
+                        },
+                        {
+                          title: "Personality Dev",
+                          description: "Build your soft skills",
+                        },
+                        {
+                          title: "Interview Prep",
+                          description: "Ace your next job interview",
+                        },
+                      ]
+                }
+                isOpen={activeMobileDropdown === "skills"}
+                onToggle={() => handleMobileDropdownClick("skills")}
+              />
+
+              {/* --- Kids English Mobile Dropdown --- */}
+              <MobileNavDropdown
+                title={t?.kidsEnglish || "Kids English"}
+                icon={<Smile size={20} />}
+                items={
+                  menuData.kids.length > 0
+                    ? menuData.kids
+                    : [
+                        {
+                          title: "Online",
+                          description: "Fun learning for toddlers",
+                        },
+                        {
+                          title: "Offline",
+                          description: "Grammar and vocabulary",
+                        },
+                      ]
+                }
+                isOpen={activeMobileDropdown === "kids"}
+                onToggle={() => handleMobileDropdownClick("kids")}
+              />
+
+              {/* --- More Mobile Dropdown --- */}
+              <MobileNavDropdown
+                title={t?.more || "More"}
+                icon={<ChevronRight size={20} />}
+                items={
+                  menuData.more.length > 0
+                    ? menuData.more
+                    : [
+                        {
+                          title: "Free Courses",
+                          description: "Learn our story",
+                        },
+                        { title: "Live Courses", description: "Join our team" },
+                        {
+                          title: "Recorded Courses",
+                          description: "Latest tips",
+                        },
+                        { title: "Shop", description: "Get in touch" },
+                      ]
+                }
+                isOpen={activeMobileDropdown === "more"}
+                onToggle={() => handleMobileDropdownClick("more")}
+              />
             </div>
 
             {/* Bottom Actions */}
             <div className="mt-auto pt-6 border-t border-gray-100 grid grid-cols-2 gap-4">
-              <a href="tel:01740176774">
-                <Button
-                  icon=<CallIcon />
-                  px="px-4"
-                  hoverTextColor="#214187"
-                  className="w-full h-12 flex items-center justify-center"
-                >
-                  {t?.callUs || "Call Us"}
-                </Button>
-              </a>
-              <div onClick={toggleLanguage}>
-                <Button
-                  bgColor="#F3F4F6"
-                  textColor="#214187"
-                  hoverBgColor="#214187"
-                  hoverTextColor="white"
-                  px="px-4"
-                  icon=<BnEnLogo />
-                  className="w-full h-12 flex items-center justify-center"
-                >
-                  {isBangla ? "English" : "বাংলা"}
-                </Button>
-              </div>
+              <a href="tel:01740176774">{t?.callUs || "Call Us"}</a>
+              <a href=""></a>
             </div>
           </div>
         </div>
       )}
-      <Freebooking
-        isOpen={isBookingOpen}
-        onClose={() => setIsBookingOpen(false)}
-      />
     </nav>
   );
 };
 
-// --- Sub Component for Mobile Menu Item ---
-const MobileMenuItem = ({
-  children,
-  href,
-  icon,
-}: {
-  children: React.ReactNode;
-  href: string;
-  icon: React.ReactNode;
-}) => (
-  <Link
-    href={href}
-    className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-[#F3056D]/5 text-[#214187] hover:text-[#F3056D] transition-all group border border-transparent hover:border-[#F3056D]/10"
-  >
-    <div className="p-2 rounded-lg bg-white shadow-sm text-gray-400 group-hover:text-[#F3056D] group-hover:scale-110 transition-all">
-      {icon}
+// --- New Sub Component for Mobile Dropdown Item ---
+const MobileNavDropdown = ({ title, icon, items, isOpen, onToggle }: any) => {
+  return (
+    <div className="w-full">
+      <button
+        onClick={onToggle}
+        className={`w-full flex items-center justify-between p-4 rounded-xl transition-all group ${
+          isOpen
+            ? "bg-[#F3056D]/5 text-[#F3056D] border border-[#F3056D]/10"
+            : "bg-gray-50 text-[#214187] hover:bg-gray-100 border border-transparent"
+        }`}
+      >
+        <div className="flex items-center gap-4">
+          <div
+            className={`p-2 rounded-lg transition-colors shadow-sm ${
+              isOpen
+                ? "bg-[#F3056D] text-white"
+                : "bg-white text-gray-400 group-hover:text-[#214187]"
+            }`}
+          >
+            {icon}
+          </div>
+          <span className="font-semibold text-lg">{title}</span>
+        </div>
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-sm text-[#F3056D] transition-transform duration-300">
+          {isOpen ? <Minus size={18} /> : <Plus size={18} />}
+        </div>
+      </button>
+
+      {/* Dropdown Content */}
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen ? "max-h-96 opacity-100 mt-2" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="flex flex-col gap-1 pl-14 pr-4 pb-2">
+          {items.map((item: any, idx: number) => (
+            <Link
+              key={idx}
+              href="#"
+              className="block py-3 px-4 text-sm text-gray-600 hover:text-[#F3056D] hover:bg-[#F3056D]/5 border-l-2 border-gray-200 hover:border-[#F3056D] rounded-r-lg transition-all"
+            >
+              {item.title}
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
-    <span className="font-semibold text-lg">{children}</span>
-    <div className="ml-auto opacity-0 group-hover:opacity-100 transform -translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-      <ChevronRight size={20} />
-    </div>
-  </Link>
-);
+  );
+};
 
 export default NavHeader;

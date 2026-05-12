@@ -182,7 +182,7 @@ const OfflineCourses = () => {
               <div key={card.id} className="w-full mt-6 max-w-72.5">
                 <div className="border-3 rounded-3xl border-[#FF8FCA] overflow-hidden">
                   <Image
-                    src="/groupchair.webp"
+                    src={card.image}
                     width={290}
                     height={281}
                     alt={card.title}
@@ -216,7 +216,7 @@ const OfflineCourses = () => {
                 <span className="absolute -top-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
                 <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
                 <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
-                <span className="bg-linear-to-r from-primary to-[#FC7CB4] bg-clip-text text-transparent">
+                <span className="text-primary">
                   {offlineData.whyUs.highlight
                     .split("<br/>")
                     .map((text, index) => (
@@ -267,9 +267,18 @@ const OfflineCourses = () => {
 
                     {/* Text Content */}
                     <div className="flex-1 pt-1">
-                      <p className="text-[#1F2937] font-semibold text-base leading-relaxed">
+                      <p
+                        className={`text-base leading-relaxed ${
+                          point.quote
+                            ? "text-primary font-bold"
+                            : "text-[#1F2937] font-medium"
+                        }`}
+                      >
                         {point.text || point.quote}
                       </p>
+                      {point.desc && (
+                        <p className="text-[#1F2937] font-medium leading-relaxed mt-3">{point.desc}</p>
+                      )}
                     </div>
                   </div>
                 );

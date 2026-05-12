@@ -42,6 +42,75 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const playerRef = useRef<VideoJsPlayer | null>(null);
   const isPlayerInitialized = useRef(false); // Prevent double init in Strict Mode
 
+  // 2. Video Player Logic
+  useEffect(() => {
+    if (typeof window === "undefined" || !videoRef.current) return;
+
+    // If player exists, just handle Play/Pause state
+    if (playerRef.current) {
+      if (isActive) {
+        // Small delay to ensure transition is almost done
+        setTimeout(() => {
+          if (playerRef.current) {
+            playerRef.current.currentTime(0);
+            playerRef.current
+              ?.play()
+              ?.catch((e) => console.log("Autoplay prevented:", e));
+          }
+        }, 300);
+      } else {
+        playerRef.current.pause();
+      }
+      return;
+    }
+
+    // Initialize new player ONLY if active and not already initialized
+    if (isActive && !isPlayerInitialized.current) {
+      isPlayerInitialized.current = true;
+
+      const player = (playerRef.current = videojs(videoRef.current, {
+        controls: true,
+        autoplay: true,
+        muted: true, // Required for autoplay
+        preload: "auto",
+        loop: true,
+        fluid: false,
+        fill: true,
+        playsinline: true,
+        techOrder: ["youtube"],
+        sources: [
+          {
+            src: `https://www.youtube.com/watch?v=${videoId}`,
+            type: "video/youtube",
+          },
+        ],
+        youtube: {
+          ytControls: 0,
+          iv_load_policy: 3,
+          cc_load_policy: 0,
+          rel: 0,
+          modestbranding: 1,
+        },
+      }));
+
+      player?.ready(() => {
+        player?.muted(true);
+        player?.play()?.catch((e) => console.log(e));
+      });
+    }
+  }, [isActive, videoId]);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.dispose();
+        playerRef.current = null;
+        isPlayerInitialized.current = false;
+      }
+    };
+  }, []);
+
   // Handle Ghost Slide Click (Restart Slider)
   const handleGhostClick = () => {
     if (swiperRef && swiperRef.current) {
@@ -81,75 +150,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     );
   }
 
-  // 2. Video Player Logic
-  useEffect(() => {
-    if (typeof window === "undefined" || !videoRef.current) return;
-
-    // If player exists, just handle Play/Pause state
-    if (playerRef.current) {
-      if (isActive) {
-        // Small delay to ensure transition is almost done
-        setTimeout(() => {
-          if (playerRef.current) {
-            playerRef.current.currentTime(0);
-            playerRef.current
-              .play()
-              .catch((e) => console.log("Autoplay prevented:", e));
-          }
-        }, 300);
-      } else {
-        playerRef.current.pause();
-      }
-      return;
-    }
-
-    // Initialize new player ONLY if active and not already initialized
-    if (isActive && !isPlayerInitialized.current) {
-      isPlayerInitialized.current = true;
-
-      const player = (playerRef.current = videojs(videoRef.current, {
-        controls: true,
-        autoplay: true,
-        muted: true, // Required for autoplay
-        preload: "auto",
-        loop: true,
-        fluid: false,
-        fill: true,
-        playsinline: true,
-        techOrder: ["youtube"],
-        sources: [
-          {
-            src: `https://www.youtube.com/watch?v=${videoId}`,
-            type: "video/youtube",
-          },
-        ],
-        youtube: {
-          ytControls: 0,
-          iv_load_policy: 3,
-          cc_load_policy: 0,
-          rel: 0,
-          modestbranding: 1,
-        },
-      }));
-
-      player.ready(() => {
-        player.muted(true);
-        player.play().catch((e) => console.log(e));
-      });
-    }
-  }, [isActive, videoId]);
-
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (playerRef.current) {
-        playerRef.current.dispose();
-        playerRef.current = null;
-        isPlayerInitialized.current = false;
-      }
-    };
-  }, []);
-
   return (
     <div data-vjs-player className="w-full h-full">
       <div
@@ -158,17 +158,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       />
     </div>
   );
-};
+};;
 
 export default function VideoGallerySlider() {
-  const [mounted, setMounted] = useState(false);
   const swiperRef = useRef<SwiperClass | null>(null); // Swiper instance ref
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
 
   const slides: SlideItem[] = [
     ...videoIds.map((id) => ({ type: "video" as const, id })),
@@ -187,7 +180,7 @@ export default function VideoGallerySlider() {
             <span className="absolute -top-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
-            <span className="bg-linear-to-r from-[#F3066D] to-[#FC7CB4] bg-clip-text text-transparent">
+            <span className="text-primary">
               {" "}
               প্রথম পছন্দ
             </span>

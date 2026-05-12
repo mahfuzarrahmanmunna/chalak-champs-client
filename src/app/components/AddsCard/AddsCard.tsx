@@ -31,13 +31,13 @@ const AddsCard = () => {
         <X size={24} />
       </button>
 
-      <figure className="p-0.5 rounded-[51px] overflow-hidden">
+      <figure className="p-0.5 md:rounded-[51px] overflow-hidden">
         <Image
           src={"/videoimg.png"}
           alt="Adds section image"
           width={1073}
           height={365}
-          className="w-full h-auto rounded-[51px] border-2 border-[#FF8FCA]"
+          className="w-full h-auto rounded-4xl md:rounded-[51px] border-2 border-[#FF8FCA]"
         />
       </figure>
     </section>

@@ -1,10 +1,13 @@
+"use client"; // Framer motion এর জন্য এটা প্রয়োজন
+
 import React from "react";
 import { Check, Tag } from "lucide-react";
 import Button from "@/app/ui/button/Button";
+import { motion } from "framer-motion"; // এনিমেশনের জন্য
 
 // --- Props Interface ---
 interface Enrollment2Props {
-  data: any; // Your SingleCourseData
+  data: any;
   onEnroll: () => void;
 }
 
@@ -16,7 +19,18 @@ const Enrollment2 = ({ data, onEnroll }: Enrollment2Props) => {
     parts.length > 2 ? `${parts[2]} ${parts[3]}` : data.quickInfo.offerPrice;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <motion.div
+      // --- Animation Config ---
+      initial={{ opacity: 0, y: 30 }} // শুরুতে অদৃশ্য এবং নিচে থাকবে
+      whileInView={{ opacity: 1, y: 0 }} // স্ক্রিনে আসলে দেখা যাবে
+      viewport={{ once: true }} // শুধু একবারই এনিমেট হবে
+      transition={{
+        duration: 0.6,
+        delay: 0.2, // একটু সময় নিয়ে ভিজিবল হবে
+        ease: "easeOut",
+      }}
+      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+    >
       {/* --- HEADER / TAG --- */}
       <div className="bg-pink-50/50 px-6 py-3 border-b border-gray-100 flex items-center gap-2">
         <Tag className="h-4 w-4 text-[#F3056D]" />
@@ -76,19 +90,22 @@ const Enrollment2 = ({ data, onEnroll }: Enrollment2Props) => {
         {/* Checklist Section */}
         <div className="space-y-3 text-sm text-gray-700">
           {data.quickInfo.items.map((item: string, idx: number) => (
-            <div
+            <motion.div
               key={idx}
+              initial={{ opacity: 0, x: -10 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 + idx * 0.1 }} // লিস্ট আইটেমগুলো একে একে আসবে
               className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200"
             >
               <div className="mt-0.5 flex-shrink-0 bg-pink-100 rounded-full p-1">
                 <Check size={14} className="text-[#F3056D]" />
               </div>
               <span className="leading-relaxed">{item}</span>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

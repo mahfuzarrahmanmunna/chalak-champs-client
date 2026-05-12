@@ -8,20 +8,9 @@
     {
       "id": 1,
       "image": "/kidsbook.png",
-      "badge": "প্রিন্টেড কলরফুল বুক, ৩৫% ছাড়",
+      "badge": "প্রিন্টেড কলরফুল বুক",
+      "badge2": "৩৫% ছাড়",
       "title": "Kids' অনর্গল English বুক"
-    },
-    {
-      "id": 2,
-      "image": "/kidsbook.png",
-      "badge": "প্রিন্টেড কলরফুল বুক, ৩৫% ছাড়",
-      "title": "KIDS' SMART MATH"
-    },
-    {
-      "id": 3,
-      "image": "/kidsbook.png",
-      "badge": "প্রিন্টেড কলরফুল বুক, ৩৫% ছাড়",
-      "title": "KIDS' BANGLA ABC"
     }
   ]
 }

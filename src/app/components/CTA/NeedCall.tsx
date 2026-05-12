@@ -29,7 +29,7 @@ const NeedCall = () => {
               <div className="flex">
                 <div className="flex flex-col">
                   {/* CTA Button inside card */}
-                  <button className="bg-primary text-xs px-1.25 py-1 md:text-xl font-medium flex items-center md:px-6 md:py-3.5 rounded mt-4 md:rounded-xl md:mt-8">
+                  <a href="tel:01740176774" className="bg-primary text-xs px-1.25 py-1 md:text-xl font-medium flex items-center md:px-6 md:py-3.5 rounded mt-4 md:rounded-xl md:mt-8">
                     <svg
                       width="20"
                       height="20"
@@ -51,7 +51,7 @@ const NeedCall = () => {
                       />
                     </svg>
                     {ctaData.needHelp.cta}
-                  </button>
+                  </a>
                   <div>
                     <p className="text-[#2D2D2D]/50 leading-4 mt-2 text-sm">
                       {ctaData.needHelp.subCta}
@@ -70,10 +70,10 @@ const NeedCall = () => {
               </div>
             </div>
           </div>
-          <div className="rounded-xl bottom-0 hidden md:flex">
+          <div className="rounded-xl relative bottom-0 hidden md:flex">
             <Image
-              src={"/girls.png"}
-              width={240}
+              src={"/Call.png"}
+              width={320}
               height={225}
               alt="girls image"
               className="rounded-xl "

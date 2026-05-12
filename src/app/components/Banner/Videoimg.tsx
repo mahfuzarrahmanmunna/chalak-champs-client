@@ -284,7 +284,7 @@ import "videojs-youtube";
 
 const Videoimg = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const videoId = "nYyE2ItjRHE";
+  const videoId = "RG5Q6yVGyBE";
 
   // Ref to hold the player instance
   const videoNode = useRef(null);
@@ -356,11 +356,11 @@ const Videoimg = () => {
       ></div>
 
       {/* --- VIDEO CARD CONTAINER --- */}
-      <div className="relative w-full aspect-video rounded-[65px] shadow-2xl z-10 bg-gradient-to-b from-[#F3066E] to-[#D9D9D9] p-1 overflow-hidden">
+      <div className="relative w-full aspect-video rounded-[30px] md:rounded-[65px] shadow-2xl z-10 bg-gradient-to-b from-[#F3066E] to-[#D9D9D9] p-1 overflow-hidden">
         {/* 1. THUMBNAIL VIEW */}
         {!isPlaying && (
           <div
-            className="relative w-full h-full group cursor-pointer rounded-[61px] md:rounded-[59px] overflow-hidden z-30 bg-black"
+            className="relative w-full h-full group cursor-pointer rounded-[28px] md:rounded-[59px] overflow-hidden z-30 bg-black"
             onContextMenu={handleContextMenu}
           >
             <Image
@@ -500,98 +500,100 @@ const Videoimg = () => {
       </div>
 
       {/* --- DECORATIVE IMAGE RIGHT (Blue) --- */}
-      <div className="absolute -bottom-10 -right-16 md:bottom-20 md:-right-36 z-20 pointer-events-none scale-40 md:scale-100 opacity-90">
-        <svg
-          width="289"
-          height="289"
-          viewBox="0 0 289 289"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <g filter="url(#filter0_d_627_2674)">
-            <rect
-              x="89.1865"
-              y="112.481"
-              width="90"
-              height="90"
-              rx="25"
-              transform="rotate(-15 89.1865 112.481)"
-              fill="#D8E6FF"
-              fillOpacity="0.2"
-              shapeRendering="crispEdges"
-            />
-            <rect
-              x="90.4113"
-              y="113.188"
-              width="88"
-              height="88"
-              rx="24"
-              transform="rotate(-15 90.4113 113.188)"
-              stroke="#ABDBFF"
-              strokeWidth="2"
-              shapeRendering="crispEdges"
-            />
-            <g clipPath="url(#clip0_627_2674)">
-              <path
-                d="M159.315 134.71L162.172 145.373M145.766 149.769L154.799 139.73L157.925 151.396C158.869 154.919 154.738 159.088 148.697 160.706C142.656 162.325 136.995 160.78 136.05 157.257L132.925 145.591L145.766 149.769ZM145.766 149.769L124.363 142.805L139.417 126.072L160.82 133.036L145.766 149.769Z"
-                stroke="#00477C"
-                strokeWidth="2"
-                strokeLinecap="square"
-              />
-            </g>
-          </g>
-          <defs>
-            <filter
-              id="filter0_d_627_2674"
-              x="-5.61348"
-              y="-5.61299"
-              width="299.827"
-              height="299.827"
-              filterUnits="userSpaceOnUse"
-              colorInterpolationFilters="sRGB"
-            >
-              <feFlood floodOpacity="0" result="BackgroundImageFix" />
-              <feColorMatrix
-                in="SourceAlpha"
-                type="matrix"
-                values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                result="hardAlpha"
-              />
-              <feOffset />
-              <feGaussianBlur stdDeviation="47.4" />
-              <feComposite in2="hardAlpha" operator="out" />
-              <feColorMatrix
-                type="matrix"
-                values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"
-              />
-              <feBlend
-                mode="normal"
-                in2="BackgroundImageFix"
-                result="effect1_dropShadow_627_2674"
-              />
-              <feBlend
-                mode="normal"
-                in="BackgroundImageFix"
-                in2="effect1_dropShadow_627_2674"
-                result="BackgroundImageFix"
-              />
-              <feBlend
-                mode="normal"
-                in="SourceGraphic"
-                in2="BackgroundImageFix"
-                result="shape"
-              />
-            </filter>
-            <clipPath id="clip0_627_2674">
+      <div className="absolute  -bottom-10 -right-16 md:bottom-20 md:-right-36 z-20 pointer-events-none scale-40 md:scale-100 opacity-90">
+        <div className="">
+          <svg
+            width="289"
+            height="289"
+            viewBox="0 0 289 289"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g filter="url(#filter0_d_627_2674)">
               <rect
-                width="45.2914"
-                height="45.2914"
-                fill="white"
-                transform="translate(116.565 128.288) rotate(-15)"
+                x="89.1865"
+                y="112.481"
+                width="90"
+                height="90"
+                rx="25"
+                transform="rotate(-15 89.1865 112.481)"
+                fill="#D8E6FF"
+                fillOpacity="0.2"
+                shapeRendering="crispEdges"
               />
-            </clipPath>
-          </defs>
-        </svg>
+              <rect
+                x="90.4113"
+                y="113.188"
+                width="88"
+                height="88"
+                rx="24"
+                transform="rotate(-15 90.4113 113.188)"
+                stroke="#ABDBFF"
+                strokeWidth="2"
+                shapeRendering="crispEdges"
+              />
+              <g clipPath="url(#clip0_627_2674)">
+                <path
+                  d="M159.315 134.71L162.172 145.373M145.766 149.769L154.799 139.73L157.925 151.396C158.869 154.919 154.738 159.088 148.697 160.706C142.656 162.325 136.995 160.78 136.05 157.257L132.925 145.591L145.766 149.769ZM145.766 149.769L124.363 142.805L139.417 126.072L160.82 133.036L145.766 149.769Z"
+                  stroke="#00477C"
+                  strokeWidth="2"
+                  strokeLinecap="square"
+                />
+              </g>
+            </g>
+            <defs>
+              <filter
+                id="filter0_d_627_2674"
+                x="-5.61348"
+                y="-5.61299"
+                width="299.827"
+                height="299.827"
+                filterUnits="userSpaceOnUse"
+                colorInterpolationFilters="sRGB"
+              >
+                <feFlood floodOpacity="0" result="BackgroundImageFix" />
+                <feColorMatrix
+                  in="SourceAlpha"
+                  type="matrix"
+                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                  result="hardAlpha"
+                />
+                <feOffset />
+                <feGaussianBlur stdDeviation="47.4" />
+                <feComposite in2="hardAlpha" operator="out" />
+                <feColorMatrix
+                  type="matrix"
+                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"
+                />
+                <feBlend
+                  mode="normal"
+                  in2="BackgroundImageFix"
+                  result="effect1_dropShadow_627_2674"
+                />
+                <feBlend
+                  mode="normal"
+                  in="BackgroundImageFix"
+                  in2="effect1_dropShadow_627_2674"
+                  result="BackgroundImageFix"
+                />
+                <feBlend
+                  mode="normal"
+                  in="SourceGraphic"
+                  in2="BackgroundImageFix"
+                  result="shape"
+                />
+              </filter>
+              <clipPath id="clip0_627_2674">
+                <rect
+                  width="45.2914"
+                  height="45.2914"
+                  fill="white"
+                  transform="translate(116.565 128.288) rotate(-15)"
+                />
+              </clipPath>
+            </defs>
+          </svg>
+        </div>
       </div>
     </div>
   );

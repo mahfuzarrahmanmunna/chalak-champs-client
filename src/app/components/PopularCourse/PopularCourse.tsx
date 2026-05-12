@@ -43,21 +43,21 @@ const PopularCourse = () => {
         {/* Flex wrapper to center the grid horizontally */}
         <div className="flex justify-center w-full">
           {/* Inline-grid allows the container to shrink to fit the content (1, 2, 3, or 4 cards) */}
-          <div className="grid grid-cols-2 col-span-1-span-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-8 inline-grid">
+          <div className="flex grid-cols-2 col-span-1-span-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-8 ">
             {cards.map((course) => (
               <div
                 key={course.id}
-                className="relative  rounded-[35px] bg-linear-to-b p-1 from-[#F3066EBF] to-white w-full"
+                className="relative w-77.75 h-88.75  rounded-[35px] bg-linear-to-b p-1 from-[#F3066EBF] to-white "
               >
                 {/* Inner White Content Area */}
                 <div className="bg-white rounded-4xl md:p-6 p-3 flex flex-col items-center h-full">
                   {/* Image Wrapper with Light Pink Background/Border */}
-                  <div className="relative shadow-[0_4px_27px_4px_rgba(243,6,110,0.2)] w-full aspect-square md:rounded-2xl rounded-3xl overflow-hidden bg-linear-to-b from-[#F3066E] to-[#FF8FCA]">
+                  <div className="relative w-60.5 h-60.5 shadow-[0_4px_27px_4px_rgba(243,6,110,0.2)] aspect-square md:rounded-2xl rounded-3xl overflow-hidden bg-linear-to-b from-[#F3066E] to-[#FF8FCA]">
                     <Image
                       src={course.image}
                       alt={course.title}
                       fill
-                      className="object-cover p-0.5 rounded-2xl"
+                      className="object-cover w-60.5 h-60.5 p-0.5 rounded-2xl"
                     />
                   </div>
 
@@ -78,7 +78,7 @@ const PopularCourse = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-center mt-14">
+      {/* <div className="flex items-center justify-center mt-14">
         <Button
           bgColor="#F3056D"
           darkShadowColor="#F3066E"
@@ -104,7 +104,7 @@ const PopularCourse = () => {
         >
           {cta}
         </Button>
-      </div>
+      </div> */}
     </section>
   );
 };

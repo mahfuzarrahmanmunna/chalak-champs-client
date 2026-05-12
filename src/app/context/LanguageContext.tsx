@@ -47,10 +47,8 @@ import footerBangla from "../data/translations/footer-bangla.json";
 import singlecourseEnglish from "../data/translations/singlecourse-english.json";
 import singlecourseBangla from "../data/translations/singlecourse-bangla.json";
 
-
 import aboutUsEnglish from "../data/translations/aboutus-english.json";
 import aboutUsBangla from "../data/translations/aboutus-bangla.json";
-
 
 // Types
 type Translations = {
@@ -172,6 +170,7 @@ interface OfflineCoursesData {
     id: number;
     title: string;
     desc: string;
+    image: string;
   }[];
   whyUs: {
     title: string;
@@ -366,6 +365,7 @@ type LanguageContextType = {
   isBangla: boolean;
   currentLang: "en" | "bn";
   toggleLanguage: () => void;
+  getLink: (path: string) => string; // NEW HELPER FOR LINKS
   t: Record<string, string>;
   heroData: HeroData | null;
   isLoading: boolean;
@@ -451,7 +451,7 @@ const getLanguageData = (isBangla: boolean) => {
     offline,
     cta,
     footer,
-    singleCourse, // Return the single course data
+    singleCourse, // Return single course data
     aboutUs,
   };
 };
@@ -492,17 +492,36 @@ export const LanguageProvider = ({
     return getLanguageData(isBangla);
   }, [isBangla]);
 
+  // Determine current language code
+  const currentLang = isBangla ? "bn" : "en";
+
+  // --- NEW HELPER TO CREATE LINKS ---
+  // Usage: getLink("/courses") returns "/bn/courses" or "/en/courses"
+  const getLink = (path: string) => {
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    return `/${currentLang}${cleanPath}`;
+  };
+
   const toggleLanguage = () => {
     const scrollY = window.scrollY;
-    const currentLang = isBangla ? "bn" : "en";
+    const currentLangStr = isBangla ? "bn" : "en";
     const newLang = isBangla ? "en" : "bn";
 
-    if (pathname.startsWith(`/${currentLang}`)) {
-      const newPath = pathname.replace(`/${currentLang}`, `/${newLang}`);
-      router.push(newPath);
+    let newPath = "";
+
+    if (pathname === "/" || pathname === "") {
+      // If on root, just go to /en or /bn
+      newPath = `/${newLang}`;
+    } else if (pathname.startsWith(`/${currentLangStr}`)) {
+      // If pathname starts with /en/ or /bn/, swap it
+      newPath = pathname.replace(`/${currentLangStr}`, `/${newLang}`);
     } else {
-      router.push(`/${newLang}`);
+      // If pathname has no prefix (e.g. /about), assume we want to add prefix
+      // or replace default English
+      newPath = `/${newLang}${pathname}`;
     }
+
+    router.push(newPath);
 
     setTimeout(() => {
       window.scrollTo(0, scrollY);
@@ -513,8 +532,9 @@ export const LanguageProvider = ({
     <LanguageContext.Provider
       value={{
         isBangla,
-        currentLang: isBangla ? "bn" : "en",
+        currentLang: currentLang as "en" | "bn",
         toggleLanguage,
+        getLink, // EXPOSE GET LINK
         t: merged,
         heroData: hero,
         isLoading: false,

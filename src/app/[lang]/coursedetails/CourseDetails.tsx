@@ -1,251 +1,221 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useForm, SubmitHandler } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { format } from "date-fns";
 import {
   ArrowLeft,
   BookOpen,
   CheckCircle,
-  ChevronDown,
   ChevronRight,
-  Clock,
-  Download,
-  Globe,
-  Heart,
-  Play,
   Star,
-  Target,
-  ThumbsUp,
   Users,
-  Video,
-  Award,
   X,
-  Phone,
-  CreditCard,
   LayoutGrid,
   ListChecks,
   HelpCircle,
-  LayoutList,
-  Calendar,
-  Plus,
-  Minus,
+  UserCheck,
+  ChevronDown,
+  MessageCircle,
 } from "lucide-react";
+import { FaSadCry } from "react-icons/fa";
 
-import NeedCall from "./NeedCall";
-import IncludesCard from "./IncludesCard";
+// --- IMPORT CONTEXT ---
+import { useLanguage } from "@/app/context/LanguageContext";
 import EnrollmentCard from "./EnrollmentCard";
-import FAQ from "./FAQ";
-import CourseDecorate from "./CourseDecorate";
+import Button from "@/app/ui/button/Button";
+import Enrollment2 from "./Enrollment2";
 
-// --- TYPES & INTERFACES ---
-
-interface CourseData {
-  id: number;
-  title: string;
-  subtitle: string;
-  description: string;
-  badge: string;
-  badgeColor: string;
-  image: string;
-  age: string;
-  duration: string;
-  schedule: string;
-  faqs: string;
-  mode: string;
-  features: string[];
-  syllabus?: string[];
-  fee: string;
-  installment?: string;
-  contact: string;
-  buttonText: string;
-}
-
-interface Course {
-  id: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  schedule: string;
-  fullDescription: string;
-  isBestseller: boolean;
-  isNew: boolean;
-  syllabus?: string[];
-  category: string;
-  level: string;
-  rating: number;
-  mode: string;
-  faqs: string;
-  reviewsCount: number;
-  enrolledCount: number;
-  duration: string;
-  language: string;
-  lastUpdated: string;
-  price: number;
-  originalPrice?: number;
-  thumbnail: string;
-  previewVideo: string;
-  whatYouLearn: string[];
-  requirements: string[];
-  curriculum: Section[];
-  instructor: Instructor;
-  fee: string;
-  installment?: string;
-}
-
-interface Section {
-  id: string;
-  title: string;
-  duration: string;
-  lessons: Lesson[];
-}
-
-interface Lesson {
-  id: string;
-  title: string;
-  duration: string;
-  isPreview: boolean;
-}
-
-interface Instructor {
-  name: string;
-  bio: string;
-  avatar: string;
-  rating: number;
-  studentsCount: number;
-}
-
-interface Review {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatar: string;
-  rating: number;
-  comment: string;
-  date: string;
-  helpfulCount: number;
-  isHelpful: boolean;
-}
-
-// --- THEME & COLORS ---
-const colors = {
-  primary: "#F3056D",
-  secondary: "#214187",
-  background: "#ffffff",
-  foreground: "#1f2937",
-  card: "#f9fafb",
-  border: "#e5e7eb",
-  accent: "#fbbf24",
-};
-
-// --- MAIN COMPONENT ---
-
-export default function CourseDetailsPage() {
-  const params = useParams();
-  const router = useRouter();
-  const courseId = (params.id as string) || "1";
-
-  // State for FAQ Accordion
+// --- SUB-COMPONENT: FAQ ---
+const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
   const [activeFaq, setActiveFaq] = useState<string | null>(null);
 
-  const [course, setCourse] = useState<Course | null>(null);
+  useEffect(() => {
+    if (faqs.length > 0 && !activeFaq) {
+      setActiveFaq(faqs[0].q);
+    }
+  }, [faqs]);
 
-  // Updated Tabs with Icons
-  const [activeTab, setActiveTab] = useState("overview");
+  return (
+    <div className="bg-gradient-to-br from-blue-50 to-pink-50/30 p-6 md:p-10 rounded-[32px] border border-white/60 shadow-lg relative overflow-hidden">
+      <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-pink-200/20 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute bottom-[-20px] left-[-20px] w-32 h-32 bg-blue-200/20 rounded-full blur-2xl pointer-events-none" />
+      <div className="relative z-10 flex items-center gap-3 mb-10">
+        <div className="bg-white p-3 rounded-2xl shadow-sm text-[#F3056D] border border-pink-100">
+          <MessageCircle className="h-6 w-6 fill-pink-50" strokeWidth={2} />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
+            সাধারণ জিজ্ঞাসা
+          </h2>
+          <p className="text-sm text-gray-500 font-medium">সবাই যা জানতে চায়</p>
+        </div>
+      </div>
 
-  const [reviews, setReviews] = useState<Review[]>([
-    {
-      id: "1",
-      userId: "u1",
-      userName: "Rahim Uddin",
-      userAvatar: "https://randomuser.me/api/portraits/men/32.jpg",
-      rating: 5,
-      comment: "My child loves this course! Very interactive and helpful.",
-      date: "2023-11-01",
-      helpfulCount: 24,
-      isHelpful: false,
-    },
-  ]);
-  const [isEnrolled, setIsEnrolled] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+      <div className="relative z-10 space-y-4">
+        {faqs.length > 0 ? (
+          faqs.map((faq, idx) => {
+            const isOpen = activeFaq === faq.q;
+            return (
+              <div
+                key={idx}
+                className={`bg-white rounded-2xl border-2 transition-all duration-300 group hover:shadow-xl ${
+                  isOpen
+                    ? "border-[#F3056D] shadow-md ring-4 ring-pink-50/50"
+                    : "border-gray-100 hover:border-pink-200"
+                }`}
+              >
+                <button
+                  onClick={() => setActiveFaq(isOpen ? null : faq.q)}
+                  className="w-full flex items-center justify-between p-5 text-left focus:outline-none group/btn"
+                  aria-expanded={isOpen}
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    <span
+                      className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm transition-all duration-300 transform group-hover/btn:scale-110 ${
+                        isOpen
+                          ? "bg-[#F3056D] text-white scale-110 rotate-3"
+                          : "bg-gray-100 text-gray-400 group-hover/btn:bg-pink-100 group-hover/btn:text-[#F3056D]"
+                      }`}
+                    >
+                      {idx + 1}
+                    </span>
+                    <span
+                      className={`font-semibold text-lg md:text-xl pr-4 leading-tight transition-colors ${
+                        isOpen ? "text-[#F3056D]" : "text-gray-700"
+                      }`}
+                    >
+                      {faq.q}
+                    </span>
+                  </div>
+                  <div
+                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      isOpen
+                        ? "bg-[#F3056D] text-white rotate-180"
+                        : "bg-gray-50 text-gray-400 group-hover/btn:bg-pink-100 group-hover/btn:text-[#F3056D]"
+                    }`}
+                  >
+                    <ChevronDown className="w-5 h-5" strokeWidth={3} />
+                  </div>
+                </button>
+                {isOpen && (
+                  <div className="px-6 pb-6 pt-0 overflow-hidden">
+                    <div className="animate-in slide-in-from-top-2 fade-in duration-300">
+                      <div className="mt-4 pl-[52px] border-l-4 border-pink-100 text-gray-600 leading-7 text-base">
+                        {faq.a}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <div className="text-center py-10 bg-white/50 rounded-3xl border border-dashed border-gray-300 flex items-center justify-center gap-2">
+            <p className="text-gray-500 font-medium text-lg">
+              কোনো প্রশ্ন পাওয়া যায়নি
+            </p>
+            <FaSadCry className="text-xl text-gray-400" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- SUB-COMPONENT: COURSE DECORATE (FEATURES) ---
+const CourseDecorate = ({
+  cards,
+  title,
+}: {
+  cards: Array<{ title: string; body: string }>;
+  title: string;
+}) => {
+  return (
+    <section
+      id="courseDecorator"
+      className="w-full bg-[#214187] border-2 border-[#FF8FCA] rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-xl"
+    >
+      <div className="container mx-auto max-w-6xl relative z-10">
+        <div className="mb-6">
+          <h2 className="font-bold text-xl md:text-2xl text-white tracking-wide">
+            {title}
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+          {cards.map((feature, index) => {
+            return (
+              <div
+                key={index}
+                className="group relative p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300"
+              >
+                <div className="flex flex-col gap-3">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#F3056D] shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <CheckCircle className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-pink-200 transition-colors">
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-200 text-sm md:text-base leading-relaxed font-normal">
+                      {feature.body}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- MAIN PAGE COMPONENT ---
+export default function CourseDetails() {
+  const router = useRouter();
+  const { singleCourseData, isBangla, toggleLanguage } = useLanguage();
+
+  const [activeTab, setActiveTab] = useState("features");
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<string[]>(["1"]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [showStickyCta, setShowStickyCta] = useState(false);
 
-  // Sections configuration with Icons
+  // --- UPDATED STATE for Side Enrollment Animation ---
+  const [showSideEnrollment, setShowSideEnrollment] = useState(false);
+  const [hasTriggeredScroll, setHasTriggeredScroll] = useState(false); // Prevents restarting timer
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const featuresRef = useRef<HTMLDivElement>(null);
+  const whoIsThisForRef = useRef<HTMLDivElement>(null);
+  const syllabusRef = useRef<HTMLDivElement>(null);
+  const overviewRef = useRef<HTMLDivElement>(null);
+  const faqRef = useRef<HTMLDivElement>(null);
+
   const sections = [
-    { id: "overview", label: "Overview", icon: LayoutGrid },
-    { id: "curriculum", label: "Curriculum", icon: BookOpen },
-    { id: "instructor", label: "Instructor", icon: Users },
-    { id: "courseDecorator", label: "Course Decorator", icon: Users },
+    {
+      id: "features",
+      label: isBangla ? "ফিচার" : "Features",
+      icon: ListChecks,
+    },
+    {
+      id: "whoIsThisFor",
+      label: isBangla ? "এটি কাদের জন্য?" : "Who is this for?",
+      icon: UserCheck,
+    },
+    {
+      id: "syllabus",
+      label: isBangla ? "সিলেবাস" : "Syllabus",
+      icon: BookOpen,
+    },
+    {
+      id: "overview",
+      label: isBangla ? "বিবরণ" : "Description",
+      icon: LayoutGrid,
+    },
+    { id: "faq", label: "FAQ", icon: HelpCircle },
   ];
 
-  // Refs
-  const overviewRef = useRef<HTMLDivElement>(null);
-  const curriculumRef = useRef<HTMLDivElement>(null);
-  const instructorRef = useRef<HTMLDivElement>(null);
-  const courseDecoratorRef = useRef<HTMLDivElement>(null);
-  // Removed reviewsRef as requested
-
-  // --- Form Hooks ---
-  const {
-    register: registerComment,
-    handleSubmit: handleCommentSubmit,
-    formState: { errors: commentErrors },
-    reset: resetCommentForm,
-    setValue: setCommentValue,
-    watch: watchComment,
-  } = useForm({
-    resolver: yupResolver(
-      yup.object().shape({
-        comment: yup
-          .string()
-          .required("Comment is required")
-          .min(10, "Comment must be at least 10 characters"),
-        rating: yup.number().required("Rating is required").min(1).max(5),
-      }),
-    ),
-    defaultValues: { comment: "", rating: 5 },
-  });
-
-  const {
-    register: registerEnrollment,
-    handleSubmit: handleEnrollmentSubmit,
-    formState: { errors: enrollmentErrors },
-    reset: resetEnrollmentForm,
-    watch: watchEnrollment,
-  } = useForm({
-    resolver: yupResolver(
-      yup.object().shape({
-        firstName: yup.string().required("First name is required"),
-        lastName: yup.string().required("Last name is required"),
-        email: yup
-          .string()
-          .email("Invalid email")
-          .required("Email is required"),
-        phone: yup.string().required("Phone number is required"),
-        agreeToTerms: yup
-          .boolean()
-          .oneOf([true], "You must agree to terms and conditions"),
-      }),
-    ),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      agreeToTerms: false,
-    },
-  });
-
-  // --- Scroll Spy (Active Tab Logic) ---
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -255,128 +225,70 @@ export default function CourseDetailsPage() {
           }
         });
       },
-      { threshold: 0.5 },
+      { threshold: 0.3 },
     );
 
     const refs = [
+      { current: featuresRef.current, id: "features" },
+      { current: whoIsThisForRef.current, id: "whoIsThisFor" },
+      { current: syllabusRef.current, id: "syllabus" },
       { current: overviewRef.current, id: "overview" },
-      { current: curriculumRef.current, id: "curriculum" },
-      { current: instructorRef.current, id: "instructor" },
+      { current: faqRef.current, id: "faq" },
     ];
 
     refs.forEach((ref) => {
       if (ref.current) observer.observe(ref.current);
     });
 
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setShowStickyCta(scrollY > 300);
+
+      // --- UPDATED LOGIC: Higher Threshold (800px) + 2s Delay ---
+      const SCROLL_THRESHOLD = 800;
+      const APPEARANCE_DELAY = 2000; // 2 seconds
+
+      if (scrollY > SCROLL_THRESHOLD) {
+        if (!hasTriggeredScroll && !showSideEnrollment) {
+          setHasTriggeredScroll(true);
+
+          // Start the timer
+          if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+
+          scrollTimeoutRef.current = setTimeout(() => {
+            setShowSideEnrollment(true);
+          }, APPEARANCE_DELAY);
+        }
+      } else {
+        // If user scrolls back up, reset everything
+        if (hasTriggeredScroll || showSideEnrollment) {
+          setHasTriggeredScroll(false);
+          setShowSideEnrollment(false);
+          if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
     return () => {
       refs.forEach((ref) => {
         if (ref.current) observer.unobserve(ref.current);
       });
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     };
-  }, []);
+  }, [hasTriggeredScroll, showSideEnrollment]); // Dependencies ensure we don't miss updates
 
-  // --- Data Fetching ---
-  useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        const res = await fetch("/courses.json");
-        if (!res.ok) throw new Error("Failed to fetch");
-        const data: CourseData[] = await res.json();
-        const foundRaw = data.find((c) => c.id.toString() === courseId);
-
-        if (foundRaw) {
-          // --- DATA TRANSFORMATION ---
-          const transformedCourse: Course = {
-            id: foundRaw.id.toString(),
-            title: foundRaw.title,
-            subtitle: foundRaw.subtitle,
-            description: foundRaw.description,
-            fullDescription: foundRaw.description,
-            isBestseller: foundRaw.badge.toLowerCase().includes("best"),
-            isNew: foundRaw.badge.toLowerCase().includes("new"),
-            category: foundRaw.subtitle || "Kids Education",
-            level: foundRaw.age.includes("-") ? "Beginner" : "Intermediate",
-            rating: 4.8,
-            reviewsCount: 120,
-            enrolledCount: 450,
-            duration: foundRaw.duration,
-            language: "Bengali / English",
-            lastUpdated: new Date().toISOString(),
-            price: parseInt(foundRaw.fee.replace(/[^0-9]/g, "")),
-            faqs: foundRaw.faqs || [],
-            originalPrice: foundRaw.fee.includes("(")
-              ? parseInt(
-                  foundRaw.fee
-                    .match(/\(([^)]+)\)/)?.[1]
-                    ?.replace(/[^0-9]/g, "") || "",
-                )
-              : undefined,
-            thumbnail: foundRaw.image.startsWith("http")
-              ? foundRaw.image
-              : `https://placehold.co/600x400/${colors.primary.slice(1)}/FFF?text=${foundRaw.title}`,
-            previewVideo: "https://www.w3schools.com/html/mov_bbb.mp4",
-            whatYouLearn: foundRaw.features,
-            requirements: [
-              `Age: ${foundRaw.age}`,
-              `Schedule: ${foundRaw.schedule}`,
-              "A computer or mobile device with internet connection",
-            ],
-            curriculum: (foundRaw.syllabus || []).map((item, idx) => ({
-              id: `section-${idx}`,
-              title: item,
-              duration: "2 hrs",
-              lessons: [
-                {
-                  id: `l1-${idx}`,
-                  title: "Introduction",
-                  duration: "10 min",
-                  isPreview: idx === 0,
-                },
-                {
-                  id: `l2-${idx}`,
-                  title: "Core Concepts",
-                  duration: "30 min",
-                  isPreview: false,
-                },
-                {
-                  id: `l3-${idx}`,
-                  title: "Practice & Quiz",
-                  duration: "20 min",
-                  isPreview: false,
-                },
-              ],
-            })),
-            instructor: {
-              name: "Chalak Champs Team",
-              bio: "Expert educators dedicated to developing your child's full potential.",
-              avatar: "https://randomuser.me/api/portraits/lego/1.jpg",
-              rating: 4.9,
-              studentsCount: 5000,
-            },
-            fee: foundRaw.fee,
-            installment: foundRaw.installment,
-          };
-          setCourse(transformedCourse);
-        } else {
-          router.push("/courses");
-        }
-      } catch (error) {
-        console.error("Error fetching course:", error);
-        router.push("/courses");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCourse();
-  }, [courseId, router]);
-
-  // --- Handlers ---
   const scrollToSection = (id: string) => {
-    const refs: { [key: string]: React.RefObject<HTMLDivElement | null> } = {
+    const refs: {
+      [key: string]: React.RefObject<HTMLDivElement | null>;
+    } = {
+      features: featuresRef,
+      whoIsThisFor: whoIsThisForRef,
+      syllabus: syllabusRef,
       overview: overviewRef,
-      curriculum: curriculumRef,
-      instructor: instructorRef,
+      faq: faqRef,
     };
     const ref = refs[id];
     if (ref && ref.current) {
@@ -384,547 +296,393 @@ export default function CourseDetailsPage() {
     }
   };
 
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections((prev) =>
-      prev.includes(sectionId)
-        ? prev.filter((id) => id !== sectionId)
-        : [...prev, sectionId],
-    );
+  const handleEnroll = () => {
+    setShowEnrollmentModal(true);
   };
 
-  const onCommentSubmit: SubmitHandler<any> = (data) => {
-    setIsSubmittingReview(true);
-    setTimeout(() => {
-      const newReview: Review = {
-        id: `review-${Date.now()}`,
-        userId: "current-user",
-        userName: "You",
-        userAvatar: "https://randomuser.me/api/portraits/lego/1.jpg",
-        rating: data.rating,
-        comment: data.comment,
-        date: new Date().toISOString().split("T")[0],
-        helpfulCount: 0,
-        isHelpful: false,
-      };
-      setReviews([newReview, ...reviews]);
-      resetCommentForm();
-      setIsSubmittingReview(false);
-    }, 1000);
-  };
-
-  const onEnrollmentSubmit: SubmitHandler<any> = (data) => {
+  const handleEnrollmentSubmit = () => {
     setIsEnrolling(true);
     setTimeout(() => {
-      setIsEnrolled(true);
-      setShowEnrollmentModal(false);
-      resetEnrollmentForm();
       setIsEnrolling(false);
+      setShowEnrollmentModal(false);
       alert(
-        `Enrollment successful for ${course?.title}! We will contact you at ${data.phone}.`,
+        isBangla
+          ? "ভর্তি সফল হয়েছে! শীঘ্রই যোগাযোগ করা হবে।"
+          : "Enrollment Successful! We will contact you shortly.",
       );
     }, 2000);
   };
 
-  const toggleHelpful = (reviewId: string) => {
-    setReviews(
-      reviews.map((review) => {
-        if (review.id === reviewId) {
-          return {
-            ...review,
-            helpfulCount: review.isHelpful
-              ? review.helpfulCount - 1
-              : review.helpfulCount + 1,
-            isHelpful: !review.isHelpful,
-          };
-        }
-        return review;
-      }),
-    );
-  };
-
-  if (isLoading) {
+  if (!singleCourseData || Object.keys(singleCourseData).length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2"></div>
-      </div>
-    );
-  }
-
-  if (!course) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4 text-gray-800">
-            Course Not Found
-          </h1>
-          <Link
-            href="/courses"
-            className="px-6 py-3 rounded-md text-white font-medium hover:opacity-90 transition"
-          >
-            Browse All Courses
-          </Link>
+      <div className="p-10 text-center bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-xl text-gray-500 font-medium">
+          Loading Course Details...
         </div>
       </div>
     );
   }
+
+  const data = singleCourseData;
+  const priceParts = data.quickInfo.offerPrice.split(" ");
+  const displayPrice =
+    priceParts.length > 2
+      ? `${priceParts[2]} ${priceParts[3]}`
+      : data.quickInfo.offerPrice;
+  const breadcrumbParts = data.breadcrumb.split(",");
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-20">
-      {/* --- HERO SECTION --- */}
-      <div className="relative bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col lg:flex-row gap-12">
-            {/* Left Content */}
-            <div className="flex-1">
-              <div className="mb-6">
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans relative selection:bg-pink-100 selection:text-pink-900">
+      <div className=" bg-white/90 backdrop-blur-md  py-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm md:text-base">
+          <div className="flex items-center flex-wrap">
+            {breadcrumbParts.map((part, index) => {
+              const trimmedPart = part.trim();
+              const isLast = index === breadcrumbParts.length - 1;
+              let href = "#";
+              if (trimmedPart.toLowerCase() === "home") href = "/";
+              if (trimmedPart.toLowerCase() === "courses") href = "/courses";
+              return (
+                <React.Fragment key={index}>
+                  {isLast ? (
+                    <span className="text-gray-900 font-semibold">
+                      {trimmedPart}
+                    </span>
+                  ) : (
+                    <Link
+                      href={href}
+                      className="text-gray-500 hover:text-[#F3056D] font-medium transition-colors"
+                    >
+                      {trimmedPart}
+                    </Link>
+                  )}
+                  {!isLast && (
+                    <ChevronRight className="h-4 w-4 mx-2 text-gray-300" />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className="relative bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+          <div className="flex flex-col lg:flex-row gap-10">
+            <div className="w-full lg:w-[65%] order-2 lg:order-1">
+              <div className="mb-10">
                 <Link
                   href="/courses"
-                  className="inline-flex items-center text-sm font-medium mb-4 text-gray-500 hover:opacity-70 transition-colors"
+                  className="inline-flex items-center text-sm md:text-base font-medium mb-4 text-gray-500 hover:text-[#F3056D] transition-colors group"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" /> Back to Courses
+                  <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />{" "}
+                  {isBangla ? "কোর্সে ফিরে যান" : "Back to Courses"}
                 </Link>
-
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {course.isBestseller && (
-                    <span className="px-3 py-1 text-xs font-bold tracking-wide uppercase rounded-full bg-[#F3056D]/10 text-[#F3056D] border border-[#F3056D]">
-                      Bestseller
-                    </span>
-                  )}
-                  <span className="px-3 py-1 text-xs font-bold tracking-wide uppercase rounded-full bg-gray-100 text-gray-800 border border-gray-200">
-                    {course.category}
-                  </span>
-                  <span className="px-3 py-1 text-xs font-bold tracking-wide uppercase rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                    {course.level}
-                  </span>
-                </div>
-
-                <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900 leading-tight">
-                  {course.title}
+                <h1 className="text-3xl md:text-5xl font-bold mb-6 text-gray-900 leading-tight tracking-tight">
+                  {data.hero.title}
                 </h1>
-                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                  {course.description}
+                <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
+                  {data.hero.subtitle}
+                </p>
+              </div>
+
+              <div className="sticky top-[60px] md:top-[72px] lg:top-[88px] rounded-2xl z-30 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-sm mb-12 overflow-hidden">
+                <div className="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0">
+                  <nav className="flex space-x-1 md:space-x-2 overflow-x-auto no-scrollbar py-2 px-2">
+                    {sections.map((section) => {
+                      const Icon = section.icon;
+                      return (
+                        <button
+                          key={section.id}
+                          onClick={() => scrollToSection(section.id)}
+                          className={`py-2.5 px-4 md:px-5 rounded-xl font-medium text-sm md:text-base whitespace-nowrap transition-all duration-200 flex items-center ${
+                            activeTab === section.id
+                              ? `bg-[#214187] border-2 border-primary text-white shadow-md scale-[1.02]`
+                              : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4 mr-2" />
+                          {section.label}
+                        </button>
+                      );
+                    })}
+                  </nav>
+                </div>
+              </div>
+
+              <div
+                ref={featuresRef}
+                id="features"
+                className="scroll-mt-36 md:scroll-mt-40 mb-12"
+              >
+                <CourseDecorate
+                  cards={data.features.cards}
+                  title={data.features.title}
+                />
+              </div>
+
+              <div
+                ref={whoIsThisForRef}
+                id="whoIsThisFor"
+                className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12"
+              >
+                <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm">
+                  <h3 className="font-bold text-xl md:text-2xl text-gray-900 mb-6">
+                    {data.whoIsThisFor.title}
+                  </h3>
+                  <p className="mb-6 text-lg text-gray-600 leading-relaxed">
+                    {data.whoIsThisFor.intro}
+                  </p>
+                  <ul className="space-y-4 mb-8">
+                    {data.whoIsThisFor.items.map((item, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-3 text-base text-gray-700 group"
+                      >
+                        <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </div>
+                        <span className="leading-relaxed">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="bg-[#214187]/5 p-4 rounded-xl border-l-4 border-[#F3056D]">
+                    <p className="font-bold text-lg text-[#214187]">
+                      {data.whoIsThisFor.boldStatement}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                ref={syllabusRef}
+                id="syllabus"
+                className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12"
+              >
+                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 border-l-4 pl-4 border-[#F3056D]">
+                  {data.levels.title}
+                </h2>
+                <p className="text-lg text-gray-600 mb-8 max-w-3xl">
+                  {data.levels.intro}
                 </p>
 
-                {/* <div className="flex flex-wrap items-center gap-6 text-sm font-medium text-gray-600 mb-6 border-t border-b border-gray-100 py-4">
-                  <div className="flex items-center text-yellow-500">
-                    <Star className="h-5 w-5 fill-current mr-1.5" />
-                    <span className="text-gray-900 font-bold mr-1">
-                      {course.rating}
-                    </span>
-                    <span className="text-gray-500">
-                      ({course.reviewsCount} ratings)
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <Users className="h-5 w-5 mr-1.5 text-gray-400" />
-                    <span>
-                      {course.enrolledCount.toLocaleString()} students
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <Globe className="h-5 w-5 mr-1.5 text-gray-400" />
-                    <span>{course.language}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Clock className="h-5 w-5 mr-1.5 text-gray-400" />
-                    <span>{course.duration}</span>
-                  </div>
-                </div> */}
-
-                {/* <div className="text-sm text-gray-500">
-                  Created by{" "}
-                  <span className="font-semibold hover:underline cursor-pointer">
-                    {course.instructor.name}
-                  </span>
-                  <span className="mx-2">•</span>
-                  Last updated{" "}
-                  {format(new Date(course.lastUpdated), "MMM dd, yyyy")}
-                </div> */}
-              </div>
-            </div>
-
-            {/* Right Enrollment Card */}
-            <EnrollmentCard
-              course={course}
-              setShowEnrollmentModal={setShowEnrollmentModal}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* --- MAIN CONTENT GRID --- */}
-      <div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column (Main Content) */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* --- NAVIGATION BAR --- */}
-            <div className="sticky top-24 rounded-2xl z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <nav className="flex space-x-8 overflow-x-auto no-scrollbar py-4">
-                  {sections.map((section) => {
-                    const Icon = section.icon;
-                    return (
-                      <button
-                        key={section.id}
-                        onClick={() => scrollToSection(section.id)}
-                        className={`py-2 px-5 rounded-xl border-b-2 font-medium bg-primary text-white text-base whitespace-nowrap transition-colors flex items-center ${
-                          activeTab === section.id
-                            ? `text-bg-secondary border border-primary text-white`
-                            : "text-gray-500 border-transparent "
-                        }`}
-                      >
-                        <Icon className="h-4 w-4 mr-2" />
-                        {section.label}
-                      </button>
-                    );
-                  })}
-                </nav>
-              </div>
-            </div>
-
-            {/* 1. OVERVIEW (With Bengali Sections) */}
-            <div
-              ref={overviewRef}
-              id="overview"
-              className="scroll-mt-24 space-y-6"
-            >
-              <h2 className="text-2xl font-bold mb-6 text-gray-900 border-l-4 pl-4">
-                Overview
-              </h2>
-
-              <div className="grid grid-cols-1 gap-6">
-                {/* Card 1: কোর্স যেভাবে সাজানো হয়েছে */}
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <LayoutGrid className="h-5 w-5" />
-                    <h3 className="font-bold text-lg text-gray-900">
-                      কোর্স যেভাবে সাজানো হয়েছে
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#C7EAFF] rounded-bl-full -mr-8 -mt-8 opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                    <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-3 relative z-10">
+                      {data.levels.level1.title}
                     </h3>
-                  </div>
-                  <div className="space-y-3 text-sm text-gray-700">
-                    <div className="flex items-center">
-                      <Globe className="h-4 w-4 mr-2 text-gray-400" />
-                      <span>{course.mode}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                      <span>{course.duration}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                      <span>{course.schedule}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. CURRICULUM (Course Content Section) - Now separate for scroll spy */}
-                {course.curriculum && (
-                  <div
-                    ref={curriculumRef}
-                    id="curriculum"
-                    className="scroll-mt-24 space-y-6"
-                  >
-                    <h2 className="text-2xl font-bold mb-6 text-gray-900 border-l-4 pl-4">
-                      Course Content
-                    </h2>
-                    <div className="space-y-3">
-                      {course.curriculum.map((section) => (
-                        <div
-                          key={section.id}
-                          className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
+                    <p className="text-base text-[#F3056D] font-semibold mb-4 relative z-10">
+                      {data.levels.level1.for}
+                    </p>
+                    <p className="text-base text-gray-600 mb-6 relative z-10">
+                      {data.levels.level1.intro}
+                    </p>
+                    <ul className="space-y-3 relative z-10">
+                      {data.levels.level1.items.map((item, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-base text-gray-700"
                         >
-                          <button
-                            onClick={() => toggleSection(section.id)}
-                            className="w-full p-5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
-                          >
-                            <div className="flex items-center">
-                              <div className="p-2 bg-gray-100 rounded-lg mr-4 text-gray-600">
-                                <BookOpen className="h-5 w-5" />
-                              </div>
-                              <div>
-                                <h3 className="font-bold text-gray-900">
-                                  {section.title}
-                                </h3>
-                                <p className="text-sm text-gray-500 mt-1">
-                                  {section.lessons.length} lessons •{" "}
-                                  {section.duration}
-                                </p>
-                              </div>
-                            </div>
-                            <ChevronDown
-                              className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${expandedSections.includes(section.id) ? "rotate-180" : ""}`}
-                            />
-                          </button>
-
-                          {expandedSections.includes(section.id) && (
-                            <div className="border-t border-gray-100 bg-gray-50/50">
-                              {section.lessons.map((lesson) => (
-                                <div
-                                  key={lesson.id}
-                                  className="flex items-center justify-between p-4 border-b border-gray-100 last:border-0 hover:bg-white/60 transition-colors"
-                                >
-                                  <div className="flex items-center">
-                                    <div
-                                      className={`p-1.5 rounded-full mr-3 ${lesson.isPreview ? "bg-blue-100 text-blue-600" : "bg-gray-200 text-gray-500"}`}
-                                    >
-                                      {lesson.isPreview ? (
-                                        <Play className="h-3 w-3 fill-current" />
-                                      ) : (
-                                        <div className="h-3 w-3 rounded-full border-2 border-gray-400" />
-                                      )}
-                                    </div>
-                                    <span className="font-medium text-gray-700">
-                                      {lesson.title}
-                                    </span>
-                                    {lesson.isPreview && (
-                                      <span className="ml-3 px-2 py-0.5 text-xs font-bold rounded bg-blue-100 text-blue-700 uppercase tracking-wide">
-                                        Preview
-                                      </span>
-                                    )}
-                                  </div>
-                                  <span className="text-sm text-gray-400 font-mono">
-                                    {lesson.duration}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                          <ChevronRight className="h-5 w-5 text-[#F3056D] mt-0.5 flex-shrink-0" />
+                          {item}
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </div>
-                )}
 
-                {/* Card 2: কোর্স সিলেবাস */}
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <BookOpen className="h-5 w-5" />
-                    <h3 className="font-bold text-lg text-gray-900">
-                      কোর্স সিলেবাস
+                  <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFD0CD] rounded-bl-full -mr-8 -mt-8 opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                    <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-3 relative z-10">
+                      {data.levels.level2.title}
                     </h3>
-                  </div>
-                  <ul className="space-y-2 text-sm text-gray-700">
-                    {(course.syllabus || []).slice(0, 4).map((item, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 mr-2 mt-0.5 text-gray-400 flex-shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Card 3: */}
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <ListChecks className="h-5 w-5" />
-                    <h3 className="font-bold text-lg text-gray-900">
-                      ক্লাস করার জন্য প্রয়োজন হবে
-                    </h3>
-                  </div>
-                  <ul className="space-y-2 text-sm text-gray-700">
-                    {course.requirements.map((req, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <ArrowLeft className="h-4 w-4 mr-2 mt-0.5 text-gray-400 rotate-180" />
-                        <span>{req}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Card 4: যেভাবে পেমেন্ট করবেন */}
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <CreditCard className="h-5 w-5" />
-                    <h3 className="font-bold text-lg text-gray-900">
-                      যেভাবে পেমেন্ট করবেন
-                    </h3>
-                  </div>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between p-2 bg-gray-50 rounded border border-gray-100">
-                      <span className="text-gray-600">কোর্স ফি:</span>
-                      <span className="font-bold text-gray-900">
-                        {course.fee}
-                      </span>
-                    </div>
-                    {course.installment && (
-                      <div className="flex justify-between p-2 bg-gray-50 rounded border border-gray-100">
-                        <span className="text-gray-600">ইনস্টলমেন্ট:</span>
-                        <span className="font-bold text-gray-900">
-                          {course.installment}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Card 5: সাধারণ জিজ্ঞাসা */}
-                <FAQ faqs={course.faqs} />
-
-                <CourseDecorate/>
-              </div>
-            </div>
-
-            <div className="border-t border-gray-200"></div>
-
-            <div className="border-t border-gray-200"></div>
-
-            {/* 3. INSTRUCTOR */}
-            <div ref={instructorRef} id="instructor" className="scroll-mt-24">
-              <h2 className="text-2xl font-bold mb-6 text-gray-900 border-l-4 pl-4">
-                Instructor
-              </h2>
-              <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row items-center md:items-start gap-6">
-                <img
-                  src={course.instructor.avatar}
-                  alt={course.instructor.name}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
-                />
-                <div className="flex-1 text-center md:text-left">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    {course.instructor.name}
-                  </h3>
-                  <p className="text-gray-600 mb-6">{course.instructor.bio}</p>
-                  <div className="flex flex-col sm:flex-row gap-6 justify-center md:justify-start">
-                    <div className="flex items-center justify-center gap-2">
-                      <Star className="h-5 w-5 text-yellow-500 fill-current" />
-                      <div className="text-sm">
-                        <span className="font-bold text-gray-900">
-                          {course.instructor.rating}
-                        </span>
-                        <span className="text-gray-500 ml-1">
-                          Instructor Rating
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-center gap-2">
-                      <Users className="h-5 w-5 text-[#214187]" />
-                      <div className="text-sm">
-                        <span className="font-bold text-gray-900">
-                          {course.instructor.studentsCount.toLocaleString()}
-                        </span>
-                        <span className="text-gray-500 ml-1">Students</span>
-                      </div>
-                    </div>
+                    <p className="text-base text-[#214187] font-semibold mb-4 relative z-10">
+                      {data.levels.level2.for}
+                    </p>
+                    <p className="text-base text-gray-600 mb-6 relative z-10">
+                      {data.levels.level2.intro}
+                    </p>
+                    <ul className="space-y-3 relative z-10">
+                      {data.levels.level2.items.map((item, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-base text-gray-700"
+                        >
+                          <ChevronRight className="h-5 w-5 text-[#214187] mt-0.5 flex-shrink-0" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="border-t border-gray-200"></div>
-          </div>
-
-          {/* Right Sidebar */}
-          <div className="lg:col-span-1 lg:w-[400px]">
-            <div className="sticky top-24 space-y-6">
-              <IncludesCard />
-              <NeedCall />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Enrollment Modal */}
-      {showEnrollmentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowEnrollmentModal(false)}
-          ></div>
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden relative z-10 flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-              <h2 className="text-xl font-bold text-gray-900">Checkout</h2>
-              <button
-                onClick={() => setShowEnrollmentModal(false)}
-                className="p-2 rounded-full hover:bg-gray-200 transition-colors text-gray-500"
+              <div
+                ref={overviewRef}
+                id="overview"
+                className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12"
               >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="overflow-y-auto p-6">
-              <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                <Image
-                  src={course.thumbnail}
-                  alt={course.title}
-                  width={80}
-                  height={60}
-                  className="rounded object-cover"
-                  unoptimized
-                />
-                <div>
-                  <h3 className="font-bold text-gray-900 line-clamp-1">
-                    {course.title}
-                  </h3>
-                  <p className="font-bold">
-                    {course.price.toLocaleString()} Tk
+                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 border-l-4 pl-4 border-[#F3056D]">
+                  {data.overview.title}
+                </h2>
+                <div className="bg-gray-50/50 p-6 md:p-8 rounded-2xl border border-gray-100">
+                  <p className="text-lg md:text-xl text-gray-700 leading-relaxed font-normal">
+                    {data.overview.content}
                   </p>
                 </div>
               </div>
 
+              <div
+                ref={faqRef}
+                id="faq"
+                className="scroll-mt-36 md:scroll-mt-40 mb-12"
+              >
+                <FAQ faqs={data.faq.items} />
+              </div>
+            </div>
+
+            <div className="w-full lg:w-[35%] order-1 lg:order-2 space-y-6">
+              <div className="">
+                <EnrollmentCard
+                  data={singleCourseData}
+                  onEnroll={handleEnroll}
+                  mediaAssets={singleCourseData.mediaAssets || []}
+                />
+              </div>
+
+              {/* --- UPDATED: Sticky Enrollment Container with Spring Animation & Delay --- */}
+              <div className="sticky hidden md:block top-28">
+                <Enrollment2
+                  data={singleCourseData}
+                  onEnroll={handleEnroll}
+                  isVisible={showSideEnrollment}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-32">
+        <div className="bg-gradient-to-r from-[#214187] to-[#1e3a8a] p-8 md:p-12 rounded-3xl shadow-2xl border border-white/10 text-center text-white relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="relative z-10">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 tracking-tight">
+              {data.finalCta.title}
+            </h2>
+            <p className="text-gray-200 text-lg md:text-xl mb-8 max-w-3xl mx-auto leading-relaxed">
+              {data.finalCta.body}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button
+                onClick={handleEnroll}
+                bgColor="#F3056D"
+                highlightColor="#FF8FCA"
+                darkShadowColor="#C6005F"
+                className="w-full sm:w-auto text-lg py-4"
+                px="px-10"
+              >
+                {data.finalCta.cta1}
+              </Button>
+              <div className="text-gray-300 font-medium flex items-center gap-2">
+                <span>{data.finalCta.cta3}</span>
+              </div>
+            </div>
+            <p className="mt-6 text-base text-gray-300 font-medium bg-white/10 inline-block px-4 py-1.5 rounded-full">
+              {data.finalCta.ctaBelow}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {showStickyCta && (
+        <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 z-[60] lg:hidden shadow-[0_-5px_20px_rgba(0,0,0,0.1)] animate-in slide-in-from-bottom-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
+                {isBangla ? "মূল্য" : "Price"}
+              </span>
+              <span className="text-2xl font-bold text-gray-900 leading-none mt-1">
+                {displayPrice}
+              </span>
+            </div>
+            <Button
+              onClick={handleEnroll}
+              className="flex-1 py-3.5 text-lg"
+              px="px-6"
+            >
+              {data.quickInfo.cta1}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {showEnrollmentModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
+            onClick={() => setShowEnrollmentModal(false)}
+          ></div>
+          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden relative z-10 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <h2 className="text-xl font-bold text-gray-900">
+                {data.finalCta.cta2}
+              </h2>
+              <button
+                onClick={() => setShowEnrollmentModal(false)}
+                className="p-2 rounded-full hover:bg-gray-200 transition-colors text-gray-500"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs">
+                  IMG
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 line-clamp-1 text-sm md:text-base">
+                    {data.hero.title}
+                  </h3>
+                  <p className="font-bold text-[#F3056D] mt-1">
+                    {displayPrice}
+                  </p>
+                </div>
+              </div>
               <form
-                onSubmit={handleEnrollmentSubmit(onEnrollmentSubmit)}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleEnrollmentSubmit();
+                }}
                 className="space-y-4"
               >
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
-                      First Name
-                    </label>
-                    <input
-                      {...registerEnrollment("firstName")}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
-                      Last Name
-                    </label>
-                    <input
-                      {...registerEnrollment("lastName")}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                    />
-                  </div>
-                </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
-                    Email
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5 tracking-wider">
+                    {isBangla ? "নাম" : "Name"}
                   </label>
                   <input
-                    type="email"
-                    {...registerEnrollment("email")}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F3056D] focus:border-transparent outline-none transition-shadow"
+                    placeholder="John Doe"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
-                    Phone
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5 tracking-wider">
+                    {isBangla ? "ফোন" : "Phone"}
                   </label>
                   <input
+                    required
                     type="tel"
-                    {...registerEnrollment("phone")}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F3056D] focus:border-transparent outline-none transition-shadow"
+                    placeholder="017..."
                   />
                 </div>
-
-                <label className="flex items-start gap-2 text-sm text-gray-600 mt-4">
-                  <input
-                    type="checkbox"
-                    {...registerEnrollment("agreeToTerms")}
-                    className="mt-1 focus:ring-primary"
-                  />
-                  <span>
-                    I accept{" "}
-                    <span className="font-bold underline cursor-pointer">
-                      Terms & Conditions
-                    </span>
-                  </span>
-                </label>
-
                 <button
                   type="submit"
                   disabled={isEnrolling}
-                  className="w-full py-3.5 rounded-lg text-white font-bold text-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3.5 rounded-xl text-white font-bold text-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[#F3056D] hover:bg-[#d9045f]"
                 >
-                  {isEnrolling ? "Processing..." : `Enroll Now`}
+                  {isEnrolling ? "Processing..." : data.quickInfo.cta1}
                 </button>
               </form>
             </div>
