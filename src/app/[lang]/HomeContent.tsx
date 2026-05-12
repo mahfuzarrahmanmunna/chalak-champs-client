@@ -12,15 +12,13 @@ import OfflineCourses from "../components/OfflineCourses/OfflineCourses";
 import PopularCourse from "../components/PopularCourse/PopularCourse";
 import TestimonialSlider from "../components/TestimonialSlider/TestimonialSlider";
 import { useLanguage } from "@/app/context/LanguageContext";
+import VideoTestomonial from "../components/VideoTestomonial/VideoTestomonial";
 
 export default function HomeContent() {
-  // Access language context
   const { t } = useLanguage();
-  // If you need dynamic title, use { heroData } = useLanguage();
 
   return (
     <div className="overflow-hidden bg-white space-y-25 tracking-normal px-2 leading-5 min-h-[calc(100vh-500px)]">
-      {/* <AddsCard/> */}
       <Banner />
       <FeatureCourses />
       <PopularCourse />
@@ -30,6 +28,7 @@ export default function HomeContent() {
       <OfflineCourses />
       <ImageSlider />
       <GallerySlider />
+      <VideoTestomonial/>
       <TestimonialSlider />
       <CTA />
     </div>

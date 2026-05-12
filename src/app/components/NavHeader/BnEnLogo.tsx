@@ -1,4 +1,3 @@
-import React from "react";
 
 const BnEnLogo = () => {
   return (
@@ -6,13 +5,12 @@ const BnEnLogo = () => {
       width="15"
       height="17"
       viewBox="0 0 15 17"
-      fill="currentColor"
+      fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <g clipPath="url(#clip0_446_28868)">
         <mask
           id="mask0_446_28868"
-          // FIXED: Changed style="mask-type:luminance" to style={{ maskType: 'luminance' }}
           style={{ maskType: "luminance" }}
           maskUnits="userSpaceOnUse"
           x="0"
@@ -20,7 +18,7 @@ const BnEnLogo = () => {
           width="15"
           height="17"
         >
-          <path d="M15 0H0V16.0714H15V0Z" fill="currentColor" />
+          <path d="M15 0H0V16.0714H15V0Z" fill="white" />
         </mask>
         <g mask="url(#mask0_446_28868)">
           <path
@@ -35,7 +33,7 @@ const BnEnLogo = () => {
       </g>
       <defs>
         <clipPath id="clip0_446_28868">
-          <rect width="15" height="16.0714" fill="currentColor" />
+          <rect width="15" height="16.0714" fill="white" />
         </clipPath>
       </defs>
     </svg>

@@ -156,7 +156,7 @@ const OfflineCourses = () => {
   return (
     <div className="overflow-hidden bg-linear-to-b mx-auto from-[#FF8FCA] to-[#010D3E]/11 container rounded-[80px] p-0.5">
       <div className="bg-white relative pb-12.5 rounded-[78px] font-semibold leading-10">
-        <div className="absolute -rotate-15 z-0 h-110 w-236 bg-[#ff268459] rounded-4xl top-80 -left-160 blur-[135.45px]"></div>
+        <div className="absolute -rotate-15  h-110 w-236 bg-[#ff268459] z-1 rounded-4xl top-80 -left-160 blur-[135.45px]"></div>
 
         {/* --- Header Section --- */}
         <div className="px-4">
@@ -176,7 +176,7 @@ const OfflineCourses = () => {
         </div>
 
         {/* --- Top 3 Cards Grid --- */}
-        <div className="z-10 md:px-10.5 mt-12">
+        <div className="z-20 md:px-10.5 mt-12">
           <div className="flex flex-col md:flex-row items-center justify-center  gap-8 md:gap-12">
             {offlineData.cards.map((card) => (
               <div key={card.id} className="w-full mt-6 max-w-72.5">
@@ -241,7 +241,7 @@ const OfflineCourses = () => {
             <div className="absolute top-[-12px] right-6 md:right-10 z-20 group">
               <div className="relative">
                 {/* Bubble Gradient Background */}
-                
+
                 {/* Subtle glow behind bubble */}
                 <div className="absolute inset-0 bg-[#214187] blur-xl opacity-30 rounded-full -z-10"></div>
               </div>
@@ -277,7 +277,9 @@ const OfflineCourses = () => {
                         {point.text || point.quote}
                       </p>
                       {point.desc && (
-                        <p className="text-[#1F2937] font-medium leading-relaxed mt-3">{point.desc}</p>
+                        <p className="text-[#1F2937] font-medium leading-relaxed mt-3">
+                          {point.desc}
+                        </p>
                       )}
                     </div>
                   </div>

@@ -134,16 +134,20 @@ const NavHeader = () => {
 
   return (
     <nav
-      className={`sticky  top-0 z-50 px-2 transition-all duration-300 border-b-2 border-white/5 ${
-        scrolled
-          ? "bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
-          : "bg-white/80 "
-      }`}
+      className={`sticky top-0 z-50 px-2 transition-all duration-300 border-b-2 border-gray-200/50 h-24 overflow-visible relative
+        ${
+          scrolled
+            ? "bg-white/80 backdrop-blur-xl border-b-2 border-white/5 shadow-[0_4px_30px_rgba(0,0,0,0.1)]  "
+            : "bg-white/80 border-b-2 border-gray-200/50"
+        }`}
     >
       <div className="container mx-auto flex items-center justify-between py-1">
-        <Link href={`/${isBangla ? "bn" : "en"}`}>
-          <NavLogo />
-        </Link>
+        <div className="relative top-3 z-50">
+          {" "}
+          <Link href={`/${isBangla ? "bn" : "en"}`}>
+            <NavLogo />
+          </Link>
+        </div>
 
         {/* --- DESKTOP MIDDLE SECTION (EMPTY NOW) --- */}
         <div className="hidden md:flex items-center gap-7">
@@ -427,26 +431,28 @@ const NavHeader = () => {
 
           {/* --- KIDS ENGLISH MODAL (REDESIGNED) --- */}
           <div className="relative">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDropdownClick("kids");
-              }}
-              className={`flex items-center font-medium flex gap-2 leading-auto tracking-[-2%] text-sm cursor-pointer transition-all ${
-                activeDropdown === "kids" ? "text-[#F3056D]" : "text-primary"
-              }`}
-            >
-              <span>{t?.kidsEnglish || "Kids English"}</span>
-              <div
-                className={` transition-transform duration-300 ${
-                  activeDropdown === "kids" ? "rotate-180" : ""
+            <Link href={'/en/coursedetails'}>
+              <button
+                // onClick={(e) => {
+                //   e.stopPropagation();
+                //   handleDropdownClick("kids");
+                // }}
+                className={`flex items-center font-medium flex gap-2 leading-auto tracking-[-2%] text-sm cursor-pointer transition-all ${
+                  activeDropdown === "kids" ? "text-[#F3056D]" : "text-primary"
                 }`}
               >
-                <DropIcon />
-              </div>
-            </button>
+                <span>{t?.kidsEnglish || "Kids English"}</span>
+                <div
+                  className={` transition-transform duration-300 ${
+                    activeDropdown === "kids" ? "rotate-180" : ""
+                  }`}
+                >
+                  {/* <DropIcon /> */}
+                </div>
+              </button>
+            </Link>
 
-            {activeDropdown === "kids" && (
+            {/* {activeDropdown === "kids" && (
               <div className="absolute top-9 left-1/2 -translate-x-1/2 pt-5 w-[600px] z-50 animate-in fade-in zoom-in-95 duration-200">
                 <div className="bg-white rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/50 overflow-hidden flex">
                   <div className="flex-[3] p-8 pr-4">
@@ -495,7 +501,6 @@ const NavHeader = () => {
                     </div>
                   </div>
 
-                  {/* Sidebar: Assessment CTA */}
                   <div className="flex-2 bg-[#214187] p-6 flex flex-col justify-center items-center text-center text-white relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
                     <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4 border border-white/20">
@@ -518,7 +523,7 @@ const NavHeader = () => {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
 
           {/* --- MORE MODAL (REDESIGNED) --- */}

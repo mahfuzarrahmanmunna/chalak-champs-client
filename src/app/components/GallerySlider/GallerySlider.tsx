@@ -2,7 +2,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Navigation } from "swiper/modules";
+import { Autoplay, FreeMode, Navigation } from "swiper/modules";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
 
@@ -23,21 +23,14 @@ const videoIds = [
 
 type VideoJsPlayer = ReturnType<typeof videojs>;
 
-type SlideItem = { type: "video"; id: string } | { type: "ghost"; id: string };
+type SlideItem = { type: "video"; id: string } | { type: "buffer"; id: string };
 
 interface VideoPlayerProps {
   videoId: string;
   isActive: boolean;
-  isGhost?: boolean;
-  swiperRef?: React.MutableRefObject<SwiperClass | null>; // Added swiper ref
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({
-  videoId,
-  isActive,
-  isGhost = false,
-  swiperRef,
-}) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, isActive }) => {
   const videoRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<VideoJsPlayer | null>(null);
   const isPlayerInitialized = useRef(false); // Prevent double init in Strict Mode
@@ -111,45 +104,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, []);
 
-  // Handle Ghost Slide Click (Restart Slider)
-  const handleGhostClick = () => {
-    if (swiperRef && swiperRef.current) {
-      swiperRef.current.slideTo(0);
-    }
-  };
-
-  // 1. Ghost Slide Logic
-  if (isGhost) {
-    return (
-      <div
-        className="relative w-full h-full bg-gray-800 flex flex-col items-center justify-center cursor-pointer group"
-        onClick={handleGhostClick}
-      >
-        <Image
-          src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
-          alt="Ghost Video"
-          fill
-          className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
-          unoptimized // Important for YouTube images
-        />
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-          <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-2 border-white/50">
-            <svg
-              className="w-6 h-6 text-white ml-1"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </div>
-        </div>
-        <div className="absolute bottom-4 text-white font-bold tracking-widest text-sm uppercase bg-black/50 px-3 py-1 rounded-full">
-          Replay First
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div data-vjs-player className="w-full h-full">
       <div
@@ -158,15 +112,29 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       />
     </div>
   );
-};;
+};
 
 export default function VideoGallerySlider() {
-  const swiperRef = useRef<SwiperClass | null>(null); // Swiper instance ref
+  const swiperRef = useRef<SwiperClass | null>(null);
 
-  const slides: SlideItem[] = [
-    ...videoIds.map((id) => ({ type: "video" as const, id })),
-    { type: "ghost", id: videoIds[0] }, // Ghost slide points to first video
-  ];
+  // ✅ INFINITE LOOP FIX: Buffer Slides Technique
+  const bufferCount = Math.min(3, videoIds.length); // Take 3 slides for buffer
+  const allSlides: SlideItem[] = [];
+
+  // 1. Add Left Buffers (Last 3 videos to fill the left empty space of the first video)
+  for (let i = videoIds.length - bufferCount; i < videoIds.length; i++) {
+    allSlides.push({ type: "buffer", id: videoIds[i] });
+  }
+
+  // 2. Add Real Videos
+  for (let i = 0; i < videoIds.length; i++) {
+    allSlides.push({ type: "video", id: videoIds[i] });
+  }
+
+  // 3. Add Right Buffers (First 3 videos to fill the right empty space of the last video)
+  for (let i = 0; i < bufferCount; i++) {
+    allSlides.push({ type: "buffer", id: videoIds[i] });
+  }
 
   return (
     <>
@@ -180,10 +148,7 @@ export default function VideoGallerySlider() {
             <span className="absolute -top-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
-            <span className="text-primary">
-              {" "}
-              প্রথম পছন্দ
-            </span>
+            <span className="text-primary"> প্রথম পছন্দ</span>
           </span>
         </h2>
         <figure className="flex items-center justify-center mt-4">
@@ -200,49 +165,83 @@ export default function VideoGallerySlider() {
         <div className="absolute left-[-100px] top-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#F3066E]/10 blur-[120px] rounded-full -z-10 pointer-events-none" />
 
         <Swiper
-          modules={[Navigation]}
+          modules={[Autoplay, FreeMode, Navigation]}
           grabCursor={true}
           centeredSlides={true}
           slidesPerView={"auto"}
-          loop={false}
+          loop={false} // ✅ MUST remain false for video.js
+          initialSlide={bufferCount} // ✅ Start at the first REAL video
           speed={600}
           spaceBetween={20}
           watchSlidesProgress={true}
+          freeMode={{ enabled: true, sticky: true }}
+          autoplay={{
+            delay: 6000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          }}
+          onTouchStart={(swiper) => swiper.autoplay.stop()}
+          onTouchEnd={(swiper) => swiper.autoplay.start()}
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
           }}
+          // ✅ Seamless Infinite Snap Logic
+          onSlideChange={(swiper) => {
+            const idx = swiper.activeIndex;
+            const realStart = bufferCount;
+            const realEnd = bufferCount + videoIds.length - 1;
+
+            if (idx < realStart) {
+              // Swiped left into the left buffer -> Instantly snap to the corresponding real slide at the end
+              const targetIdx = idx + videoIds.length;
+              swiper.slideTo(targetIdx, 0); // 0 speed = instant jump
+            } else if (idx > realEnd) {
+              // Swiped right into the right buffer -> Instantly snap to the corresponding real slide at the beginning
+              const targetIdx = idx - videoIds.length;
+              swiper.slideTo(targetIdx, 0); // 0 speed = instant jump
+            }
+          }}
           className="gallery-swiper !overflow-visible py-10"
         >
-          {slides.map((slide, index) => (
+          {allSlides.map((slide, index) => (
             <SwiperSlide key={index} className="!w-[280px]">
               {({ isActive }) => (
                 <div
                   className={`
                     relative rounded-[30px] overflow-hidden cursor-pointer select-none
                     transition-all duration-500 ease-out
-                    w-[280px] h-[500px] md:h-[550px] /* Fixed height for stability */
+                    w-[280px] h-[500px] md:h-[550px]
                     ${
                       isActive
-                        ? "scale-110 border-[6px] border-[#F3066E] z-50 bg-black shadow-2xl"
+                        ? "scale-110 border-[2px] border-[#F3066E] z-50 bg-black shadow-2xl"
                         : "scale-100 border-2 border-blue-400 z-10 opacity-70 bg-black grayscale hover:grayscale-0"
                     }
                   `}
                 >
                   <div className="relative w-full h-full bg-gray-900">
-                    <VideoPlayer
-                      videoId={slide.id}
-                      isActive={isActive}
-                      isGhost={slide.type === "ghost"}
-                      swiperRef={swiperRef}
-                    />
+                    {/* Render Video Player ONLY for Real Videos */}
+                    {slide.type === "video" && (
+                      <VideoPlayer videoId={slide.id} isActive={isActive} />
+                    )}
 
-                    {/* Overlay for inactive videos */}
-                    {!isActive && slide.type === "video" && (
+                    {/* Render Thumbnail ONLY for Buffer Slides (Saves performance, no video.js crash) */}
+                    {slide.type === "buffer" && (
+                      <Image
+                        src={`https://img.youtube.com/vi/${slide.id}/hqdefault.jpg`}
+                        alt="Buffer Video"
+                        fill
+                        className="object-cover opacity-80"
+                        unoptimized
+                      />
+                    )}
+
+                    {/* Overlay for inactive videos & buffers */}
+                    {!isActive && (
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
                     )}
 
-                    {/* Play button overlay for inactive videos */}
-                    {!isActive && slide.type === "video" && (
+                    {/* Play button overlay for inactive videos & buffers */}
+                    {!isActive && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg">
                           <svg
@@ -256,7 +255,7 @@ export default function VideoGallerySlider() {
                       </div>
                     )}
 
-                    {/* Live Badge for Active Video */}
+                    {/* Live Badge for Active Real Video */}
                     {isActive && slide.type === "video" && (
                       <div className="absolute top-4 left-4 z-50 flex items-center gap-2 pointer-events-none">
                         <div className="bg-[#F3066E] text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide shadow-lg animate-bounce">

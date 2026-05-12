@@ -3,14 +3,15 @@
 import React from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay } from "swiper/modules";
+import { Autoplay, FreeMode } from "swiper/modules"; // ✅ Added FreeMode
 
 // --- CRITICAL: THESE IMPORTS ARE REQUIRED FOR THE SLIDER TO SHOW UP ---
-// We use // @ts-ignore to stop the "Cannot find module" error in your editor
 // @ts-ignore
 import "swiper/css";
 // @ts-ignore
 import "swiper/css/autoplay";
+// @ts-ignore
+import "swiper/css/free-mode"; // ✅ Required for smooth free-mode dragging
 
 const ImageSlider: React.FC = () => {
   const imageData = [
@@ -27,26 +28,28 @@ const ImageSlider: React.FC = () => {
       {/* --- ROW 1: LEFT TO RIGHT (Reversed via dir="rtl") --- */}
       <div dir="rtl" className="w-full rounded-4xl">
         <Swiper
-          modules={[Autoplay]}
-          spaceBetween={20}
-          modules={[Autoplay]}
+          modules={[Autoplay, FreeMode]} // ✅ Added FreeMode module
           spaceBetween={20}
           slidesPerView={2}
           loop={true}
           speed={3000}
+          freeMode={true} // ✅ Enables the smooth, non-snapping drag like your example
           autoplay={{
             delay: 0,
             disableOnInteraction: false,
+            pauseOnMouseEnter: true,
           }}
-          allowTouchMove={false}
+          allowTouchMove={true}
+          // ✅ Stops auto-scroll instantly when user touches, so it doesn't fight their finger
+          onTouchStart={(swiper) => swiper.autoplay.stop()}
+          // ✅ Resumes auto-scroll when user lets go
+          onTouchEnd={(swiper) => swiper.autoplay.start()}
           breakpoints={{
             640: {
-              // sm+
               slidesPerView: 2,
               spaceBetween: 20,
             },
             768: {
-              // md+
               slidesPerView: 3,
               spaceBetween: 20,
             },
@@ -55,16 +58,12 @@ const ImageSlider: React.FC = () => {
         >
           {imageData.map((item) => (
             <SwiperSlide key={item.id} className="!h-auto py-2 rounded-2xl">
-              <div
-                // Added bg-pink-100 temporarily so you can SEE the slide even if image is broken
-                className="relative h-64  w-full rounded-[10px]  overflow-hidden p-0 m-0 shadow-md border-1 border-[#FF8FCA]/15  bg-pink-100"
-              >
+              <div className="relative h-64 w-full rounded-[10px] overflow-hidden p-0 m-0 shadow-md border-1 border-[#FF8FCA]/15 bg-pink-100">
                 <Image
                   src={item.src}
                   alt={item.alt}
                   fill
                   className="object-cover"
-                  // If the image fails to load, this allows the pink background to show through
                   onError={(e) => (e.currentTarget.style.display = "none")}
                 />
               </div>
@@ -76,24 +75,28 @@ const ImageSlider: React.FC = () => {
       {/* --- ROW 2: RIGHT TO LEFT (Standard) --- */}
       <div className="w-full">
         <Swiper
-          modules={[Autoplay]}
+          modules={[Autoplay, FreeMode]} // ✅ Added FreeMode module
           spaceBetween={20}
           slidesPerView={2}
           loop={true}
           speed={3000}
+          freeMode={true} // ✅ Enables the smooth, non-snapping drag like your example
           autoplay={{
             delay: 0,
             disableOnInteraction: false,
+            pauseOnMouseEnter: true,
           }}
-          allowTouchMove={false}
+          allowTouchMove={true}
+          // ✅ Stops auto-scroll instantly when user touches
+          onTouchStart={(swiper) => swiper.autoplay.stop()}
+          // ✅ Resumes auto-scroll when user lets go
+          onTouchEnd={(swiper) => swiper.autoplay.start()}
           breakpoints={{
             640: {
-              // sm+
               slidesPerView: 2,
               spaceBetween: 20,
             },
             768: {
-              // md+
               slidesPerView: 3,
               spaceBetween: 20,
             },

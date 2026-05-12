@@ -332,7 +332,7 @@ export default function CourseDetails() {
   const breadcrumbParts = data.breadcrumb.split(",");
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans relative selection:bg-pink-100 selection:text-pink-900">
+    <div className="min-h-screen mt-12 bg-gray-50 text-gray-900 font-sans relative selection:bg-pink-100 selection:text-pink-900">
       <div className=" bg-white/90 backdrop-blur-md  py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm md:text-base">
           <div className="flex items-center flex-wrap">
@@ -541,7 +541,7 @@ export default function CourseDetails() {
               </div>
             </div>
 
-            <div className="w-full lg:w-[35%] order-1 lg:order-2 space-y-6">
+            <div className="w-full lg:w-[35%] order-1 mt-0 lg:order-2 space-y-6">
               <div className="">
                 <EnrollmentCard
                   data={singleCourseData}
