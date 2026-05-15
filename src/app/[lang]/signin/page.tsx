@@ -7,10 +7,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import Button from "@/app/ui/button/Button";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const SignInPage = () => {
   const { signInWithEmail, signInWithPhone } = useAuth();
   const router = useRouter();
+  const {isBangla} = useLanguage()
 
   // State to manage which view is showing on the Left Side
   const [view, setView] = useState<"login" | "password">("login");
@@ -78,7 +80,7 @@ const SignInPage = () => {
 
   return (
     <div className="w-full bg-white">
-      <div className="flex container mx-auto items-center justify-between min-h-screen">
+      <div className="flex container mx-auto items-center justify-between h-[calc(100vh-200px)] md:h-[calc(100vh-100px)]">
         {/* LEFT SIDE: Dynamic Content */}
         <div className="w-full flex flex-col justify-center items-center p-6 md:p-12 lg:px-20 relative z-10">
           <div className="w-full max-w-md">
@@ -243,7 +245,7 @@ const SignInPage = () => {
                     <p className="text-sm text-[#8897AD]">
                       একাউন্ট নেই?{" "}
                       <Link
-                        href="/signup"
+                        href={`${isBangla ? "/bn/signup" : "/en/signup"}`}
                         className="text-[#F3066D] font-semibold hover:underline"
                       >
                         সাইন আপ করুন

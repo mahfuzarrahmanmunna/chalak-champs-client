@@ -13,13 +13,6 @@
       "category": "Kids English",
       "highlights": ["Live Class", "6 Months", "Free Materials"],
       "image": "/courses.png"
-    },
-    {
-      "id": 2,
-      "title": "Online Kids Drawing",
-      "category": "Kids Skills",
-      "highlights": ["Live Class", "5 Months", "Limited Seats"],
-      "image": "/courses.png"
     }
   ]
 }

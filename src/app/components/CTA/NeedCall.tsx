@@ -23,13 +23,16 @@ const NeedCall = () => {
                 {ctaData.needHelp.title} <br className="hidden md:block" />
                 {/* Note: The space inside the string handled by HTML logic in original, keeping it intact */}
               </h4>
-              <p className="text-[#2D2D2D] text-sm leading-3.5 mt-2">
+              <p className="text-[#2D2D2D] text-sm leading-3.5 mt-4">
                 {ctaData.needHelp.desc}
               </p>
               <div className="flex">
                 <div className="flex flex-col">
                   {/* CTA Button inside card */}
-                  <a href="tel:01740176774" className="bg-primary text-xs px-1.25 py-1 md:text-xl font-medium flex items-center md:px-6 md:py-3.5 rounded mt-4 md:rounded-xl md:mt-8">
+                  <a
+                    href="tel:01740176774"
+                    className="bg-primary gap-3 text-xs px-1.25 py-1 md:text-xl font-medium flex items-center md:px-6 md:py-3.5 rounded mt-4 md:rounded-xl md:mt-8"
+                  >
                     <svg
                       width="20"
                       height="20"
@@ -60,11 +63,11 @@ const NeedCall = () => {
                 </div>
                 <div className="rounded-xl bottom-0 md:hidden flex">
                   <Image
-                    src={"/girls.png"}
+                    src={"/callimg.png"}
                     width={240}
                     height={225}
                     alt="girls image"
-                    className="rounded-xl "
+                    className="rounded-xl  "
                   />
                 </div>
               </div>
@@ -72,11 +75,11 @@ const NeedCall = () => {
           </div>
           <div className="rounded-xl relative bottom-0 hidden md:flex">
             <Image
-              src={"/Call.png"}
+              src={"/callimg.png"}
               width={320}
               height={225}
               alt="girls image"
-              className="rounded-xl "
+              className="rounded-xl object-cover object-bottom"
             />
           </div>
         </div>
@@ -85,8 +88,8 @@ const NeedCall = () => {
       {/* --- Bottom Section (Video + Facebook) --- */}
       <div className="md:flex gap-5 z-10 md:mt-9 space-y-6 md:space-y-0">
         {/* Video Library Card */}
-        <div className="bg-linear-to-r p-3 pb-5 md:w-[45%] from-[#FFD0CD] to-[#FFC9C9] md:px-5 pt-5 rounded-2xl">
-          <div className="flex z-10">
+        <div className="bg-linear-to-r  p-5 md:w-[45%] from-[#FFD0CD] to-[#FFC9C9] md:px-5 pt-5 rounded-2xl">
+          <div className="flex justify-between mr-8 z-10">
             <div>
               <h4 className="text-secondary font-semibold text-lg leading-8">
                 {ctaData.videoLibrary.title}

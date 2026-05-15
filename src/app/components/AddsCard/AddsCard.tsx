@@ -21,7 +21,7 @@ const AddsCard = () => {
   if (!isVisible) return null;
 
   return (
-    <section className="relative mt-8 max-w-268 max-h-91 mx-auto  group">
+    <section className="relative mt-15 md:mt-8 max-w-268 max-h-91 mx-auto  group">
       {/* Cross Icon Button */}
       <button
         onClick={handleClose}

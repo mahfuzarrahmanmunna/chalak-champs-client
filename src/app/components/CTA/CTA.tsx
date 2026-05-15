@@ -306,7 +306,7 @@ const CTA = () => {
           {/* right side content */}
           <NeedCall />
 
-          <div className="absolute bottom-0 right-0 z-0 opacity-50 md:opacity-100">
+          <div className="absolute bottom-0 right-0 -z-1 opacity-50 md:opacity-100">
             <Image
               src={"/maskgroup.webp"}
               width={500}

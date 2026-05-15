@@ -17,6 +17,7 @@ import {
   UserCheck,
   ChevronDown,
   MessageCircle,
+  Home,
 } from "lucide-react";
 import { FaSadCry } from "react-icons/fa";
 
@@ -24,11 +25,12 @@ import { FaSadCry } from "react-icons/fa";
 import { useLanguage } from "@/app/context/LanguageContext";
 import EnrollmentCard from "./EnrollmentCard";
 import Button from "@/app/ui/button/Button";
-import Enrollment2 from "./Enrollment2";
+import EnrollmentSideSticky from "./EnrollmentSideSticky";
 
 // --- SUB-COMPONENT: FAQ ---
 const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
   const [activeFaq, setActiveFaq] = useState<string | null>(null);
+  const { isBangla } = useLanguage();
 
   useEffect(() => {
     if (faqs.length > 0 && !activeFaq) {
@@ -46,9 +48,8 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
-            সাধারণ জিজ্ঞাসা
+            {isBangla ? "সাধারণ জিজ্ঞাসা" : "Frequently Asked Questions"}
           </h2>
-          <p className="text-sm text-gray-500 font-medium">সবাই যা জানতে চায়</p>
         </div>
       </div>
 
@@ -81,7 +82,7 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
                       {idx + 1}
                     </span>
                     <span
-                      className={`font-semibold text-lg md:text-xl pr-4 leading-tight transition-colors ${
+                      className={`font-semibold text-base md:text-lg pr-4 leading-tight transition-colors ${
                         isOpen ? "text-[#F3056D]" : "text-gray-700"
                       }`}
                     >
@@ -113,7 +114,7 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
         ) : (
           <div className="text-center py-10 bg-white/50 rounded-3xl border border-dashed border-gray-300 flex items-center justify-center gap-2">
             <p className="text-gray-500 font-medium text-lg">
-              কোনো প্রশ্ন পাওয়া যায়নি
+              {isBangla ? "কোনো প্রশ্ন পাওয়া যায়নি" : "No Questions Found"}
             </p>
             <FaSadCry className="text-xl text-gray-400" />
           </div>
@@ -174,17 +175,13 @@ const CourseDecorate = ({
 // --- MAIN PAGE COMPONENT ---
 export default function CourseDetails() {
   const router = useRouter();
-  const { singleCourseData, isBangla, toggleLanguage } = useLanguage();
+  const { singleCourseData, isBangla } = useLanguage();
 
-  const [activeTab, setActiveTab] = useState("features");
+  const [activeTab, setActiveTab] = useState("overview");
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [showStickyCta, setShowStickyCta] = useState(false);
-
-  // --- UPDATED STATE for Side Enrollment Animation ---
   const [showSideEnrollment, setShowSideEnrollment] = useState(false);
-  const [hasTriggeredScroll, setHasTriggeredScroll] = useState(false); // Prevents restarting timer
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const featuresRef = useRef<HTMLDivElement>(null);
   const whoIsThisForRef = useRef<HTMLDivElement>(null);
@@ -193,6 +190,11 @@ export default function CourseDetails() {
   const faqRef = useRef<HTMLDivElement>(null);
 
   const sections = [
+    {
+      id: "overview",
+      label: isBangla ? "বিবরণ" : "Description",
+      icon: LayoutGrid,
+    },
     {
       id: "features",
       label: isBangla ? "ফিচার" : "Features",
@@ -207,11 +209,6 @@ export default function CourseDetails() {
       id: "syllabus",
       label: isBangla ? "সিলেবাস" : "Syllabus",
       icon: BookOpen,
-    },
-    {
-      id: "overview",
-      label: isBangla ? "বিবরণ" : "Description",
-      icon: LayoutGrid,
     },
     { id: "faq", label: "FAQ", icon: HelpCircle },
   ];
@@ -229,10 +226,10 @@ export default function CourseDetails() {
     );
 
     const refs = [
+      { current: overviewRef.current, id: "overview" },
       { current: featuresRef.current, id: "features" },
       { current: whoIsThisForRef.current, id: "whoIsThisFor" },
       { current: syllabusRef.current, id: "syllabus" },
-      { current: overviewRef.current, id: "overview" },
       { current: faqRef.current, id: "faq" },
     ];
 
@@ -243,29 +240,11 @@ export default function CourseDetails() {
     const handleScroll = () => {
       const scrollY = window.scrollY;
       setShowStickyCta(scrollY > 300);
-
-      // --- UPDATED LOGIC: Higher Threshold (800px) + 2s Delay ---
-      const SCROLL_THRESHOLD = 800;
-      const APPEARANCE_DELAY = 2000; // 2 seconds
-
+      const SCROLL_THRESHOLD = 1500;
       if (scrollY > SCROLL_THRESHOLD) {
-        if (!hasTriggeredScroll && !showSideEnrollment) {
-          setHasTriggeredScroll(true);
-
-          // Start the timer
-          if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-
-          scrollTimeoutRef.current = setTimeout(() => {
-            setShowSideEnrollment(true);
-          }, APPEARANCE_DELAY);
-        }
+        setShowSideEnrollment(true);
       } else {
-        // If user scrolls back up, reset everything
-        if (hasTriggeredScroll || showSideEnrollment) {
-          setHasTriggeredScroll(false);
-          setShowSideEnrollment(false);
-          if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-        }
+        setShowSideEnrollment(false);
       }
     };
 
@@ -276,18 +255,17 @@ export default function CourseDetails() {
         if (ref.current) observer.unobserve(ref.current);
       });
       window.removeEventListener("scroll", handleScroll);
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     };
-  }, [hasTriggeredScroll, showSideEnrollment]); // Dependencies ensure we don't miss updates
+  }, []);
 
   const scrollToSection = (id: string) => {
     const refs: {
       [key: string]: React.RefObject<HTMLDivElement | null>;
     } = {
+      overview: overviewRef,
       features: featuresRef,
       whoIsThisFor: whoIsThisForRef,
       syllabus: syllabusRef,
-      overview: overviewRef,
       faq: faqRef,
     };
     const ref = refs[id];
@@ -329,64 +307,105 @@ export default function CourseDetails() {
     priceParts.length > 2
       ? `${priceParts[2]} ${priceParts[3]}`
       : data.quickInfo.offerPrice;
-  const breadcrumbParts = data.breadcrumb.split(",");
+
+  // ==========================================
+  // --- FIXED BREADCRUMB LOGIC ---
+  // ==========================================
+  // Instead of parsing strings, we define the path structure manually based on language.
+  // This ensures links are always correct (/en or /bn).
+  const breadcrumbItems = [
+    {
+      label: isBangla ? "হোম" : "Home",
+      href: isBangla ? "/bn" : "/en",
+      icon: Home,
+    },
+    {
+      label: isBangla ? "কোর্সসমূহ" : "Courses",
+      href: isBangla ? "/bn/courses" : "/en/courses",
+      icon: null,
+    },
+    {
+      label: data.breadcrumbs || (isBangla ? "বিস্তারিত" : "Details"),
+      href: null, // Current page has no link
+      icon: null,
+    },
+  ];
 
   return (
-    <div className="min-h-screen mt-12 bg-gray-50 text-gray-900 font-sans relative selection:bg-pink-100 selection:text-pink-900">
-      <div className=" bg-white/90 backdrop-blur-md  py-3">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm md:text-base">
-          <div className="flex items-center flex-wrap">
-            {breadcrumbParts.map((part, index) => {
-              const trimmedPart = part.trim();
-              const isLast = index === breadcrumbParts.length - 1;
-              let href = "#";
-              if (trimmedPart.toLowerCase() === "home") href = "/";
-              if (trimmedPart.toLowerCase() === "courses") href = "/courses";
-              return (
-                <React.Fragment key={index}>
-                  {isLast ? (
-                    <span className="text-gray-900 font-semibold">
-                      {trimmedPart}
-                    </span>
-                  ) : (
-                    <Link
-                      href={href}
-                      className="text-gray-500 hover:text-[#F3056D] font-medium transition-colors"
-                    >
-                      {trimmedPart}
-                    </Link>
-                  )}
-                  {!isLast && (
-                    <ChevronRight className="h-4 w-4 mx-2 text-gray-300" />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
+    <div className="min-h-screen mt-12 text-gray-900 font-sans relative selection:bg-pink-100 selection:text-pink-900">
+      {/* ===== BREADCRUMB (FIXED) ===== */}
+      <div className="py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav aria-label="Breadcrumb">
+            <ol className="flex items-center flex-wrap gap-y-1">
+              {breadcrumbItems.map((item, index) => {
+                const isLast = index === breadcrumbItems.length - 1;
+
+                return (
+                  <li key={index} className="flex items-center">
+                    {item.href ? (
+                      <Link
+                        href={item.href}
+                        className="group flex items-center gap-1.5 text-sm md:text-[15px] font-medium text-gray-400 hover:text-[#F3056D] transition-all duration-200 px-2 py-1 rounded-lg hover:bg-pink-50/60"
+                      >
+                        {item.icon && (
+                          <item.icon className="h-3.5 w-3.5 text-gray-300 group-hover:text-[#F3056D] transition-colors duration-200" />
+                        )}
+                        <span>{item.label}</span>
+                      </Link>
+                    ) : (
+                      <span className="text-sm md:text-[15px] font-semibold text-gray-800 px-2 py-1 bg-gradient-to-r from-pink-50/80 to-blue-50/60 rounded-lg">
+                        {item.label}
+                      </span>
+                    )}
+
+                    {!isLast && (
+                      <ChevronRight
+                        className="h-3.5 w-3.5 mx-0.5 text-gray-300/80 flex-shrink-0"
+                        strokeWidth={2.5}
+                      />
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
         </div>
       </div>
 
-      <div className="relative bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      {/* Hero + Main Content */}
+      <div className="relative bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8  md:py-12">
           <div className="flex flex-col lg:flex-row gap-10">
+            {/* Left Column */}
             <div className="w-full lg:w-[65%] order-2 lg:order-1">
-              <div className="mb-10">
-                <Link
-                  href="/courses"
-                  className="inline-flex items-center text-sm md:text-base font-medium mb-4 text-gray-500 hover:text-[#F3056D] transition-colors group"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />{" "}
-                  {isBangla ? "কোর্সে ফিরে যান" : "Back to Courses"}
-                </Link>
-                <h1 className="text-3xl md:text-5xl font-bold mb-6 text-gray-900 leading-tight tracking-tight">
-                  {data.hero.title}
-                </h1>
-                <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
-                  {data.hero.subtitle}
-                </p>
+              {/* Hero */}
+              <div>
+                <div className="mb-10">
+                  <Link
+                    href={isBangla ? "/bn/courses" : "/en/courses"}
+                    className="inline-flex items-center text-sm md:text-base font-medium mb-4 text-gray-500 hover:text-[#F3056D] transition-colors group"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
+                    {isBangla ? "কোর্সে ফিরে যান" : "Back to Courses"}
+                  </Link>
+                  <h1 className="text-3xl md:text-5xl font-bold mb-6 text-gray-900 leading-tight tracking-tight">
+                    {data.hero.title}
+                  </h1>
+                  <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
+                    {data.hero.subtitle}
+                  </p>
+                </div>
+                <div className="md:hidden mb-6 flex">
+                  <EnrollmentCard
+                    data={singleCourseData}
+                    onEnroll={handleEnroll}
+                    mediaAssets={singleCourseData.mediaAssets || []}
+                  />
+                </div>
               </div>
-
-              <div className="sticky top-[60px] md:top-[72px] lg:top-[88px] rounded-2xl z-30 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-sm mb-12 overflow-hidden">
+              {/* Sticky Tab Navigation */}
+              <div className="sticky top-28 md:top-18 lg:top-22 rounded-2xl z-30 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-sm mb-12 overflow-hidden">
                 <div className="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0">
                   <nav className="flex space-x-1 md:space-x-2 overflow-x-auto no-scrollbar py-2 px-2">
                     {sections.map((section) => {
@@ -410,6 +429,23 @@ export default function CourseDetails() {
                 </div>
               </div>
 
+              {/* ============ 1. DESCRIPTION / OVERVIEW ============ */}
+              <div
+                ref={overviewRef}
+                id="overview"
+                className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12"
+              >
+                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 border-l-4 pl-4 border-[#F3056D]">
+                  {data.overview.title}
+                </h2>
+                <div className="bg-gray-50/50 p-6 md:p-8 rounded-2xl border border-gray-100">
+                  <p className="text-lg md:text-xl text-gray-700 leading-relaxed font-normal">
+                    {data.overview.content}
+                  </p>
+                </div>
+              </div>
+
+              {/* ============ 2. FEATURES ============ */}
               <div
                 ref={featuresRef}
                 id="features"
@@ -421,6 +457,7 @@ export default function CourseDetails() {
                 />
               </div>
 
+              {/* ============ 3. WHO IS THIS FOR ============ */}
               <div
                 ref={whoIsThisForRef}
                 id="whoIsThisFor"
@@ -454,6 +491,7 @@ export default function CourseDetails() {
                 </div>
               </div>
 
+              {/* ============ 4. SYLLABUS ============ */}
               <div
                 ref={syllabusRef}
                 id="syllabus"
@@ -517,21 +555,39 @@ export default function CourseDetails() {
                 </div>
               </div>
 
-              <div
-                ref={overviewRef}
-                id="overview"
-                className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12"
-              >
-                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 border-l-4 pl-4 border-[#F3056D]">
-                  {data.overview.title}
-                </h2>
-                <div className="bg-gray-50/50 p-6 md:p-8 rounded-2xl border border-gray-100">
-                  <p className="text-lg md:text-xl text-gray-700 leading-relaxed font-normal">
-                    {data.overview.content}
-                  </p>
+              {/* ============ 5. TEACHER / INSTRUCTOR ============ */}
+              <div className="scroll-mt-36 md:scroll-mt-40 mb-12">
+                <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-pink-100/40 rounded-full blur-2xl pointer-events-none" />
+                  <div className="absolute bottom-[-20px] left-[-20px] w-24 h-24 bg-blue-100/40 rounded-full blur-2xl pointer-events-none" />
+
+                  <div className="relative z-10">
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[14px] font-semibold bg-[#F3056D]/10 text-[#F3056D] border border-[#F3056D]/20 mb-6">
+                      <Star className="h-3.5 w-3.5 fill-[#F3056D] text-[#F3056D]" />
+                      {data.instructor.title}
+                    </span>
+
+                    <div className="flex flex-col sm:flex-row gap-6 items-start">
+                      <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-gradient-to-br from-[#214187] to-[#1e3a8a] flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-white/20">
+                        <Users className="h-10 w-10 text-white/70" />
+                      </div>
+
+                      <div className="flex-1">
+                        <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
+                          {isBangla
+                            ? "বিশেষজ্ঞ প্রশিক্ষক"
+                            : "Expert Instructor"}
+                        </h3>
+                        <p className="text-[16px] text-gray-600 leading-relaxed">
+                          {data.instructor.info}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
+              {/* ============ 6. FAQ ============ */}
               <div
                 ref={faqRef}
                 id="faq"
@@ -541,8 +597,9 @@ export default function CourseDetails() {
               </div>
             </div>
 
+            {/* Right Column */}
             <div className="w-full lg:w-[35%] order-1 mt-0 lg:order-2 space-y-6">
-              <div className="">
+              <div className="hidden md:flex">
                 <EnrollmentCard
                   data={singleCourseData}
                   onEnroll={handleEnroll}
@@ -550,9 +607,8 @@ export default function CourseDetails() {
                 />
               </div>
 
-              {/* --- UPDATED: Sticky Enrollment Container with Spring Animation & Delay --- */}
               <div className="sticky hidden md:block top-28">
-                <Enrollment2
+                <EnrollmentSideSticky
                   data={singleCourseData}
                   onEnroll={handleEnroll}
                   isVisible={showSideEnrollment}
@@ -563,7 +619,8 @@ export default function CourseDetails() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-32">
+      {/* Final CTA Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
         <div className="bg-gradient-to-r from-[#214187] to-[#1e3a8a] p-8 md:p-12 rounded-3xl shadow-2xl border border-white/10 text-center text-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
           <div className="relative z-10">
@@ -595,6 +652,7 @@ export default function CourseDetails() {
         </div>
       </div>
 
+      {/* Sticky Mobile CTA */}
       {showStickyCta && (
         <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 z-[60] lg:hidden shadow-[0_-5px_20px_rgba(0,0,0,0.1)] animate-in slide-in-from-bottom-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
@@ -617,6 +675,7 @@ export default function CourseDetails() {
         </div>
       )}
 
+      {/* Enrollment Modal */}
       {showEnrollmentModal && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
           <div

@@ -107,7 +107,7 @@ const Banner = () => {
 
   return (
     <div className="">
-      <div className="mb-20">
+      <div className="md:mb-20 mb-15">
         <AddsCard />
       </div>
       <div className="text-center md:max-w-205 mx-auto font-inter">
@@ -119,7 +119,7 @@ const Banner = () => {
         <div className="flex flex-col relative items-center justify-center">
           <div className="relative flex flex-wrap items-center justify-center gap-2">
             {/* Main H1 Tag with Champ styling */}
-            <h1 className="text-4xl md:text-6xl font-bold text-[#00477C] pointer-events-none tracking-[-3%] md:tracking-[-4px] leading-12 md:leading-18.75">
+            <h1 className="text-4xl  md:text-6xl font-bold text-[#00477C] pointer-events-none tracking-[-3%] md:tracking-[-4px] leading-12 md:leading-18.75">
               {beforeChamp} {" "} <br className="flex md:hidden" />{"  "}
               <span className="ml-3 mr-0 pr-0 text-[#F3066E]">Champ</span>
             </h1>
@@ -156,7 +156,7 @@ const Banner = () => {
         </div>
 
         {/* Description Paragraph with Split Logic */}
-        <p className="my-6 text-gray-700 tracking-[-2%] leading-5 text-base md:text-base">
+        <p className="my-6 mt-12 text-gray-700 tracking-[-2%] leading-5 text-base md:text-base">
           {renderDescription.map((item, index) => (
             <React.Fragment key={index}>{item}</React.Fragment>
           ))}

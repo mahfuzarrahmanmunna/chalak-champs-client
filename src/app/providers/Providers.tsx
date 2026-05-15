@@ -80,7 +80,7 @@ const Providers: React.FC<{
                   <MobileBottomNav />
                 </div>
               </BookingProvider>
-              <FooterMassenger />
+              {/* <FooterMassenger /> */}
             </LanguageProvider>
           </ThemeProvider>
         </LoadingProvider>

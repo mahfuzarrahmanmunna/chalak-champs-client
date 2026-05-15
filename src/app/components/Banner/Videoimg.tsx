@@ -7,7 +7,7 @@ import "videojs-youtube";
 
 const Videoimg = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const videoId = "RG5Q6yVGyBE";
+  const videoId = "pPcNHH20e5U";
 
   // Refs
   const videoNode = useRef(null);
@@ -20,7 +20,7 @@ const Videoimg = () => {
       const player = videojs(videoNode.current, {
         controls: true,
         autoplay: true,
-        muted: false, // ⚠️ Changed to false because user clicked button
+        muted: false, 
         preload: "auto",
         fluid: false,
         fill: true,
@@ -40,7 +40,7 @@ const Videoimg = () => {
 
       playerRef.current = player;
 
-      // 🔊 Try to ensure sound is on and video plays
+      //  Try to ensure sound is on and video plays
       player.ready(() => {
         player
           .play()
@@ -98,12 +98,12 @@ const Videoimg = () => {
 
             {/* Play Button */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <button className="relative z-10 w-20 h-20 md:w-24 md:h-24 bg-[#F3066E] text-white rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(243,5,109,0.6)] group-hover:scale-110 active:scale-95 transition-all duration-300 pointer-events-auto">
+              <button className="relative z-10 w-10 h-10 md:w-20 md:h-20 bg-[#F3066E] text-white rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(243,5,109,0.6)] group-hover:scale-110 active:scale-95 transition-all duration-300 pointer-events-auto">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="currentColor"
-                  className="w-10 h-10 md:w-12 md:h-12 ml-1"
+                  className="w-5 h-5 md:w-12 md:h-12 ml-1"
                 >
                   <path
                     fillRule="evenodd"
@@ -131,7 +131,7 @@ const Videoimg = () => {
       </div>
 
       {/* --- DECORATIVE IMAGE LEFT (Pink) --- */}
-      <div className="absolute -top-20 -left-4 md:-top-36 md:-left-4 z-20 pointer-events-none scale-40 md:scale-100 opacity-90">
+      <div className="absolute -top-38 -left-27 md:-top-36 md:-left-4 z-20 pointer-events-none scale-40 md:scale-100 opacity-90">
         <svg
           width="289"
           height="289"
@@ -218,7 +218,7 @@ const Videoimg = () => {
       </div>
 
       {/* --- DECORATIVE IMAGE RIGHT (Blue) --- */}
-      <div className="absolute  -bottom-10 -right-16 md:bottom-20 md:-right-36 z-20 pointer-events-none scale-40 md:scale-100 opacity-90">
+      <div className="absolute  -bottom-38 -right-27 md:bottom-20 md:-right-36 z-20 pointer-events-none scale-40 md:scale-100 opacity-90">
         <div className="">
           <svg
             width="289"

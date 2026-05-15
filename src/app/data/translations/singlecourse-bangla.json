@@ -1,5 +1,6 @@
 {
-  "breadcrumb": "Home > Courses > Kids অনর্গল English Course",
+  "breadcrumb": "Home , Courses , Kids অনর্গল English Course",
+  "breadcrumbs": "Kids অনর্গল English Course",
   "hero": {
     "title": "কিডস অনর্গল English কোর্স, শূন্য থেকে শুরু, অনর্গল ইংলিশে শেষ",
     "subtitle": "শুদ্ধ উচ্চারণে অনর্গল ইংরেজি বলা এবং Basic Grammar, একদম শূন্য থেকে শেখানো হয়, online Kids অনর্গল English Course in Bangladesh"
@@ -15,7 +16,7 @@
       "সময় লাগবে ৬ মাস",
       "ক্লাস সপ্তাহে ৩ দিন",
       "প্রতি ক্লাস শেষে পিডিএফ লেকচার শিট",
-      "ফ্রি কলরফুল কোর্স ম্যাটেরিয়ালস",
+      "ফ্রি কালরফুল কোর্স ম্যাটেরিয়ালস",
       "কোর্স শেষে Certificate প্রদান",
       "ই এফ টি ( ইংলিশ ফ্লয়েন্সি টেস্ট)"
     ],
@@ -77,7 +78,7 @@
         "body": "প্রতিটি বিষয় রঙিন ও আকর্ষণীয় Material-এর মাধ্যমে উপস্থাপন করা হয়, পড়তে বসলে বাচ্চারা আগ্রহ হারায় না।"
       },
       {
-        "title": "Game ও Fun Activity-তে শেখা | Learn Through Games & Fun Activities",
+        "title": "Game ও Fun Activity-তে শেখা ",
         "body": "ক্লাসে মজার Game এবং Fun Activity-র মাধ্যমে পড়ানো হয়, বাচ্চারা শেখে আনন্দের সাথে।"
       },
       {
@@ -85,23 +86,23 @@
         "body": "শুধু পড়া নয়, Dynamic Exam ও Competitions-এর মাধ্যমে বাচ্চারা নিজেদের যাচাই করতে পারে।"
       },
       {
-        "title": "ক্লাসেই চর্চা | In-Class Practice Every Time",
+        "title": "ক্লাসেই চর্চা ",
         "body": "প্রতিটি ক্লাসের পড়া ক্লাসেই চর্চা করিয়ে নেওয়া হয়, বাড়িতে গিয়ে ভুলে যাওয়ার সুযোগ নেই।"
       },
       {
         "title": "Language Club",
-        "body": "Language Club-ে Fun Activity-র মাধ্যমে ইংলিশ চর্চার বিশেষ সুযোগ, শেখা হয় আরও গভীরভাবে।"
+        "body": "Language Club-এ Fun Activity-র মাধ্যমে ইংলিশ চর্চার বিশেষ সুযোগ, শেখা হয় আরও গভীরভাবে।"
       },
       {
-        "title": "নিয়মিত Parent Consultation | Regular Parent Updates",
+        "title": "নিয়মিত Parent Consultation  ",
         "body": "Parents-দের সাথে নিয়মিত Consultation করে বাচ্চার Improvement সম্পর্কে আপডেট দেওয়া হয়, আপনি সবসময় জানবেন আপনার বাচ্চার অগ্রগতি, শক্তি এবং বিকাশ।"
       },
       {
-        "title": "Presentation ও Olympiad প্রস্তুতি | Presentation & Olympiad Ready",
+        "title": "Presentation ও Olympiad প্রস্তুতি ",
         "body": "যেকোনো বিষয়ে Presentation দেওয়া বা English Olympiad-এ অংশগ্রহণের উপযোগী করে তোলা হয়।"
       },
       {
-        "title": "কোর্স সম্পন্নে Certificate | Completion Certificate",
+        "title": "কোর্স সম্পন্নে Certificate ",
         "body": "কোর্স সফলভাবে শেষ করলে পাওয়া যাবে Chalak Champs-এর অফিসিয়াল Certificate।"
       }
     ]
@@ -123,7 +124,7 @@
     "description": "কীভাবে পেমেন্ট করবেন তা বিস্তারিত জানতে এই ভিডিওটি দেখুন"
   },
   "instructor": {
-    "title": "কোর্স ইন্সট্রাক্টর",
+    "title": "চালাক চ্যাম্পস ইন্সট্রাক্টর",
     "info": "Teacher Name, Designation, Experience etc,",
     "cardSystem": "Card System"
   },

@@ -18,7 +18,7 @@ export default function HomeContent() {
   const { t } = useLanguage();
 
   return (
-    <div className="overflow-hidden bg-white space-y-25 tracking-normal px-2 leading-5 min-h-[calc(100vh-500px)]">
+    <div className="overflow-hidden bg-white space-y-20 md:space-y-25  tracking-normal px-2 leading-5 min-h-[calc(100vh-500px)]">
       <Banner />
       <FeatureCourses />
       <PopularCourse />
@@ -29,7 +29,7 @@ export default function HomeContent() {
       <ImageSlider />
       <GallerySlider />
       <VideoTestomonial/>
-      <TestimonialSlider />
+      {/* <TestimonialSlider /> */}
       <CTA />
     </div>
   );

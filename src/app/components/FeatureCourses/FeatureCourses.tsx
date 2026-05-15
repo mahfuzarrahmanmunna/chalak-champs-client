@@ -139,19 +139,29 @@
 
 // export default FeatureCourses;
 
+import { useLanguage } from '@/app/context/LanguageContext';
 import Image from 'next/image';
+import Link from 'next/link';
 import React from 'react';
 
 const FeatureCourses = () => {
+    const context = useLanguage();
+
+    // Fallback values in case context is undefined
+    const t = context?.t || {};
+    const isBangla = context?.isBangla || false;
+
   return (
     <section className="container mx-auto">
-      <Image
-        src={"/discount.png"}
-        width={900}
-        height={300}
-        alt="popular product discount image"
-        className="mx-auto rounded-[36px] border border-[#FF8FCA]"
-      />
+      <Link href={`${isBangla ? "/bn/coursedetails": '/en/coursedetails'}`}>
+        <Image
+          src={"/discount.png"}
+          width={1000}
+          height={400}
+          alt="popular product discount image"
+          className="mx-auto rounded-3xl md:rounded-[36px] border border-[#FF8FCA]"
+        />
+      </Link>
     </section>
   );
 };

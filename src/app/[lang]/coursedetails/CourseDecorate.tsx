@@ -39,6 +39,8 @@ import Enrollment2 from "./Enrollment2";
 // --- SUB-COMPONENT: FAQ ---
 const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
   const [activeFaq, setActiveFaq] = useState<string | null>(null);
+    const { singleCourseData, isBangla, toggleLanguage } = useLanguage();
+
 
   useEffect(() => {
     if (faqs.length > 0 && !activeFaq) {
@@ -56,7 +58,7 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
-            সাধারণ জিজ্ঞাসা
+            {isBangla ? "সাধারণ জিজ্ঞাসা" : "Frequently Asked Questions"}
           </h2>
           <p className="text-sm text-gray-500 font-medium">সবাই যা জানতে চায়</p>
         </div>

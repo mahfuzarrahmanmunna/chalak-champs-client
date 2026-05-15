@@ -197,11 +197,11 @@ const ChalakLibrary = () => {
     <div className="max-w-[1120px] overflow-hidden mx-auto">
       {/* Header */}
       <div className="text-center">
-        <h3 className="font-bold tracking-[-5%]  leading-5 text-2xl md:text-5xl">
+        <h3 className="font-bold py-2 tracking-[-5%] mb-2 leading-5 text-2xl md:text-5xl">
           <span className="text-secondary">{libraryData.titlePrefix}</span>{" "}
           {/* Suffix part with border - keeping your style but splitting text */}
-          <span className="relative inline-block px-3 py-5 group">
-            <span className="absolute inset-0 border-[3px] border-dashed border-pink-500"></span>
+          <span className="relative inline-block px-3 py-1 md:py-5 group">
+            <span className="absolute inset-0 border-2 md:border-[3px] border-dashed border-pink-500"></span>
             <span className="absolute -top-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -top-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
@@ -253,20 +253,20 @@ const ChalakLibrary = () => {
                 className="shrink-0 w-[86vw] md:w-[304px]"
               >
                 {/* CARD DESIGN */}
-                <div className="max-w-80 h-132 shadow bg-linear-to-b from-[#FF8FCA]  to-[#D9D9D9] rounded-[22px] p-0.5">
+                <div className="max-w-80 mx-auto h-135  shadow bg-linear-to-b from-[#FF8FCA]  to-[#D9D9D9] rounded-[22px] p-0.5">
                   <div className="w-full h-full rounded-[20px] p-2 bg-[#F9FAFC]">
-                    <div className="w-68.5 h-68.5 bg-[#001D3A0D] rounded-2xl relative overflow-hidden">
+                    <div className="md:w-71 md:h-71 w-74 h-73 bg-[#001D3A0D] rounded-2xl relative overflow-hidden">
                       <Image
                         src={item.image}
                         alt={item.title}
                         fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 85vw, 304px"
+                        className="object-cover w-full"
+                       
                       />
                     </div>
                     <div className="flex flex-col justify-center items-center">
                       {/* --- DOUBLE BADGE SECTION --- */}
-                      <div className="flex items-center justify-center gap-2 mt-2 w-full flex-wrap">
+                      <div className="flex items-center flex-col justify-center gap-2 mt-2 w-full flex-wrap">
                         {/* Badge 1: Blue-ish (Book Type) */}
                         <div className="flex items-center gap-1.5 text-black text-sm bg-[#1B386B26] rounded-full px-3 py-1.5 shadow-sm border border-white/50">
                           <Layers size={14} className="text-[#1B386B]" />
@@ -286,7 +286,7 @@ const ChalakLibrary = () => {
                           {item.title}
                         </h3>
                         {/* CTA Button using Button component */}
-                        <div>
+                        <div className="mt-3">
                           <Link href={"/en/bookdetails"}>
                             <Button
                               bgColor="#E2136E"
@@ -336,11 +336,11 @@ const ChalakLibrary = () => {
         </div>
       )}
 
-      <div className="flex flex-col justify-center items-center my-6">
+      {/* <div className="flex flex-col justify-center items-center my-6">
         <Button px="px-18" textSize="xl" py="py-3" bgColor="#214187">
           <div>{libraryData.ctaFooter} </div>
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 };

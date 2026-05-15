@@ -9,7 +9,7 @@ import MessangerIcon from "./MessangerIcon";
 
 const Footer = () => {
   return (
-    <footer className="bg-white pt-16 pb-8 text-black dark:text-white">
+    <footer className="bg-white pt-16 pb-16 md:pb-8 text-black dark:text-white">
       <div className="container mx-auto px-6 text-base font-inter">
         {/* --- MAIN GRID LAYOUT --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[3fr_2fr_2fr_3fr] gap-12 mb-12">
@@ -39,15 +39,21 @@ const Footer = () => {
               <div className="flex gap-3 mt-3">
                 <div className="text-[#1777F2] bg-[#1777F21A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
                   {/* facebook */}
-                  <Link href="#">
+                  <a
+                    href="https://www.facebook.com/chalakchampsbd"
+                    target="_blank"
+                  >
                     <FaFacebookF size={18} />
-                  </Link>
+                  </a>
                 </div>
                 {/* youtube */}
                 <div className="text-[#FE0000] bg-[#FE00001A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
-                  <Link href="#">
+                  <a
+                    href="https://www.youtube.com/@chalakchamps"
+                    target="_blank"
+                  >
                     <FaYoutube size={18} />
-                  </Link>
+                  </a>
                 </div>
 
                 {/* Instagram */}
@@ -75,12 +81,16 @@ const Footer = () => {
                 </div>
 
                 <div className="text-[#1777F2] bg-[#448AFF1A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
-                  <Link href="#">
+                  <Link href="https://m.me/chalakchampsbd" target="_blank">
                     <FaFacebookMessenger size={18} />
                   </Link>
                 </div>
                 <div className="text-[#25D366] bg-[#25D3661A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
-                  <Link href="#">
+                  <Link
+                    href="https://wa.me/8801740176774?text=Hello!%20I%20want%20to%20know%20more%20about%20Chalak%20Champs."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <FaWhatsapp size={18} />
                   </Link>
                 </div>
@@ -88,7 +98,7 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="flex col-span-2 justify-around">
+          <div className="md:flex hidden  col-span-2 justify-around">
             {/* --- Explore 1st --- */}
             <div className="space-y-6 dark:text-white text-[#2D2D2D] font-medium">
               <h3 className=" text-lg font-semibold mb-6  inline-block">
@@ -304,8 +314,8 @@ const Footer = () => {
             স্বত্ব &copy; {new Date().getFullYear()}{" "}
             <span className="text-[#1B386BB2]">Lignual</span>{" "}
             <span className="text-[#F3066EB2]">Academy</span> এবং{" "}
-            <span className="#1B386BB2">চালাক</span>{" "}
-            <span className="text-[">Champs</span> কর্তৃক
+            {/* <span className="#1B386BB2">চালাক</span>{" "}
+            <span className="text-[">Champs</span> কর্তৃক */}
             <span className="#1B386BB2">চালাক</span>{" "}
             <span className="text-[#F3066EB2]">Champs</span> কর্তৃক সর্বস্বত্ব
             সংরক্ষিত

@@ -13,13 +13,13 @@
     },
     {
       "id": 2,
-      "title": "1-on-1 Parent Counseling",
+      "title": "1-to-1 Parent Counseling",
       "desc": "How is your child progressing? Where are they strong? Where do they need support? Talk directly with class teacher - complete transparency, every step of way.",
       "image": "/pannel/counselling.png"
     },
     {
       "id": 3,
-      "title": "Learn by Doing",
+      "title": "Learning by Doing",
       "desc": "No boring lectures here. Through activities, games, and guided practice, children listen, understand, and speak. That's how children's development becomes natural.",
       "image": "/pannel/learnplay.png"
     }

@@ -6,7 +6,24 @@ import videojs from "video.js";
 import "video.js/dist/video-js.css";
 // Import YouTube Plugin for Video.js
 import "videojs-youtube";
-import { Play, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import {
+  Play,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  // --- NEW ICONS FOR COLORFUL LIST ---
+  Video,
+  Layers,
+  Globe,
+  GraduationCap,
+  Users,
+  Clock,
+  Calendar,
+  FileText,
+  Palette,
+  Award,
+  Mic,
+} from "lucide-react";
 import Button from "@/app/ui/button/Button";
 
 // --- Types for Slider Media ---
@@ -114,6 +131,27 @@ const EnrollmentCard = ({
     if (playerRef.current) {
       playerRef.current.play();
     }
+  };
+
+  // --- ICON & COLOR CONFIGURATION ---
+  // Maps specific index to a unique icon and a light background color
+  const iconConfig = [
+    { Icon: Video, color: "text-red-500", bg: "bg-red-50" }, // 64 Classes
+    { Icon: Layers, color: "text-blue-500", bg: "bg-blue-50" }, // 2 Levels
+    { Icon: Globe, color: "text-green-500", bg: "bg-green-50" }, // Online Batch
+    { Icon: GraduationCap, color: "text-purple-500", bg: "bg-purple-50" }, // Class 1-8
+    { Icon: Users, color: "text-orange-500", bg: "bg-orange-50" }, // Total Enrolled
+    { Icon: Clock, color: "text-cyan-500", bg: "bg-cyan-50" }, // Time Required
+    { Icon: Calendar, color: "text-indigo-500", bg: "bg-indigo-50" }, // 3 Days/Week
+    { Icon: FileText, color: "text-yellow-600", bg: "bg-yellow-50" }, // PDF
+    { Icon: Palette, color: "text-pink-500", bg: "bg-pink-50" }, // Colorful Materials
+    { Icon: Award, color: "text-amber-500", bg: "bg-amber-50" }, // Certificate
+    { Icon: Mic, color: "text-emerald-500", bg: "bg-emerald-50" }, // EFT Test
+  ];
+
+  // Helper to get config with fallback
+  const getConfig = (idx: number) => {
+    return iconConfig[idx % iconConfig.length];
   };
 
   return (
@@ -299,20 +337,27 @@ const EnrollmentCard = ({
             </Button>
           </div>
 
+          {/* --- UPDATED LIST SECTION WITH COLORFUL ICONS --- */}
           <div className="space-y-3 text-sm text-gray-600 mt-6">
             <p className="font-bold text-gray-900 mb-2">
               {data.quickInfo.title}
             </p>
-            {data.quickInfo.items
-              .slice(0, 5)
-              .map((item: string, idx: number) => (
+            {data.quickInfo.items.map((item: string, idx: number) => {
+              const { Icon, color, bg } = getConfig(idx);
+              return (
                 <div key={idx} className="flex items-start gap-3">
-                  <span className="mt-0.5">
-                    <Check size={18} className="text-[#F3056D]" />
+                  {/* Colorful Icon Container */}
+                  <span className={`mt-0.5 flex-shrink-0`}>
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${bg} ${color}`}
+                    >
+                      <Icon size={18} strokeWidth={2} />
+                    </div>
                   </span>
-                  <span>{item}</span>
+                  <span className="pt-1.5 leading-relaxed">{item}</span>
                 </div>
-              ))}
+              );
+            })}
           </div>
         </div>
       </div>

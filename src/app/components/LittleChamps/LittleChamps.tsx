@@ -18,7 +18,7 @@ const LittleChamps = () => {
       <div>
         <h3 className="text-2xl leading-auto md:text-5xl font-bold tracking-[-5%] text-center">
           <span className="text-[#00477C]">{title.prefix}</span>{" "}
-          <span className="relative inline-block px-2 py-3 group">
+          <span className="relative inline-block px-2 md:py-3 py-1 group">
             <span className="absolute inset-0 border-[3px] border-dashed border-pink-500"></span>
             <span className="absolute -top-0.75 -left-0.75 w-1.5 h-1.5 bg-pink-600"></span>
             <span className="absolute -top-0.75 -right-0.75 w-1.5 h-1.5 bg-pink-600"></span>
@@ -134,7 +134,7 @@ const LittleChamps = () => {
             alt="whats image"
             width={398}
             height={328}
-            className="w-full h-full rounded-[38px] object-fit"
+            className="w-full h-full rounded-[38px] object-fill"
             />
           </div>
           {/* third column second card (Card 6) */}
