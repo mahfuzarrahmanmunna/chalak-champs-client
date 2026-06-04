@@ -268,7 +268,7 @@ const CTA = () => {
               </div>
 
               {/* Course */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <label className="text-sm font-semibold pb-2 text-gray-700">
                   {ctaData.form.course} <span className="text-red-500">*</span>
                 </label>
@@ -287,7 +287,7 @@ const CTA = () => {
                   </select>
                   <ChevronDown className="absolute right-3 top-3.5 text-gray-400 w-5 h-5 pointer-events-none" />
                 </div>
-              </div>
+              </div> */}
 
               {/* Submit Button */}
               <button

@@ -1,10 +1,9 @@
-// lib/axios.ts
 import axios, { RawAxiosRequestHeaders } from "axios";
 import { getAuth } from "firebase/auth";
 import app from "./firebase";
 
-const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api"; // Adjust URL as needed
+// FIX: Remove /api from the end. Point directly to the backend server root.
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
 const axiosInstance = axios.create({
   baseURL,

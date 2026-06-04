@@ -1,16 +1,20 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { ThemeProvider } from "@/app/context/ThemeContext";
 import { LanguageProvider } from "@/app/context/LanguageContext";
 import { LoadingProvider } from "../context/LoadingContext";
 import NavHeader from "../components/NavHeader/NavHeader";
 import Footer from "../components/Footer/Footer";
 import { usePathname } from "next/navigation";
-import FooterMassenger from "../components/Footer/FooterMassenger";
 import { AuthProvider } from "../context/AuthContext";
 import { BookingProvider } from "./BookingProvider";
 import MobileBottomNav from "../components/MobileBottomNav/MobileBottomNav";
+
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -25,7 +29,10 @@ const Providers: React.FC<{
 }> = ({ children, initialLang }) => {
   const pathname = usePathname();
 
-  // FIX: Check logic for /en/dashboard vs /admin-dashboard
+  // Query Client
+  const [queryClient] = useState(() => new QueryClient());
+
+  // Dashboard Check
   const isDashboard = pathname.includes("/admin-dashboard");
   const isStDashboard = pathname.includes("/dashboard");
 
@@ -40,51 +47,90 @@ const Providers: React.FC<{
 
     if (window.location.protocol === "https:" || isLocalhost) {
       navigator.serviceWorker
-        .register("/sw.js") // This must match the file in public/
+        .register("/sw.js")
         .then((registration) => {
-          console.log("Service worker registered:", registration.scope);
+          console.log(
+            "Service worker registered:",
+            registration.scope
+          );
         })
         .catch((error) => {
-          console.error("Service worker registration failed:", error);
+          console.error(
+            "Service worker registration failed:",
+            error
+          );
         });
     }
 
     // PWA Install Prompt Logic
     let deferredPrompt: BeforeInstallPromptEvent | null = null;
 
-    window.addEventListener("beforeinstallprompt", (e: Event) => {
+    const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       deferredPrompt = e as BeforeInstallPromptEvent;
-      console.log("Install prompt captured");
-      (window as any).deferredInstallPrompt = deferredPrompt;
-    });
 
-    window.addEventListener("appinstalled", () => {
+      console.log("Install prompt captured");
+
+      (window as any).deferredInstallPrompt =
+        deferredPrompt;
+    };
+
+    const handleAppInstalled = () => {
       console.log("PWA installed successfully");
+
       deferredPrompt = null;
+
       (window as any).deferredInstallPrompt = null;
-    });
+    };
+
+    window.addEventListener(
+      "beforeinstallprompt",
+      handleBeforeInstallPrompt
+    );
+
+    window.addEventListener(
+      "appinstalled",
+      handleAppInstalled
+    );
+
+    return () => {
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+
+      window.removeEventListener(
+        "appinstalled",
+        handleAppInstalled
+      );
+    };
   }, []);
 
   return (
     <section className="min-h-screen bg-white">
-      <AuthProvider>
-        <LoadingProvider>
-          <ThemeProvider>
-            <LanguageProvider initialLang={initialLang}>
-              <BookingProvider>
-                {!isDashboard && !isStDashboard && <NavHeader />}
-                {children}
-                {!isDashboard && !isStDashboard && <Footer />}
-                <div className="flex md:hidden">
-                  <MobileBottomNav />
-                </div>
-              </BookingProvider>
-              {/* <FooterMassenger /> */}
-            </LanguageProvider>
-          </ThemeProvider>
-        </LoadingProvider>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <LoadingProvider>
+            <ThemeProvider>
+              <LanguageProvider initialLang={initialLang}>
+                <BookingProvider>
+                  {!isDashboard &&
+                    !isStDashboard && <NavHeader />}
+
+                  {children}
+
+                  {!isDashboard &&
+                    !isStDashboard && <Footer />}
+
+                  <div className="flex md:hidden">
+                    <MobileBottomNav />
+                  </div>
+                </BookingProvider>
+              </LanguageProvider>
+            </ThemeProvider>
+          </LoadingProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </section>
   );
 };

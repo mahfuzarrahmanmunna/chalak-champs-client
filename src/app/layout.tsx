@@ -19,7 +19,7 @@ const googleSans = Open_Sans({
 
 // FIX: Ensure metadataBase resolves correctly on all environments
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

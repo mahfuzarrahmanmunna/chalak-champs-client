@@ -6,8 +6,8 @@ import { Phone, User, ChevronDown, Search } from "lucide-react";
 import Image from "next/image";
 import { createBooking } from "@/app/services/freeBookingService";
 import { useBooking } from "@/app/providers/BookingProvider";
-
-// Removed Props interface as it consumes context now
+import { toast } from "react-toastify"; // <--- IMPORT TOASTIFY
+import "react-toastify/dist/ReactToastify.css"; // <--- IMPORT CSS
 
 interface Country {
   name: string;
@@ -18,7 +18,8 @@ interface Country {
 
 const Freebooking: React.FC = () => {
   // --- USE CONTEXT ---
-  const { isOpen, closeBooking, toast } = useBooking();
+  // Removed 'toast' from here as we use the library directly now
+  const { isOpen, closeBooking } = useBooking();
   const { colors } = useTheme();
 
   const phoneNumber = "01740176774";
@@ -121,8 +122,17 @@ const Freebooking: React.FC = () => {
         const response = await createBooking(payload);
 
         if (response.success) {
-          // USE TOAST INSTEAD OF ALERT
-          toast("ডেমো ক্লাস বুক সফলভাবে সম্পন্ন হয়েছে!", "success");
+          // Use Animated Toast Success
+          toast.success("ডেমো ক্লাস বুক সফলভাবে সম্পন্ন হয়েছে!", {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
           closeBooking(); // Close modal
           setFormData({
             studentName: "",
@@ -132,13 +142,31 @@ const Freebooking: React.FC = () => {
             course: "",
           });
         } else {
-          // USE TOAST INSTEAD OF ALERT
-          toast(response.message || "Submission failed", "error");
+          // Use Animated Toast Error
+          toast.error(response.message || "Submission failed", {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
         }
       } catch (error: any) {
         console.error("Submission Error:", error);
-        // USE TOAST INSTEAD OF ALERT
-        toast("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।", "error");
+        // Use Animated Toast Error
+        toast.error("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
       } finally {
         setIsSubmitting(false);
       }

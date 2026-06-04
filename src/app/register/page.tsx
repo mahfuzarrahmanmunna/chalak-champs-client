@@ -560,7 +560,7 @@ export default function RegisterPage() {
                 <p className="text-sm text-gray-600">
                   Already have an account?{" "}
                   <Link
-                    href="/login"
+                    href="/signin"
                     className="font-medium text-indigo-600 hover:text-indigo-500"
                   >
                     Sign in
@@ -983,7 +983,7 @@ export default function RegisterPage() {
                 <p className="text-sm text-gray-600">
                   Already have an account?{" "}
                   <Link
-                    href="/login"
+                    href="/signin"
                     className="font-medium text-indigo-600 hover:text-indigo-500"
                   >
                     Sign in

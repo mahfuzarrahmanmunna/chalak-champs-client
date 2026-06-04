@@ -46,8 +46,17 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
     try {
       const token = await getIdToken(user);
 
+      const rawApiBaseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        process.env.NEXT_PUBLIC_API_URL ||
+        "http://localhost:5000/api";
+
+      const apiBaseUrl = rawApiBaseUrl.endsWith("/api")
+        ? rawApiBaseUrl.replace(/\/+$/, "")
+        : rawApiBaseUrl.replace(/\/+$/, "") + "/api";
+
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/profile`,
+        `${apiBaseUrl}/auth/profile`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

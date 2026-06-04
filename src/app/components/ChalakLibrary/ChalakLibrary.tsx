@@ -253,7 +253,7 @@ const ChalakLibrary = () => {
                 className="shrink-0 w-[86vw] md:w-[304px]"
               >
                 {/* CARD DESIGN */}
-                <div className="max-w-80 mx-auto h-135  shadow bg-linear-to-b from-[#FF8FCA]  to-[#D9D9D9] rounded-[22px] p-0.5">
+                <div className="max-w-80 mx-auto h-132  shadow bg-linear-to-b from-[#FF8FCA]  to-[#D9D9D9] rounded-[22px] p-0.5">
                   <div className="w-full h-full rounded-[20px] p-2 bg-[#F9FAFC]">
                     <div className="md:w-71 md:h-71 w-74 h-73 bg-[#001D3A0D] rounded-2xl relative overflow-hidden">
                       <Image
@@ -261,7 +261,6 @@ const ChalakLibrary = () => {
                         alt={item.title}
                         fill
                         className="object-cover w-full"
-                       
                       />
                     </div>
                     <div className="flex flex-col justify-center items-center">
@@ -295,11 +294,13 @@ const ChalakLibrary = () => {
                               textColor="white"
                               hoverTextColor="#E2136E"
                               textSize="lg"
-                              icon={<EyeIcon />}
+                              // icon={<EyeIcon />}
                               iconPosition="right"
                               className="mt-3 flex hover:text-primary text-white items-center gap-2 px-4 py-2 cursor-pointer rounded-xl shadow-[inset_0_3px_0_rgba(255,255,255,0.5)] transition-all active:scale-95"
                             >
-                              {libraryData.ctaCard}
+                              <div className="flex items-center gap-2">
+                                {libraryData.ctaCard} <EyeIcon />
+                              </div>
                             </Button>
                           </Link>
                         </div>

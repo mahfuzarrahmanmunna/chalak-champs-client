@@ -25,7 +25,7 @@ export default function VerifyPage() {
     if (user && user.email) {
       setEmail(user.email);
     } else if (!user) {
-      router.push("/login");
+      router.push("/signin");
     }
   }, [user, router]);
 
@@ -94,7 +94,7 @@ export default function VerifyPage() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      router.push("/login");
+      router.push("/signin");
     } catch (error) {
       console.error("Error signing out:", error);
     }

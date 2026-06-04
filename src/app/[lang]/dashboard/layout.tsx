@@ -71,7 +71,7 @@ export default function StudentLayout({
   const handleLogout = async () => {
     try {
       await logout();
-      window.location.href = "/login";
+      window.location.href = "/signin";
     } catch (error) {
       console.error("Logout failed:", error);
     }

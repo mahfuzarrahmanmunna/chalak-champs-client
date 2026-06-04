@@ -41,6 +41,7 @@ interface AuthContextType {
   currentUser: FirebaseUser | null;
   appUser: AppUser | null; // The user from MongoDB
   loading: boolean;
+  isAdmin: boolean;
   // Email/Password Flow
   signUp: (
     email: string,
@@ -257,6 +258,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         currentUser,
         appUser,
         loading,
+        isAdmin: Boolean(appUser?.role === "admin"),
         signUp,
         login,
         // signInWithEmail,
@@ -284,6 +286,7 @@ export const useAuth = () => {
       currentUser: null,
       appUser: null,
       loading: true,
+      isAdmin: false,
       signUp: async () => {},
       login: async () => {},
       signInWithEmail: async () => {},

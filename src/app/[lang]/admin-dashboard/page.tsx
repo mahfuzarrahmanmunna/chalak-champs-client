@@ -1,16 +1,18 @@
-// src/app/admin-dashboard/page.tsx
 "use client";
 import React, { useState, useEffect } from "react";
-// import { useAuth } from "@/app/hooks/useAuth";
 import { useLanguage } from "@/app/context/LanguageContext";
 import api from "@/lib/api";
 import {
-  UserGroupIcon,
-  AcademicCapIcon,
-  CurrencyDollarIcon,
-  BookOpenIcon,
-  ChartBarIcon,
-} from "@heroicons/react/24/outline";
+  Users,
+  GraduationCap,
+  DollarSign,
+  BookOpen,
+  ArrowRight,
+  MoreHorizontal,
+  TrendingUp,
+  UserCheck,
+  Activity,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
@@ -25,11 +27,33 @@ interface DashboardStats {
   activeCourses: number;
 }
 
+// Helper for status badges
+const StatusBadge = ({ status }: { status: string }) => {
+  const styles = {
+    active: "bg-green-100 text-green-700 border-green-200",
+    inactive: "bg-gray-100 text-gray-700 border-gray-200",
+    pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  };
+
+  const normalizedStatus = status?.toLowerCase() || "inactive";
+  const style =
+    styles[normalizedStatus as keyof typeof styles] || styles.inactive;
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors ${style}`}
+    >
+      {status}
+    </span>
+  );
+};
+
 export default function AdminDashboardPage() {
-  const { currentUser } = useAuth();
+  const { currentUser, appUser, loading: authLoading } = useAuth();
   const { t } = useLanguage();
   const params = useParams<{ lang?: string }>();
   const lang = params?.lang || "en";
+
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     totalCourses: 0,
@@ -38,361 +62,380 @@ export default function AdminDashboardPage() {
     newUsersThisMonth: 0,
     activeCourses: 0,
   });
-  const [loading, setLoading] = useState(true);
-  const [recentUsers, setRecentUsers] = useState<{ id: number; firstName: string, lastName: string, email: string, role: string }[]>([]);
-  const [recentCourses, setRecentCourses] = useState<{id: number, instructor:string, status: string, title: string, thumbnail:string , role: string}[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [recentUsers, setRecentUsers] = useState<
+    {
+      id: number;
+      firstName: string;
+      lastName: string;
+      email: string;
+      role: string;
+    }[]
+  >([]);
+  const [recentCourses, setRecentCourses] = useState<
+    {
+      id: number;
+      instructor: string;
+      status: string;
+      title: string;
+      thumbnail: string;
+    }[]
+  >([]);
 
-   useEffect(() => {
-     // FIX: Only fetch data if the user is actually logged in.
-     // This prevents the 401 error because we ensure the token is ready.
-     if (currentUser) {
-       fetchDashboardData();
-     }
-   }, [currentUser]); // Add 'currentUser' as a dependency
+  // Hoisted function so it can be called from the effect above
+  async function fetchDashboardData() {
+    try {
+      setIsLoading(true);
+      const statsResponse = await api.get("/admin/dashboard/stats");
+      if (statsResponse.data.success) setStats(statsResponse.data.stats);
 
-   const fetchDashboardData = async () => {
-     try {
-       setLoading(true);
+      const usersResponse = await api.get("/admin/users?limit=5");
+      if (usersResponse.data.success) setRecentUsers(usersResponse.data.users);
 
-       // Fetch dashboard stats (This route EXISTS in your backend code now)
-       const statsResponse = await api.get("/admin/dashboard/stats");
-       if (statsResponse.data.success) {
-         setStats(statsResponse.data.stats);
-       }
+      const coursesResponse = await api.get("/admin/courses?limit=5");
+      if (coursesResponse.data.success)
+        setRecentCourses(coursesResponse.data.courses);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
-       // Fetch recent users
-       const usersResponse = await api.get("/admin/users?limit=5");
-       if (usersResponse.data.success) {
-         // Map backend _id to frontend id if necessary, or use as is
-         setRecentUsers(usersResponse.data.users);
-       }
-
-       // Fetch recent courses
-       const coursesResponse = await api.get("/admin/courses?limit=5");
-       if (coursesResponse.data.success) {
-         setRecentCourses(coursesResponse.data.courses);
-       }
-     } catch (error) {
-       console.error("Error fetching dashboard data:", error);
-     } finally {
-       setLoading(false);
-     }
-   };
+  useEffect(() => {
+    // Only fetch dashboard data when auth finished loading and
+    // the current app user is available and has admin role.
+    // Defer the call to the next tick to avoid synchronous setState
+    // inside the effect body which can cause cascading renders.
+    if (!authLoading && currentUser && appUser?.role === "admin") {
+      const id = setTimeout(() => {
+        fetchDashboardData();
+      }, 0);
+      return () => clearTimeout(id);
+    }
+    return;
+  }, [currentUser, appUser, authLoading]);
 
   const statCards = [
     {
       name: t.totalUsers || "Total Users",
       value: stats.totalUsers,
       change: stats.newUsersThisMonth,
-      changeType: "increase" as const,
-      icon: UserGroupIcon,
+      changeText: "New users",
+      icon: Users,
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
     },
     {
       name: t.totalCourses || "Total Courses",
       value: stats.totalCourses,
       change: stats.activeCourses,
-      changeType: "increase" as const,
-      icon: AcademicCapIcon,
+      changeText: "Active courses",
+      icon: GraduationCap,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-100",
     },
     {
       name: t.totalRevenue || "Total Revenue",
       value: `$${stats.totalRevenue.toLocaleString()}`,
       change: "+12%",
-      changeType: "increase" as const,
-      icon: CurrencyDollarIcon,
+      changeText: "vs last month",
+      icon: DollarSign,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-100",
     },
     {
       name: t.totalLessons || "Total Lessons",
       value: stats.totalLessons,
       change: "+8%",
-      changeType: "increase" as const,
-      icon: BookOpenIcon,
+      changeText: "New lessons",
+      icon: BookOpen,
+      color: "text-orange-600",
+      bgColor: "bg-orange-100",
     },
   ];
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="flex h-96 items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"
+            style={{
+              borderTopColor: "transparent",
+              borderColor: "var(--color-primary)",
+            }}
+          ></div>
+          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="mb-8">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Welcome Section */}
+      <div className="flex flex-col gap-1">
         <h1
-          className="text-2xl font-bold"
+          className="text-3xl font-bold tracking-tight text-foreground"
           style={{ color: "var(--color-foreground)" }}
         >
           {String(t.adminDashboard || "Admin Dashboard")}
         </h1>
         <p
-          className="mt-1 text-sm"
+          className="text-muted-foreground"
           style={{ color: "var(--color-muted-foreground)" }}
         >
-          {String(t.welcomeAdmin || "Welcome to the admin dashboard")}{" "}
-          {currentUser?.displayName || "Admin"}!
+          {String(t.welcomeAdmin || "Welcome back")}{" "}
+          <span className="font-medium text-foreground">
+            {currentUser?.displayName || "Admin"}
+          </span>
+          {!currentUser?.displayName && (
+            <span>! Here&lsquo;s what&lsquo;s happening today.</span>
+          )}
         </p>
       </div>
 
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      {/* Stats Grid */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => (
           <div
-            key={String(card.name)}
-            className="bg-white overflow-hidden shadow rounded-lg"
+            key={card.name}
+            className="relative overflow-hidden rounded-xl border bg-card p-6 shadow-sm transition-all hover:shadow-md"
             style={{
               backgroundColor: "var(--color-card)",
-              boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+              borderColor: "var(--color-border)",
             }}
           >
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <card.icon
-                    className="h-6 w-6"
-                    style={{ color: "var(--color-primary)" }}
-                  />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt
-                      className="text-sm font-medium truncate"
-                      style={{ color: "var(--color-muted-foreground)" }}
-                    >
-                      {String(card.name)}
-                    </dt>
-                    <dd>
-                      <div className="text-lg font-medium">{card.value}</div>
-                    </dd>
-                  </dl>
-                </div>
+            <div className="flex items-center justify-between space-y-0 pb-2">
+              <p
+                className="text-sm font-medium text-muted-foreground"
+                style={{ color: "var(--color-muted-foreground)" }}
+              >
+                {card.name}
+              </p>
+              <div className={`rounded-lg p-2 ${card.bgColor}`}>
+                <card.icon className={`h-4 w-4 ${card.color}`} />
               </div>
             </div>
-            <div
-              className="bg-gray-50 px-5 py-3"
-              style={{
-                backgroundColor: "var(--color-accent)",
-              }}
-            >
-              <div className="text-sm">
-                <span
-                  className={
-                    card.changeType === "increase"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }
-                  style={{
-                    color:
-                      card.changeType === "increase"
-                        ? "var(--color-success, #10b981)"
-                        : "var(--color-destructive, #ef4444)",
-                  }}
-                >
-                  {card.change}
-                </span>{" "}
-                <span
-                  className="text-gray-500"
-                  style={{ color: "var(--color-muted-foreground)" }}
-                >
-                  {String(t.fromLastMonth || "from last month")}
-                </span>
+            <div className="flex items-baseline gap-2">
+              <div
+                className="text-2xl font-bold"
+                style={{ color: "var(--color-foreground)" }}
+              >
+                {card.value}
               </div>
+              {card.change && (
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <TrendingUp className="mr-1 h-3 w-3 text-green-500" />
+                  <span className="text-green-600 font-semibold">
+                    {card.change}
+                  </span>
+                  <span className="ml-1">{card.changeText}</span>
+                </div>
+              )}
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent users */}
+      <div className="grid gap-6 lg:grid-cols-7">
+        {/* Recent Users (Takes up 4 columns) */}
         <div
-          className="bg-white shadow rounded-lg"
+          className="col-span-4 rounded-xl border bg-card shadow-sm"
           style={{
             backgroundColor: "var(--color-card)",
-            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+            borderColor: "var(--color-border)",
           }}
         >
-          <div className="px-4 py-5 sm:p-6">
-            <h3
-              className="text-lg leading-6 font-medium"
-              style={{ color: "var(--color-foreground)" }}
+          <div
+            className="flex items-center justify-between border-b p-6"
+            style={{ borderColor: "var(--color-border)" }}
+          >
+            <div>
+              <h3
+                className="text-lg font-semibold"
+                style={{ color: "var(--color-foreground)" }}
+              >
+                {String(t.recentUsers || "Recent Users")}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Latest members to join the platform.
+              </p>
+            </div>
+            <Link
+              href={`/${lang}/admin-dashboard/manage-users`}
+              className="text-sm font-medium text-primary hover:underline flex items-center"
+              style={{ color: "var(--color-primary)" }}
             >
-              {String(t.recentUsers || "Recent Users")}
-            </h3>
-            <div className="mt-5">
-              <div className="flow-root">
-                <ul className="-my-5 divide-y divide-gray-200">
-                  {recentUsers.map((user) => (
-                    <li key={user.id} className="py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <div
-                            className="h-8 w-8 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: "var(--color-primary)" }}
-                          >
-                            <span
-                              className="text-sm font-medium"
-                              style={{ color: "var(--color-background)" }}
-                            >
-                              {user.firstName?.charAt(0) ||
-                                user.email?.charAt(0) ||
-                                "U"}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className="text-sm font-medium truncate"
-                            style={{ color: "var(--color-foreground)" }}
-                          >
-                            {user.firstName} {user.lastName}
-                          </p>
-                          <p
-                            className="text-sm truncate"
-                            style={{ color: "var(--color-muted-foreground)" }}
-                          >
-                            {user.email}
-                          </p>
-                        </div>
-                        <div>
-                          <span
-                            className="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                            style={{
-                              backgroundColor:
-                                user.role === "admin"
-                                  ? "var(--color-primary)"
-                                  : "var(--color-accent)",
-                              color: "var(--color-foreground)",
-                            }}
-                          >
-                            {user.role}
-                          </span>
-                        </div>
+              View all
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </div>
+          <div className="p-0">
+            <div
+              className="divide-y"
+              style={{ borderColor: "var(--color-border)" }}
+            >
+              {recentUsers.length > 0 ? (
+                recentUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="relative h-10 w-10 overflow-hidden rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-600">
+                        {user.firstName?.charAt(0) ||
+                          user.email?.charAt(0) ||
+                          "U"}
                       </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-6">
-                <Link
-                  href={`/${lang}/admin-dashboard/manage-users`}
-                  className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                  style={{
-                    backgroundColor: "var(--color-primary)",
-                  }}
-                >
-                  {String(t.viewAllUsers || "View all users")}
-                </Link>
-              </div>
+                      <div>
+                        <p
+                          className="text-sm font-medium text-foreground"
+                          style={{ color: "var(--color-foreground)" }}
+                        >
+                          {user.firstName} {user.lastName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                          user.role === "admin"
+                            ? "bg-purple-50 text-purple-700 ring-purple-600/20"
+                            : "bg-gray-50 text-gray-600 ring-gray-500/10"
+                        }`}
+                      >
+                        {user.role}
+                      </span>
+                      <button className="text-gray-400 hover:text-foreground">
+                        <MoreHorizontal className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-sm text-muted-foreground">
+                  No recent users found.
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Recent courses */}
+        {/* Recent Courses (Takes up 3 columns) */}
         <div
-          className="bg-white shadow rounded-lg"
+          className="col-span-3 rounded-xl border bg-card shadow-sm"
           style={{
             backgroundColor: "var(--color-card)",
-            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+            borderColor: "var(--color-border)",
           }}
         >
-          <div className="px-4 py-5 sm:p-6">
-            <h3
-              className="text-lg leading-6 font-medium"
-              style={{ color: "var(--color-foreground)" }}
-            >
-              {String(t.recentCourses || "Recent Courses")}
-            </h3>
-            <div className="mt-5">
-              <div className="flow-root">
-                <ul className="-my-5 divide-y divide-gray-200">
-                  {recentCourses.map((course) => (
-                    <li key={course.id} className="py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <Image
-                            className="h-10 w-10 rounded-full object-cover"
-                            src={course.thumbnail || "/placeholder-course.jpg"}
-                            alt={course.title}
-                            width={40}
-                            height={40}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className="text-sm font-medium truncate"
-                            style={{ color: "var(--color-foreground)" }}
-                          >
-                            {course.title}
-                          </p>
-                          <p
-                            className="text-sm truncate"
-                            style={{ color: "var(--color-muted-foreground)" }}
-                          >
-                            {course.instructor}
-                          </p>
-                        </div>
-                        <div>
-                          <span
-                            className="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                            style={{
-                              backgroundColor:
-                                course.status === "active"
-                                  ? "var(--color-success, #10b981)"
-                                  : "var(--color-accent)",
-                              color: "white",
-                            }}
-                          >
-                            {course.status}
-                          </span>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-6">
-                <Link
-                  href={`/${lang}/admin-dashboard/manage-courses`}
-                  className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                  style={{
-                    backgroundColor: "var(--color-primary)",
-                  }}
-                >
-                  {String(t.viewAllCourses || "View all courses")}
-                </Link>
-              </div>
+          <div
+            className="flex items-center justify-between border-b p-6"
+            style={{ borderColor: "var(--color-border)" }}
+          >
+            <div>
+              <h3
+                className="text-lg font-semibold"
+                style={{ color: "var(--color-foreground)" }}
+              >
+                {String(t.recentCourses || "Recent Courses")}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Newly added content.
+              </p>
             </div>
+            <Link
+              href={`/${lang}/admin-dashboard/manage-courses`}
+              className="text-sm font-medium text-primary hover:underline flex items-center"
+              style={{ color: "var(--color-primary)" }}
+            >
+              View all
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </div>
+          <div className="p-4 space-y-4">
+            {recentCourses.map((course) => (
+              <div key={course.id} className="flex gap-4">
+                <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200">
+                  <Image
+                    className="h-full w-full object-cover"
+                    src={course.thumbnail || "/placeholder-course.jpg"}
+                    alt={course.title}
+                    fill
+                    sizes="64px"
+                  />
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col justify-center">
+                  <p
+                    className="truncate text-sm font-medium text-foreground"
+                    style={{ color: "var(--color-foreground)" }}
+                  >
+                    {course.title}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {course.instructor}
+                  </p>
+                </div>
+                <div className="flex flex-col items-end justify-center gap-1">
+                  <StatusBadge status={course.status} />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Analytics chart */}
+      {/* Analytics Section */}
       <div
-        className="mt-6 bg-white shadow rounded-lg"
+        className="rounded-xl border bg-card shadow-sm"
         style={{
           backgroundColor: "var(--color-card)",
-          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+          borderColor: "var(--color-border)",
         }}
       >
-        <div className="px-4 py-5 sm:p-6">
+        <div
+          className="border-b p-6"
+          style={{ borderColor: "var(--color-border)" }}
+        >
           <h3
-            className="text-lg leading-6 font-medium"
+            className="text-lg font-semibold"
             style={{ color: "var(--color-foreground)" }}
           >
-            {String(t.userGrowth || "User Growth")}
+            {String(t.userGrowth || "User Growth Analytics")}
           </h3>
-          <div className="mt-5">
-            <div className="h-64 flex items-center justify-center text-gray-500">
-              <div className="text-center">
-                <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-2 text-sm text-gray-500">
-                  {String(
-                    t.chartPlaceholder || "Chart would be displayed here",
-                  )}
-                </p>
-              </div>
+        </div>
+        <div className="flex h-80 items-center justify-center p-12 text-center">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="rounded-full bg-gray-50 p-4 dark:bg-gray-800">
+              <Activity className="h-8 w-8 text-gray-400" />
+            </div>
+            <div>
+              <h4
+                className="text-sm font-medium text-foreground"
+                style={{ color: "var(--color-foreground)" }}
+              >
+                No Chart Data
+              </h4>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {String(
+                  t.chartPlaceholder ||
+                    "Chart visualization will appear here once data is available.",
+                )}
+              </p>
+              <button
+                className="mt-4 inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-primary-foreground)",
+                }}
+              >
+                Configure Analytics
+              </button>
             </div>
           </div>
         </div>

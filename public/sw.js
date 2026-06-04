@@ -6,7 +6,6 @@ const URLS_TO_CACHE = [
   "/bn",
   "/manifest.json",
   "/icon.png", // From your manifest
-  "/icon.png", // From your manifest
 ];
 
 self.addEventListener("install", (event) => {

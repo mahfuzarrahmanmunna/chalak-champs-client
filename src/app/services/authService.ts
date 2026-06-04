@@ -90,7 +90,7 @@ export const registerUser = async (data: RegisterData) => {
 
 // 6. Login User
 export const loginUser = async (data: { email: string; password: string }) => {
-  const response = await axiosInstance.post("/auth/login", {
+  const response = await axiosInstance.post("/auth/signin", {
     email: data.email,
     password: data.password,
   });
