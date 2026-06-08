@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-// --- React Icons (New Imports) ---
+// --- React Icons ---
 import {
   FaFacebookF,
   FaYoutube,
@@ -39,7 +39,7 @@ import {
   Linkedin,
 } from "lucide-react";
 
-// --- Your Local Imports (Kept Same) ---
+// --- Your Local Imports ---
 import Button from "@/app/ui/button/Button";
 import NavLogo from "./logo";
 import DropIcon from "./DropIcon";
@@ -113,7 +113,7 @@ const NavHeader = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Click Outside to Close Dropdown
+  // Click Outside to Close Desktop Dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -186,6 +186,47 @@ const NavHeader = () => {
               </div>
               {t?.bookAFreeClass || "Book A Free Class"}
             </button>
+          </div>
+
+          {/* --- UPDATED DESKTOP COURSES DROPDOWN --- */}
+          <div className="relative">
+            <Link
+              href={`/${isBangla ? "bn/courses" : "en/courses"}`}
+              // onClick={() => handleDropdownClick("courses")}
+              className={`flex items-center font-medium flex gap-2 leading-auto tracking-[-2%] text-sm cursor-pointer transition-all ${
+                activeDropdown === "courses" ? "text-[#F3056D]" : "text-primary"
+              }`}
+            >
+              <span>{t?.allCourses || "All Courses"}</span>
+              {/* <ChevronRight
+                size={16}
+                className={`transition-transform duration-300 ${
+                  activeDropdown === "courses" ? "rotate-90" : ""
+                }`}
+              /> */}
+            </Link>
+
+            {/* Desktop Dropdown Menu */}
+            {activeDropdown === "courses" && (
+              <div className="hidden absolute top-full left-0 mt-4 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 p-3 z-50 animate-in fade-in slide-in-from-top-2 origin-top">
+                <div className="flex flex-col gap-1">
+                  {t.menus?.courses?.map((course: any, index: number) => (
+                    <Link
+                      key={index}
+                      href={`/${isBangla ? "bn" : "en"}/courses`} // Adjust href if you have specific links for each course
+                      className="group flex flex-col p-3 rounded-xl hover:bg-blue-50/50 transition-all duration-200"
+                    >
+                      <span className="font-bold text-gray-800 group-hover:text-[#214187] text-sm">
+                        {course.title}
+                      </span>
+                      <span className="text-xs text-gray-500 mt-0.5 leading-tight">
+                        {course.description}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* --- KIDS ENGLISH MODAL --- */}
@@ -294,7 +335,7 @@ const NavHeader = () => {
         </button>
       </div>
 
-      {/* --- PROFESSIONAL MOBILE MENU OVERLAY (FIXED STRUCTURE) --- */}
+      {/* --- PROFESSIONAL MOBILE MENU OVERLAY --- */}
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-[60] bg-white animate-in slide-in-from-top-2 duration-300 flex flex-col h-screen overflow-hidden">
           {/* --- STICKY HEADER (Logo + Close Button) --- */}
@@ -307,8 +348,6 @@ const NavHeader = () => {
               className="p-2 bg-linear-to-r transition-colors"
               aria-label="Close Menu"
             >
-              {/* REPLACED: Custom Close Icon */}
-              {/* <CloseHamburger /> */}
               <svg
                 width="28"
                 height="28"
@@ -327,17 +366,20 @@ const NavHeader = () => {
 
           {/* --- SCROLLABLE CONTENT AREA --- */}
           <div className="flex-1 overflow-y-auto relative">
-            {/* Decorative Background Blobs (Fixed to scroll area) */}
+            {/* Decorative Background Blobs */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
               <div className="absolute -top-[10%] -left-[10%] w-[40rem] h-[40rem] bg-pink-100/40 rounded-full blur-[100px]"></div>
               <div className="absolute top-[40%] -right-[20%] w-[30rem] h-[30rem] bg-blue-100/40 rounded-full blur-[80px]"></div>
             </div>
 
             <div className="container mx-auto px-5 py-8 relative z-10 flex flex-col min-h-full">
-              {/* call and bilingual button */}
-              <div className="flex mb-8">
+              {/* Call and Bilingual Button */}
+              <div className="flex mb-8 gap-3">
                 <div className="flex w-full">
-                  <a href="tel:01740176774">
+                  <a
+                    href="tel:01740176774"
+                    onClick={() => setIsMobileMenuOpen(false)} // Close on click
+                  >
                     <Button
                       className="w-full"
                       px="px-3"
@@ -350,7 +392,12 @@ const NavHeader = () => {
                     </Button>
                   </a>
                 </div>
-                <div onClick={toggleLanguage} className="cursor-pointer">
+                <div
+                  onClick={() => {
+                    toggleLanguage();
+                  }}
+                  className="cursor-pointer"
+                >
                   <Button
                     bgColor="#ffffff"
                     textColor="#214187"
@@ -365,16 +412,17 @@ const NavHeader = () => {
                   </Button>
                 </div>
               </div>
-              {/*  BUTTON */}
+
+              {/* BOOK FREE CLASS BUTTON */}
               <div className="mb-8">
                 <button
                   onClick={() => {
                     openBooking();
-                    setIsMobileMenuOpen(false);
+                    setIsMobileMenuOpen(false); // Close on click
                   }}
-                  className="cursor-pointer px-5 leading-auto tracking-[-2%] relative   py-3 w-full rounded-[50px] font-bold text-white transition-all duration-300 bg-[#F3056D] shadow-[inset_0_1.5px_0_0_#FF8FCA,0_1.5px_1.5px_0_rgba(243,6,110,0.3),0_0_0_1.5px_#C6005F,0_3.01px_7.52px_0_rgba(243,6,110,0.3)]  hover:bg-white hover:text-[#F3056D]  hover:shadow-[0_1.5px_1.5px_0_rgba(243,6,110,0.2),0_0_0_1.5px_#F3056D,0_3.01px_7.52px_0_rgba(243,6,110,0.1)]"
+                  className="cursor-pointer px-5 leading-auto tracking-[-2%] relative py-3 w-full rounded-[50px] font-bold text-white transition-all duration-300 bg-[#F3056D] shadow-[inset_0_1.5px_0_0_#FF8FCA,0_1.5px_1.5px_0_rgba(243,6,110,0.3),0_0_0_1.5px#C6005F,0_3.01px_7.52px_0_rgba(243,6,110,0.3)] hover:bg-white hover:text-[#F3056D] hover:shadow-[0_1.5px_1.5px_0_rgba(243,6,110,0.2),0_0_0_1.5px#F3056D,0_3.01px_7.52px_0_rgba(243,6,110,0.1)]"
                 >
-                  <div className="absolute top-1.75 left-33 text-base  transition-colors duration-300">
+                  <div className="absolute top-1.75 left-33 text-base transition-colors duration-300">
                     <svg
                       width="32"
                       height="33"
@@ -392,34 +440,54 @@ const NavHeader = () => {
                 </button>
               </div>
 
-              {/* Navigation List */}
-              <div className="flex flex-col gap-4 mb-8">
-                {/* Kids English Dropdown */}
+              {/* --- UPDATED MOBILE COURSES MENU --- */}
+              <div className="mb-6">
                 <MobileNavDropdown
-                  title={t?.kidsEnglish || "Kids English"}
-                  icon={<Smile size={22} />}
-                  items={
-                    menuData.kids.length > 0
-                      ? menuData.kids
-                      : [
-                          {
-                            title: "Online",
-                            description: "Fun learning for toddlers",
-                          },
-                          {
-                            title: "Offline",
-                            description: "Grammar and vocabulary",
-                          },
-                        ]
-                  }
-                  isOpen={activeMobileDropdown === "kids"}
-                  onToggle={() => handleMobileDropdownClick("kids")}
+                  title={t?.allCourses || "Courses"}
+                  icon={<BookOpen size={22} />}
+                  items={t.menus?.courses || []}
+                  isOpen={activeMobileDropdown === "courses"}
+                  onToggle={() => handleMobileDropdownClick("courses")}
                 />
+              </div>
+
+              {/* --- UPDATED: PROFESSIONAL KIDS ENGLISH CARD --- */}
+              <div className="mb-8">
+                <Link
+                  href={`${isBangla ? "/bn/coursedetails" : "/en/coursedetails"}`}
+                  onClick={() => setIsMobileMenuOpen(false)} // Close on click
+                  className="group block w-full"
+                >
+                  <div className="relative overflow-hidden bg-white border border-gray-100 rounded-3xl p-6 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-all duration-300 group-hover:border-[#F3056D]/30 group-hover:shadow-[0_20px_50px_-12px_rgba(243,5,109,0.2)]">
+                    {/* Decorative animated blob */}
+                    <div className="absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-br from-blue-100 to-pink-100 rounded-full blur-2xl opacity-70 transition-transform duration-500 group-hover:scale-110"></div>
+
+                    <div className="relative z-10 flex items-center gap-5">
+                      {/* Icon Container */}
+                      <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-[#214187] to-[#163676] text-white flex items-center justify-center shadow-lg shadow-blue-500/20">
+                        <Smile size={28} className="fill-white/20" />
+                      </div>
+
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-[#214187] mb-1">
+                          {t?.kidsEnglish || "Kids English"}
+                        </h3>
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                          Interactive Learning
+                        </p>
+                      </div>
+
+                      <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-[#214187] group-hover:bg-[#F3056D] group-hover:text-white transition-colors">
+                        <ChevronRight size={18} />
+                      </div>
+                    </div>
+                  </div>
+                </Link>
               </div>
 
               <div className="flex-grow"></div>
 
-              {/* --- SOCIAL LINKS SECTION (UPDATED) --- */}
+              {/* --- SOCIAL LINKS SECTION --- */}
               <div className="mb-8">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 pl-1">
                   {isBangla ? "সোশ্যাল মিডিয়া" : "Follow Us"}
@@ -427,10 +495,11 @@ const NavHeader = () => {
                 <div className="flex gap-3 flex-wrap">
                   {/* Facebook */}
                   <a
-                    href="https://www.facebook.com/chalakchampsbd"
+                    href="https://www.facebook.com/chalakchamps"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-shrink-0"
+                    onClick={() => setIsMobileMenuOpen(false)} // Close on click
                   >
                     <div className="text-[#1777F2] bg-[#1777F21A] h-10 w-10.5 flex items-center justify-center rounded-lg transition-transform hover:scale-105">
                       <FaFacebookF size={18} />
@@ -443,6 +512,7 @@ const NavHeader = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-shrink-0"
+                    onClick={() => setIsMobileMenuOpen(false)} // Close on click
                   >
                     <div className="text-[#FE0000] bg-[#FE00001A] h-10 w-10.5 flex items-center justify-center rounded-lg transition-transform hover:scale-105">
                       <FaYoutube size={18} />
@@ -451,7 +521,6 @@ const NavHeader = () => {
 
                   {/* Instagram */}
                   <div className="flex-shrink-0 relative">
-                    {/* SVG Gradient Definition */}
                     <svg
                       width="0"
                       height="0"
@@ -469,22 +538,27 @@ const NavHeader = () => {
                         <stop offset="100%" stopColor="#C837AB" />
                       </linearGradient>
                     </svg>
-                    <Link href="#" className="block">
+                    <a
+                      href="#"
+                      className="block"
+                      onClick={() => setIsMobileMenuOpen(false)} // Close on click
+                    >
                       <div className="bg-[#FFAB4D26] h-10 w-10 flex items-center justify-center rounded-lg transition-transform hover:scale-105">
                         <FaInstagram
                           size={18}
                           style={{ fill: "url(#insta-grad)" }}
                         />
                       </div>
-                    </Link>
+                    </a>
                   </div>
 
                   {/* Messenger */}
                   <a
-                    href="https://m.me/chalakchampsbd"
+                    href="https://m.me/chalakchamps"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-shrink-0"
+                    onClick={() => setIsMobileMenuOpen(false)} // Close on click
                   >
                     <div className="text-[#1777F2] bg-[#448AFF1A] h-10 w-10.5 flex items-center justify-center rounded-lg transition-transform hover:scale-105">
                       <FaFacebookMessenger size={18} />
@@ -497,6 +571,7 @@ const NavHeader = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-shrink-0"
+                    onClick={() => setIsMobileMenuOpen(false)} // Close on click
                   >
                     <div className="text-[#25D366] bg-[#25D3661A] h-10 w-10.5 flex items-center justify-center rounded-lg transition-transform hover:scale-105">
                       <FaWhatsapp size={18} />
@@ -511,6 +586,7 @@ const NavHeader = () => {
                 <button
                   onClick={() => {
                     toggleLanguage();
+                    setIsMobileMenuOpen(false); // Close on click
                   }}
                   className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                 >
@@ -523,7 +599,7 @@ const NavHeader = () => {
                 {/* Login Link */}
                 <Link
                   href={`/${isBangla ? "bn" : "en"}/signin`}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => setIsMobileMenuOpen(false)} // Close on click
                   className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-[#214187] hover:bg-blue-50 transition-colors"
                 >
                   <UserIcon />
@@ -538,7 +614,7 @@ const NavHeader = () => {
   );
 };
 
-// --- PROFESSIONAL MOBILE DROPDOWN COMPONENT ---
+// --- PROFESSIONAL MOBILE DROPDOWN COMPONENT (Used for Courses) ---
 const MobileNavDropdown = ({ title, icon, items, isOpen, onToggle }: any) => {
   const context = useLanguage();
 
@@ -552,13 +628,13 @@ const MobileNavDropdown = ({ title, icon, items, isOpen, onToggle }: any) => {
         onClick={onToggle}
         className={`w-full flex items-center justify-between p-5 rounded-2xl transition-all duration-300 border relative overflow-hidden ${
           isOpen
-            ? "bg-white border-[#F3056D]/20 shadow-[0_8px_20px_-5px_rgba(243,5,109,0.15)]"
-            : "bg-white/80 border-gray-100 hover:border-[#F3056D]/30 hover:shadow-md"
+            ? "bg-white border-[#214187]/20 shadow-[0_8px_20px_-5px_rgba(33,65,135,0.15)]"
+            : "bg-white/80 border-gray-100 hover:border-[#214187]/30 hover:shadow-md"
         }`}
       >
         {/* Background Gradient Accent */}
         <div
-          className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#F3056D]/10 to-transparent rounded-bl-full transition-opacity duration-300 ${
+          className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#214187]/10 to-transparent rounded-bl-full transition-opacity duration-300 ${
             isOpen ? "opacity-100" : "opacity-0"
           }`}
         ></div>
@@ -567,7 +643,7 @@ const MobileNavDropdown = ({ title, icon, items, isOpen, onToggle }: any) => {
           <div
             className={`p-2.5 rounded-xl transition-all duration-300 shadow-sm ${
               isOpen
-                ? "bg-[#F3056D] text-white shadow-[#F3056D]/30"
+                ? "bg-[#214187] text-white shadow-[#214187]/30"
                 : "bg-gray-50 text-[#214187] group-hover:bg-[#214187] group-hover:text-white"
             }`}
           >
@@ -575,7 +651,7 @@ const MobileNavDropdown = ({ title, icon, items, isOpen, onToggle }: any) => {
           </div>
           <span
             className={`font-bold text-lg tracking-tight transition-colors ${
-              isOpen ? "text-[#F3056D]" : "text-gray-800"
+              isOpen ? "text-[#214187]" : "text-gray-800"
             }`}
           >
             {title}
@@ -585,7 +661,7 @@ const MobileNavDropdown = ({ title, icon, items, isOpen, onToggle }: any) => {
         <div
           className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 relative z-10 ${
             isOpen
-              ? "bg-[#F3056D] text-white rotate-180"
+              ? "bg-[#214187] text-white rotate-180"
               : "bg-gray-100 text-gray-500 group-hover:bg-[#214187] group-hover:text-white"
           }`}
         >
@@ -603,10 +679,20 @@ const MobileNavDropdown = ({ title, icon, items, isOpen, onToggle }: any) => {
           {items.map((item: any, idx: number) => (
             <Link
               key={idx}
-              href={`${isBangla ? "/bn/coursedetails" : "/en//coursedetails"}`}
-              className="group/link block pl-4 pr-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:text-[#F3056D] bg-white hover:bg-[#FFF0F7] border border-transparent hover:border-[#F3056D]/10 transition-all duration-200 flex items-center justify-between"
+              href={`/${isBangla ? "/bn" : "en"}/courses`}
+              onClick={() => {
+                /* Add handler to close parent if needed */
+              }}
+              className="group/link block pl-4 pr-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:text-[#214187] bg-white hover:bg-[#F0F4FF] border border-transparent hover:border-[#214187]/10 transition-all duration-200 flex items-center justify-between"
             >
-              <span>{item.title}</span>
+              <div>
+                <span className="font-bold text-gray-800 block">
+                  {item.title}
+                </span>
+                <span className="text-xs text-gray-500 block mt-1">
+                  {item.description}
+                </span>
+              </div>
               <ArrowRight
                 size={14}
                 className="opacity-0 -translate-x-2 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all duration-300"

@@ -634,7 +634,8 @@ const SignUpPage = () => {
                 alt="Slide"
                 width={500}
                 height={500}
-                className="w-full h-full object-cover"
+                loading="eager"
+                className="w-full h-auto object-cover"
               />
             </div>
           </div>

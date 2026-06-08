@@ -23,19 +23,25 @@ const ImageSlider: React.FC = () => {
     { id: 5, src: "/gallary/4th.png", alt: "Group 4" },
     { id: 6, src: "/gallary/5th.png", alt: "Group 5" },
     { id: 7, src: "/gallary/6th.jpg", alt: "Group 6" },
+    { id: 8, src: "/gallary/7.jpg", alt: "Group 7" },
+    { id: 9, src: "/gallary/8.jpg", alt: "Group 8" },
+    { id: 10, src: "/gallary/9.jpg", alt: "Group 9" },
+    { id: 11, src: "/gallary/10.jpg", alt: "Group 10" },
   ];
 
   // --- ARRAY 2: FOR THE SECOND SLIDER (Right to Left) ---
   // TODO: Update the 'src' paths below with your actual second row images
   const secondRowImages = [
     { id: 11, src: "/gallary/downfirst.jpg", alt: "Second Row Group 1" },
-    { id: 12, src: "/gallary/29th.jpg", alt: "Second Row Group 2" },
-    { id: 13, src: "/gallary/28th.jpg", alt: "Second Row Group 3" },
-    { id: 14, src: "/gallary/27t.jpg", alt: "Second Row Group 4" },
-    { id: 15, src: "/gallary/26th.jpg", alt: "Second Row Group 5" },
-    { id: 17, src: "/gallary/25th.jpg", alt: "Second Row Group 6" },
-    { id: 18, src: "/gallary/24th.jpg", alt: "Second Row Group 6" },
-    { id: 19, src: "/gallary/23th.jpg", alt: "Second Row Group 6" },
+    { id: 12, src: "/gallary/29.jpg", alt: "Second Row Group 2" },
+    { id: 13, src: "/gallary/28.jpg", alt: "Second Row Group 3" },
+    { id: 14, src: "/gallary/27.jpg", alt: "Second Row Group 4" },
+    { id: 15, src: "/gallary/26.jpg", alt: "Second Row Group 5" },
+    { id: 17, src: "/gallary/25.jpg", alt: "Second Row Group 6" },
+    { id: 18, src: "/gallary/24.jpg", alt: "Second Row Group 6" },
+    { id: 19, src: "/gallary/23.jpg", alt: "Second Row Group 6" },
+    { id: 20, src: "/gallary/22.jpg", alt: "Second Row Group 7" },
+    { id: 21, src: "/gallary/21.jpg", alt: "Second Row Group 7" },
   ];
 
   return (

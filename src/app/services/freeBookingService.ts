@@ -12,20 +12,22 @@ interface BookingData {
   course: string;
 }
 
+const FREE_BOOKING_PATH = "/api/freebookingprops";
+
 // 1. Create Booking
 export const createBooking = async (bookingData: BookingData) => {
-  const response = await axiosInstance.post("/freebookingprops", bookingData);
+  const response = await axiosInstance.post(FREE_BOOKING_PATH, bookingData);
   return response.data;
 };
 
 // 2. Get All Bookings
 export const getAllBookings = async () => {
-  const response = await axiosInstance.get("/freebookingprops");
+  const response = await axiosInstance.get(FREE_BOOKING_PATH);
   return response.data;
 };
 
 // 3. Delete Booking
 export const deleteBooking = async (id: string) => {
-  const response = await axiosInstance.delete(`/freebookingprops/${id}`);
+  const response = await axiosInstance.delete(`${FREE_BOOKING_PATH}/${id}`);
   return response.data;
 };

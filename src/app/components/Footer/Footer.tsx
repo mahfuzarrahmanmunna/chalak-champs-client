@@ -40,7 +40,7 @@ const Footer = () => {
                 <div className="text-[#1777F2] bg-[#1777F21A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
                   {/* facebook */}
                   <a
-                    href="https://www.facebook.com/chalakchampsbd"
+                    href="https://www.facebook.com/chalakchamps"
                     target="_blank"
                   >
                     <FaFacebookF size={18} />
@@ -81,7 +81,7 @@ const Footer = () => {
                 </div>
 
                 <div className="text-[#1777F2] bg-[#448AFF1A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
-                  <Link href="https://m.me/chalakchampsbd" target="_blank">
+                  <Link href="https://m.me/chalakchamps" target="_blank">
                     <FaFacebookMessenger size={18} />
                   </Link>
                 </div>

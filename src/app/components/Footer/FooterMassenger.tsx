@@ -33,7 +33,7 @@ const FooterMassenger = () => {
 
         {/* Messenger Option */}
         <a
-          href="https://m.me/chalakchampsbd"
+          href="https://m.me/chalakchamps"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 group/msg"

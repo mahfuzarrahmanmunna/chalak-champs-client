@@ -152,12 +152,19 @@ export default function CoursesClient() {
       // Transform bilingual structures into backend-friendly shapes
       // Title and heroSubtitle: send English string (backend expects string)
       formData.append("title", data.title?.en || "");
-      
-      const heroFallback = data.heroSubtitle?.en?.trim() || stripHtml(data.contentEn || "").slice(0, 160) || data.title?.en || "Course subtitle";
+
+      const heroFallback =
+        data.heroSubtitle?.en?.trim() ||
+        stripHtml(data.contentEn || "").slice(0, 160) ||
+        data.title?.en ||
+        "Course subtitle";
       formData.append("heroSubtitle", heroFallback);
 
       // description is required by backend — prefer heroSubtitle or fall back to plain-text from contentEn
-      const descriptionText = data.heroSubtitle?.en?.trim() || stripHtml(data.contentEn || "").slice(0, 300) || "Course description";
+      const descriptionText =
+        data.heroSubtitle?.en?.trim() ||
+        stripHtml(data.contentEn || "").slice(0, 300) ||
+        "Course description";
       formData.append("description", descriptionText);
 
       // quickInfo: backend expects string[] -> send English entries
@@ -176,9 +183,15 @@ export default function CoursesClient() {
         title: lvl.title?.en || "",
         description: lvl.description?.en || "",
         targetAudience: lvl.target?.en || "",
-        topics: typeof lvl.topics === "string" && lvl.topics.length
-          ? lvl.topics.split(",").map((t: string) => t.trim()).filter(Boolean)
-          : Array.isArray(lvl.topics) ? lvl.topics : [],
+        topics:
+          typeof lvl.topics === "string" && lvl.topics.length
+            ? lvl.topics
+                .split(",")
+                .map((t: string) => t.trim())
+                .filter(Boolean)
+            : Array.isArray(lvl.topics)
+              ? lvl.topics
+              : [],
       }));
       formData.append("levels", JSON.stringify(levelsMapped));
 

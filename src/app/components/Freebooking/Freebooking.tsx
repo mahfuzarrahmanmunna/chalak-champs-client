@@ -6,8 +6,6 @@ import { Phone, User, ChevronDown, Search } from "lucide-react";
 import Image from "next/image";
 import { createBooking } from "@/app/services/freeBookingService";
 import { useBooking } from "@/app/providers/BookingProvider";
-import { toast } from "react-toastify"; // <--- IMPORT TOASTIFY
-import "react-toastify/dist/ReactToastify.css"; // <--- IMPORT CSS
 
 interface Country {
   name: string;
@@ -18,8 +16,8 @@ interface Country {
 
 const Freebooking: React.FC = () => {
   // --- USE CONTEXT ---
-  // Removed 'toast' from here as we use the library directly now
-  const { isOpen, closeBooking } = useBooking();
+  // Use booking provider toast instead of react-toastify
+  const { isOpen, closeBooking, toast } = useBooking();
   const { colors } = useTheme();
 
   const phoneNumber = "01740176774";
@@ -122,18 +120,8 @@ const Freebooking: React.FC = () => {
         const response = await createBooking(payload);
 
         if (response.success) {
-          // Use Animated Toast Success
-          toast.success("ডেমো ক্লাস বুক সফলভাবে সম্পন্ন হয়েছে!", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-          });
-          closeBooking(); // Close modal
+          toast("ডেমো ক্লাস বুক সফলভাবে সম্পন্ন হয়েছে!", "success");
+          closeBooking();
           setFormData({
             studentName: "",
             guardianName: "",
@@ -142,31 +130,11 @@ const Freebooking: React.FC = () => {
             course: "",
           });
         } else {
-          // Use Animated Toast Error
-          toast.error(response.message || "Submission failed", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-          });
+          toast(response.message || "Submission failed", "error");
         }
       } catch (error: any) {
         console.error("Submission Error:", error);
-        // Use Animated Toast Error
-        toast.error("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
+        toast("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।", "error");
       } finally {
         setIsSubmitting(false);
       }
@@ -214,6 +182,7 @@ const Freebooking: React.FC = () => {
             width={60}
             height={80}
             alt="live Icon"
+            className="w-auto h-auto"
           />
         </div>
         {/* Header / Close Button */}

@@ -12,4 +12,4 @@ Allow: *.css
 Allow: *.js
 
 # Sitemap
-Sitemap: https://chalakchamps.vercel.app/sitemap.xml
+Sitemap: https://chalakchamps.com/sitemap.xml

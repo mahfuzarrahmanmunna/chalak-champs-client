@@ -3,9 +3,16 @@
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react"; 
+import Link from "next/link";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const AddsCard = () => {
   const [isVisible, setIsVisible] = useState(false);
+    const context = useLanguage();
+  
+      // Fallback values in case context is undefined
+      const t = context?.t || {};
+      const isBangla = context?.isBangla || false;
 
   useEffect(() => {
     const isClosed = localStorage.getItem("adClosed");
@@ -32,13 +39,15 @@ const AddsCard = () => {
       </button>
 
       <figure className="p-0.5 md:rounded-[51px] overflow-hidden">
-        <Image
-          src={"/videoimg.png"}
-          alt="Adds section image"
-          width={1073}
-          height={365}
-          className="w-full h-auto rounded-4xl md:rounded-[51px] border-2 border-[#FF8FCA]"
-        />
+        <Link href={`${isBangla ? "/bn/coursedetails" : "/en/coursedetails"}`}>
+          <Image
+            src={"/videoimg.png"}
+            alt="Adds section image"
+            width={1073}
+            height={365}
+            className="w-full h-auto rounded-4xl md:rounded-[51px] border-2 border-[#FF8FCA]"
+          />
+        </Link>
       </figure>
     </section>
   );

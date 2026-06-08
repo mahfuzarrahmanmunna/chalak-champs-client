@@ -83,3 +83,27 @@
 //   isOpen={activeMobileDropdown === "courses"}
 //   onToggle={() => handleMobileDropdownClick("courses")}
 // />;
+
+
+
+
+                // <MobileNavDropdown
+                //   title={t?.kidsEnglish || "Kids English"}
+                //   icon={<Smile size={22} />}
+                //   items={
+                //     menuData.kids.length > 0
+                //       ? menuData.kids
+                //       : [
+                //           {
+                //             title: "Online",
+                //             description: "Fun learning for toddlers",
+                //           },
+                //           {
+                //             title: "Offline",
+                //             description: "Grammar and vocabulary",
+                //           },
+                //         ]
+                //   }
+                //   isOpen={activeMobileDropdown === "kids"}
+                //   onToggle={() => handleMobileDropdownClick("kids")}
+                // />

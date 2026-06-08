@@ -186,7 +186,7 @@ export default function CoursesPage() {
       </section>
 
       {/* --- STATS SECTION --- */}
-      <CourseStats totalCourses={totalCourses} studentsCount={studentsCount} />
+      {/* <CourseStats totalCourses={totalCourses} studentsCount={studentsCount} /> */}
     </div>
   );
 }

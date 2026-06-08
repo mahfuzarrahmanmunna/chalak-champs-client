@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Providers from "../providers/Providers";
+import Providers from "../providers/Providers"; // Ensure this path matches your project structure
 
 // SEO: Generate metadata based on the current language
 export async function generateMetadata({
@@ -9,11 +9,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.vercel.app";
+    process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.com";
 
   const bnTitle = "চালাক চ্যাম্পস - আনন্দের সাথে ইংরেজি শিখুন";
   const bnDesc =
-    "চালাক চ্যাম্পস হলো বাংলাদেশের #১ স্কিল-ভিত্তি কিডস লার্নিং প্লাটফর্ম; যেখানে ৩ থেকে ১৫ বছর বয়সী শিশুদের জন্য রয়েছে Spoken English, Abacus Mind Math, Drawing, Programming, Quran Learning সহ আরও অনেক কোর্স।";
+    "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।";
   const enTitle = "Chalak Champs - Learn English with Fun";
   const enDesc =
     "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.";
@@ -30,6 +30,7 @@ export async function generateMetadata({
         bn: `${siteUrl}/bn`,
       },
     },
+
     // --- SEO: OPEN GRAPH ---
     openGraph: {
       type: "website",
@@ -40,10 +41,13 @@ export async function generateMetadata({
       description: lang === "bn" ? bnDesc : enDesc,
       images: [
         {
-          url: `${siteUrl}/icon.png`,
+          // FIX: Changed from icon.png to homecover.jpg
+          // IMPORTANT: Ensure you have a file named 'homecover.jpg' in your 'public' folder
+          // with dimensions 1200px x 630px.
+          url: `${siteUrl}/homecover.jpg`,
           width: 1200,
           height: 630,
-          alt: "Chalak Champs Logo",
+          alt: "Chalak Champs Social Media Cover",
         },
       ],
     },
@@ -53,7 +57,8 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: lang === "bn" ? bnTitle : enTitle,
       description: lang === "bn" ? bnDesc : enDesc,
-      images: [`${siteUrl}/icon.png`],
+      // FIX: Changed from icon.png to homecover.jpg
+      images: [`${siteUrl}/homecover.jpg`],
     },
 
     // --- SEO: JSON-LD STRUCTURED DATA ---
@@ -65,7 +70,7 @@ export async function generateMetadata({
             "@type": "Organization",
             name: "Chalak Champs",
             url: siteUrl,
-            logo: `${siteUrl}/icon.png`,
+            logo: `${siteUrl}/icon.png`, // It is okay to use icon.png here for the logo schema
             sameAs: [
               "https://www.facebook.com/chalakchamps",
               "https://www.linkedin.com/company/chalakchamps",
@@ -102,9 +107,9 @@ export async function generateMetadata({
   };
 }
 
-export const generateStaticParams = () => {
+export async function generateStaticParams() {
   return [{ lang: "en" }, { lang: "bn" }];
-};
+}
 
 export default async function LocaleLayout({
   children,

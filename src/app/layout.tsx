@@ -17,16 +17,26 @@ const googleSans = Open_Sans({
   display: "swap",
 });
 
-// FIX: Ensure metadataBase resolves correctly on all environments
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.com";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Chalak Champs - Learn English with Fun",
-  description:
-    "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.",
 
+  // --- Core SEO ---
+  title: "চালক Champs | Be clever, Be a champ",
+  description:
+    "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
+
+  // --- Multilingual SEO (Crucial for /en and /bn) ---
+  alternates: {
+    canonical: "./",
+    languages: {
+      en: `${siteUrl}/en`,
+      bn: `${siteUrl}/bn`,
+    },
+  },
+
+  // --- Icons (Keep for tabs, but these are NOT for social sharing cards) ---
   icons: {
     icon: "/icon.png",
     shortcut: "/icon.png",
@@ -34,31 +44,34 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
 
+  // --- Open Graph (Facebook, Messenger, WhatsApp, LinkedIn) ---
   openGraph: {
     type: "website",
     locale: "en_US",
     url: siteUrl,
     siteName: "Chalak Champs",
-    title: "Chalak Champs - Learn English with Fun",
+    title: "চালক Champs | Be clever, Be a champ",
     description:
-      "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.",
+      "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
     images: [
       {
-        url: "/icon.png",
+        // FIX: Use absolute URL to ensure scrapers find the image
+        url: `${siteUrl}/homecover.jpg`,
         width: 1200,
         height: 630,
-        alt: "Chalak Champs Logo",
+        alt: "Chalak Champs Social Cover",
       },
     ],
   },
 
-  // FIX 3: Twitter Sharing added properly
+  // --- Twitter Card ---
   twitter: {
     card: "summary_large_image",
-    title: "Chalak Champs - Learn English with Fun",
+    title: "চালক Champs | Be clever, Be a champ",
     description:
-      "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.",
-    images: ["/icon.png"],
+      "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
+    // FIX: Absolute URL
+    images: [`${siteUrl}/homecover.jpg`],
   },
 };
 
@@ -68,15 +81,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // suppressHydrationWarning is useful when switching lang dynamically
     <html lang="en" data-theme="light" suppressHydrationWarning>
       <head>
-        {/* --- SEO FAVICONS --- */}
+        {/* Favicon links are fine here */}
         <link rel="icon" href="/icon.png" type="image/png" sizes="32x32" />
         <link rel="apple-touch-icon" href="/icon.png" sizes="180x180" />
-
-        {/* --- SEO METADATA --- */}
         <link rel="manifest" href="/manifest.json" />
+
         <meta name="theme-color" content="#ec4899" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -85,8 +96,7 @@ export default function RootLayout({
           content="black-translucent"
         />
 
-        {/* --- GOOGLE VERIFICATION --- */}
-        {/* Replace 'your-google-code' with actual verification code */}
+        {/* --- VERIFICATION --- */}
         <meta name="google-site-verification" content="your-google-code" />
       </head>
       <body
