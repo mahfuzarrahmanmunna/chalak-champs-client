@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Hind_Siliguri, Open_Sans } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
-// Configure Fonts
+// --- Configure Fonts ---
 const hindSiliguri = Hind_Siliguri({
   subsets: ["bengali", "latin"],
   weight: ["300", "400", "500", "600", "700"],
@@ -19,24 +20,52 @@ const googleSans = Open_Sans({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.com";
 
+// --- Root Metadata ---
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 
-  // --- Core SEO ---
+  // CORE SEO
   title: "চালক Champs | Be clever, Be a champ",
   description:
     "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
 
-  // --- Multilingual SEO (Crucial for /en and /bn) ---
+  keywords: [
+    "চালক চ্যাম্পস",
+    "Chalak Champs",
+    "kids education",
+    "child development",
+    "Bangla education",
+    "math for kids",
+  ],
+  category: "Education",
+
+  // LANGUAGE & INDEXING
   alternates: {
-    canonical: "./",
+    canonical: siteUrl,
     languages: {
       en: `${siteUrl}/en`,
       bn: `${siteUrl}/bn`,
     },
   },
 
-  // --- Icons (Keep for tabs, but these are NOT for social sharing cards) ---
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+
+  verification: {
+    google: "YOUR_GOOGLE_SEARCH_CONSOLE_CODE",
+  },
+
+  authors: [{ name: "Chalak Champs", url: siteUrl }],
+
   icons: {
     icon: "/icon.png",
     shortcut: "/icon.png",
@@ -44,18 +73,17 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
 
-  // --- Open Graph (Facebook, Messenger, WhatsApp, LinkedIn) ---
+  // SOCIAL MEDIA (Fallback for root)
   openGraph: {
     type: "website",
-    locale: "en_US",
     url: siteUrl,
     siteName: "Chalak Champs",
+    locale: "bn_BD",
     title: "চালক Champs | Be clever, Be a champ",
     description:
       "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
     images: [
       {
-        // FIX: Use absolute URL to ensure scrapers find the image
         url: `${siteUrl}/homecover.jpg`,
         width: 1200,
         height: 630,
@@ -64,44 +92,49 @@ export const metadata: Metadata = {
     ],
   },
 
-  // --- Twitter Card ---
   twitter: {
     card: "summary_large_image",
     title: "চালক Champs | Be clever, Be a champ",
     description:
-      "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
-    // FIX: Absolute URL
+      "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
     images: [`${siteUrl}/homecover.jpg`],
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  // --- Root Level Structured Data ---
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "চালক Champs",
+    alternateName: "Chalak Champs",
+    url: siteUrl,
+    description:
+      "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
-      <head>
-        {/* Favicon links are fine here */}
-        <link rel="icon" href="/icon.png" type="image/png" sizes="32x32" />
-        <link rel="apple-touch-icon" href="/icon.png" sizes="180x180" />
-        <link rel="manifest" href="/manifest.json" />
-
-        <meta name="theme-color" content="#ec4899" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta
-          name="apple-mobile-web-app-status-bar-style"
-          content="black-translucent"
-        />
-
-        {/* --- VERIFICATION --- */}
-        <meta name="google-site-verification" content="your-google-code" />
-      </head>
+    <html lang="bn" data-theme="light">
       <body
-        className={`${hindSiliguri.variable} ${googleSans.variable} font-sans antialiased bg-base-100 text-black dark:text-white`}
+        className={`${hindSiliguri.variable} ${googleSans.variable} font-sans antialiased`}
       >
+        <Script
+          id="structured-data-root"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {children}
       </body>
     </html>

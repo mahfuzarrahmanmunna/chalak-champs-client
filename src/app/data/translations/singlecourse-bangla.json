@@ -168,11 +168,11 @@
     {
       "type": "video",
       "src": "https://www.youtube.com/watch?v=i4133PHXXzM",
-      "poster": "/video-poster.jpg"
+      "poster": "/courses.png"
     },
     {
       "type": "image",
-      "src": "/course-image-2.jpg"
+      "src": "/courses.png"
     }
   ]
 }

@@ -1,0 +1,62 @@
+{
+  "hero": {
+    "title": "Our Instructors",
+    "subtitle": "Chalak Champs — Instructor Profiles",
+    "description": "Meet the dedicated team of experts guiding your child's journey to success with passion and care.",
+    "searchPlaceholder": "Search for an instructor...",
+    "allBtn": "All Instructors",
+    "teamBtn1": "English Team",
+    "teamBtn2": "Art Team"
+  },
+  "instructors": [
+    {
+      "id": 1,
+      "name": "Nafis Shahriar",
+      "role": "Applied Linguistics & ELT",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "Nafis Shahriar is currently pursuing a BA in Applied Linguistics and ELT. He focuses on clarity, consistency, and practical communication rather than memorization-based learning."
+    },
+    {
+      "id": 2,
+      "name": "Mahmuda Shawal",
+      "role": "MA in English",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "Mahmuda Shawal has completed her MA in English. She focuses on creating a positive classroom environment where students can naturally improve their confidence and creativity."
+    },
+    {
+      "id": 3,
+      "name": "Shanjida Afroz",
+      "role": "Literature & Linguistics",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "Shanjida Afroz is pursuing a BA in English Literature and Linguistics. She emphasizes practical speaking, classroom interaction, and confidence-building for real-life communication."
+    },
+    {
+      "id": 4,
+      "name": "Rubina Akther",
+      "role": "SMUCT Student",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "Rubina Akther is studying at Shanto-Mariam University. Her teaching style focuses on helping students develop clear pronunciation and strong foundational skills."
+    },
+    {
+      "id": 5,
+      "name": "Jannatul Ferdows",
+      "role": "English Undergraduate",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "Jannatul Ferdows is pursuing undergraduate studies in English. She believes consistent encouragement and interactive learning play an important role in student motivation."
+    },
+    {
+      "id": 6,
+      "name": "Shahrin Sultana Dristy",
+      "role": "Lead Instructor",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "Shahrin Sultana Dristy is a graduate with 3.5 years of experience. Her classroom approach focuses on leadership, communication, and skill development."
+    },
+    {
+      "id": 7,
+      "name": "Azwad Akhlak",
+      "role": "Art & English Instructor",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "Azwad Akhlak has over 10 years of experience in art instruction. His teaching approach focuses on imagination, visual creativity, and helping children express ideas confidently through art."
+    }
+  ]
+}

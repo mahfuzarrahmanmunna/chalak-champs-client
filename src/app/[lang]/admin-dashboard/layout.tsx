@@ -125,9 +125,9 @@ export default function AdminDashboardLayout({
         },
         {
           name: t.lessons || "Lessons",
-          href: "/en/admin-dashboard/lessons",
+          href: "/en/admin-dashboard/courses/manage-lessons",
           icon: BookOpenIcon,
-          current: pathname === "/en/admin-dashboard/lessons",
+          current: pathname === "/en/admin-dashboard/courses/manage-lessons",
         },
         {
           name: t.content || "Content",

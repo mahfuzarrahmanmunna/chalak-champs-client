@@ -297,7 +297,7 @@ export const mockReviews: Review[] = [
   {
     id: "1",
     userId: "user1",
-    userName: "John Smith",
+    userName: "Your NameSmith",
     userAvatar: "https://randomuser.me/api/portraits/men/32.jpg",
     rating: 5,
     comment:

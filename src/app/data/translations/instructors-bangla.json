@@ -1,0 +1,62 @@
+{
+  "hero": {
+    "title": "আমাদের ইন্সট্রাক্টরগণ",
+    "subtitle": "চালাক চ্যাম্পস — ইন্সট্রাক্টর প্রোফাইল",
+    "description": "আপনার সন্তানের সাফল্যের পথচলায় নির্দেশনা দেওয়া অভিজ্ঞ দলের সাথে পরিচিত হোন।",
+    "searchPlaceholder": "ইন্সট্রাক্টর খুঁজুন...",
+    "allBtn": "সব ইন্সট্রাক্টর",
+    "teamBtn1": "ইংরেজি টিম",
+    "teamBtn2": "আর্ট টিম"
+  },
+  "instructors": [
+    {
+      "id": 1,
+      "name": "নাফিস শাহরিয়ার",
+      "role": "Applied Linguistics & ELT",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "নাফিস শাহরিয়ার বর্তমানে Applied Linguistics and ELT বিষয়ে স্নাতক অধ্যয়ন করছেন। তার শেখানোর পদ্ধতিতে মুখস্থনির্ভর শিক্ষার পরিবর্তে গুরুত্ব পায় স্পষ্টভাবে শেখানো, ধারাবাহিক চর্চা এবং Practical Communication।"
+    },
+    {
+      "id": 2,
+      "name": "মাহমুদা শাওয়াল",
+      "role": "MA in English",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "মাহমুদা শাওয়াল ইংরেজি বিষয়ে MA সম্পন্ন করেছেন। তিনি এমন একটি ইতিবাচক Learning Environment তৈরিতে গুরুত্ব দেন যেখানে শিক্ষার্থীরা স্বাভাবিকভাবে নিজেদের Confidence উন্নত করতে পারে।"
+    },
+    {
+      "id": 3,
+      "name": "শানজিদা আফরোজ",
+      "role": "Literature & Linguistics",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "শানজিদা আফরোজ বর্তমানে English Literature and Linguistics বিষয়ে স্নাতক অধ্যয়ন করছেন। তিনি Practical Speaking, Classroom Interaction এবং Confidence-Building-এর উপর গুরুত্ব দেন।"
+    },
+    {
+      "id": 4,
+      "name": "রুবিনা আক্তার",
+      "role": "SMUCT Student",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "রুবিনা আক্তার বর্তমানে Shanto-Mariam University-এ ৩য় বর্ষে অধ্যয়নরত। তার Teaching Style শিক্ষার্থীদের Clear Pronunciation এবং Strong Foundation গড়ে তুলতে সহায়তা করে।"
+    },
+    {
+      "id": 5,
+      "name": "জান্নাতুল ফেরদৌস",
+      "role": "English Undergraduate",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "জান্নাতুল ফেরদৌস বর্তমানে ইংরেজি বিষয়ে স্নাতক অধ্যয়ন করছেন। তিনি বিশ্বাস করেন ধারাবাহিক উৎসাহ এবং Interactive Learning শিক্ষার্থীদের আত্মবিশ্বাসী করে তুলতে গুরুত্বপূর্ণ ভূমিকা রাখে।"
+    },
+    {
+      "id": 6,
+      "name": "শাহরিন সুলতানা দৃষ্টি",
+      "role": "Lead Instructor",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "শাহরিন সুলতানা দৃষ্টি একজন গ্র্যাজুয়েট এবং তার রয়েছে প্রায় ৩.৫ বছরের Teaching Experience। তার Classroom Approach শিক্ষার্থীদের Leadership এবং Skill Development-এ সহায়তা করে।"
+    },
+    {
+      "id": 7,
+      "name": "আজওয়াদ আখলাক",
+      "role": "Art & English Instructor",
+      "image": "https://i.pinimg.com/736x/d4/95/5e/d4955e04bfa7e361fd069213db40e671.jpg",
+      "description": "আজওয়াদ আখলাক বর্তমানে BA (Hons.) in English অধ্যয়ন করছেন এবং Art & Drawing Instruction-এ তার রয়েছে ১০ বছরেরও বেশি অভিজ্ঞতা। তার Teaching Approach শিশুদের কল্পনাশক্তি এবং Visual Creativity গড়ে তোলার উপর গুরুত্ব দেয়।"
+    }
+  ]
+}

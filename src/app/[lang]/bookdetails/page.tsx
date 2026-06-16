@@ -798,7 +798,7 @@ export default function BookDetailsPage() {
                     <input
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F3056D] focus:border-transparent outline-none transition-shadow"
-                      placeholder="John Doe"
+                      placeholder="Your NameDoe"
                     />
                   </div>
                   <div>

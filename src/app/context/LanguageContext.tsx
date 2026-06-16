@@ -50,6 +50,10 @@ import singlecourseBangla from "../data/translations/singlecourse-bangla.json";
 import aboutUsEnglish from "../data/translations/aboutus-english.json";
 import aboutUsBangla from "../data/translations/aboutus-bangla.json";
 
+import instructorsEnglish from "../data/translations/instructors-english.json";
+import instructorsBangla from "../data/translations/instructors-bangla.json";
+
+
 // Types
 type Translations = {
   [key: string]: string | Translations;
@@ -361,6 +365,23 @@ export interface SingleCourseData {
   };
 }
 
+
+export interface InstructorsData {
+  hero: {
+    title: string;
+    subtitle: string;
+    ctaText: string;
+  };
+  instructors: Array<{
+    id: number;
+    name: string;
+    role: string;
+    image: string;
+    description: string;
+  }>;
+}
+
+
 type LanguageContextType = {
   isBangla: boolean;
   currentLang: "en" | "bn";
@@ -381,6 +402,7 @@ type LanguageContextType = {
   // Added singleCourseData to context type
   singleCourseData: SingleCourseData;
   aboutUsData: AboutUsData;
+  instructorsData: InstructorsData;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -413,6 +435,10 @@ const getLanguageData = (isBangla: boolean) => {
   const offline = (
     isBangla ? offlineBangla : offlineEnglish
   ) as OfflineCoursesData;
+
+  const instructors = (
+    isBangla ? instructorsBangla : instructorsEnglish
+  ) as InstructorsData;
 
   const courses = (isBangla ? coursesBangla : coursesEnglish) as CoursesData;
 
@@ -453,6 +479,7 @@ const getLanguageData = (isBangla: boolean) => {
     footer,
     singleCourse, // Return single course data
     aboutUs,
+    instructors,
   };
 };
 
@@ -488,6 +515,7 @@ export const LanguageProvider = ({
     footer,
     singleCourse,
     aboutUs,
+    instructors,
   } = useMemo(() => {
     return getLanguageData(isBangla);
   }, [isBangla]);
@@ -549,6 +577,7 @@ export const LanguageProvider = ({
         footerData: footer || ({} as FooterData),
         singleCourseData: singleCourse || ({} as SingleCourseData), // Provide to context
         aboutUsData: aboutUs || ({} as AboutUsData),
+        instructorsData: instructors || ({} as InstructorsData),
       }}
     >
       {children}

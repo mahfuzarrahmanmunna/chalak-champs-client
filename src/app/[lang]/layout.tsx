@@ -1,29 +1,63 @@
 import type { Metadata } from "next";
-import Providers from "../providers/Providers"; // Ensure this path matches your project structure
+import Script from "next/script";
+import Providers from "../providers/Providers";
 
-// SEO: Generate metadata based on the current language
+// NOTE: If you are using Next.js 15, params is a Promise.
+// You will need to use: const { lang } = await params;
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
+  // MUST AWAIT PARAMS in Next.js 15
   const { lang } = await params;
+
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.com";
 
-  const bnTitle = "চালাক চ্যাম্পস - আনন্দের সাথে ইংরেজি শিখুন";
+  const coverImage = `${siteUrl}/homecover.jpg`;
+
+  const bnTitle = "চালক Champs | Be clever, Be a champ";
   const bnDesc =
     "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।";
-  const enTitle = "Chalak Champs - Learn English with Fun";
+
+  const enTitle = "Chalak Champs | Be clever, Be a champ";
   const enDesc =
     "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.";
 
-  return {
-    title: lang === "bn" ? bnTitle : enTitle,
-    description: lang === "bn" ? bnDesc : enDesc,
+  const isBn = lang === "bn";
 
-    // --- SEO: ALTERNATES & CANONICAL ---
+  return {
+    title: isBn ? bnTitle : enTitle,
+    description: isBn ? bnDesc : enDesc,
+
+    metadataBase: new URL(siteUrl),
+
+    keywords: isBn
+      ? ["শিশুদের শিক্ষা", "গণিত", "ভাষা", "Chalak Champs", "Kids Education"]
+      : [
+          "kids education",
+          "child development",
+          "English learning",
+          "Chalak Champs",
+          "math for kids",
+        ],
+
+    authors: [{ name: "Chalak Champs", url: siteUrl }],
+
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+      },
+    },
+
     alternates: {
+      // This was causing /undefined because 'lang' was undefined
       canonical: `${siteUrl}/${lang}`,
       languages: {
         en: `${siteUrl}/en`,
@@ -31,20 +65,18 @@ export async function generateMetadata({
       },
     },
 
-    // --- SEO: OPEN GRAPH ---
     openGraph: {
       type: "website",
-      locale: lang === "bn" ? "bn_BD" : "en_US",
+      locale: isBn ? "bn_BD" : "en_US",
+      // This was also causing /undefined
       url: `${siteUrl}/${lang}`,
       siteName: "Chalak Champs",
-      title: lang === "bn" ? bnTitle : enTitle,
-      description: lang === "bn" ? bnDesc : enDesc,
+      title: isBn ? bnTitle : enTitle,
+      description: isBn ? bnDesc : enDesc,
+
       images: [
         {
-          // FIX: Changed from icon.png to homecover.jpg
-          // IMPORTANT: Ensure you have a file named 'homecover.jpg' in your 'public' folder
-          // with dimensions 1200px x 630px.
-          url: `${siteUrl}/homecover.jpg`,
+          url: coverImage,
           width: 1200,
           height: 630,
           alt: "Chalak Champs Social Media Cover",
@@ -52,57 +84,15 @@ export async function generateMetadata({
       ],
     },
 
-    // --- SEO: TWITTER ---
     twitter: {
       card: "summary_large_image",
-      title: lang === "bn" ? bnTitle : enTitle,
-      description: lang === "bn" ? bnDesc : enDesc,
-      // FIX: Changed from icon.png to homecover.jpg
-      images: [`${siteUrl}/homecover.jpg`],
+      title: isBn ? bnTitle : enTitle,
+      description: isBn ? bnDesc : enDesc,
+      images: [coverImage],
     },
 
-    // --- SEO: JSON-LD STRUCTURED DATA ---
     other: {
-      "application/ld+json": JSON.stringify({
-        "@context": "https://schema.org",
-        "@graph": [
-          {
-            "@type": "Organization",
-            name: "Chalak Champs",
-            url: siteUrl,
-            logo: `${siteUrl}/icon.png`, // It is okay to use icon.png here for the logo schema
-            sameAs: [
-              "https://www.facebook.com/chalakchamps",
-              "https://www.linkedin.com/company/chalakchamps",
-            ],
-            contactPoint: {
-              "@type": "ContactPoint",
-              telephone: "+880174017674",
-              contactType: "Customer Service",
-              areaServed: "BD",
-              availableLanguage: ["English", "Bengali", "Hindi"],
-            },
-          },
-          {
-            "@type": "WebSite",
-            url: `${siteUrl}/${lang}`,
-            name: "Chalak Champs",
-            description: lang === "bn" ? bnDesc : enDesc,
-            publisher: {
-              "@type": "Organization",
-              name: "Chalak Champs",
-            },
-            potentialAction: {
-              "@type": "SearchAction",
-              target: {
-                "@type": "EntryPoint",
-                urlTemplate: `${siteUrl}/search?q={search_term_string}`,
-              },
-              "query-input": "required name=search_term_string",
-            },
-          },
-        ],
-      }),
+      "fb:app_id": process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || "",
     },
   };
 }
@@ -120,9 +110,52 @@ export default async function LocaleLayout({
 }) {
   const { lang } = await params;
 
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.com";
+
+  // --- Dynamic Structured Data (JSON-LD) ---
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        name: "Chalak Champs",
+        url: siteUrl,
+        logo: `${siteUrl}/icon.png`,
+        sameAs: [
+          "https://www.facebook.com/chalakchamps",
+          "https://www.linkedin.com/company/chalakchamps",
+        ],
+      },
+      {
+        "@type": "WebSite",
+        url: `${siteUrl}/${lang}`,
+        name: lang === "bn" ? "চালক Champs" : "Chalak Champs",
+        description:
+          lang === "bn"
+            ? "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।"
+            : "Chalak Champs is an interactive English learning platform designed for children.",
+        inLanguage: lang,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${siteUrl}/${lang}/search?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
+      },
+    ],
+  };
+
   return (
-    // Providers wraps the children and handles NavHeader, Footer, etc.
-    // We pass the 'lang' from the URL to the Providers.
-    <Providers initialLang={lang}>{children}</Providers>
+    <>
+      <Script
+        id="structured-data-lang"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Providers initialLang={lang}>{children}</Providers>
+    </>
   );
 }

@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { useAuth } from "@/app/context/AuthContext"; // ADDED IMPORT
 
 // --- React Icons ---
 import {
@@ -84,6 +85,9 @@ const NavHeader = () => {
   const [activeMobileDropdown, setActiveMobileDropdown] = useState<
     string | null
   >(null);
+
+  // --- AUTH STATE (ADDED) ---
+  const { appUser } = useAuth();
 
   const context = useLanguage();
 
@@ -192,18 +196,11 @@ const NavHeader = () => {
           <div className="relative">
             <Link
               href={`/${isBangla ? "bn/courses" : "en/courses"}`}
-              // onClick={() => handleDropdownClick("courses")}
               className={`flex items-center font-medium flex gap-2 leading-auto tracking-[-2%] text-sm cursor-pointer transition-all ${
                 activeDropdown === "courses" ? "text-[#F3056D]" : "text-primary"
               }`}
             >
               <span>{t?.allCourses || "All Courses"}</span>
-              {/* <ChevronRight
-                size={16}
-                className={`transition-transform duration-300 ${
-                  activeDropdown === "courses" ? "rotate-90" : ""
-                }`}
-              /> */}
             </Link>
 
             {/* Desktop Dropdown Menu */}
@@ -213,7 +210,7 @@ const NavHeader = () => {
                   {t.menus?.courses?.map((course: any, index: number) => (
                     <Link
                       key={index}
-                      href={`/${isBangla ? "bn" : "en"}/courses`} // Adjust href if you have specific links for each course
+                      href={`/${isBangla ? "bn" : "en"}/courses`}
                       className="group flex flex-col p-3 rounded-xl hover:bg-blue-50/50 transition-all duration-200"
                     >
                       <span className="font-bold text-gray-800 group-hover:text-[#214187] text-sm">
@@ -276,8 +273,21 @@ const NavHeader = () => {
             </Button>
           </div>
 
-          {/* --- LOGIN BUTTON --- */}
-          <div>
+          {/* --- LOGIN / PROFILE BUTTON (UPDATED) --- */}
+          {appUser ? (
+            <Link href={`/${isBangla ? "bn" : "en"}/dashboard`}>
+              <Button
+                bgColor="#F3056D"
+                darkShadowColor="#F3066E"
+                highlightColor="#FF8FCA"
+                hoverTextColor="#F3056D"
+                px="px-3.5"
+                icon=<UserIcon />
+              >
+                {isBangla ? "প্রোফাইল" : "Profile"}
+              </Button>
+            </Link>
+          ) : (
             <Link href={`/${isBangla ? "bn" : "en"}/signin`}>
               <Button
                 bgColor="#F3056D"
@@ -290,7 +300,7 @@ const NavHeader = () => {
                 {t?.login || "Login"}
               </Button>
             </Link>
-          </div>
+          )}
         </div>
 
         {/* --- MOBILE TOGGLE BUTTON --- */}
@@ -378,7 +388,7 @@ const NavHeader = () => {
                 <div className="flex w-full">
                   <a
                     href="tel:01740176774"
-                    onClick={() => setIsMobileMenuOpen(false)} // Close on click
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <Button
                       className="w-full"
@@ -418,7 +428,7 @@ const NavHeader = () => {
                 <button
                   onClick={() => {
                     openBooking();
-                    setIsMobileMenuOpen(false); // Close on click
+                    setIsMobileMenuOpen(false);
                   }}
                   className="cursor-pointer px-5 leading-auto tracking-[-2%] relative py-3 w-full rounded-[50px] font-bold text-white transition-all duration-300 bg-[#F3056D] shadow-[inset_0_1.5px_0_0_#FF8FCA,0_1.5px_1.5px_0_rgba(243,6,110,0.3),0_0_0_1.5px#C6005F,0_3.01px_7.52px_0_rgba(243,6,110,0.3)] hover:bg-white hover:text-[#F3056D] hover:shadow-[0_1.5px_1.5px_0_rgba(243,6,110,0.2),0_0_0_1.5px#F3056D,0_3.01px_7.52px_0_rgba(243,6,110,0.1)]"
                 >
@@ -455,7 +465,7 @@ const NavHeader = () => {
               <div className="mb-8">
                 <Link
                   href={`${isBangla ? "/bn/coursedetails" : "/en/coursedetails"}`}
-                  onClick={() => setIsMobileMenuOpen(false)} // Close on click
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className="group block w-full"
                 >
                   <div className="relative overflow-hidden bg-white border border-gray-100 rounded-3xl p-6 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-all duration-300 group-hover:border-[#F3056D]/30 group-hover:shadow-[0_20px_50px_-12px_rgba(243,5,109,0.2)]">
@@ -499,7 +509,7 @@ const NavHeader = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-shrink-0"
-                    onClick={() => setIsMobileMenuOpen(false)} // Close on click
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <div className="text-[#1777F2] bg-[#1777F21A] h-10 w-10.5 flex items-center justify-center rounded-lg transition-transform hover:scale-105">
                       <FaFacebookF size={18} />
@@ -512,7 +522,7 @@ const NavHeader = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-shrink-0"
-                    onClick={() => setIsMobileMenuOpen(false)} // Close on click
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <div className="text-[#FE0000] bg-[#FE00001A] h-10 w-10.5 flex items-center justify-center rounded-lg transition-transform hover:scale-105">
                       <FaYoutube size={18} />
@@ -538,18 +548,6 @@ const NavHeader = () => {
                         <stop offset="100%" stopColor="#C837AB" />
                       </linearGradient>
                     </svg>
-                    <a
-                      href="#"
-                      className="block"
-                      onClick={() => setIsMobileMenuOpen(false)} // Close on click
-                    >
-                      <div className="bg-[#FFAB4D26] h-10 w-10 flex items-center justify-center rounded-lg transition-transform hover:scale-105">
-                        <FaInstagram
-                          size={18}
-                          style={{ fill: "url(#insta-grad)" }}
-                        />
-                      </div>
-                    </a>
                   </div>
 
                   {/* Messenger */}
@@ -558,7 +556,7 @@ const NavHeader = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-shrink-0"
-                    onClick={() => setIsMobileMenuOpen(false)} // Close on click
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <div className="text-[#1777F2] bg-[#448AFF1A] h-10 w-10.5 flex items-center justify-center rounded-lg transition-transform hover:scale-105">
                       <FaFacebookMessenger size={18} />
@@ -571,7 +569,7 @@ const NavHeader = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-shrink-0"
-                    onClick={() => setIsMobileMenuOpen(false)} // Close on click
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <div className="text-[#25D366] bg-[#25D3661A] h-10 w-10.5 flex items-center justify-center rounded-lg transition-transform hover:scale-105">
                       <FaWhatsapp size={18} />
@@ -586,7 +584,7 @@ const NavHeader = () => {
                 <button
                   onClick={() => {
                     toggleLanguage();
-                    setIsMobileMenuOpen(false); // Close on click
+                    setIsMobileMenuOpen(false);
                   }}
                   className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                 >
@@ -596,15 +594,26 @@ const NavHeader = () => {
 
                 <div className="w-px h-8 bg-gray-200"></div>
 
-                {/* Login Link */}
-                <Link
-                  href={`/${isBangla ? "bn" : "en"}/signin`}
-                  onClick={() => setIsMobileMenuOpen(false)} // Close on click
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-[#214187] hover:bg-blue-50 transition-colors"
-                >
-                  <UserIcon />
-                  {t?.login || "Login"}
-                </Link>
+                {/* Login Link / Profile Link (UPDATED) */}
+                {appUser ? (
+                  <Link
+                    href={`/${isBangla ? "bn" : "en"}/dashboard`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-[#214187] hover:bg-blue-50 transition-colors"
+                  >
+                    <UserIcon />
+                    {isBangla ? "প্রোফাইল" : "Profile"}
+                  </Link>
+                ) : (
+                  <Link
+                    href={`/${isBangla ? "bn" : "en"}/signin`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-[#214187] hover:bg-blue-50 transition-colors"
+                  >
+                    <UserIcon />
+                    {t?.login || "Login"}
+                  </Link>
+                )}
               </div>
             </div>
           </div>

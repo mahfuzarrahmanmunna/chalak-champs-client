@@ -69,38 +69,31 @@ export default function CreateCourseModal({
   const bnEditorRef = useRef<any>(null);
   const [enEditorReady, setEnEditorReady] = useState(false);
   const [bnEditorReady, setBnEditorReady] = useState(false);
+  const [editorSessionKey, setEditorSessionKey] = useState(0);
 
-  // --- FIX: Stabilize the callback to prevent resets ---
   const handleEditorReady = useCallback((lang: "en" | "bn") => {
     if (lang === "en") setEnEditorReady(true);
     if (lang === "bn") setBnEditorReady(true);
   }, []);
 
-  // --- FIX: Cleanup editors ONLY when modal closes ---
-  // This prevents React 18 Strict Mode unmounts from destroying the editor too early
-  useEffect(() => {
-    return () => {
-      // If the modal is closing (or closed), destroy the instances
-      if (!isOpen) {
-        if (enEditorRef.current?.destroy) {
-          enEditorRef.current.destroy();
-        }
-        if (bnEditorRef.current?.destroy) {
-          bnEditorRef.current.destroy();
-        }
-      }
-    };
-  }, [isOpen]);
+  const handleEditorDestroy = useCallback((lang: "en" | "bn") => {
+    if (lang === "en") setEnEditorReady(false);
+    if (lang === "bn") setBnEditorReady(false);
+  }, []);
 
-  // Reset editor readiness when the modal opens
   useEffect(() => {
     if (isOpen) {
       setEnEditorReady(false);
       setBnEditorReady(false);
+      setEditorSessionKey((key) => key + 1);
     }
   }, [isOpen]);
 
   const editorsLoaded = enEditorReady && bnEditorReady;
+
+  const areEditorsCallable = () =>
+    typeof enEditorRef.current?.save === "function" &&
+    typeof bnEditorRef.current?.save === "function";
 
   const {
     register,
@@ -150,9 +143,7 @@ export default function CreateCourseModal({
   const watchedResources = useWatch({ control, name: "resources" });
 
   const onSubmit = async (data: CourseFormData) => {
-    // --- CRITICAL FIX: Check if refs are ready ---
-    // This prevents the crash if the user hits Enter or clicks Submit too fast
-    if (!editorsLoaded || !enEditorRef.current || !bnEditorRef.current) {
+    if (!areEditorsCallable()) {
       alert(
         "Editors are still loading. Please wait a moment before submitting.",
       );
@@ -320,9 +311,11 @@ export default function CreateCourseModal({
                     <Globe className="w-4 h-4" /> English Content
                   </label>
                   <CourseEditor
+                    key={`en-${editorSessionKey}`}
                     editorRef={enEditorRef}
                     placeholder="Type in English..."
                     onEditorReady={() => handleEditorReady("en")}
+                    onEditorDestroy={() => handleEditorDestroy("en")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -330,9 +323,11 @@ export default function CreateCourseModal({
                     <Globe className="w-4 h-4" /> বাংলা কন্টেন্ট
                   </label>
                   <CourseEditor
+                    key={`bn-${editorSessionKey}`}
                     editorRef={bnEditorRef}
                     placeholder="বাংলায় লিখুন..."
                     onEditorReady={() => handleEditorReady("bn")}
+                    onEditorDestroy={() => handleEditorDestroy("bn")}
                   />
                 </div>
               </div>

@@ -9,6 +9,7 @@ import { Plus, Loader2, BookOpen, Globe, Upload, X } from "lucide-react";
 
 // Import the new Quill Editor
 import QuillEditor from "./QuillEditor";
+import Link from "next/link";
 
 // --- TYPES ---
 interface BilingualText {
@@ -540,40 +541,42 @@ export default function CoursesClient() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {data?.data?.map((course: any) => (
-                <div
+                <Link
+                  href={`/dashboard/courses/${course._id}/modules`}
                   key={course._id}
-                  className="border rounded-xl overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
                 >
-                  {course.thumbnail && (
-                    <img
-                      src={course.thumbnail}
-                      alt={course.title?.en}
-                      className="w-full h-48 object-cover"
-                    />
-                  )}
-                  <div className="p-4 flex-1 flex flex-col">
-                    <h3 className="font-bold text-lg mb-2 text-gray-900">
-                      {course.title?.en || course.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 mb-4 line-clamp-2 flex-1">
-                      {course.heroSubtitle?.en || course.heroSubtitle}
-                    </p>
-                    <div className="flex justify-between items-center mt-auto pt-4 border-t">
-                      <span className="text-blue-600 font-bold text-lg">
-                        BDT {course.price}
-                      </span>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full font-medium ${
-                          course.isPublished
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {course.isPublished ? "Published" : "Draft"}
-                      </span>
+                  <div className="border rounded-xl overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    {course.thumbnail && (
+                      <img
+                        src={course.thumbnail}
+                        alt={course.title?.en}
+                        className="w-full h-48 object-cover"
+                      />
+                    )}
+                    <div className="p-4 flex-1 flex flex-col">
+                      <h3 className="font-bold text-lg mb-2 text-gray-900">
+                        {course.title?.en || course.title}
+                      </h3>
+                      <p className="text-sm text-gray-500 mb-4 line-clamp-2 flex-1">
+                        {course.heroSubtitle?.en || course.heroSubtitle}
+                      </p>
+                      <div className="flex justify-between items-center mt-auto pt-4 border-t">
+                        <span className="text-blue-600 font-bold text-lg">
+                          BDT {course.price}
+                        </span>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            course.isPublished
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {course.isPublished ? "Published" : "Draft"}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
               {data?.data?.length === 0 && (
                 <div className="col-span-3 text-center py-12 text-gray-400">

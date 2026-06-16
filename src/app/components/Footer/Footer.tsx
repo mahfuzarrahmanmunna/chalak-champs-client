@@ -57,7 +57,7 @@ const Footer = () => {
                 </div>
 
                 {/* Instagram */}
-                <div className="bg-[#FFAB4D26] h-10 w-10 flex items-center justify-center rounded-lg">
+                {/* <div className="bg-[#FFAB4D26] h-10 w-10 flex items-center justify-center rounded-lg">
                   <Link href="#">
                     <FaInstagram
                       size={18}
@@ -78,7 +78,7 @@ const Footer = () => {
                       </linearGradient>
                     </svg>
                   </Link>
-                </div>
+                </div> */}
 
                 <div className="text-[#1777F2] bg-[#448AFF1A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
                   <Link href="https://m.me/chalakchamps" target="_blank">

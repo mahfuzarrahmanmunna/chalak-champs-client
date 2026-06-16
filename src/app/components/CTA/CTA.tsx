@@ -16,6 +16,305 @@ interface Country {
   cca2: string;
 }
 
+// --- FIXED: Static Data to replace unstable API ---
+const STATIC_COUNTRIES: Country[] = [
+  {
+    name: "Bangladesh",
+    flag: "https://flagcdn.com/bd.svg",
+    code: "+880",
+    cca2: "BD",
+  },
+  {
+    name: "United States",
+    flag: "https://flagcdn.com/us.svg",
+    code: "+1",
+    cca2: "US",
+  },
+  {
+    name: "United Kingdom",
+    flag: "https://flagcdn.com/gb.svg",
+    code: "+44",
+    cca2: "GB",
+  },
+  {
+    name: "Canada",
+    flag: "https://flagcdn.com/ca.svg",
+    code: "+1",
+    cca2: "CA",
+  },
+  {
+    name: "Australia",
+    flag: "https://flagcdn.com/au.svg",
+    code: "+61",
+    cca2: "AU",
+  },
+  {
+    name: "India",
+    flag: "https://flagcdn.com/in.svg",
+    code: "+91",
+    cca2: "IN",
+  },
+  {
+    name: "Pakistan",
+    flag: "https://flagcdn.com/pk.svg",
+    code: "+92",
+    cca2: "PK",
+  },
+  {
+    name: "Saudi Arabia",
+    flag: "https://flagcdn.com/sa.svg",
+    code: "+966",
+    cca2: "SA",
+  },
+  {
+    name: "United Arab Emirates",
+    flag: "https://flagcdn.com/ae.svg",
+    code: "+971",
+    cca2: "AE",
+  },
+  {
+    name: "Malaysia",
+    flag: "https://flagcdn.com/my.svg",
+    code: "+60",
+    cca2: "MY",
+  },
+  {
+    name: "Singapore",
+    flag: "https://flagcdn.com/sg.svg",
+    code: "+65",
+    cca2: "SG",
+  },
+  {
+    name: "Germany",
+    flag: "https://flagcdn.com/de.svg",
+    code: "+49",
+    cca2: "DE",
+  },
+  {
+    name: "France",
+    flag: "https://flagcdn.com/fr.svg",
+    code: "+33",
+    cca2: "FR",
+  },
+  {
+    name: "Italy",
+    flag: "https://flagcdn.com/it.svg",
+    code: "+39",
+    cca2: "IT",
+  },
+  {
+    name: "Spain",
+    flag: "https://flagcdn.com/es.svg",
+    code: "+34",
+    cca2: "ES",
+  },
+  {
+    name: "Japan",
+    flag: "https://flagcdn.com/jp.svg",
+    code: "+81",
+    cca2: "JP",
+  },
+  {
+    name: "China",
+    flag: "https://flagcdn.com/cn.svg",
+    code: "+86",
+    cca2: "CN",
+  },
+  {
+    name: "South Korea",
+    flag: "https://flagcdn.com/kr.svg",
+    code: "+82",
+    cca2: "KR",
+  },
+  {
+    name: "Nepal",
+    flag: "https://flagcdn.com/np.svg",
+    code: "+977",
+    cca2: "NP",
+  },
+  {
+    name: "Sri Lanka",
+    flag: "https://flagcdn.com/lk.svg",
+    code: "+94",
+    cca2: "LK",
+  },
+  {
+    name: "Oman",
+    flag: "https://flagcdn.com/om.svg",
+    code: "+968",
+    cca2: "OM",
+  },
+  {
+    name: "Qatar",
+    flag: "https://flagcdn.com/qa.svg",
+    code: "+974",
+    cca2: "QA",
+  },
+  {
+    name: "Kuwait",
+    flag: "https://flagcdn.com/kw.svg",
+    code: "+965",
+    cca2: "KW",
+  },
+  {
+    name: "Bahrain",
+    flag: "https://flagcdn.com/bh.svg",
+    code: "+973",
+    cca2: "BH",
+  },
+  {
+    name: "Turkey",
+    flag: "https://flagcdn.com/tr.svg",
+    code: "+90",
+    cca2: "TR",
+  },
+  { name: "Iran", flag: "https://flagcdn.com/ir.svg", code: "+98", cca2: "IR" },
+  {
+    name: "Thailand",
+    flag: "https://flagcdn.com/th.svg",
+    code: "+66",
+    cca2: "TH",
+  },
+  {
+    name: "Indonesia",
+    flag: "https://flagcdn.com/id.svg",
+    code: "+62",
+    cca2: "ID",
+  },
+  {
+    name: "Vietnam",
+    flag: "https://flagcdn.com/vn.svg",
+    code: "+84",
+    cca2: "VN",
+  },
+  {
+    name: "Philippines",
+    flag: "https://flagcdn.com/ph.svg",
+    code: "+63",
+    cca2: "PH",
+  },
+  {
+    name: "Russia",
+    flag: "https://flagcdn.com/ru.svg",
+    code: "+7",
+    cca2: "RU",
+  },
+  {
+    name: "Brazil",
+    flag: "https://flagcdn.com/br.svg",
+    code: "+55",
+    cca2: "BR",
+  },
+  {
+    name: "South Africa",
+    flag: "https://flagcdn.com/za.svg",
+    code: "+27",
+    cca2: "ZA",
+  },
+  {
+    name: "Nigeria",
+    flag: "https://flagcdn.com/ng.svg",
+    code: "+234",
+    cca2: "NG",
+  },
+  {
+    name: "Egypt",
+    flag: "https://flagcdn.com/eg.svg",
+    code: "+20",
+    cca2: "EG",
+  },
+  {
+    name: "Mexico",
+    flag: "https://flagcdn.com/mx.svg",
+    code: "+52",
+    cca2: "MX",
+  },
+  {
+    name: "Sweden",
+    flag: "https://flagcdn.com/se.svg",
+    code: "+46",
+    cca2: "SE",
+  },
+  {
+    name: "Norway",
+    flag: "https://flagcdn.com/no.svg",
+    code: "+47",
+    cca2: "NO",
+  },
+  {
+    name: "Denmark",
+    flag: "https://flagcdn.com/dk.svg",
+    code: "+45",
+    cca2: "DK",
+  },
+  {
+    name: "Netherlands",
+    flag: "https://flagcdn.com/nl.svg",
+    code: "+31",
+    cca2: "NL",
+  },
+  {
+    name: "Belgium",
+    flag: "https://flagcdn.com/be.svg",
+    code: "+32",
+    cca2: "BE",
+  },
+  {
+    name: "Switzerland",
+    flag: "https://flagcdn.com/ch.svg",
+    code: "+41",
+    cca2: "CH",
+  },
+  {
+    name: "Ireland",
+    flag: "https://flagcdn.com/ie.svg",
+    code: "+353",
+    cca2: "IE",
+  },
+  {
+    name: "New Zealand",
+    flag: "https://flagcdn.com/nz.svg",
+    code: "+64",
+    cca2: "NZ",
+  },
+  {
+    name: "Greece",
+    flag: "https://flagcdn.com/gr.svg",
+    code: "+30",
+    cca2: "GR",
+  },
+  {
+    name: "Portugal",
+    flag: "https://flagcdn.com/pt.svg",
+    code: "+351",
+    cca2: "PT",
+  },
+  {
+    name: "Poland",
+    flag: "https://flagcdn.com/pl.svg",
+    code: "+48",
+    cca2: "PL",
+  },
+  {
+    name: "Ukraine",
+    flag: "https://flagcdn.com/ua.svg",
+    code: "+380",
+    cca2: "UA",
+  },
+  {
+    name: "Argentina",
+    flag: "https://flagcdn.com/ar.svg",
+    code: "+54",
+    cca2: "AR",
+  },
+  {
+    name: "Israel",
+    flag: "https://flagcdn.com/il.svg",
+    code: "+972",
+    cca2: "IL",
+  },
+];
+
 const CTA = () => {
   // 1. Get data from context
   const { ctaData } = useLanguage();
@@ -35,30 +334,17 @@ const CTA = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // --- Fetch Countries (Bangladesh Default) ---
+  // --- Initialize Countries (Static Data) ---
   useEffect(() => {
-    fetch("https://restcountries.com/v3.1/all?fields=name,flags,idd,cca2")
-      .then((res) => res.json())
-      .then((data) => {
-        const processed: Country[] = data
-          .map((country: any) => {
-            const root = country.idd?.root || "";
-            const suffix = country.idd?.suffixes?.[0] || "";
-            return {
-              name: country.name.common,
-              flag: country.flags.svg,
-              code: root + suffix,
-              cca2: country.cca2,
-            };
-          })
-          .filter((c: Country) => c.code.length > 0)
-          .sort((a: Country, b: Country) => a.name.localeCompare(b.name));
+    // Using static data ensures no network errors occur
+    const sortedCountries = [...STATIC_COUNTRIES].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+    setCountries(sortedCountries);
 
-        setCountries(processed);
-        const bd = processed.find((c: Country) => c.cca2 === "BD");
-        setSelectedCountry(bd || processed[0]);
-      })
-      .catch((err) => console.error("Failed to fetch countries", err));
+    // Set Default to Bangladesh
+    const bd = sortedCountries.find((c: Country) => c.cca2 === "BD");
+    setSelectedCountry(bd || sortedCountries[0]);
   }, []);
 
   // --- Handlers ---

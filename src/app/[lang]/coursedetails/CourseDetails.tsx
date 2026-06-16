@@ -18,6 +18,12 @@ import {
   ChevronDown,
   MessageCircle,
   Home,
+  CreditCard,
+  AlertCircle,
+  Check,
+  Calendar,
+  Clock,
+  Tag,
 } from "lucide-react";
 import { FaSadCry } from "react-icons/fa";
 
@@ -26,6 +32,7 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import EnrollmentCard from "./EnrollmentCard";
 import Button from "@/app/ui/button/Button";
 import EnrollmentSideSticky from "./EnrollmentSideSticky";
+import { createEnrollment } from "@/app/services/enrollmentService";
 
 // --- SUB-COMPONENT: FAQ ---
 const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
@@ -179,7 +186,18 @@ export default function CourseDetails() {
 
   const [activeTab, setActiveTab] = useState("overview");
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
-  const [isEnrolling, setIsEnrolling] = useState(false);
+
+  // --- NEW STATE FOR 4-STEP MODAL ---
+  // Step 1: Bill Summary (Screenshot Style)
+  // Step 2: User Form (Name/Phone)
+  // Step 3: Checkout & Payment Selection
+  // Step 4: Success
+  const [enrollmentStep, setEnrollmentStep] = useState<1 | 2 | 3 | 4>(1);
+  const [enrollmentLoading, setEnrollmentLoading] = useState(false);
+  const [enrollmentError, setEnrollmentError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({ name: "", phone: "" });
+  // ---------------------------------------
+
   const [showStickyCta, setShowStickyCta] = useState(false);
   const [showSideEnrollment, setShowSideEnrollment] = useState(false);
 
@@ -275,20 +293,60 @@ export default function CourseDetails() {
   };
 
   const handleEnroll = () => {
+    setEnrollmentStep(1);
+    setFormData({ name: "", phone: "" });
+    setEnrollmentError(null);
     setShowEnrollmentModal(true);
   };
 
-  const handleEnrollmentSubmit = () => {
-    setIsEnrolling(true);
-    setTimeout(() => {
-      setIsEnrolling(false);
-      setShowEnrollmentModal(false);
-      alert(
-        isBangla
-          ? "ভর্তি সফল হয়েছে! শীঘ্রই যোগাযোগ করা হবে।"
-          : "Enrollment Successful! We will contact you shortly.",
+  // --- UPDATED SUBMIT LOGIC WITH API CALL ---
+  const handleEnrollmentSubmit = async () => {
+    // Step 1 (Summary): Move to Step 2 (Form)
+    if (enrollmentStep === 1) {
+      setEnrollmentStep(2);
+      setEnrollmentError(null);
+      return;
+    }
+
+    // Step 2 (Form): Validate and Move to Step 3 (Checkout)
+    if (enrollmentStep === 2) {
+      if (!formData.name || !formData.phone) {
+        setEnrollmentError("Please fill in all fields");
+        return;
+      }
+      setEnrollmentStep(3);
+      setEnrollmentError(null);
+      return;
+    }
+
+    // Step 3 (Checkout): Call API
+    setEnrollmentLoading(true);
+    setEnrollmentError(null);
+
+    try {
+      const result = await createEnrollment({
+        name: formData.name,
+        phone: formData.phone,
+        courseId: singleCourseData?.hero?.id || "unknown",
+        courseTitle: singleCourseData?.hero?.title || "Course",
+        amount: singleCourseData?.quickInfo?.offerPrice || "0",
+      });
+
+      if (result.success) {
+        setEnrollmentStep(4);
+      } else {
+        throw new Error(result.message || "Enrollment failed");
+      }
+    } catch (error: any) {
+      console.error("Enrollment Error:", error);
+      setEnrollmentError(
+        error.response?.data?.message ||
+          error.message ||
+          "Something went wrong. Please try again.",
       );
-    }, 2000);
+    } finally {
+      setEnrollmentLoading(false);
+    }
   };
 
   if (!singleCourseData || Object.keys(singleCourseData).length === 0) {
@@ -308,11 +366,6 @@ export default function CourseDetails() {
       ? `${priceParts[2]} ${priceParts[3]}`
       : data.quickInfo.offerPrice;
 
-  // ==========================================
-  // --- FIXED BREADCRUMB LOGIC ---
-  // ==========================================
-  // Instead of parsing strings, we define the path structure manually based on language.
-  // This ensures links are always correct (/en or /bn).
   const breadcrumbItems = [
     {
       label: isBangla ? "হোম" : "Home",
@@ -326,21 +379,20 @@ export default function CourseDetails() {
     },
     {
       label: data.breadcrumbs || (isBangla ? "বিস্তারিত" : "Details"),
-      href: null, // Current page has no link
+      href: null,
       icon: null,
     },
   ];
 
   return (
     <div className="min-h-screen mt-12 text-gray-900 font-sans relative selection:bg-pink-100 selection:text-pink-900">
-      {/* ===== BREADCRUMB (FIXED) ===== */}
+      {/* ===== BREADCRUMB ===== */}
       <div className="py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav aria-label="Breadcrumb">
             <ol className="flex items-center flex-wrap gap-y-1">
               {breadcrumbItems.map((item, index) => {
                 const isLast = index === breadcrumbItems.length - 1;
-
                 return (
                   <li key={index} className="flex items-center">
                     {item.href ? (
@@ -358,7 +410,6 @@ export default function CourseDetails() {
                         {item.label}
                       </span>
                     )}
-
                     {!isLast && (
                       <ChevronRight
                         className="h-3.5 w-3.5 mx-0.5 text-gray-300/80 flex-shrink-0"
@@ -404,6 +455,7 @@ export default function CourseDetails() {
                   />
                 </div>
               </div>
+
               {/* Sticky Tab Navigation */}
               <div className="sticky top-28 md:top-18 lg:top-22 rounded-2xl z-30 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-sm mb-12 overflow-hidden">
                 <div className="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0">
@@ -675,75 +727,364 @@ export default function CourseDetails() {
         </div>
       )}
 
-      {/* Enrollment Modal */}
+      {/* ========================================= */}
+      {/* ===== UPDATED PROFESSIONAL MODAL ========== */}
+      {/* ========================================= */}
       {showEnrollmentModal && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-2 md:p-4">
+          {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity"
             onClick={() => setShowEnrollmentModal(false)}
           ></div>
-          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden relative z-10 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <h2 className="text-xl font-bold text-gray-900">
-                {data.finalCta.cta2}
-              </h2>
-              <button
-                onClick={() => setShowEnrollmentModal(false)}
-                className="p-2 rounded-full hover:bg-gray-200 transition-colors text-gray-500"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs">
-                  IMG
+
+          {/* Modal Card */}
+          <div
+            className={`bg-white w-full rounded-[32px] shadow-2xl overflow-hidden relative z-10 flex flex-col animate-in zoom-in-95 duration-300 ${
+              enrollmentStep === 3 ? "max-w-5xl h-[90vh] md:h-auto" : "max-w-md"
+            }`}
+          >
+            {/* --- HEADER --- */}
+            {/* Step 1 uses a clean header, others use the gradient header */}
+            {enrollmentStep === 1 ? (
+              <div className="relative bg-white p-6 border-b border-gray-100">
+                {/* Progress Bar */}
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-[#F3056D] text-white flex items-center justify-center text-xs font-bold">
+                      1
+                    </div>
+                    <span className="text-sm font-bold text-[#F3056D]">
+                      Step 1
+                    </span>
+                  </div>
+                  <div className="h-1 w-12 bg-gray-200 rounded"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-bold">
+                      2
+                    </div>
+                    <span className="text-sm font-bold text-gray-400">
+                      Step 2
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 line-clamp-1 text-sm md:text-base">
-                    {data.hero.title}
-                  </h3>
-                  <p className="font-bold text-[#F3056D] mt-1">
-                    {displayPrice}
-                  </p>
+
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-bold text-gray-900">
+                    আপনার বিলের সারাংশ
+                  </h2>
+                  <button
+                    onClick={() => setShowEnrollmentModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X className="h-5 w-5 text-gray-600" />
+                  </button>
                 </div>
               </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleEnrollmentSubmit();
-                }}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5 tracking-wider">
-                    {isBangla ? "নাম" : "Name"}
-                  </label>
-                  <input
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F3056D] focus:border-transparent outline-none transition-shadow"
-                    placeholder="John Doe"
-                  />
+            ) : (
+              <div className="relative bg-gradient-to-br from-[#214187] to-[#1e3a8a] p-6 pt-8 text-white">
+                <div className="relative z-10 flex justify-between items-start">
+                  <div>
+                    <h2 className="text-xl font-bold mb-1">
+                      {enrollmentStep === 2
+                        ? isBangla
+                          ? "তথ্য প্রদান করুন"
+                          : "Student Info"
+                        : isBangla
+                          ? "চেকআউট"
+                          : "Checkout"}
+                    </h2>
+                    <p className="text-blue-100 text-sm font-medium">
+                      {data.hero.title}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowEnrollmentModal(false)}
+                    className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5 tracking-wider">
-                    {isBangla ? "ফোন" : "Phone"}
-                  </label>
-                  <input
-                    required
-                    type="tel"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F3056D] focus:border-transparent outline-none transition-shadow"
-                    placeholder="017..."
-                  />
+              </div>
+            )}
+
+            {/* --- BODY --- */}
+            <div className="p-6 md:p-8 flex-1 overflow-y-auto">
+              {/* --- STEP 1: BILL SUMMARY (Screenshot Style) --- */}
+              {enrollmentStep === 1 && (
+                <div className="animate-in fade-in duration-300 space-y-6">
+                  {/* Course Info Card */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+                    <div>
+                      <h3 className="font-bold text-lg text-gray-900 mb-2">
+                        A Unit + কোর্স ফি - 2026
+                      </h3>
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <Calendar className="h-4 w-4" />
+                        <span>03 Mar, 2026 - 31 Dec, 2027</span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-700 font-medium">
+                          A Unit: Question Bank
+                        </span>
+                        <div className="text-right">
+                          <span className="line-through text-gray-400 text-xs block">
+                            700
+                          </span>
+                          <span className="text-lg font-bold text-gray-900">
+                            500
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-700 font-medium">
+                          Course Fee
+                        </span>
+                        <span className="text-lg font-bold text-gray-900">
+                          3500
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-50/50 rounded-lg p-3 flex justify-between items-center border border-blue-100">
+                      <span className="font-bold text-gray-700">মোট</span>
+                      <span className="text-xl font-bold text-[#F3056D]">
+                        4000
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="grid grid-cols-2 gap-4 mt-8">
+                    <button
+                      onClick={() => setShowEnrollmentModal(false)}
+                      className="py-3.5 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                    >
+                      ফেরত যাও
+                    </button>
+                    <button
+                      onClick={handleEnrollmentSubmit}
+                      className="py-3.5 bg-[#F3056D] hover:bg-[#d9045f] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                    >
+                      উপলব্ধি কর
+                    </button>
+                  </div>
                 </div>
-                <button
-                  type="submit"
-                  disabled={isEnrolling}
-                  className="w-full py-3.5 rounded-xl text-white font-bold text-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[#F3056D] hover:bg-[#d9045f]"
-                >
-                  {isEnrolling ? "Processing..." : data.quickInfo.cta1}
-                </button>
-              </form>
+              )}
+
+              {/* --- STEP 2: USER FORM --- */}
+              {enrollmentStep === 2 && (
+                <div className="space-y-5 animate-in slide-in-from-right-4 duration-300">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      {isBangla ? "আপনার নাম" : "Full Name"}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F3056D] focus:border-transparent outline-none transition-all font-medium text-gray-800"
+                        placeholder={isBangla ? "নাম লিখুন" : "Enter name"}
+                      />
+                      <Users className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      {isBangla ? "মোবাইল নাম্বার" : "Phone Number"}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value })
+                        }
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F3056D] focus:border-transparent outline-none transition-all font-medium text-gray-800"
+                        placeholder="017..."
+                      />
+                      <CreditCard className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+
+                  {enrollmentError && (
+                    <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-100">
+                      <AlertCircle className="h-4 w-4" />
+                      {enrollmentError}
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleEnrollmentSubmit}
+                    className="w-full py-3.5 bg-[#214187] hover:bg-[#1a2f6e] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 mt-2"
+                  >
+                    {isBangla ? "এগিয়ে যান" : "Proceed"}
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+
+                  <button
+                    onClick={() => setEnrollmentStep(1)}
+                    className="w-full text-sm text-gray-500 hover:text-gray-800 mt-2"
+                  >
+                    {isBangla ? "ফিরে যান" : "Back"}
+                  </button>
+                </div>
+              )}
+
+              {/* --- STEP 3: CHECKOUT / PAYMENT --- */}
+              {enrollmentStep === 3 && (
+                <div className="animate-in slide-in-from-right-4 duration-300 h-full flex flex-col">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+                    {/* Left: Course Details Recap */}
+                    <div className="flex flex-col gap-6">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">
+                          {isBangla ? "পেমেন্ট তথ্য" : "Payment Details"}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {isBangla
+                            ? "নিচের তথ্যগুলো যাচাই করুন"
+                            : "Verify the details below"}
+                        </p>
+                      </div>
+
+                      <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 flex flex-col items-center text-center justify-center h-64 md:h-80 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-blue-100 rounded-full blur-2xl opacity-50"></div>
+                        <BookOpen className="h-12 w-12 text-[#214187] mb-4" />
+                        <h4 className="font-bold text-gray-900 text-lg">
+                          {data.hero.title}
+                        </h4>
+                        <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 bg-white rounded-full text-xs font-semibold text-gray-600 shadow-sm border border-gray-100">
+                          <Clock className="h-3 w-3" />
+                          Lifetime Access
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 text-sm text-gray-600">
+                        <div className="flex justify-between">
+                          <span>{isBangla ? "নাম" : "Name"}:</span>
+                          <span className="font-medium text-gray-900">
+                            {formData.name}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>{isBangla ? "ফোন" : "Phone"}:</span>
+                          <span className="font-medium text-gray-900">
+                            {formData.phone}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: Bill Info & Action */}
+                    <div className="flex flex-col">
+                      <div className="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
+                            {isBangla ? "বিল সংক্রান্ত তথ্য" : "Bill Info"}
+                          </h3>
+
+                          <div className="space-y-4">
+                            <div className="flex justify-between text-sm text-gray-600">
+                              <span>
+                                {isBangla ? "পণ্যের নাম" : "Item Name"}
+                              </span>
+                              <span className="font-medium text-gray-900 max-w-[150px] text-right truncate">
+                                {data.hero.title}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm text-gray-600">
+                              <span>{isBangla ? "ফি" : "Fee"}</span>
+                              <span className="font-medium text-gray-900">
+                                3500
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm text-gray-600">
+                              <span>{isBangla ? "অন্যান্য" : "Others"}</span>
+                              <span className="font-medium text-gray-900">
+                                500
+                              </span>
+                            </div>
+                            <div className="border-t border-gray-200 my-2 pt-2"></div>
+                            <div className="flex justify-between items-end">
+                              <span className="text-sm font-bold text-gray-900">
+                                {isBangla ? "সর্বমোট" : "Grand Total"}
+                              </span>
+                              <span className="text-2xl font-bold text-[#F3056D]">
+                                4000
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {enrollmentError && (
+                          <div className="my-4 flex items-center gap-2 text-red-500 text-xs bg-red-50 p-2 rounded border border-red-100">
+                            <AlertCircle className="h-3 w-3" />
+                            {enrollmentError}
+                          </div>
+                        )}
+
+                        <div className="mt-6 pt-4">
+                          <button
+                            onClick={handleEnrollmentSubmit}
+                            disabled={enrollmentLoading}
+                            className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                          >
+                            {enrollmentLoading ? (
+                              <span className="animate-pulse">
+                                {isBangla ? "প্রসেসিং..." : "Processing..."}
+                              </span>
+                            ) : (
+                              <>
+                                {isBangla ? "পদ্ধতি নির্বাচন" : "Select Method"}
+                                <CreditCard className="h-4 w-4" />
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setEnrollmentStep(1)}
+                            className="w-full mt-3 text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors"
+                          >
+                            {isBangla ? "ফিরে যান" : "Go Back"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* --- STEP 4: SUCCESS --- */}
+              {enrollmentStep === 4 && (
+                <div className="flex flex-col items-center justify-center py-10 animate-in zoom-in-95 duration-300 text-center h-full">
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 shadow-md">
+                    <Check className="h-10 w-10 text-green-600 stroke-[3]" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    {isBangla
+                      ? "সফলভাবে ভর্তি হয়েছে!"
+                      : "Enrollment Successful!"}
+                  </h2>
+                  <p className="text-gray-500 text-sm max-w-[250px] mb-8">
+                    {isBangla
+                      ? "আপনার ইমেইলে বিস্তারিত পাঠানো হবে।"
+                      : "We have sent you a confirmation message."}
+                  </p>
+                  <button
+                    onClick={() => setShowEnrollmentModal(false)}
+                    className="w-full max-w-xs py-3 bg-[#214187] text-white font-bold rounded-xl hover:bg-[#1a2f6e] transition-colors"
+                  >
+                    {isBangla ? "বন্ধ করুন" : "Close"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
