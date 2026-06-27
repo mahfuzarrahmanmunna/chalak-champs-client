@@ -19,10 +19,11 @@ const AuthPage = () => {
     sendOtpPhone,
     checkOtpPhone,
     completeRegistration,
+    user, // Assuming user object is available in context with role
   } = useAuth();
 
   const router = useRouter();
-  const { isBangla } = useLanguage();
+  const { isBangla, currentLang, getLink } = useLanguage();
 
   // ================= CONFIGURATION =================
   // CHANGE THIS to your Backend URL (e.g., http://localhost:5000)
@@ -46,6 +47,15 @@ const AuthPage = () => {
     setValue,
     trigger,
   } = useForm();
+
+  // --- HELPER: Role-based redirect ---
+  const redirectByRole = (role: string = "student") => {
+    if (role === "admin") {
+      router.push(getLink("/admin-dashboard"));
+    } else {
+      router.push(getLink("/dashboard"));
+    }
+  };
 
   // --- FUNCTION: CHECK IF USER EXISTS (Calls your Backend) ---
   const checkUserStatus = async (input: string): Promise<boolean> => {
@@ -157,12 +167,27 @@ const AuthPage = () => {
     const isEmail = /\S+@\S+\.\S+/.test(input);
 
     try {
+      let authResult;
       if (isEmail) {
-        await signInWithEmail(input, password);
+        authResult = await signInWithEmail(input, password);
       } else {
-        await signInWithPhone(input, password);
+        authResult = await signInWithPhone(input, password);
       }
-      router.push("/dashboard");
+
+      // Extract role from auth result
+      // Adjust these paths based on your actual auth response structure
+      const role =
+        authResult?.role ||
+        authResult?.user?.role ||
+        authResult?.data?.role ||
+        authResult?.data?.user?.role ||
+        user?.role ||
+        "student";
+
+      console.log("User Role:", role);
+
+      // Role-based redirect
+      redirectByRole(role);
     } catch (error: any) {
       console.error("Login failed:", error);
       window.alert(
@@ -207,16 +232,26 @@ const AuthPage = () => {
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
     try {
-      await completeRegistration({
+      const registrationResult = await completeRegistration({
         firstName,
         lastName,
         password: data.password,
         emailOrPhone: input,
         method: isEmail ? "email" : "phone",
       });
-      console.log("Registration Successful");
-      // Redirect or handle success based on context logic
-      // router.push("/dashboard");
+
+      console.log("Registration Successful", registrationResult);
+
+      // Extract role from registration result (though new users are typically students)
+      const role =
+        registrationResult?.role ||
+        registrationResult?.user?.role ||
+        registrationResult?.data?.role ||
+        registrationResult?.data?.user?.role ||
+        "student";
+
+      // Role-based redirect
+      redirectByRole(role);
     } catch (error: any) {
       window.alert(error.message || "Registration failed.");
     } finally {
@@ -257,6 +292,26 @@ const AuthPage = () => {
     }
   };
 
+  // --- GOOGLE LOGIN HANDLER ---
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      // Assuming you have a googleSignIn function in your auth context
+      // const authResult = await signInWithGoogle();
+      // const role = authResult?.user?.role || "student";
+      // redirectByRole(role);
+
+      // Placeholder - implement based on your Google auth setup
+      console.log("Google login not yet implemented");
+      window.alert("Google login coming soon!");
+    } catch (error: any) {
+      console.error("Google login failed:", error);
+      window.alert(error.message || "Google login failed.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="w-full bg-white">
       <div id="recaptcha-container" style={{ display: "none" }}></div>
@@ -268,7 +323,7 @@ const AuthPage = () => {
             {/* --- HEADER / BACK BUTTON --- */}
             <div className="mb-5">
               {view === "input" ? (
-                <Link href="/" className="flex items-center gap-2">
+                <Link href={getLink("/")} className="flex items-center gap-2">
                   <Button
                     icon={
                       <svg
@@ -458,7 +513,7 @@ const AuthPage = () => {
                     </div>
                     <div className="flex justify-end">
                       <Link
-                        href="/forgot-password"
+                        href={getLink("/forgot-password")}
                         className="text-sm text-[#F3066D] font-medium hover:underline"
                       >
                         পাসওয়ার্ড ভুলে গেছেন?
@@ -548,7 +603,7 @@ const AuthPage = () => {
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-semibold text-gray-700">
-                        পাসওড়া <span className="text-red-500">*</span>
+                        পাসওড়া <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="password"
@@ -560,7 +615,7 @@ const AuthPage = () => {
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-semibold text-gray-700">
-                        পাসওড়া পুনরাবৃত্তি{" "}
+                        পাসওড়া পুনরাবৃত্তি{" "}
                         <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -572,10 +627,15 @@ const AuthPage = () => {
                           required: true,
                           validate: (val) => {
                             if (watch("password") != val)
-                              return "পাসওয়ার্ড মিলছে না";
+                              return "পাসওয়ার্ড মিলছে না";
                           },
                         })}
                       />
+                      {errors.confirmPassword && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.confirmPassword.message as string}
+                        </p>
+                      )}
                     </div>
                     <button
                       type="submit"
@@ -599,7 +659,11 @@ const AuthPage = () => {
                     <div className="flex-grow border-t border-[#D1D5DB]"></div>
                   </div>
 
-                  <button className="group flex gap-2 relative overflow-hidden rounded-lg bg-[#EFEFEF] py-4 px-16 text-lg font-bold text-[#2D2D2D] w-full justify-center hover:bg-gray-200 transition-colors">
+                  <button
+                    onClick={handleGoogleLogin}
+                    disabled={isLoading}
+                    className="group flex gap-2 relative overflow-hidden rounded-lg bg-[#EFEFEF] py-4 px-16 text-lg font-bold text-[#2D2D2D] w-full justify-center hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <span
                       className="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/40 to-transparent"
                       style={{

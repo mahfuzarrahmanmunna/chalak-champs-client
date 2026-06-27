@@ -3,10 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { User, Phone, ChevronDown, Search } from "lucide-react";
 import Image from "next/image";
-import Button from "@/app/ui/button/Button";
 import BirdIcon from "./BirdIcon";
 import NeedCall from "./NeedCall";
-import { useLanguage } from "@/app/context/LanguageContext"; // Adjust path
+import { useLanguage } from "@/app/context/LanguageContext";
 
 // Types
 interface Country {
@@ -325,8 +324,11 @@ const CTA = () => {
     fatherName: "",
     phone: "",
     class: "",
-    course: "",
   });
+
+  // --- Loading State ---
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   // --- Phone & Country State ---
   const [countries, setCountries] = useState<Country[]>([]);
@@ -354,20 +356,60 @@ const CTA = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // --- UPDATED HANDLER WITH BACKEND LOGIC ---
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedCountry) {
-      const fullPhone = `${selectedCountry.code} ${formData.phone}`;
-      console.log("Form Submitted:", { ...formData, fullPhone });
-      alert("Form Submitted Successfully!");
-      // Reset form if needed
-      setFormData({
-        studentName: "",
-        fatherName: "",
-        phone: "",
-        class: "",
-        course: "",
+
+    // 1. Validation check
+    if (!selectedCountry || !formData.phone.trim()) {
+      alert("Please select a country and enter a valid phone number.");
+      return;
+    }
+
+    // 2. Prepare Data
+    const payload = {
+      studentName: formData.studentName,
+      fatherName: formData.fatherName,
+      phone: formData.phone,
+      class: formData.class,
+      country: selectedCountry, // Sending the object so backend gets the code
+    };
+
+    // 3. Set Loading State
+    setLoading(true);
+
+    try {
+      // 4. Send to Backend
+      const response = await fetch("/api/cta", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // 5. Success Action
+        alert("Form Submitted Successfully! We will contact you soon.");
+
+        // Reset form
+        setFormData({
+          studentName: "",
+          fatherName: "",
+          phone: "",
+          class: "",
+        });
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (error) {
+      console.error("Network Error:", error);
+      alert("Network error. Please try again.");
+    } finally {
+      // 6. Reset Loading State
+      setLoading(false);
     }
   };
 
@@ -553,39 +595,21 @@ const CTA = () => {
                 </div>
               </div>
 
-              {/* Course */}
-              {/* <div className="space-y-2">
-                <label className="text-sm font-semibold pb-2 text-gray-700">
-                  {ctaData.form.course} <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <select
-                    name="course"
-                    required
-                    value={formData.course}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#F3066E] focus:outline-none transition-all appearance-none"
-                  >
-                    <option value="">পছন্দের কোর্স সিলেক্ট করো</option>
-                    <option value="english">English for kids</option>
-                    <option value="spoken">Spoken English</option>
-                    <option value="writing">Creative Writing</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-3.5 text-gray-400 w-5 h-5 pointer-events-none" />
-                </div>
-              </div> */}
-
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={!isFormValid}
+                disabled={!isFormValid || loading}
                 className={`w-full font-bold text-lg leading-7.5 py-2.25  rounded-xl  transform active:scale-[0.98] transition-all duration-300 ${
-                  isFormValid
+                  isFormValid && !loading
                     ? "bg-[#F3056D] text-white cursor-pointer shadow-[inset_0px_1.5px_0px_#FF8FCA,inset_0px_1.5px_1.5px_rgba(243,6,110,0.3),inset_0px_0px_0px_1.5px_#C6005F,inset_0px_3.01px_7.52px_0px_rgba(243,6,110,0.3)] "
                     : "bg-gray-300 text-gray-500 cursor-not-allowed shadow-[inset_0px_1.5px_0px_#D9D9D9,inset_0px_1.5px_1.5px_rgba(217,217,217,0.3),inset_0px_0px_1.5px_#D9D9D9,inset_0px_3.01px_7.52px_rgba(217,217,217,0.3)]"
                 }`}
               >
-                {ctaData.form.cta}
+                {loading ? (
+                  <span className="animate-pulse">Processing...</span>
+                ) : (
+                  ctaData.form.cta
+                )}
               </button>
             </form>
           </div>

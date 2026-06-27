@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import "quill/dist/quill.snow.css";
-import "quill-better-table/dist/quill-better-table.css"; // Required for table styling and context menus
+import "quill-better-table/dist/quill-better-table.css";
 import type { Quill as QuillType } from "quill";
 
 interface QuillEditorProps {
@@ -36,8 +36,6 @@ export default function QuillEditor({
 
       if (!editorRef.current || !isMounted) return;
 
-      // FIX: Force register the module with the overwrite flag (true).
-      // This prevents "Cannot import" and "Already registered" errors during Strict Mode re-renders.
       Quill.register("modules/betterTable", quillBetterTable, true);
 
       editorRef.current.innerHTML = "";
@@ -69,7 +67,6 @@ export default function QuillEditor({
         const quill = quillRef.current;
         if (!quill) return;
         const tableModule = quill.getModule("betterTable");
-        // Inserts a 3x3 table
         tableModule.insertTable(3, 3);
       };
 
@@ -84,24 +81,21 @@ export default function QuillEditor({
             [{ align: [] }],
             ["link", "image", "video"],
             ["code-block"],
-            ["table"], // Added Table Button
+            ["table"],
             ["clean"],
           ],
           handlers: {
             image: imageHandler,
-            table: tableHandler, // Added Table Handler
+            table: tableHandler,
           },
         },
         betterTable: {
           operationMenu: {
             items: {
-              unmergeCells: {
-                text: "Unmerge cells",
-              },
+              unmergeCells: { text: "Unmerge cells" },
             },
           },
         },
-        // Required for tabbing between table cells
         keyboard: {
           bindings: quillBetterTable.keyboardBindings,
         },
@@ -155,24 +149,47 @@ export default function QuillEditor({
   }, [value]);
 
   return (
-    <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-[#F3056D]/20 focus-within:border-[#F3056D] transition-all">
       <style jsx global>{`
         .ql-editor {
           min-height: 300px;
           font-size: 16px;
-          font-family: sans-serif;
-          color: #111827;
+          font-family: system-ui, sans-serif;
+          color: #1f2937;
+          padding: 1.25rem;
         }
         .ql-toolbar {
           border-bottom: 1px solid #e5e7eb;
           background-color: #f9fafb;
         }
+        .ql-toolbar .ql-stroke {
+          stroke: #4b5563 !important;
+        }
+        .ql-toolbar .ql-fill {
+          fill: #4b5563 !important;
+        }
+        .ql-toolbar .ql-picker-label {
+          color: #4b5563 !important;
+        }
+        .ql-toolbar button:hover .ql-stroke {
+          stroke: #f3056d !important;
+        }
+        .ql-toolbar button:hover .ql-fill {
+          fill: #f3056d !important;
+        }
+        .ql-toolbar .ql-active .ql-stroke {
+          stroke: #f3056d !important;
+        }
+        .ql-toolbar .ql-active .ql-fill {
+          fill: #f3056d !important;
+        }
+        .ql-toolbar .ql-active {
+          color: #f3056d !important;
+        }
         .ql-editor.ql-blank::before {
           color: #9ca3af;
           font-style: normal;
         }
-
-        /* Custom styling to make tables visible in the editor */
         .ql-editor table {
           border-collapse: collapse;
           width: 100%;

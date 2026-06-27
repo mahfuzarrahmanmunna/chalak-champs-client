@@ -299,12 +299,12 @@ export default function CourseDetails() {
     setShowEnrollmentModal(true);
   };
 
-  // --- UPDATED SUBMIT LOGIC WITH API CALL ---
+  // --- UPDATED SUBMIT LOGIC WITH REDIRECT ---
   const handleEnrollmentSubmit = async () => {
-    // Step 1 (Summary): Move to Step 2 (Form)
+    // Step 1 (Summary): Redirect to Checkout Page
     if (enrollmentStep === 1) {
-      setEnrollmentStep(2);
-      setEnrollmentError(null);
+      // CHANGE: Redirect to checkout page instead of moving to Step 2
+      router.push(`/${isBangla ? "bn": "en"}/checkout`);
       return;
     }
 
@@ -810,49 +810,38 @@ export default function CourseDetails() {
 
             {/* --- BODY --- */}
             <div className="p-6 md:p-8 flex-1 overflow-y-auto">
-              {/* --- STEP 1: BILL SUMMARY (Screenshot Style) --- */}
+              {/* --- STEP 1: BILL SUMMARY (REAL DATA) --- */}
               {enrollmentStep === 1 && (
                 <div className="animate-in fade-in duration-300 space-y-6">
                   {/* Course Info Card */}
                   <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
                     <div>
                       <h3 className="font-bold text-lg text-gray-900 mb-2">
-                        A Unit + কোর্স ফি - 2026
+                        {data.hero.title}
                       </h3>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <Calendar className="h-4 w-4" />
-                        <span>03 Mar, 2026 - 31 Dec, 2027</span>
+                        <span>{data.hero.subtitle}</span>
                       </div>
                     </div>
 
                     <div className="border-t border-gray-100 pt-4 space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-gray-700 font-medium">
-                          A Unit: Question Bank
+                          {data.hero.title}
                         </span>
                         <div className="text-right">
-                          <span className="line-through text-gray-400 text-xs block">
-                            700
-                          </span>
                           <span className="text-lg font-bold text-gray-900">
-                            500
+                            {displayPrice}
                           </span>
                         </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-700 font-medium">
-                          Course Fee
-                        </span>
-                        <span className="text-lg font-bold text-gray-900">
-                          3500
-                        </span>
                       </div>
                     </div>
 
                     <div className="bg-blue-50/50 rounded-lg p-3 flex justify-between items-center border border-blue-100">
                       <span className="font-bold text-gray-700">মোট</span>
                       <span className="text-xl font-bold text-[#F3056D]">
-                        4000
+                        {displayPrice}
                       </span>
                     </div>
                   </div>
@@ -938,7 +927,7 @@ export default function CourseDetails() {
                 </div>
               )}
 
-              {/* --- STEP 3: CHECKOUT / PAYMENT --- */}
+              {/* --- STEP 3: CHECKOUT / PAYMENT (REAL DATA) --- */}
               {enrollmentStep === 3 && (
                 <div className="animate-in slide-in-from-right-4 duration-300 h-full flex flex-col">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
@@ -1003,13 +992,7 @@ export default function CourseDetails() {
                             <div className="flex justify-between text-sm text-gray-600">
                               <span>{isBangla ? "ফি" : "Fee"}</span>
                               <span className="font-medium text-gray-900">
-                                3500
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-sm text-gray-600">
-                              <span>{isBangla ? "অন্যান্য" : "Others"}</span>
-                              <span className="font-medium text-gray-900">
-                                500
+                                {displayPrice}
                               </span>
                             </div>
                             <div className="border-t border-gray-200 my-2 pt-2"></div>
@@ -1018,7 +1001,7 @@ export default function CourseDetails() {
                                 {isBangla ? "সর্বমোট" : "Grand Total"}
                               </span>
                               <span className="text-2xl font-bold text-[#F3056D]">
-                                4000
+                                {displayPrice}
                               </span>
                             </div>
                           </div>

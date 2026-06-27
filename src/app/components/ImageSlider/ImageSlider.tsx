@@ -16,32 +16,32 @@ import "swiper/css/free-mode";
 const ImageSlider: React.FC = () => {
   // --- ARRAY 1: FOR THE FIRST SLIDER (Left to Right) ---
   const firstRowImages = [
-    { id: 1, src: "/gallary/first.jpg", alt: "Group 1" },
-    { id: 2, src: "/gallary/1st.jpg", alt: "Group 1" },
-    { id: 3, src: "/gallary/2nd.png", alt: "Group 2" },
-    { id: 4, src: "/gallary/3rd.png", alt: "Group 3" },
-    { id: 5, src: "/gallary/4th.png", alt: "Group 4" },
-    { id: 6, src: "/gallary/5th.png", alt: "Group 5" },
-    { id: 7, src: "/gallary/6th.jpg", alt: "Group 6" },
-    { id: 8, src: "/gallary/7.jpg", alt: "Group 7" },
-    { id: 9, src: "/gallary/8.jpg", alt: "Group 8" },
-    { id: 10, src: "/gallary/9.jpg", alt: "Group 9" },
-    { id: 11, src: "/gallary/10.jpg", alt: "Group 10" },
+    { id: 1, src: "/gallary/chalakchampsfirst.JPG", alt: "Group 1" },
+    { id: 2, src: "/gallary/chalakchamps1st.JPG", alt: "Group 1" },
+    { id: 3, src: "/gallary/chalakchamps2nd.png", alt: "Group 2" },
+    { id: 4, src: "/gallary/chalakchamps3rd.png", alt: "Group 3" },
+    { id: 5, src: "/gallary/chalakchamps4th.png", alt: "Group 4" },
+    { id: 6, src: "/gallary/chalakchamps5th.png", alt: "Group 5" },
+    { id: 7, src: "/gallary/chalakchamps6th.JPG", alt: "Group 6" },
+    { id: 8, src: "/gallary/chalakchamps7.JPG", alt: "Group 7" },
+    { id: 9, src: "/gallary/chalakchamps8.JPG", alt: "Group 8" },
+    { id: 10, src: "/gallary/chalakchamps9.JPG", alt: "Group 9" },
+    { id: 11, src: "/gallary/chalakchamps10.JPG", alt: "Group 10" },
   ];
 
   // --- ARRAY 2: FOR THE SECOND SLIDER (Right to Left) ---
   // TODO: Update the 'src' paths below with your actual second row images
   const secondRowImages = [
-    { id: 11, src: "/gallary/downfirst.jpg", alt: "Second Row Group 1" },
-    { id: 12, src: "/gallary/29.jpg", alt: "Second Row Group 2" },
-    { id: 13, src: "/gallary/28.jpg", alt: "Second Row Group 3" },
-    { id: 14, src: "/gallary/27.jpg", alt: "Second Row Group 4" },
-    { id: 15, src: "/gallary/26.jpg", alt: "Second Row Group 5" },
-    { id: 17, src: "/gallary/25.jpg", alt: "Second Row Group 6" },
-    { id: 18, src: "/gallary/24.jpg", alt: "Second Row Group 6" },
-    { id: 19, src: "/gallary/23.jpg", alt: "Second Row Group 6" },
-    { id: 20, src: "/gallary/22.jpg", alt: "Second Row Group 7" },
-    { id: 21, src: "/gallary/21.jpg", alt: "Second Row Group 7" },
+    { id: 11, src: "/gallary/chalakchampsdownfirst.JPG", alt: "Second Row Group 1" },
+    { id: 12, src: "/gallary/chalakchamps29.JPG", alt: "Second Row Group 2" },
+    { id: 13, src: "/gallary/chalakchamps28.JPG", alt: "Second Row Group 3" },
+    { id: 14, src: "/gallary/chalakchamps27.JPG", alt: "Second Row Group 4" },
+    { id: 15, src: "/gallary/chalakchamps26.JPG", alt: "Second Row Group 5" },
+    { id: 17, src: "/gallary/chalakchamps25.JPG", alt: "Second Row Group 6" },
+    { id: 18, src: "/gallary/chalakchamps24.JPG", alt: "Second Row Group 6" },
+    { id: 19, src: "/gallary/chalakchamps23.JPG", alt: "Second Row Group 6" },
+    { id: 20, src: "/gallary/chalakchamps22.JPG", alt: "Second Row Group 7" },
+    { id: 21, src: "/gallary/chalakchamps21.JPG", alt: "Second Row Group 7" },
   ];
 
   return (

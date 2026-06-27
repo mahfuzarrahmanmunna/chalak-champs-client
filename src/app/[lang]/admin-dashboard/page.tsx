@@ -48,6 +48,104 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
+// --- PROFESSIONAL SKELETON LOADING UI ---
+const DashboardSkeleton = () => (
+  <div className="space-y-8">
+    {/* Welcome Section Skeleton */}
+    <div className="flex flex-col gap-2">
+      <div className="h-9 w-64 bg-gray-200 rounded-lg animate-pulse"></div>
+      <div className="h-5 w-96 bg-gray-100 rounded-lg animate-pulse"></div>
+    </div>
+
+    {/* Stats Grid Skeleton */}
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div
+          key={i}
+          className="relative overflow-hidden rounded-xl border bg-white p-6 shadow-sm"
+        >
+          <div className="flex items-center justify-between pb-2">
+            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-8 w-8 bg-gray-200 rounded-lg animate-pulse"></div>
+          </div>
+          <div className="flex items-baseline gap-2 mt-2">
+            <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div className="h-3 w-28 bg-gray-100 rounded mt-3 animate-pulse"></div>
+        </div>
+      ))}
+    </div>
+
+    <div className="grid gap-6 lg:grid-cols-7">
+      {/* Recent Users Skeleton (4 columns) */}
+      <div className="col-span-4 rounded-xl border bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b p-6">
+          <div>
+            <div className="h-5 w-32 bg-gray-200 rounded animate-pulse mb-2"></div>
+            <div className="h-4 w-48 bg-gray-100 rounded animate-pulse"></div>
+          </div>
+          <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <div className="p-0">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between p-4 border-b last:border-b-0"
+            >
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse"></div>
+                <div>
+                  <div className="h-4 w-32 bg-gray-200 rounded animate-pulse mb-1.5"></div>
+                  <div className="h-3 w-44 bg-gray-100 rounded animate-pulse"></div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="h-6 w-14 bg-gray-100 rounded-full animate-pulse"></div>
+                <div className="h-5 w-5 bg-gray-100 rounded animate-pulse"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent Courses Skeleton (3 columns) */}
+      <div className="col-span-3 rounded-xl border bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b p-6">
+          <div>
+            <div className="h-5 w-32 bg-gray-200 rounded animate-pulse mb-2"></div>
+            <div className="h-4 w-28 bg-gray-100 rounded animate-pulse"></div>
+          </div>
+          <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <div className="p-4 space-y-5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex gap-4">
+              <div className="h-16 w-16 flex-shrink-0 bg-gray-200 rounded-lg animate-pulse"></div>
+              <div className="flex min-w-0 flex-1 flex-col justify-center">
+                <div className="h-4 w-full bg-gray-200 rounded animate-pulse mb-2"></div>
+                <div className="h-3 w-3/4 bg-gray-100 rounded animate-pulse"></div>
+              </div>
+              <div className="flex flex-col items-end justify-center gap-1">
+                <div className="h-5 w-16 bg-gray-100 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Analytics Skeleton */}
+    <div className="rounded-xl border bg-white shadow-sm">
+      <div className="border-b p-6">
+        <div className="h-5 w-48 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+      <div className="flex h-80 items-center justify-center p-12">
+        <div className="w-full h-full bg-gray-100 rounded-xl animate-pulse"></div>
+      </div>
+    </div>
+  </div>
+);
+
 export default function AdminDashboardPage() {
   const { currentUser, appUser, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -82,7 +180,6 @@ export default function AdminDashboardPage() {
     }[]
   >([]);
 
-  // Hoisted function so it can be called from the effect above
   async function fetchDashboardData() {
     try {
       setIsLoading(true);
@@ -103,10 +200,6 @@ export default function AdminDashboardPage() {
   }
 
   useEffect(() => {
-    // Only fetch dashboard data when auth finished loading and
-    // the current app user is available and has admin role.
-    // Defer the call to the next tick to avoid synchronous setState
-    // inside the effect body which can cause cascading renders.
     if (!authLoading && currentUser && appUser?.role === "admin") {
       const id = setTimeout(() => {
         fetchDashboardData();
@@ -155,21 +248,9 @@ export default function AdminDashboardPage() {
     },
   ];
 
+  // --- RENDER SKELETON WHILE LOADING ---
   if (isLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div
-            className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"
-            style={{
-              borderTopColor: "transparent",
-              borderColor: "var(--color-primary)",
-            }}
-          ></div>
-          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
