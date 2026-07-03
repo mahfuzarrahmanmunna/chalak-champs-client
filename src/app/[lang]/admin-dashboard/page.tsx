@@ -1,3 +1,4 @@
+// src/app/[lang]/admin-dashboard/page.tsx
 "use client";
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -163,7 +164,8 @@ export default function AdminDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [recentUsers, setRecentUsers] = useState<
     {
-      id: number;
+      id?: number | string;
+      _id?: string;
       firstName: string;
       lastName: string;
       email: string;
@@ -172,7 +174,8 @@ export default function AdminDashboardPage() {
   >([]);
   const [recentCourses, setRecentCourses] = useState<
     {
-      id: number;
+      id?: number | string;
+      _id?: string;
       instructor: string;
       status: string;
       title: string;
@@ -359,9 +362,9 @@ export default function AdminDashboardPage() {
               style={{ borderColor: "var(--color-border)" }}
             >
               {recentUsers.length > 0 ? (
-                recentUsers.map((user) => (
+                recentUsers.map((user, index) => (
                   <div
-                    key={user.id}
+                    key={user.id ?? user._id ?? user.email ?? `user-${index}`}
                     className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
@@ -440,8 +443,11 @@ export default function AdminDashboardPage() {
             </Link>
           </div>
           <div className="p-4 space-y-4">
-            {recentCourses.map((course) => (
-              <div key={course.id} className="flex gap-4">
+            {recentCourses.map((course, index) => (
+              <div
+                key={course.id ?? course._id ?? `course-${index}`}
+                className="flex gap-4"
+              >
                 <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200">
                   <Image
                     className="h-full w-full object-cover"

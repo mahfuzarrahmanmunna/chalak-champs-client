@@ -106,7 +106,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, ctaCardLabel }) => {
                     </Button>
                   </div>
                 ) : (
-                  <Link href={getLink(`/products/${product.id}`)}>
+                  <Link href={getLink(`/products/details?id=${product.id}`)}>
                     <Button
                       bgColor="#E2136E"
                       highlightColor="#FC7CB4"

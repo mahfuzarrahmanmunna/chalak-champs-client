@@ -5,7 +5,9 @@ import React, {
   useContext,
   useEffect,
   useState,
+  useRef,
   ReactNode,
+  useCallback,
 } from "react";
 import {
   createUserWithEmailAndPassword,
@@ -27,7 +29,8 @@ import {
   verifyEmailCode,
 } from "../services/authService";
 
-// Define User Type (Matches your Backend IUser)
+// --- Types ---
+
 interface AppUser {
   uid: string;
   firstName: string;
@@ -37,136 +40,205 @@ interface AppUser {
   role: "student" | "teacher" | "admin";
 }
 
+/**
+ * Controls post-authentication navigation behavior.
+ *
+ * - `redirect: true`  (default) → navigate to /dashboard
+ * - `redirect: false`             → stay on current page, do nothing
+ * - `redirect: "/custom-path"`   → navigate to that specific path
+ * - `onSuccess`                  → callback fired after auth + DB sync complete
+ */
+interface AuthOptions {
+  redirect?: boolean | string;
+  onSuccess?: () => void;
+}
+
 interface AuthContextType {
   currentUser: FirebaseUser | null;
-  appUser: AppUser | null; // The user from MongoDB
+  appUser: AppUser | null;
   loading: boolean;
   isAdmin: boolean;
-  // Email/Password Flow
+
   signUp: (
     email: string,
     password: string,
     firstName: string,
     lastName: string,
+    options?: AuthOptions,
   ) => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
-  signInWithEmail: (email: string, password: string) => Promise<void>;
-  signInWithPhone: (phone: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  // OTP Flows
+
+  login: (
+    email: string,
+    password: string,
+    options?: AuthOptions,
+  ) => Promise<void>;
+
+  signInWithEmail: (
+    email: string,
+    password: string,
+    options?: AuthOptions,
+  ) => Promise<void>;
+
+  signInWithPhone: (
+    phone: string,
+    password: string,
+    options?: AuthOptions,
+  ) => Promise<void>;
+
+  logout: (options?: AuthOptions) => Promise<void>;
+
   sendOtpEmail: (email: string) => Promise<void>;
   checkOtpEmail: (email: string, code: string) => Promise<void>;
   sendOtpPhone: (phone: string, recaptchaContainer: string) => Promise<void>;
   checkOtpPhone: (phone: string, code: string) => Promise<void>;
 
-  // signInWithEmail: (email: string, password: string) => Promise<void>;
-  // signInWithPhone: (phone: string, password: string) => Promise<void>;
-  // Final Step
-  completeRegistration: (data: {
-    firstName: string;
-    lastName: string;
-    password?: string;
-    emailOrPhone?: string;
-    method?: "email" | "phone";
-  }) => Promise<void>;
+  completeRegistration: (
+    data: {
+      firstName: string;
+      lastName: string;
+      password?: string;
+      emailOrPhone?: string;
+      method?: "email" | "phone";
+    },
+    options?: AuthOptions,
+  ) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// --- Centralized Redirect Handler ---
+const DEFAULT_REDIRECT = "/dashboard";
+
+function resolveRedirect(options?: AuthOptions): string | null {
+  if (options?.redirect === false) return null;
+  if (typeof options?.redirect === "string") return options.redirect;
+  return DEFAULT_REDIRECT;
+}
+
+// --- Provider ---
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const confirmationResultRef = useRef<ConfirmationResult | null>(null);
 
-  // 2. Sync Firebase State with Backend
+  // --- Sync Firebase ↔ Backend ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
 
       if (user) {
         try {
-          // Fetch the full user profile from MongoDB
-          // This passes the Firebase Token automatically via axios interceptor
           const res = await getProfile();
           setAppUser(res.user);
-        } catch (err) {
-          console.log("User not yet registered in backend DB:", err);
+        } catch {
           setAppUser(null);
         }
       } else {
         setAppUser(null);
       }
+
       setLoading(false);
     });
 
     return unsubscribe;
   }, []);
 
-  console.log("AuthProvider rendered. Current Firebase User:", currentUser);
-
-  // --- Helper: Convert Phone to Email Alias ---
-  // This allows "Phone + Password" login to work on Firebase Email/Password Auth
+  // --- Helper: Phone → Email Alias ---
   const normalizePhoneToEmail = (phone: string) => {
-    const cleanPhone = phone.replace(/[^0-9]/g, "");
-    return `${cleanPhone}@langual-academy.com`;
+    const clean = phone.replace(/[^0-9]/g, "");
+    return `${clean}@langual-academy.com`;
   };
 
-  // 1. Initialize Recaptcha for Phone Auth
+  // --- Helper: Setup Recaptcha ---
   const setupRecaptcha = (container: string) => {
     if (typeof window === "undefined") return null;
     try {
-      return new RecaptchaVerifier(auth, container, {
-        size: "invisible",
-      });
+      return new RecaptchaVerifier(auth, container, { size: "invisible" });
     } catch (error) {
       console.error("Recaptcha error", error);
       return null;
     }
   };
 
-  // 3. Standard Login (Internal)
-  const login = async (email: string, password: string) => {
+  // --- Helper: Fetch profile after auth state change ---
+  const refreshAppUser = useCallback(async () => {
+    try {
+      const res = await getProfile();
+      setAppUser(res.user);
+    } catch {
+      setAppUser(null);
+    }
+  }, []);
+
+  // --- Core Login (internal) ---
+  const login = async (
+    email: string,
+    password: string,
+    options?: AuthOptions,
+  ) => {
     const cleanEmail = email.trim();
     const cleanPassword = password.trim();
-
     await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
 
-    // The useEffect will trigger getProfile() to sync DB automatically
-    router.push("/dashboard");
+    // Wait for onAuthStateChanged to fire and sync DB
+    // Small delay to let the listener update state
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await refreshAppUser();
+
+    options?.onSuccess?.();
+
+    const destination = resolveRedirect(options);
+    if (destination) {
+      router.push(destination);
+    }
   };
 
-  // 4. Specific Login Functions for SignInPage
-  const signInWithEmail = async (email: string, password: string) => {
-    await login(email, password);
+  // --- Specific Login Wrappers ---
+  const signInWithEmail = async (
+    email: string,
+    password: string,
+    options?: AuthOptions,
+  ) => {
+    await login(email, password, options);
   };
 
-  const signInWithPhone = async (phone: string, password: string) => {
-    // To login with Phone + Password, we treat it as an email alias
+  const signInWithPhone = async (
+    phone: string,
+    password: string,
+    options?: AuthOptions,
+  ) => {
     const emailAlias = normalizePhoneToEmail(phone);
-    await login(emailAlias, password);
+    await login(emailAlias, password, options);
   };
 
-  // 5. Logout
-  const logout = async () => {
+  // --- Logout ---
+  const logout = async (options?: AuthOptions) => {
     await signOut(auth);
     setAppUser(null);
-    router.push("/");
+
+    options?.onSuccess?.();
+
+    const destination = resolveRedirect(options);
+    if (destination) {
+      router.push(destination);
+    }
   };
 
-  // 6. Email/Password Registration (Direct)
+  // --- Email/Password Registration (Direct) ---
   const signUp = async (
     email: string,
     password: string,
     firstName: string,
     lastName: string,
+    options?: AuthOptions,
   ) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(cred.user, {
+      displayName: `${firstName} ${lastName}`,
+    });
 
-    // Update Firebase Profile
-    await updateProfile(cred.user, { displayName: `${firstName} ${lastName}` });
-
-    // Register in MongoDB
     await registerUser({
       uid: cred.user.uid,
       firstName,
@@ -175,22 +247,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       role: "student",
     });
 
-    router.push("/dashboard");
+    await refreshAppUser();
+
+    options?.onSuccess?.();
+
+    const destination = resolveRedirect(options);
+    if (destination) {
+      router.push(destination);
+    }
   };
 
-  // 7. Custom OTP: Email Flow
+  // --- Custom OTP: Email Flow ---
   const sendOtpEmail = async (email: string) => {
     await sendEmailVerificationCode(email);
   };
 
   const checkOtpEmail = async (email: string, code: string) => {
     await verifyEmailCode(email, code);
-    // OTP Verified. Next step is to collect Name/Password and create Firebase User.
   };
 
-  // 8. Custom OTP: Phone Flow
-  const confirmationResultRef = React.useRef<ConfirmationResult | null>(null);
-
+  // --- Custom OTP: Phone Flow ---
   const sendOtpPhone = async (phone: string, container: string) => {
     const recaptchaVerifier = setupRecaptcha(container);
     if (!recaptchaVerifier) throw new Error("Recaptcha failed");
@@ -207,21 +283,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error("No confirmation result available");
     }
     await confirmationResultRef.current.confirm(code);
-    // Firebase Phone Auth Successful. User is logged in to Firebase.
-    // Next step: Register in MongoDB.
   };
 
-  // 9. Final Registration Step (Called after OTP is verified and Name/Pass is collected)
-  const completeRegistration = async (data: {
-    firstName: string;
-    lastName: string;
-    password?: string;
-    emailOrPhone?: string;
-    method?: "email" | "phone";
-  }) => {
+  // --- Final Registration Step (after OTP verified) ---
+  const completeRegistration = async (
+    data: {
+      firstName: string;
+      lastName: string;
+      password?: string;
+      emailOrPhone?: string;
+      method?: "email" | "phone";
+    },
+    options?: AuthOptions,
+  ) => {
     let firebaseUser = auth?.currentUser || currentUser;
 
-    // A. If Email Method, we need to create Firebase User here (since OTP was just validation)
     if (data.method === "email" && data.emailOrPhone && data.password) {
       const cred = await createUserWithEmailAndPassword(
         auth!,
@@ -233,10 +309,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       firebaseUser = cred.user;
     }
-    // B. If Phone Method, Firebase User is already signed in via OTP confirmation
 
     if (firebaseUser) {
-      // Register in MongoDB
       await registerUser({
         uid: firebaseUser.uid,
         firstName: data.firstName,
@@ -246,7 +320,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: "student",
       });
 
-      router.push("/dashboard");
+      await refreshAppUser();
+
+      options?.onSuccess?.();
+
+      const destination = resolveRedirect(options);
+      if (destination) {
+        router.push(destination);
+      }
     } else {
       throw new Error("Firebase authentication failed");
     }
@@ -261,27 +342,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAdmin: Boolean(appUser?.role === "admin"),
         signUp,
         login,
-        // signInWithEmail,
-        // signInWithPhone,
+        signInWithEmail,
+        signInWithPhone,
         logout,
         sendOtpEmail,
         checkOtpEmail,
         sendOtpPhone,
         checkOtpPhone,
         completeRegistration,
-        signInWithEmail,
-        signInWithPhone,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
-};;
+};
 
+// --- Hook ---
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    // During build time or SSR, return a safe default
     return {
       currentUser: null,
       appUser: null,

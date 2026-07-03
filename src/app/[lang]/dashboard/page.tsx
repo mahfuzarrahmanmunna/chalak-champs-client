@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useTheme } from "@/app/context/ThemeContext";
+import gsap from "gsap";
 import {
   BookOpen,
   Clock,
@@ -12,233 +12,799 @@ import {
   Play,
   ChevronRight,
   TrendingUp,
-  CheckCircle,
-  FileText,
-  Users,
-  Zap,
-  MoreHorizontal,
+  CheckCircle2,
+  Star,
+  Trophy,
+  Flame,
+  Target,
+  Crown,
+  Sparkles,
   ArrowRight,
+  Lock,
+  Zap,
+  Gamepad2,
+  Palette,
+  Music,
+  Code2,
+  Microscope,
+  Pencil,
+  Rocket,
+  Heart,
+  Users,
+  BookMarked,
+  PlayCircle,
 } from "lucide-react";
 
 // Mock Data
 const ongoingCourses = [
   {
     id: "1",
-    title: "Advanced React Patterns",
-    instructor: "Sarah Johnson",
+    title: "Fun with Numbers",
+    instructor: "Ms. Sarah",
     progress: 65,
     image:
-      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    nextLesson: "Context API Deep Dive",
-    color: "indigo",
+      "https://images.unsplash.com/photo-1596495578065-6e0763fa1178?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+    nextLesson: "Addition Adventures",
+    category: "Mathematics",
+    color: "#F3056D",
+    icon: Target,
+    totalLessons: 24,
+    completedLessons: 16,
   },
   {
     id: "2",
-    title: "UI/UX Fundamentals",
-    instructor: "Michael Chen",
+    title: "Color & Shapes",
+    instructor: "Mr. David",
     progress: 30,
     image:
-      "https://images.unsplash.com/photo-1561070791-2526d30994b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    nextLesson: "Color Theory Basics",
-    color: "emerald",
+      "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+    nextLesson: "Mixing Primary Colors",
+    category: "Art & Craft",
+    color: "#ffd700",
+    icon: Palette,
+    totalLessons: 18,
+    completedLessons: 5,
+  },
+  {
+    id: "3",
+    title: "Science Explorers",
+    instructor: "Dr. Emily",
+    progress: 85,
+    image:
+      "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+    nextLesson: "Solar System Tour",
+    category: "Science",
+    color: "#214187",
+    icon: Microscope,
+    totalLessons: 20,
+    completedLessons: 17,
+  },
+];
+
+const recommendedCourses = [
+  {
+    id: "r1",
+    title: "Coding with Blocks",
+    category: "Technology",
+    color: "#F3056D",
+    icon: Code2,
+    lessons: 15,
+    rating: 4.8,
+    students: 1200,
+    image:
+      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "r2",
+    title: "Music & Rhythm",
+    category: "Creative Arts",
+    color: "#ffd700",
+    icon: Music,
+    lessons: 12,
+    rating: 4.9,
+    students: 890,
+    image:
+      "https://images.unsplash.com/photo-1507838153414-b4b713384a76?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "r3",
+    title: "Story Writing Fun",
+    category: "Language",
+    color: "#214187",
+    icon: Pencil,
+    lessons: 10,
+    rating: 4.7,
+    students: 750,
+    image:
+      "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "r4",
+    title: "Space Adventures",
+    category: "Science",
+    color: "#F3056D",
+    icon: Rocket,
+    lessons: 8,
+    rating: 4.9,
+    students: 2100,
+    image:
+      "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
   },
 ];
 
 const upcomingSchedule = [
   {
     id: 1,
-    title: "Live Q&A: React Hooks",
+    title: "Live Math Quiz",
     time: "Today, 4:00 PM",
     type: "live",
-    color: "bg-indigo-500",
+    color: "#F3056D",
+    icon: Gamepad2,
   },
   {
     id: 2,
-    title: "Assignment Due: UI Project",
-    time: "Tomorrow, 11:59 PM",
+    title: "Art Homework Due",
+    time: "Tomorrow, 9:00 PM",
     type: "deadline",
-    color: "bg-amber-500",
+    color: "#ffd700",
+    icon: Clock,
   },
   {
     id: 3,
-    title: "Workshop: Portfolio Building",
-    time: "Fri, 2:00 PM",
+    title: "Science Lab Session",
+    time: "Friday, 2:00 PM",
     type: "event",
-    color: "bg-rose-500",
+    color: "#214187",
+    icon: Microscope,
   },
 ];
 
+const leaderboard = [
+  { rank: 1, name: "Emma W.", points: 2450, avatar: "kid2" },
+  { rank: 2, name: "Liam K.", points: 2180, avatar: "kid3" },
+  { rank: 3, name: "You", points: 1950, avatar: "kid1", isYou: true },
+];
+
 export default function StudentDashboardPage() {
-  const { colors, isDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // GSAP entrance animations
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".hero-card",
+        { y: 30, opacity: 0, scale: 0.98 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "power3.out" },
+      );
+      gsap.fromTo(
+        ".stat-card",
+        { y: 20, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          stagger: 0.1,
+          ease: "power2.out",
+          delay: 0.2,
+        },
+      );
+      gsap.fromTo(
+        ".course-card",
+        { y: 20, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          stagger: 0.12,
+          ease: "power2.out",
+          delay: 0.4,
+        },
+      );
+      gsap.fromTo(
+        ".widget-card",
+        { y: 20, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          stagger: 0.1,
+          ease: "power2.out",
+          delay: 0.5,
+        },
+      );
+    }, containerRef);
+    return () => ctx.revert();
+  }, []);
+
+  const cardBg = isDarkMode ? "rgba(26,16,53,0.6)" : "#fff";
+  const cardBorder = isDarkMode
+    ? "1px solid rgba(255,255,255,0.06)"
+    : "1px solid rgba(33,65,135,0.06)";
+  const textPrimary = isDarkMode ? "#fff" : "#214187";
+  const textSecondary = isDarkMode
+    ? "rgba(255,255,255,0.5)"
+    : "rgba(33,65,135,0.5)";
+  const textMuted = isDarkMode
+    ? "rgba(255,255,255,0.3)"
+    : "rgba(33,65,135,0.35)";
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Modern Header Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-8 shadow-2xl shadow-indigo-500/20">
+    <div className="space-y-6 max-w-7xl mx-auto" ref={containerRef}>
+      {/* ==================== HERO WELCOME CARD ==================== */}
+      <div
+        className="hero-card relative overflow-hidden rounded-3xl p-6 sm:p-8"
+        style={{
+          background: isDarkMode
+            ? "linear-gradient(135deg, #2d1045 0%, #1a1035 40%, #0d1a2d 100%)"
+            : "linear-gradient(135deg, #214187 0%, #1a3470 40%, #152d5e 100%)",
+          boxShadow: isDarkMode
+            ? "0 20px 60px rgba(0,0,0,0.4)"
+            : "0 20px 60px rgba(33,65,135,0.25)",
+        }}
+      >
         {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
+        <div
+          className="absolute top-0 right-0 w-72 h-72 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/4"
+          style={{ background: "#F3056D" }}
+        />
+        <div
+          className="absolute bottom-0 left-1/3 w-56 h-56 rounded-full blur-3xl opacity-15 translate-y-1/2"
+          style={{ background: "#ffd700" }}
+        />
+
+        {/* Floating Shapes */}
+        <div
+          className="hidden sm:block absolute top-6 right-32 w-16 h-16 rounded-2xl rotate-12 opacity-20"
+          style={{
+            background: "#F3056D",
+            border: "2px solid rgba(255,255,255,0.1)",
+          }}
+        />
+        <div
+          className="hidden sm:block absolute bottom-8 right-52 w-10 h-10 rounded-full opacity-20"
+          style={{ background: "#ffd700" }}
+        />
+        <div
+          className="hidden sm:block absolute top-16 right-72 w-6 h-6 rotate-45 opacity-15"
+          style={{ background: "#fff" }}
+        />
 
         <div className="relative grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-medium mb-4 backdrop-blur-sm">
-              <Zap className="h-3 w-3" />
-              <span>12 Lessons Completed This Week</span>
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold mb-5"
+              style={{
+                background: "rgba(243,5,109,0.2)",
+                color: "#F3056D",
+                border: "1px solid rgba(243,5,109,0.2)",
+              }}
+            >
+              <Flame className="h-3.5 w-3.5" />
+              <span>5 Day Learning Streak!</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
-              Welcome back, Alex! 👋
+            <h1
+              className="text-2xl sm:text-3xl md:text-4xl font-black mb-3 tracking-tight leading-tight"
+              style={{ color: "#fff" }}
+            >
+              Welcome back,
+              <br />
+              <span style={{ color: "#ffd700" }}>Little Star!</span>
             </h1>
-            <p className="text-white/80 max-w-md mb-6 text-sm md:text-base">
-              You <a href="mailto:"></a>re making great progress. Continue your
-              learning streak and unlock the Advanced Developer badge!
+            <p
+              className="text-sm sm:text-base mb-6 max-w-md leading-relaxed"
+              style={{ color: "rgba(255,255,255,0.6)" }}
+            >
+              You&apos;re doing amazing! Complete 2 more lessons today to earn
+              your Super Learner badge.
             </p>
-            <button className="flex items-center gap-2 px-6 py-3 bg-white text-indigo-600 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
-              <Play className="h-4 w-4" />
-              Continue Learning
-            </button>
-          </div>
-          <div className="hidden md:flex justify-end items-center relative h-40">
-            {/* Floating UI Elements for visual interest */}
-            <div className="absolute w-48 h-32 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/10 flex flex-col justify-center items-center text-white shadow-xl transform -rotate-6 hover:rotate-0 transition-transform duration-500">
-              <TrendingUp className="h-6 w-6 mb-1" />
-              <span className="text-xs font-bold">Weekly Progress</span>
-              <span className="text-2xl font-bold">+15%</span>
+            <div className="flex flex-wrap gap-3">
+              <button
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #F3056D 0%, #ff3d8f 100%)",
+                  color: "#fff",
+                  boxShadow: "0 8px 25px rgba(243,5,109,0.35)",
+                }}
+              >
+                <Play className="h-4 w-4" fill="#fff" />
+                Continue Learning
+              </button>
+              <button
+                className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm transition-all duration-300 hover:-translate-y-0.5"
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  color: "#fff",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                }}
+              >
+                <Sparkles className="h-4 w-4" />
+                Daily Challenge
+              </button>
             </div>
-            <div className="absolute w-36 h-24 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/10 flex flex-col justify-center items-center text-white shadow-xl transform rotate-6 translate-x-10 translate-y-4 hover:rotate-0 transition-transform duration-500">
-              <Award className="h-5 w-5 mb-1" />
-              <span className="text-xs font-bold">Streak</span>
-              <span className="text-xl font-bold">5 Days</span>
+          </div>
+
+          {/* Right Side: Fun Stats Cards */}
+          <div className="hidden md:flex justify-end items-center relative h-44">
+            <div
+              className="absolute w-44 p-4 rounded-2xl backdrop-blur-sm transform -rotate-6 hover:rotate-0 transition-transform duration-500 cursor-default"
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="h-4 w-4" style={{ color: "#ffd700" }} />
+                <span
+                  className="text-[10px] font-bold uppercase tracking-wider"
+                  style={{ color: "rgba(255,255,255,0.5)" }}
+                >
+                  Weekly Progress
+                </span>
+              </div>
+              <p className="text-3xl font-black" style={{ color: "#fff" }}>
+                +15%
+              </p>
+              <p
+                className="text-[11px] mt-1"
+                style={{ color: "rgba(255,255,255,0.4)" }}
+              >
+                vs last week
+              </p>
+            </div>
+            <div
+              className="absolute w-40 p-4 rounded-2xl backdrop-blur-sm transform rotate-6 translate-x-12 translate-y-4 hover:rotate-0 transition-transform duration-500 cursor-default"
+              style={{
+                background: "rgba(243,5,109,0.15)",
+                border: "1px solid rgba(243,5,109,0.2)",
+              }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Trophy className="h-4 w-4" style={{ color: "#ffd700" }} />
+                <span
+                  className="text-[10px] font-bold uppercase tracking-wider"
+                  style={{ color: "rgba(255,255,255,0.5)" }}
+                >
+                  Rank
+                </span>
+              </div>
+              <p className="text-3xl font-black" style={{ color: "#ffd700" }}>
+                #3
+              </p>
+              <p
+                className="text-[11px] mt-1"
+                style={{ color: "rgba(255,255,255,0.4)" }}
+              >
+                in your class
+              </p>
+            </div>
+            <div
+              className="absolute w-32 p-3 rounded-2xl backdrop-blur-sm transform -rotate-3 -translate-x-4 translate-y-16 hover:rotate-0 transition-transform duration-500 cursor-default"
+              style={{
+                background: "rgba(255,215,0,0.1)",
+                border: "1px solid rgba(255,215,0,0.15)",
+              }}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Star
+                  className="h-3.5 w-3.5"
+                  style={{ color: "#ffd700" }}
+                  fill="#ffd700"
+                />
+                <span
+                  className="text-[10px] font-bold"
+                  style={{ color: "rgba(255,255,255,0.5)" }}
+                >
+                  Stars
+                </span>
+              </div>
+              <p className="text-2xl font-black" style={{ color: "#fff" }}>
+                1,250
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bento Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Column: My Courses (Takes 2 cols) */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              {
-                label: "Enrolled Courses",
-                value: "05",
-                icon: BookOpen,
-                trend: "+2 this month",
-                color: "text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10",
-              },
-              {
-                label: "Completed Lessons",
-                value: "42",
-                icon: CheckCircle,
-                trend: "On track",
-                color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10",
-              },
-              {
-                label: "Certificates",
-                value: "02",
-                icon: Award,
-                trend: "New this week",
-                color: "text-amber-500 bg-amber-50 dark:bg-amber-500/10",
-              },
-              {
-                label: "Hours Spent",
-                value: "86h",
-                icon: Clock,
-                trend: "+5h this week",
-                color: "text-rose-500 bg-rose-50 dark:bg-rose-500/10",
-              },
-            ].map((stat) => (
+      {/* ==================== STATS GRID ==================== */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          {
+            label: "My Courses",
+            value: "05",
+            icon: BookOpen,
+            color: "#F3056D",
+            bgColor: isDarkMode
+              ? "rgba(243,5,109,0.1)"
+              : "rgba(243,5,109,0.06)",
+          },
+          {
+            label: "Lessons Done",
+            value: "42",
+            icon: CheckCircle2,
+            color: "#214187",
+            bgColor: isDarkMode
+              ? "rgba(33,65,135,0.15)"
+              : "rgba(33,65,135,0.06)",
+          },
+          {
+            label: "Badges Earned",
+            value: "08",
+            icon: Award,
+            color: "#ffd700",
+            bgColor: isDarkMode
+              ? "rgba(255,215,0,0.1)"
+              : "rgba(255,215,0,0.08)",
+          },
+          {
+            label: "Learning Time",
+            value: "86h",
+            icon: Clock,
+            color: "#F3056D",
+            bgColor: isDarkMode
+              ? "rgba(243,5,109,0.1)"
+              : "rgba(243,5,109,0.06)",
+          },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className="stat-card p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:-translate-y-1 cursor-default"
+            style={{
+              background: cardBg,
+              border: cardBorder,
+              boxShadow: isDarkMode
+                ? "0 4px 20px rgba(0,0,0,0.2)"
+                : "0 4px 20px rgba(33,65,135,0.06)",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            <div className="flex justify-between items-start mb-3">
               <div
-                key={stat.label}
-                className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow"
+                className="p-2.5 rounded-xl"
+                style={{ background: stat.bgColor }}
               >
-                <div className="flex justify-between items-start mb-3">
-                  <div className={`p-2.5 rounded-xl ${stat.color}`}>
-                    <stat.icon className="h-5 w-5" />
-                  </div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-full">
-                    {stat.trend}
-                  </span>
-                </div>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {stat.value}
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {stat.label}
-                </p>
+                <stat.icon className="h-5 w-5" style={{ color: stat.color }} />
               </div>
-            ))}
+              <TrendingUp
+                className="h-4 w-4"
+                style={{ color: stat.color, opacity: 0.5 }}
+              />
+            </div>
+            <h3
+              className="text-2xl sm:text-3xl font-black"
+              style={{ color: textPrimary }}
+            >
+              {stat.value}
+            </h3>
+            <p
+              className="text-xs font-medium mt-1"
+              style={{ color: textSecondary }}
+            >
+              {stat.label}
+            </p>
           </div>
+        ))}
+      </div>
 
-          {/* Continue Learning Section */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+      {/* ==================== MAIN BENTO GRID ==================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left: Courses Section (2 cols) */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Continue Learning */}
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{
+              background: cardBg,
+              border: cardBorder,
+              boxShadow: isDarkMode
+                ? "0 4px 20px rgba(0,0,0,0.2)"
+                : "0 4px 20px rgba(33,65,135,0.06)",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            <div
+              className="flex items-center justify-between p-5 sm:p-6"
+              style={{
+                borderBottom: isDarkMode
+                  ? "1px solid rgba(255,255,255,0.05)"
+                  : "1px solid rgba(33,65,135,0.06)",
+              }}
+            >
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                <h2
+                  className="text-lg font-black"
+                  style={{ color: textPrimary }}
+                >
                   Continue Learning
                 </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-xs mt-0.5" style={{ color: textSecondary }}>
                   Pick up where you left off
                 </p>
               </div>
               <Link
                 href="/dashboard/courses"
-                className="flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                className="flex items-center gap-1 text-xs font-bold transition-colors duration-200"
+                style={{ color: "#F3056D" }}
               >
-                View All <ChevronRight className="h-4 w-4" />
+                View All <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             </div>
 
-            <div className="divide-y divide-slate-50 dark:divide-slate-800">
+            <div
+              className="divide-y"
+              style={{
+                borderColor: isDarkMode
+                  ? "rgba(255,255,255,0.04)"
+                  : "rgba(33,65,135,0.04)",
+              }}
+            >
               {ongoingCourses.map((course) => (
                 <div
                   key={course.id}
-                  className="p-6 flex flex-col sm:flex-row gap-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer"
+                  className="course-card p-4 sm:p-5 flex flex-col sm:flex-row gap-4 transition-all duration-300 cursor-pointer group"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = isDarkMode
+                      ? "rgba(255,255,255,0.02)"
+                      : "rgba(33,65,135,0.02)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                  }}
                 >
-                  <div className="relative w-full sm:w-40 h-28 rounded-xl overflow-hidden flex-shrink-0 shadow-sm">
+                  {/* Thumbnail */}
+                  <div
+                    className="relative w-full sm:w-36 h-24 rounded-xl overflow-hidden flex-shrink-0"
+                    style={{
+                      boxShadow: `0 4px 15px ${course.color}15`,
+                    }}
+                  >
                     <img
                       src={course.image}
                       alt={course.title}
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
-                        <Play className="h-5 w-5 text-indigo-600 ml-0.5" />
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center"
+                        style={{ background: course.color }}
+                      >
+                        <Play
+                          className="h-4 w-4 text-white ml-0.5"
+                          fill="#fff"
+                        />
+                      </div>
+                    </div>
+                    {/* Category badge */}
+                    <div
+                      className="absolute top-2 left-2 px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider text-white"
+                      style={{ background: course.color }}
+                    >
+                      {course.category}
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 flex flex-col justify-center min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div
+                        className="p-1 rounded-md"
+                        style={{ background: `${course.color}15` }}
+                      >
+                        <course.icon
+                          className="h-3.5 w-3.5"
+                          style={{ color: course.color }}
+                        />
+                      </div>
+                      <span
+                        className="text-[11px] font-medium"
+                        style={{ color: textMuted }}
+                      >
+                        {course.instructor}
+                      </span>
+                    </div>
+                    <h3
+                      className="font-bold text-sm sm:text-base truncate"
+                      style={{ color: textPrimary }}
+                    >
+                      {course.title}
+                    </h3>
+                    <p
+                      className="text-xs mt-0.5 mb-3 flex items-center gap-1"
+                      style={{ color: textSecondary }}
+                    >
+                      <PlayCircle className="h-3 w-3" />
+                      Next: {course.nextLesson}
+                    </p>
+
+                    {/* Progress */}
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="flex-1 h-2 rounded-full overflow-hidden"
+                        style={{
+                          background: isDarkMode
+                            ? "rgba(255,255,255,0.06)"
+                            : "rgba(33,65,135,0.08)",
+                        }}
+                      >
+                        <div
+                          className="h-full rounded-full transition-all duration-1000 relative overflow-hidden"
+                          style={{
+                            width: `${course.progress}%`,
+                            background: `linear-gradient(90deg, ${course.color}, ${course.color}cc)`,
+                          }}
+                        >
+                          {/* Shimmer effect */}
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              background:
+                                "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                              animation: "shimmer 2s infinite",
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <span
+                          className="text-xs font-black"
+                          style={{ color: course.color }}
+                        >
+                          {course.progress}%
+                        </span>
+                        <span
+                          className="text-[10px]"
+                          style={{ color: textMuted }}
+                        >
+                          ({course.completedLessons}/{course.totalLessons})
+                        </span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex-1 flex flex-col justify-center">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span
-                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                          course.color === "indigo"
-                            ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
-                            : "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
-                        }`}
-                      >
-                        {course.color === "indigo" ? "Development" : "Design"}
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-slate-900 dark:text-white mb-1">
-                      {course.title}
-                    </h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-                      {course.instructor}
-                    </p>
+                </div>
+              ))}
+            </div>
+          </div>
 
-                    {/* Progress Bar */}
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${course.color === "indigo" ? "bg-indigo-500" : "bg-emerald-500"}`}
-                          style={{ width: `${course.progress}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                        {course.progress}%
-                      </span>
+          {/* Recommended Courses */}
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{
+              background: cardBg,
+              border: cardBorder,
+              boxShadow: isDarkMode
+                ? "0 4px 20px rgba(0,0,0,0.2)"
+                : "0 4px 20px rgba(33,65,135,0.06)",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            <div
+              className="flex items-center justify-between p-5 sm:p-6"
+              style={{
+                borderBottom: isDarkMode
+                  ? "1px solid rgba(255,255,255,0.05)"
+                  : "1px solid rgba(33,65,135,0.06)",
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" style={{ color: "#ffd700" }} />
+                <h2
+                  className="text-lg font-black"
+                  style={{ color: textPrimary }}
+                >
+                  Recommended for You
+                </h2>
+              </div>
+              <Link
+                href="/dashboard/courses"
+                className="flex items-center gap-1 text-xs font-bold"
+                style={{ color: "#F3056D" }}
+              >
+                See All <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            <div className="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {recommendedCourses.map((course) => (
+                <div
+                  key={course.id}
+                  className="course-card group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1"
+                  style={{
+                    border: isDarkMode
+                      ? "1px solid rgba(255,255,255,0.06)"
+                      : "1px solid rgba(33,65,135,0.08)",
+                    boxShadow: isDarkMode
+                      ? "0 2px 10px rgba(0,0,0,0.2)"
+                      : "0 2px 10px rgba(33,65,135,0.05)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = `0 8px 30px ${course.color}20`;
+                    e.currentTarget.style.borderColor = `${course.color}30`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = isDarkMode
+                      ? "0 2px 10px rgba(0,0,0,0.2)"
+                      : "0 2px 10px rgba(33,65,135,0.05)";
+                    e.currentTarget.style.borderColor = isDarkMode
+                      ? "1px solid rgba(255,255,255,0.06)"
+                      : "1px solid rgba(33,65,135,0.08)";
+                  }}
+                >
+                  {/* Mini Thumbnail */}
+                  <div className="relative h-28 overflow-hidden">
+                    <img
+                      src={course.image}
+                      alt={course.title}
+                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        background: `linear-gradient(to top, ${isDarkMode ? "rgba(26,16,53,0.9)" : "rgba(33,65,135,0.8)"}, transparent)`,
+                      }}
+                    />
+                    <div
+                      className="absolute top-3 left-3 p-1.5 rounded-lg"
+                      style={{
+                        background: "rgba(255,255,255,0.15)",
+                        backdropFilter: "blur(10px)",
+                      }}
+                    >
+                      <course.icon className="h-4 w-4 text-white" />
                     </div>
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-wider mb-0.5"
+                        style={{ color: course.color }}
+                      >
+                        {course.category}
+                      </p>
+                      <h3 className="text-sm font-bold text-white truncate">
+                        {course.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Info Footer */}
+                  <div
+                    className="p-3 flex items-center justify-between"
+                    style={{
+                      background: isDarkMode
+                        ? "rgba(255,255,255,0.02)"
+                        : "rgba(33,65,135,0.01)",
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1">
+                        <Star
+                          className="h-3 w-3"
+                          style={{ color: "#ffd700" }}
+                          fill="#ffd700"
+                        />
+                        <span
+                          className="text-[11px] font-bold"
+                          style={{ color: textPrimary }}
+                        >
+                          {course.rating}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <BookMarked
+                          className="h-3 w-3"
+                          style={{ color: textMuted }}
+                        />
+                        <span
+                          className="text-[11px] font-medium"
+                          style={{ color: textSecondary }}
+                        >
+                          {course.lessons} lessons
+                        </span>
+                      </div>
+                    </div>
+                    <ArrowRight
+                      className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                      style={{ color: course.color }}
+                    />
                   </div>
                 </div>
               ))}
@@ -246,82 +812,312 @@ export default function StudentDashboardPage() {
           </div>
         </div>
 
-        {/* Right Column: Sidebar Widgets (Takes 1 col) */}
+        {/* ==================== RIGHT SIDEBAR WIDGETS ==================== */}
         <div className="space-y-6">
           {/* Upcoming Schedule */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center justify-between">
-                <h2 className="font-bold text-slate-900 dark:text-white">
+          <div
+            className="widget-card rounded-2xl overflow-hidden"
+            style={{
+              background: cardBg,
+              border: cardBorder,
+              boxShadow: isDarkMode
+                ? "0 4px 20px rgba(0,0,0,0.2)"
+                : "0 4px 20px rgba(33,65,135,0.06)",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            <div
+              className="flex items-center justify-between p-5"
+              style={{
+                borderBottom: isDarkMode
+                  ? "1px solid rgba(255,255,255,0.05)"
+                  : "1px solid rgba(33,65,135,0.06)",
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" style={{ color: "#F3056D" }} />
+                <h3
+                  className="font-black text-sm"
+                  style={{ color: textPrimary }}
+                >
                   Upcoming
-                </h2>
-                <Calendar className="h-4 w-4 text-slate-400" />
+                </h3>
               </div>
+              <Link
+                href="/dashboard/schedule"
+                className="text-[10px] font-bold"
+                style={{ color: "#F3056D" }}
+              >
+                View All
+              </Link>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="p-4 space-y-2.5">
               {upcomingSchedule.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer"
+                  style={{
+                    background: isDarkMode
+                      ? "rgba(255,255,255,0.03)"
+                      : "rgba(33,65,135,0.03)",
+                    borderLeft: `3px solid ${item.color}`,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = isDarkMode
+                      ? "rgba(255,255,255,0.06)"
+                      : "rgba(33,65,135,0.06)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = isDarkMode
+                      ? "rgba(255,255,255,0.03)"
+                      : "rgba(33,65,135,0.03)";
+                  }}
                 >
                   <div
-                    className={`w-1.5 h-12 rounded-full ${item.color}`}
-                  ></div>
-                  <div>
-                    <h4 className="text-sm font-medium text-slate-900 dark:text-white">
+                    className="p-2 rounded-xl flex-shrink-0"
+                    style={{ background: `${item.color}15` }}
+                  >
+                    <item.icon
+                      className="h-4 w-4"
+                      style={{ color: item.color }}
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <h4
+                      className="text-xs font-bold truncate"
+                      style={{ color: textPrimary }}
+                    >
                       {item.title}
                     </h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                    <p
+                      className="text-[10px] mt-0.5"
+                      style={{ color: textSecondary }}
+                    >
                       {item.time}
                     </p>
                   </div>
                 </div>
               ))}
-              <button className="w-full mt-2 py-2.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-xl transition-colors">
-                View Full Calendar
-              </button>
+            </div>
+          </div>
+
+          {/* Leaderboard */}
+          <div
+            className="widget-card rounded-2xl overflow-hidden"
+            style={{
+              background: isDarkMode
+                ? "linear-gradient(180deg, rgba(26,16,53,0.8) 0%, rgba(13,26,45,0.8) 100%)"
+                : "linear-gradient(180deg, #214187 0%, #1a3470 100%)",
+              border: isDarkMode ? "1px solid rgba(255,255,255,0.06)" : "none",
+              boxShadow: isDarkMode
+                ? "0 4px 20px rgba(0,0,0,0.3)"
+                : "0 8px 30px rgba(33,65,135,0.25)",
+            }}
+          >
+            <div className="p-5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" style={{ color: "#ffd700" }} />
+                <h3 className="font-black text-sm text-white">Leaderboard</h3>
+              </div>
+              <Crown className="h-4 w-4" style={{ color: "#ffd700" }} />
+            </div>
+            <div className="px-4 pb-4 space-y-2">
+              {leaderboard.map((user) => (
+                <div
+                  key={user.rank}
+                  className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200"
+                  style={{
+                    background: user.isYou
+                      ? "rgba(255,215,0,0.15)"
+                      : "rgba(255,255,255,0.05)",
+                    border: user.isYou
+                      ? "1px solid rgba(255,215,0,0.25)"
+                      : "1px solid transparent",
+                  }}
+                >
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs"
+                    style={{
+                      background:
+                        user.rank === 1
+                          ? "#ffd700"
+                          : user.rank === 2
+                            ? "#C0C0C0"
+                            : "#cd7f32",
+                      color: user.rank <= 2 ? "#214187" : "#fff",
+                    }}
+                  >
+                    {user.rank}
+                  </div>
+                  <img
+                    src={`https://api.dicebear.com/7.x/fun-emoji/svg?seed=${user.avatar}`}
+                    alt={user.name}
+                    className="w-8 h-8 rounded-full border-2"
+                    style={{
+                      borderColor: user.isYou
+                        ? "#ffd700"
+                        : "rgba(255,255,255,0.1)",
+                    }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-xs font-bold truncate"
+                      style={{
+                        color: user.isYou ? "#ffd700" : "#fff",
+                      }}
+                    >
+                      {user.name}
+                      {user.isYou && (
+                        <span
+                          className="ml-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                          style={{
+                            background: "rgba(255,215,0,0.2)",
+                            color: "#ffd700",
+                          }}
+                        >
+                          YOU
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Star
+                      className="h-3 w-3"
+                      style={{ color: "#ffd700" }}
+                      fill="#ffd700"
+                    />
+                    <span
+                      className="text-xs font-black"
+                      style={{ color: "rgba(255,255,255,0.7)" }}
+                    >
+                      {user.points.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Achievement Card */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-2xl">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+          <div
+            className="widget-card relative overflow-hidden rounded-2xl p-5"
+            style={{
+              background: isDarkMode
+                ? "linear-gradient(135deg, rgba(243,5,109,0.15) 0%, rgba(255,215,0,0.1) 100%)"
+                : "linear-gradient(135deg, rgba(243,5,109,0.04) 0%, rgba(255,215,0,0.06) 100%)",
+              border: isDarkMode
+                ? "1px solid rgba(243,5,109,0.15)"
+                : "1px solid rgba(243,5,109,0.1)",
+            }}
+          >
+            <div
+              className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-30 -translate-y-1/2 translate-x-1/2"
+              style={{ background: "#F3056D" }}
+            />
             <div className="relative">
-              <div className="flex items-center justify-center w-14 h-14 bg-white/10 rounded-2xl mb-4 backdrop-blur-sm">
-                <Award className="h-7 w-7 text-amber-400" />
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+                style={{
+                  background: "linear-gradient(135deg, #F3056D, #ffd700)",
+                  boxShadow: "0 6px 20px rgba(243,5,109,0.3)",
+                }}
+              >
+                <Award className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-lg font-bold mb-1">Achievement Unlocked!</h3>
-              <p className="text-sm text-slate-400 mb-4">
-                You have completed your first week streak.
+              <h3
+                className="font-black text-sm mb-1"
+                style={{ color: textPrimary }}
+              >
+                Achievement Unlocked!
+              </h3>
+              <p
+                className="text-xs mb-4 leading-relaxed"
+                style={{ color: textSecondary }}
+              >
+                You earned the &quot;Science Explorer&quot; badge for completing
+                15 science lessons!
               </p>
-              <button className="flex items-center gap-2 text-sm font-medium text-white bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors">
-                View Badge
+              <button
+                className="flex items-center gap-2 text-xs font-bold transition-all duration-200 hover:gap-3"
+                style={{ color: "#F3056D" }}
+              >
+                View All Badges
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
 
-          {/* Help Card */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-xl bg-sky-50 dark:bg-sky-500/10">
-                <Zap className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+          {/* Quick Help */}
+          <div
+            className="widget-card rounded-2xl p-5"
+            style={{
+              background: cardBg,
+              border: cardBorder,
+              boxShadow: isDarkMode
+                ? "0 4px 20px rgba(0,0,0,0.2)"
+                : "0 4px 20px rgba(33,65,135,0.06)",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="p-2.5 rounded-xl flex-shrink-0"
+                style={{ background: "rgba(33,65,135,0.08)" }}
+              >
+                <Zap className="h-5 w-5" style={{ color: "#214187" }} />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 dark:text-white mb-1">
+                <h3
+                  className="font-black text-sm mb-1"
+                  style={{ color: textPrimary }}
+                >
                   Need Help?
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-                  Get instant answers from our AI assistant.
+                <p
+                  className="text-xs mb-3 leading-relaxed"
+                  style={{ color: textSecondary }}
+                >
+                  Ask our AI buddy anything about your courses!
                 </p>
-                <button className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
-                  Chat with Support
+                <button
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 hover:-translate-y-0.5"
+                  style={{
+                    background: isDarkMode
+                      ? "rgba(33,65,135,0.15)"
+                      : "rgba(33,65,135,0.06)",
+                    color: "#214187",
+                    border: isDarkMode
+                      ? "1px solid rgba(33,65,135,0.2)"
+                      : "1px solid rgba(33,65,135,0.1)",
+                  }}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Ask AI Buddy
                 </button>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* CSS for shimmer animation */}
+      <style jsx>{`
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }

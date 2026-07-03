@@ -1,16 +1,14 @@
-// src/app/[lang]/products/[id]/ProductDetailsContent.tsx
-
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import axios from "@/lib/axios";
 import {
   ArrowLeft,
-  BookOpen,
   CheckCircle,
   ChevronRight,
-  Star,
   Users,
   X,
   LayoutGrid,
@@ -26,24 +24,65 @@ import {
   Clock,
   Tag,
   Phone,
-  ShoppingBag,
+  Loader2,
 } from "lucide-react";
 import { FaSadCry } from "react-icons/fa";
 import { useLanguage } from "@/app/context/LanguageContext";
 import ProductOrderCard from "./ProductOrderCard";
 import Button from "@/app/ui/button/Button";
-import { getProducts } from "../productData";
 import { Product } from "../types";
 
-// --- SUB-COMPONENT: FAQ (Same as CourseDetails) ---
+// --- HELPER: Handles both Stringified JSON & Objects from DB ---
+const getBilingual = (val: any, isBangla: boolean): string => {
+  if (!val) return "";
+  if (typeof val === "string") {
+    try {
+      const parsed = JSON.parse(val);
+      return isBangla
+        ? parsed.bn || parsed.en || ""
+        : parsed.en || parsed.bn || "";
+    } catch {
+      return val;
+    }
+  }
+  if (typeof val === "object") {
+    return isBangla ? val.bn || val.en || "" : val.en || val.bn || "";
+  }
+  return String(val);
+};
+
+// --- SKELETON LOADER ---
+const DetailsSkeleton = () => (
+  <div className="min-h-screen mt-12 bg-white animate-pulse">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="flex gap-2 mb-8">
+        <div className="h-4 w-16 bg-gray-200 rounded" />
+        <div className="h-4 w-4 bg-gray-200 rounded" />
+        <div className="h-4 w-24 bg-gray-200 rounded" />
+      </div>
+      <div className="flex flex-col lg:flex-row gap-10">
+        <div className="w-full lg:w-[65%] space-y-6">
+          <div className="h-4 w-32 bg-gray-200 rounded" />
+          <div className="h-10 w-3/4 bg-gray-200 rounded" />
+          <div className="h-6 w-1/2 bg-gray-200 rounded" />
+          <div className="h-40 w-full bg-gray-100 rounded-2xl mt-8" />
+          <div className="h-60 w-full bg-gray-100 rounded-2xl" />
+        </div>
+        <div className="w-full lg:w-[35%]">
+          <div className="h-[400px] w-full bg-gray-100 rounded-2xl" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// --- SUB-COMPONENT: FAQ ---
 const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
   const [activeFaq, setActiveFaq] = useState<string | null>(null);
   const { isBangla } = useLanguage();
 
   useEffect(() => {
-    if (faqs.length > 0 && !activeFaq) {
-      setActiveFaq(faqs[0].q);
-    }
+    if (faqs.length > 0 && !activeFaq) setActiveFaq(faqs[0].q);
   }, [faqs]);
 
   return (
@@ -54,11 +93,9 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
         <div className="bg-white p-3 rounded-2xl shadow-sm text-[#F3056D] border border-pink-100">
           <MessageCircle className="h-6 w-6 fill-pink-50" strokeWidth={2} />
         </div>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
-            {isBangla ? "সাধারণ জিজ্ঞাসা" : "Frequently Asked Questions"}
-          </h2>
-        </div>
+        <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
+          {isBangla ? "সাধারণ জিজ্ঞাসা" : "Frequently Asked Questions"}
+        </h2>
       </div>
 
       <div className="relative z-10 space-y-4">
@@ -77,7 +114,6 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
                 <button
                   onClick={() => setActiveFaq(isOpen ? null : faq.q)}
                   className="w-full flex items-center justify-between p-5 text-left focus:outline-none group/btn"
-                  aria-expanded={isOpen}
                 >
                   <div className="flex items-center gap-4 flex-1">
                     <span
@@ -90,19 +126,13 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
                       {idx + 1}
                     </span>
                     <span
-                      className={`font-semibold text-base md:text-lg pr-4 leading-tight transition-colors ${
-                        isOpen ? "text-[#F3056D]" : "text-gray-700"
-                      }`}
+                      className={`font-semibold text-base md:text-lg pr-4 leading-tight transition-colors ${isOpen ? "text-[#F3056D]" : "text-gray-700"}`}
                     >
                       {faq.q}
                     </span>
                   </div>
                   <div
-                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      isOpen
-                        ? "bg-[#F3056D] text-white rotate-180"
-                        : "bg-gray-50 text-gray-400 group-hover/btn:bg-pink-100 group-hover/btn:text-[#F3056D]"
-                    }`}
+                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isOpen ? "bg-[#F3056D] text-white rotate-180" : "bg-gray-50 text-gray-400 group-hover/btn:bg-pink-100 group-hover/btn:text-[#F3056D]"}`}
                   >
                     <ChevronDown className="w-5 h-5" strokeWidth={3} />
                   </div>
@@ -132,48 +162,46 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
   );
 };
 
-// --- SUB-COMPONENT: FEATURES DECORATE (Same as CourseDetails) ---
+// --- SUB-COMPONENT: FEATURES DECORATE ---
 const ProductDecorate = ({
   cards,
   title,
 }: {
   cards: Array<{ title: string; desc: string; icon?: string }>;
   title: string;
-}) => {
-  return (
-    <section className="w-full bg-[#214187] border-2 border-[#FF8FCA] rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-xl">
-      <div className="container mx-auto max-w-6xl relative z-10">
-        <div className="mb-6">
-          <h2 className="font-bold text-xl md:text-2xl text-white tracking-wide">
-            {title}
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-          {cards.map((feature, index) => (
-            <div
-              key={index}
-              className="group relative p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300"
-            >
-              <div className="flex flex-col gap-3">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#F3056D] shadow-lg group-hover:scale-110 transition-transform duration-300 text-2xl">
-                  {feature.icon || "✓"}
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white mb-2 group-hover:text-pink-200 transition-colors">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-200 text-sm md:text-base leading-relaxed font-normal">
-                    {feature.desc}
-                  </p>
-                </div>
+}) => (
+  <section className="w-full bg-[#214187] border-2 border-[#FF8FCA] rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-xl">
+    <div className="container mx-auto max-w-6xl relative z-10">
+      <div className="mb-6">
+        <h2 className="font-bold text-xl md:text-2xl text-white tracking-wide">
+          {title}
+        </h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+        {cards.map((feature, index) => (
+          <div
+            key={index}
+            className="group relative p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300"
+          >
+            <div className="flex flex-col gap-3">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#F3056D] shadow-lg group-hover:scale-110 transition-transform duration-300 text-2xl">
+                {feature.icon || "✓"}
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-pink-200 transition-colors">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-200 text-sm md:text-base leading-relaxed font-normal">
+                  {feature.desc}
+                </p>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
-    </section>
-  );
-};
+    </div>
+  </section>
+);
 
 // --- MAIN PAGE COMPONENT ---
 export default function ProductDetailsContent() {
@@ -181,22 +209,95 @@ export default function ProductDetailsContent() {
   const router = useRouter();
   const { isBangla, getLink } = useLanguage();
 
-  const productId = Number(params?.id) || 1;
-  const allProducts = getProducts(isBangla);
-  const product: Product =
-    allProducts.find((p) => p.id === productId) || allProducts[0];
+  const [rawProduct, setRawProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const productId = params?.id as string;
+
+  // --- FETCH REAL DATA ---
+  useEffect(() => {
+    if (!productId) return;
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get(`/api/products/${productId}`);
+        setRawProduct(res.data?.data || res.data);
+      } catch (err) {
+        console.error("Failed to fetch product:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [productId]);
+
+  // --- PARSE & TRANSFORM DATA FOR UI ---
+  const product: Product | null = useMemo(() => {
+    if (!rawProduct) return null;
+    return {
+      id: rawProduct._id,
+      title: getBilingual(rawProduct.title, isBangla),
+      category: rawProduct.category || "book",
+      subtitle: getBilingual(rawProduct.subtitle, isBangla),
+      description: getBilingual(rawProduct.secondaryDescEn, isBangla),
+      fullDescription: getBilingual(rawProduct.contentEn, isBangla),
+      fullDescriptionSecond: "", // Adjust if you have a secondary rich text field
+      image: rawProduct.image || null,
+      fee: rawProduct.fee ? `৳${rawProduct.fee}` : "",
+      originalFee: rawProduct.originalFee ? `৳${rawProduct.originalFee}` : "",
+      badge: rawProduct.badge || null,
+      highlights: (rawProduct.highlights || [])
+        .map((h: any) => getBilingual(h, isBangla))
+        .filter(Boolean),
+      features: (rawProduct.features || []).map((f: any) => ({
+        title: getBilingual(f.title, isBangla),
+        desc: getBilingual(f.desc, isBangla),
+        icon: f.icon,
+      })),
+      whyPoints: (rawProduct.whyPoints || [])
+        .map((w: any) => getBilingual(w, isBangla))
+        .filter(Boolean),
+      specs: (rawProduct.specs || []).map((s: any) => ({
+        label: getBilingual(s.label, isBangla),
+        value: getBilingual(s.value, isBangla),
+      })),
+      author: getBilingual(rawProduct.author, isBangla),
+      publisher: getBilingual(rawProduct.publisher, isBangla),
+      edition: getBilingual(rawProduct.edition, isBangla),
+      pages: rawProduct.pages || "",
+      country: getBilingual(rawProduct.country, isBangla),
+      language: getBilingual(rawProduct.language, isBangla),
+    };
+  }, [rawProduct, isBangla]);
+
+  if (loading) return <DetailsSkeleton />;
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 pb-20">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">
+          Product Not Found
+        </h1>
+        <Link
+          href={getLink("/products")}
+          className="text-[#F3056D] font-semibold hover:underline"
+        >
+          Back to Products
+        </Link>
+      </div>
+    );
+  }
 
   const isComingSoon =
     product.badge?.toLowerCase().includes("coming") ||
     product.badge?.includes("শীঘ্রই") ||
     product.badge?.includes("আসছে");
-
-  const isBook = product.id === 1;
+  const isBook = product.category === "book";
 
   const [activeTab, setActiveTab] = useState("overview");
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [orderStep, setOrderStep] = useState<1 | 2 | 3>(1);
-  const [orderLoading, setOrderLoading] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -212,7 +313,6 @@ export default function ProductDetailsContent() {
   const specsRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
 
-  // Build sections dynamically
   const sections = [
     {
       id: "overview",
@@ -220,37 +320,31 @@ export default function ProductDetailsContent() {
       icon: LayoutGrid,
     },
   ];
-  if (product.features && product.features.length > 0) {
+  if (product.features && product.features.length > 0)
     sections.push({
       id: "features",
       label: isBangla ? "ফিচার" : "Features",
       icon: ListChecks,
     });
-  }
-  if (product.whyPoints && product.whyPoints.length > 0) {
+  if (product.whyPoints && product.whyPoints.length > 0)
     sections.push({
       id: "why",
       label: isBangla ? "কেন স্পেশাল?" : "Why Special?",
       icon: UserCheck,
     });
-  }
-  if (product.specs && product.specs.length > 0) {
+  if (product.specs && product.specs.length > 0)
     sections.push({
       id: "specs",
       label: isBangla ? "স্পেসিফিকেশন" : "Specifications",
       icon: Tag,
     });
-  }
   sections.push({ id: "faq", label: "FAQ", icon: HelpCircle });
 
-  // IntersectionObserver
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveTab(entry.target.id);
-          }
+          if (entry.isIntersecting) setActiveTab(entry.target.id);
         });
       },
       { threshold: 0.3 },
@@ -275,7 +369,6 @@ export default function ProductDetailsContent() {
       setShowStickyCta(window.scrollY > 300);
       setShowSideCard(window.scrollY > 1500);
     };
-
     window.addEventListener("scroll", handleScroll);
 
     return () => {
@@ -294,10 +387,7 @@ export default function ProductDetailsContent() {
       specs: specsRef,
       faq: faqRef,
     };
-    const ref = refMap[id];
-    if (ref?.current) {
-      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    refMap[id]?.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleOrder = () => {
@@ -306,7 +396,6 @@ export default function ProductDetailsContent() {
     setOrderError(null);
     setShowOrderModal(true);
   };
-
   const handleOrderSubmit = () => {
     if (orderStep === 1) {
       setOrderStep(2);
@@ -326,7 +415,6 @@ export default function ProductDetailsContent() {
     }
   };
 
-  // --- Breadcrumb ---
   const breadcrumbItems = [
     {
       label: isBangla ? "হোম" : "Home",
@@ -341,7 +429,6 @@ export default function ProductDetailsContent() {
     { label: product.title, href: null, icon: null },
   ];
 
-  // --- FAQ Data ---
   const faqData = isBook
     ? isBangla
       ? [
@@ -434,7 +521,6 @@ export default function ProductDetailsContent() {
             </nav>
           </div>
         </div>
-
         <div className="flex items-center justify-center min-h-[70vh]">
           <div className="bg-white rounded-[30px] border-2 border-[#FF8FCA] p-10 md:p-16 shadow-xl flex flex-col items-center justify-center w-full max-w-2xl text-center mx-4">
             <div className="bg-pink-50 rounded-full p-8 mb-8 border-2 border-dashed border-pink-300">
@@ -448,14 +534,14 @@ export default function ProductDetailsContent() {
             </p>
             <p className="text-gray-500 mt-4 max-w-md mx-auto">
               {isBangla
-                ? `আমরা "${product.title}" শীঘ্রই নিয়ে আসছি। আপডেট পেতে আমাদের সাথে থাকুন!`
-                : `We are bringing "${product.title}" very soon. Stay tuned for updates!`}
+                ? `আমরা "${product.title}" শীঘ্রই নিয়ে আসছি।`
+                : `We are bringing "${product.title}" very soon.`}
             </p>
             <Link
               href={getLink("/products")}
               className="mt-8 inline-flex items-center gap-2 bg-[#F3056D] hover:bg-[#D6005C] text-white font-bold px-8 py-4 rounded-xl text-lg transition-all shadow-lg"
             >
-              {isBangla ? "অন্য প্রোডাক্ট দেখুন" : "View Other Products"}
+              {isBangla ? "অন্য প্রোডাক্ট দেখুন" : "View Other Products"}{" "}
               <ChevronRight className="w-5 h-5" />
             </Link>
           </div>
@@ -467,7 +553,7 @@ export default function ProductDetailsContent() {
   // ====== MAIN DETAILS PAGE ======
   return (
     <div className="min-h-screen mt-12 text-gray-900 font-sans relative selection:bg-pink-100 selection:text-pink-900">
-      {/* ===== BREADCRUMB ===== */}
+      {/* BREADCRUMB */}
       <div className="py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav aria-label="Breadcrumb">
@@ -505,13 +591,11 @@ export default function ProductDetailsContent() {
         </div>
       </div>
 
-      {/* Hero + Main Content */}
       <div className="relative bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:py-12">
           <div className="flex flex-col lg:flex-row gap-10">
-            {/* ===== LEFT COLUMN (65%) ===== */}
+            {/* LEFT COLUMN */}
             <div className="w-full lg:w-[65%] order-2 lg:order-1">
-              {/* Hero */}
               <div className="mb-10">
                 <Link
                   href={getLink("/products")}
@@ -531,12 +615,11 @@ export default function ProductDetailsContent() {
                 </p>
               </div>
 
-              {/* Mobile Order Card */}
               <div className="md:hidden mb-6">
                 <ProductOrderCard product={product} onOrder={handleOrder} />
               </div>
 
-              {/* ===== STICKY TAB NAVIGATION ===== */}
+              {/* TAB NAVIGATION */}
               <div className="sticky top-28 md:top-18 lg:top-22 rounded-2xl z-30 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-sm mb-12 overflow-hidden">
                 <nav className="flex space-x-1 md:space-x-2 overflow-x-auto no-scrollbar py-2 px-2">
                   {sections.map((section) => {
@@ -545,11 +628,7 @@ export default function ProductDetailsContent() {
                       <button
                         key={section.id}
                         onClick={() => scrollToSection(section.id)}
-                        className={`py-2.5 px-4 md:px-5 rounded-xl font-medium text-sm md:text-base whitespace-nowrap transition-all duration-200 flex items-center ${
-                          activeTab === section.id
-                            ? "bg-[#214187] border-2 border-primary text-white shadow-md scale-[1.02]"
-                            : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-                        }`}
+                        className={`py-2.5 px-4 md:px-5 rounded-xl font-medium text-sm md:text-base whitespace-nowrap transition-all duration-200 flex items-center ${activeTab === section.id ? "bg-[#214187] border-2 border-primary text-white shadow-md scale-[1.02]" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"}`}
                       >
                         <Icon className="h-4 w-4 mr-2" />
                         {section.label}
@@ -559,7 +638,7 @@ export default function ProductDetailsContent() {
                 </nav>
               </div>
 
-              {/* ============ 1. OVERVIEW ============ */}
+              {/* 1. OVERVIEW */}
               <div
                 ref={overviewRef}
                 id="overview"
@@ -568,19 +647,15 @@ export default function ProductDetailsContent() {
                 <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 border-l-4 pl-4 border-[#F3056D]">
                   {isBangla ? "বিস্তারিত বিবরণ" : "Product Details"}
                 </h2>
-                <div className="bg-gray-50/50 p-6 md:p-8 rounded-2xl border border-gray-100 space-y-4">
-                  <p className="text-lg md:text-xl text-gray-700 leading-relaxed font-normal">
-                    {product.fullDescription || product.description}
-                  </p>
-                  {product.fullDescriptionSecond && (
-                    <p className="text-lg md:text-xl text-gray-700 leading-relaxed font-normal">
-                      {product.fullDescriptionSecond}
-                    </p>
-                  )}
-                </div>
+                <div
+                  className="bg-gray-50/50 p-6 md:p-8 rounded-2xl border border-gray-100 space-y-4"
+                  dangerouslySetInnerHTML={{
+                    __html: product.fullDescription || product.description,
+                  }}
+                />
               </div>
 
-              {/* ============ 2. FEATURES ============ */}
+              {/* 2. FEATURES */}
               {product.features && product.features.length > 0 && (
                 <div
                   ref={featuresRef}
@@ -588,17 +663,13 @@ export default function ProductDetailsContent() {
                   className="scroll-mt-36 md:scroll-mt-40 mb-12"
                 >
                   <ProductDecorate
-                    cards={product.features.map((f) => ({
-                      title: f.title,
-                      desc: f.desc,
-                      icon: f.icon,
-                    }))}
-                    title={isBangla ? "বইয়ের বিশেষত্ব" : "Book Features"}
+                    cards={product.features}
+                    title={isBangla ? "বইয়ের বিশেষত্ব" : "Product Features"}
                   />
                 </div>
               )}
 
-              {/* ============ 3. WHY THIS IS SPECIAL ============ */}
+              {/* 3. WHY SPECIAL */}
               {product.whyPoints && product.whyPoints.length > 0 && (
                 <div
                   ref={whyRef}
@@ -607,9 +678,7 @@ export default function ProductDetailsContent() {
                 >
                   <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm">
                     <h3 className="font-bold text-xl md:text-2xl text-gray-900 mb-6">
-                      {isBangla
-                        ? "কেন এই বইটি স্পেশাল?"
-                        : "Why Is This Book Special?"}
+                      {isBangla ? "কেন এটি স্পেশাল?" : "Why Is This Special?"}
                     </h3>
                     <ul className="space-y-4 mb-8">
                       {product.whyPoints.map((item, i) => (
@@ -635,7 +704,7 @@ export default function ProductDetailsContent() {
                 </div>
               )}
 
-              {/* ============ 4. SPECS ============ */}
+              {/* 4. SPECS */}
               {product.specs && product.specs.length > 0 && (
                 <div
                   ref={specsRef}
@@ -663,16 +732,14 @@ export default function ProductDetailsContent() {
                 </div>
               )}
 
-              {/* ============ 5. BOOK INFO (for book only) ============ */}
+              {/* 5. BOOK INFO */}
               {isBook && (
                 <div className="scroll-mt-36 md:scroll-mt-40 mb-12">
                   <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
                     <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-pink-100/40 rounded-full blur-2xl pointer-events-none" />
-                    <div className="absolute bottom-[-20px] left-[-20px] w-24 h-24 bg-blue-100/40 rounded-full blur-2xl pointer-events-none" />
                     <div className="relative z-10">
                       <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[14px] font-semibold bg-[#F3056D]/10 text-[#F3056D] border border-[#F3056D]/20 mb-6">
-                        <Star className="h-3.5 w-3.5 fill-[#F3056D] text-[#F3056D]" />
-                        {isBangla ? "বই সম্পর্কিত তথ্য" : "Book Information"}
+                        ⭐ {isBangla ? "বই সম্পর্কিত তথ্য" : "Book Information"}
                       </span>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {[
@@ -719,7 +786,7 @@ export default function ProductDetailsContent() {
                 </div>
               )}
 
-              {/* ============ 6. FAQ ============ */}
+              {/* 6. FAQ */}
               <div
                 ref={faqRef}
                 id="faq"
@@ -729,20 +796,15 @@ export default function ProductDetailsContent() {
               </div>
             </div>
 
-            {/* ===== RIGHT COLUMN (35%) ===== */}
+            {/* RIGHT COLUMN */}
             <div className="w-full lg:w-[35%] order-1 mt-0 lg:order-2 space-y-6">
               <div className="hidden md:block">
                 <ProductOrderCard product={product} onOrder={handleOrder} />
               </div>
 
-              {/* Sticky Side Card (appears on scroll) */}
               <div className="sticky hidden md:block top-28">
                 <div
-                  className={`transition-all duration-500 ${
-                    showSideCard
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4 pointer-events-none"
-                  }`}
+                  className={`transition-all duration-500 ${showSideCard ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}
                 >
                   <div className="bg-[#214187] border-2 border-[#FF8FCA] rounded-2xl p-5 text-white text-center shadow-xl">
                     <p className="text-sm text-blue-200 mb-1">
@@ -776,7 +838,7 @@ export default function ProductDetailsContent() {
         </div>
       </div>
 
-      {/* ===== FINAL CTA SECTION ===== */}
+      {/* FINAL CTA */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-gradient-to-r from-[#214187] to-[#1e3a8a] p-8 md:p-12 rounded-3xl shadow-2xl border border-white/10 text-center text-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
@@ -814,7 +876,7 @@ export default function ProductDetailsContent() {
         </div>
       </div>
 
-      {/* ===== STICKY MOBILE CTA ===== */}
+      {/* STICKY MOBILE CTA */}
       {showStickyCta && (
         <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 z-[60] lg:hidden shadow-[0_-5px_20px_rgba(0,0,0,0.1)] animate-in slide-in-from-bottom-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
@@ -837,16 +899,14 @@ export default function ProductDetailsContent() {
         </div>
       )}
 
-      {/* ===== ORDER MODAL (3-STEP, same pattern as CourseDetails) ===== */}
+      {/* ORDER MODAL */}
       {showOrderModal && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-2 md:p-4">
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity"
             onClick={() => setShowOrderModal(false)}
           />
-
           <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden relative z-10 flex flex-col animate-in zoom-in-95 duration-300">
-            {/* --- HEADER --- */}
             {orderStep === 1 ? (
               <div className="relative bg-white p-6 border-b border-gray-100">
                 <div className="flex items-center justify-center gap-4 mb-4">
@@ -901,9 +961,7 @@ export default function ProductDetailsContent() {
               </div>
             )}
 
-            {/* --- BODY --- */}
             <div className="p-6 md:p-8 flex-1 overflow-y-auto">
-              {/* STEP 1: BILL SUMMARY */}
               {orderStep === 1 && (
                 <div className="animate-in fade-in duration-300 space-y-6">
                   <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
@@ -951,7 +1009,6 @@ export default function ProductDetailsContent() {
                 </div>
               )}
 
-              {/* STEP 2: USER FORM */}
               {orderStep === 2 && (
                 <div className="space-y-5 animate-in slide-in-from-right-4 duration-300">
                   <div>
@@ -992,35 +1049,31 @@ export default function ProductDetailsContent() {
                     <label className="block text-sm font-bold text-gray-700 mb-2">
                       {isBangla ? "ডেলিভারি ঠিকানা" : "Delivery Address"}
                     </label>
-                    <div className="relative">
-                      <textarea
-                        value={formData.address}
-                        onChange={(e) =>
-                          setFormData({ ...formData, address: e.target.value })
-                        }
-                        rows={3}
-                        className="w-full pl-4 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F3056D] focus:border-transparent outline-none transition-all font-medium text-gray-800 resize-none"
-                        placeholder={
-                          isBangla
-                            ? "সম্পূর্ণ ঠিকানা লিখুন"
-                            : "Enter full address"
-                        }
-                      />
-                    </div>
+                    <textarea
+                      value={formData.address}
+                      onChange={(e) =>
+                        setFormData({ ...formData, address: e.target.value })
+                      }
+                      rows={3}
+                      className="w-full pl-4 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F3056D] focus:border-transparent outline-none transition-all font-medium text-gray-800 resize-none"
+                      placeholder={
+                        isBangla
+                          ? "সম্পূর্ণ ঠিকানা লিখুন"
+                          : "Enter full address"
+                      }
+                    />
                   </div>
-
                   {orderError && (
                     <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-100">
                       <AlertCircle className="h-4 w-4" />
                       {orderError}
                     </div>
                   )}
-
                   <button
                     onClick={handleOrderSubmit}
                     className="w-full py-3.5 bg-[#214187] hover:bg-[#1a2f6e] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 mt-2"
                   >
-                    {isBangla ? "অর্ডার কনফার্ম করুন" : "Confirm Order"}
+                    {isBangla ? "অর্ডার কনফার্ম করুন" : "Confirm Order"}{" "}
                     <ChevronRight className="h-4 w-4" />
                   </button>
                   <button
@@ -1032,7 +1085,6 @@ export default function ProductDetailsContent() {
                 </div>
               )}
 
-              {/* STEP 3: SUCCESS */}
               {orderStep === 3 && (
                 <div className="flex flex-col items-center justify-center py-10 animate-in zoom-in-95 duration-300 text-center h-full">
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 shadow-md">
@@ -1063,3 +1115,4 @@ export default function ProductDetailsContent() {
     </div>
   );
 }
+

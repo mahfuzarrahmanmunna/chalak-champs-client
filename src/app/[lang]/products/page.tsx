@@ -1,5 +1,3 @@
-// src/app/[lang]/products/page.tsx
-
 import React from "react";
 import ProductsContent from "./ProductsContent";
 
@@ -24,7 +22,6 @@ export const metadata = {
   },
 };
 
-// Required for output: export
 export function generateStaticParams() {
   return [{ lang: "en" }, { lang: "bn" }];
 }

@@ -1,49 +1,131 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Search, BookOpen, Clock } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import ProductCard from "./ProductCard";
-import { getProducts, getProductTabs } from "./productData";
+import axios from "@/lib/axios";
+
+// --- HELPER: Handles both Stringified JSON & Objects from DB ---
+const getBilingual = (val: any, isBangla: boolean): string => {
+  if (!val) return "";
+  if (typeof val === "string") {
+    try {
+      const parsed = JSON.parse(val);
+      return isBangla
+        ? parsed.bn || parsed.en || ""
+        : parsed.en || parsed.bn || "";
+    } catch {
+      return val; // Fallback if it's just a normal string
+    }
+  }
+  if (typeof val === "object") {
+    return isBangla ? val.bn || val.en || "" : val.en || val.bn || "";
+  }
+  return String(val);
+};
+
+// --- SKELETON COMPONENT: Matches exact ProductCard dimensions & gradients ---
+const ProductCardSkeleton = () => (
+  <div className="w-[86vw] md:w-[304px]">
+    <div className="max-w-80 mx-auto h-132 shadow bg-linear-to-b from-[#FF8FCA] to-[#D9D9D9] rounded-[22px] p-0.5">
+      <div className="w-full h-full rounded-[20px] p-2 bg-[#F9FAFC]">
+        {/* Image Skeleton */}
+        <div className="md:w-71 md:h-71 w-74 h-73 bg-gray-200 rounded-2xl animate-pulse" />
+
+        {/* Badges Skeleton */}
+        <div className="flex flex-col items-center gap-2 mt-2 w-full">
+          <div className="h-6 w-24 bg-gray-200 rounded-full animate-pulse" />
+          <div className="h-6 w-16 bg-gray-200 rounded-full animate-pulse" />
+        </div>
+
+        {/* Title Skeleton */}
+        <div className="flex flex-col items-center mt-4 w-full px-4">
+          <div className="h-6 w-3/4 bg-gray-200 rounded-lg animate-pulse" />
+        </div>
+
+        {/* Button Skeleton */}
+        <div className="flex justify-center mt-3">
+          <div className="h-10 w-36 bg-gray-200 rounded-xl animate-pulse" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 export default function ProductsContent() {
   const { isBangla } = useLanguage();
 
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
 
-  const tabs = getProductTabs(isBangla);
-  const allProducts = getProducts(isBangla);
+  // --- FETCH REAL DATA ---
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get("/api/products");
+        setProducts(res.data?.data || res.data || []);
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
+  // --- EXTRACT UNIQUE CATEGORIES DYNAMICALLY ---
+  const tabs = useMemo(() => {
+    const cats = new Set(products.map((p) => p.category).filter(Boolean));
+    return Array.from(cats);
+  }, [products]);
+
+  // --- FILTER PRODUCTS ---
   const filteredProducts = useMemo(() => {
-    return allProducts.filter((product) => {
+    return products.filter((product) => {
       const matchesCategory =
         activeCategory === "all" || product.category === activeCategory;
 
-      let matchesSearch = true;
-      if (searchTerm.trim() !== "") {
-        const searchTokens = searchTerm
-          .toLowerCase()
-          .split(/\s+/)
-          .filter((token) => token.length > 0);
+      if (!searchTerm.trim()) return matchesCategory;
 
-        const productTitle = product.title.toLowerCase();
-        const productCategory = product.category.toLowerCase();
-        const productSubtitle = product.subtitle.toLowerCase();
-        const productDesc = product.description.toLowerCase();
+      const searchTokens = searchTerm
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((token) => token.length > 0);
 
-        matchesSearch = searchTokens.some(
-          (token) =>
-            productTitle.includes(token) ||
-            productCategory.includes(token) ||
-            productSubtitle.includes(token) ||
-            productDesc.includes(token),
-        );
-      }
+      const titleEn = getBilingual(product.title, false).toLowerCase();
+      const titleBn = getBilingual(product.title, true).toLowerCase();
+      const category = (product.category || "").toLowerCase();
+
+      const matchesSearch = searchTokens.some(
+        (token) =>
+          titleEn.includes(token) ||
+          titleBn.includes(token) ||
+          category.includes(token),
+      );
 
       return matchesCategory && matchesSearch;
     });
-  }, [allProducts, searchTerm, activeCategory]);
+  }, [products, searchTerm, activeCategory]);
+
+  // --- TRANSFORM TO FLAT STRUCTURE FOR PRODUCT CARD ---
+  const displayProducts = useMemo(() => {
+    return filteredProducts.map((p) => ({
+      id: p._id,
+      title: getBilingual(p.title, isBangla),
+      category: p.category || "Uncategorized",
+      subtitle: getBilingual(p.subtitle, isBangla),
+      description: getBilingual(p.secondaryDescEn, isBangla),
+      image: p.image || null,
+      fee: p.fee ? `৳${p.fee}` : "",
+      badge: p.badge || null,
+      highlights: (p.highlights || [])
+        .map((h: any) => getBilingual(h, isBangla))
+        .filter(Boolean),
+    }));
+  }, [filteredProducts, isBangla]);
 
   const uiText = {
     heroTitle: isBangla ? "আমাদের প্রোডাক্টস" : "Our Products",
@@ -97,7 +179,7 @@ export default function ProductsContent() {
             />
           </div>
 
-          {/* Category Filters */}
+          {/* Category Filters (Dynamic) */}
           <div className="flex flex-wrap justify-center gap-3 mt-8">
             <button
               onClick={() => setActiveCategory("all")}
@@ -136,16 +218,25 @@ export default function ProductsContent() {
               <BookOpen className="w-7 h-7 text-[#F3056D]" />
               {uiText.popularTitle}
             </h2>
-            <span className="text-sm text-gray-500">
-              {uiText.foundText} {filteredProducts.length}
-              {uiText.foundSuffix}
-            </span>
+            {!loading && (
+              <span className="text-sm text-gray-500">
+                {uiText.foundText} {displayProducts.length}
+                {uiText.foundSuffix}
+              </span>
+            )}
           </div>
 
-          {filteredProducts.length > 0 ? (
-            /* ── flex-wrap centred grid for fixed-width cards ── */
-            <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-              {filteredProducts.map((product) => (
+          {loading ? (
+            /* ── SKELETON GRID (Left Aligned) ── */
+            <div className="flex flex-wrap justify-start gap-6 md:gap-8">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : displayProducts.length > 0 ? (
+            /* ── REAL GRID (Left Aligned) ── */
+            <div className="flex flex-wrap justify-start gap-6 md:gap-8">
+              {displayProducts.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
