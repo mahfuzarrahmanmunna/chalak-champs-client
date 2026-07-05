@@ -1,4 +1,3 @@
-// src/app/[lang]/admin-dashboard/page.tsx
 "use client";
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -18,6 +17,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 import { useParams } from "next/navigation";
+
+// ✅ FIXED: Helper to safely extract string from bilingual objects
+const getText = (
+  text: string | { en?: string; bn?: string } | undefined | null,
+  fallback: string = "Untitled",
+): string => {
+  if (!text) return fallback;
+  if (typeof text === "string") return text;
+  return text.en || text.bn || fallback;
+};
 
 interface DashboardStats {
   totalUsers: number;
@@ -172,13 +181,14 @@ export default function AdminDashboardPage() {
       role: string;
     }[]
   >([]);
+  // ✅ FIXED: Updated title type to accept bilingual objects from the database
   const [recentCourses, setRecentCourses] = useState<
     {
       id?: number | string;
       _id?: string;
       instructor: string;
       status: string;
-      title: string;
+      title: string | { en?: string; bn?: string };
       thumbnail: string;
     }[]
   >([]);
@@ -410,7 +420,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Recent Courses (Takes up 3 columns) */}
+        {/* ✅ FIXED: Recent Courses (Takes up 3 columns) */}
         <div
           className="col-span-3 rounded-xl border bg-card shadow-sm"
           style={{
@@ -443,36 +453,41 @@ export default function AdminDashboardPage() {
             </Link>
           </div>
           <div className="p-4 space-y-4">
-            {recentCourses.map((course, index) => (
-              <div
-                key={course.id ?? course._id ?? `course-${index}`}
-                className="flex gap-4"
-              >
-                <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200">
-                  <Image
-                    className="h-full w-full object-cover"
-                    src={course.thumbnail || "/placeholder-course.jpg"}
-                    alt={course.title}
-                    fill
-                    sizes="64px"
-                  />
+            {recentCourses.map((course, index) => {
+              // ✅ FIX: Safely extract string from potential bilingual object
+              const courseTitle = getText(course.title);
+
+              return (
+                <div
+                  key={course.id ?? course._id ?? `course-${index}`}
+                  className="flex gap-4"
+                >
+                  <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200">
+                    <Image
+                      className="h-full w-full object-cover"
+                      src={course.thumbnail || "/placeholder-course.jpg"}
+                      alt={courseTitle}
+                      fill
+                      sizes="64px"
+                    />
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col justify-center">
+                    <p
+                      className="truncate text-sm font-medium text-foreground"
+                      style={{ color: "var(--color-foreground)" }}
+                    >
+                      {courseTitle}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {course.instructor}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end justify-center gap-1">
+                    <StatusBadge status={course.status} />
+                  </div>
                 </div>
-                <div className="flex min-w-0 flex-1 flex-col justify-center">
-                  <p
-                    className="truncate text-sm font-medium text-foreground"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    {course.title}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {course.instructor}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end justify-center gap-1">
-                  <StatusBadge status={course.status} />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

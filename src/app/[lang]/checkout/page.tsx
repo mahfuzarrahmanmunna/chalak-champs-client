@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -37,29 +37,10 @@ import {
   Copy,
   RefreshCw,
 } from "lucide-react";
+import { Addon, Course } from "./type";
 
 // ===================== TYPES =====================
 
-interface Course {
-  id: string;
-  title: string;
-  image: string;
-  dates: string;
-  originalPrice: number;
-  offerPrice: number;
-  description?: string;
-  instructor?: string;
-  duration?: string;
-  totalLectures?: number;
-}
-
-interface Addon {
-  id: number;
-  name: string;
-  price: number;
-  icon: React.ReactNode;
-  description: string;
-}
 
 interface PricingResponse {
   course: Course;
@@ -118,6 +99,14 @@ const PAYMENT_METHODS = [
 // ===================== COMPONENT =====================
 
 export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<CheckoutPageFallback />}>
+      <CheckoutPageContent />
+    </Suspense>
+  );
+}
+
+function CheckoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
@@ -1968,6 +1957,17 @@ export default function CheckoutPage() {
           }
         }
       `}</style>
+    </div>
+  );
+}
+
+function CheckoutPageFallback() {
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6">
+      <div className="flex items-center gap-3 text-gray-600">
+        <Loader2 className="h-5 w-5 animate-spin" />
+        <span>Loading checkout...</span>
+      </div>
     </div>
   );
 }

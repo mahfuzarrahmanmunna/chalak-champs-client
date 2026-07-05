@@ -1,4 +1,5 @@
 import CourseDetails from "./CourseDetails";
+import CoursesDetails from "./CoursesDetails";
 
 export const metadata = {
   title: "Course Details - Kids Fluent English Course",
@@ -30,5 +31,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <CourseDetails />;
+  return <CoursesDetails />;
 }

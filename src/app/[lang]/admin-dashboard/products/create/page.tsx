@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray, Controller, useWatch } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import axios from "@/lib/axios";
 import { useParams } from "next/navigation";
@@ -65,12 +65,33 @@ interface ProductFormData {
   features: BilingualFeature[];
   whyPoints: BilingualText[];
   specs: BilingualSpec[];
+
+  // Book Specifics
   author: BilingualText;
   pages: string;
   publisher: BilingualText;
   edition: BilingualText;
   country: BilingualText;
   language: BilingualText;
+
+  // Bag Specifics
+  bagMaterial?: BilingualText;
+  bagCapacity?: string;
+  bagDimensions?: string;
+  bagCompartments?: number;
+
+  // Apparel Specifics
+  apparelMaterial?: BilingualText;
+  apparelFit?: BilingualText;
+  apparelSizes?: string;
+  apparelColors?: string;
+
+  // Stationary Specifics
+  stationaryType?: BilingualText;
+  stationaryColor?: string;
+  stationaryPackSize?: string;
+  stationaryMaterial?: BilingualText;
+
   contentEn: string;
   contentBn: string;
   secondaryDescEn: string;
@@ -112,11 +133,6 @@ const ICON_OPTIONS: IconOption[] = [
   { value: "ruler", label: "Ruler", icon: Ruler },
   { value: "backpack", label: "Backpack", icon: Backpack },
 ];
-
-const getIconComponent = (value: string): LucideIcon => {
-  const found = ICON_OPTIONS.find((opt) => opt.value === value);
-  return found ? found.icon : ClipboardList;
-};
 
 // --- SHARED INPUT STYLE ---
 const inputClass =
@@ -179,8 +195,24 @@ export default function CreateProductPage() {
       contentBn: "",
       secondaryDescEn: "",
       secondaryDescBn: "",
+      // Category Specifics
+      bagMaterial: { en: "", bn: "" },
+      bagCapacity: "",
+      bagDimensions: "",
+      bagCompartments: 0,
+      apparelMaterial: { en: "", bn: "" },
+      apparelFit: { en: "", bn: "" },
+      apparelSizes: "",
+      apparelColors: "",
+      stationaryType: { en: "", bn: "" },
+      stationaryColor: "",
+      stationaryPackSize: "",
+      stationaryMaterial: { en: "", bn: "" },
     },
   });
+
+  // ✅ Watch category for conditional rendering
+  const category = useWatch({ control, name: "category" });
 
   const {
     fields: highlightFields,
@@ -215,16 +247,10 @@ export default function CreateProductPage() {
       if (data.originalFee)
         formData.append("originalFee", data.originalFee.toString());
       if (data.badge) formData.append("badge", data.badge);
-      if (data.pages) formData.append("pages", data.pages);
       formData.append("sortOrder", (data.sortOrder || 0).toString());
 
       formData.append("title", JSON.stringify(data.title));
       formData.append("subtitle", JSON.stringify(data.subtitle));
-      formData.append("author", JSON.stringify(data.author));
-      formData.append("publisher", JSON.stringify(data.publisher));
-      formData.append("edition", JSON.stringify(data.edition));
-      formData.append("country", JSON.stringify(data.country));
-      formData.append("language", JSON.stringify(data.language));
 
       formData.append("highlights", JSON.stringify(data.highlights));
       formData.append("features", JSON.stringify(data.features));
@@ -238,6 +264,40 @@ export default function CreateProductPage() {
 
       if (data.image && data.image[0]) {
         formData.append("image", data.image[0]);
+      }
+
+      // ✅ Append Category Specific Fields
+      if (category === "book") {
+        formData.append("pages", data.pages || "");
+        formData.append("author", JSON.stringify(data.author));
+        formData.append("publisher", JSON.stringify(data.publisher));
+        formData.append("edition", JSON.stringify(data.edition));
+        formData.append("country", JSON.stringify(data.country));
+        formData.append("language", JSON.stringify(data.language));
+      } else if (category === "bags") {
+        formData.append("bagMaterial", JSON.stringify(data.bagMaterial));
+        formData.append("bagCapacity", data.bagCapacity || "");
+        formData.append("bagDimensions", data.bagDimensions || "");
+        formData.append(
+          "bagCompartments",
+          (data.bagCompartments || 0).toString(),
+        );
+      } else if (category === "apparel") {
+        formData.append(
+          "apparelMaterial",
+          JSON.stringify(data.apparelMaterial),
+        );
+        formData.append("apparelFit", JSON.stringify(data.apparelFit));
+        formData.append("apparelSizes", data.apparelSizes || "");
+        formData.append("apparelColors", data.apparelColors || "");
+      } else if (category === "stationary") {
+        formData.append("stationaryType", JSON.stringify(data.stationaryType));
+        formData.append("stationaryColor", data.stationaryColor || "");
+        formData.append("stationaryPackSize", data.stationaryPackSize || "");
+        formData.append(
+          "stationaryMaterial",
+          JSON.stringify(data.stationaryMaterial),
+        );
       }
 
       mutation.mutate(formData);
@@ -408,7 +468,7 @@ export default function CreateProductPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Badge
@@ -417,16 +477,6 @@ export default function CreateProductPage() {
                   {...register("badge")}
                   className={inputClass}
                   placeholder='e.g. "Best Seller"'
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Pages
-                </label>
-                <input
-                  {...register("pages")}
-                  className={inputClass}
-                  placeholder="120"
                 />
               </div>
               <div className="space-y-1.5">
@@ -610,7 +660,6 @@ export default function CreateProductPage() {
                   </div>
                 </div>
 
-                {/* Title */}
                 <BilingualRow
                   enName={`features.${index}.title.en`}
                   bnName={`features.${index}.title.bn`}
@@ -618,7 +667,6 @@ export default function CreateProductPage() {
                   bnPlaceholder="ফিচারের শিরোনাম (বাংলা)"
                 />
 
-                {/* Description */}
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Description
@@ -719,43 +767,179 @@ export default function CreateProductPage() {
             ))}
           </Section>
 
-          {/* ===== 9. BOOK DETAILS ===== */}
-          <Section number={9} title="Book Details (Optional)">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <BilingualRow
-                enName="author.en"
-                bnName="author.bn"
-                enPlaceholder="Author name"
-                bnPlaceholder="লেখকের নাম"
-              />
-              <BilingualRow
-                enName="publisher.en"
-                bnName="publisher.bn"
-                enPlaceholder="Publisher"
-                bnPlaceholder="প্রকাশক"
-              />
-              <BilingualRow
-                enName="edition.en"
-                bnName="edition.bn"
-                enPlaceholder="1st Edition"
-                bnPlaceholder="১ম সংস্করণ"
-              />
-              <BilingualRow
-                enName="country.en"
-                bnName="country.bn"
-                enPlaceholder="Bangladesh"
-                bnPlaceholder="বাংলাদেশ"
-              />
-            </div>
-            <div className="max-w-md">
-              <BilingualRow
-                enName="language.en"
-                bnName="language.bn"
-                enPlaceholder="Bangla"
-                bnPlaceholder="বাংলা"
-              />
-            </div>
-          </Section>
+          {/* ===== 9. DYNAMIC CATEGORY SPECIFIC DETAILS ===== */}
+          {category === "book" && (
+            <Section number={9} title="Book Details">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <BilingualRow
+                  enName="author.en"
+                  bnName="author.bn"
+                  enPlaceholder="Author name"
+                  bnPlaceholder="লেখকের নাম"
+                />
+                <BilingualRow
+                  enName="publisher.en"
+                  bnName="publisher.bn"
+                  enPlaceholder="Publisher"
+                  bnPlaceholder="প্রকাশক"
+                />
+                <BilingualRow
+                  enName="edition.en"
+                  bnName="edition.bn"
+                  enPlaceholder="1st Edition"
+                  bnPlaceholder="১ম সংস্করণ"
+                />
+                <BilingualRow
+                  enName="country.en"
+                  bnName="country.bn"
+                  enPlaceholder="Bangladesh"
+                  bnPlaceholder="বাংলাদেশ"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-1">
+                <BilingualRow
+                  enName="language.en"
+                  bnName="language.bn"
+                  enPlaceholder="Bangla"
+                  bnPlaceholder="বাংলা"
+                />
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Pages
+                  </label>
+                  <input
+                    {...register("pages")}
+                    className={inputClass}
+                    placeholder="120"
+                  />
+                </div>
+              </div>
+            </Section>
+          )}
+
+          {category === "bags" && (
+            <Section number={9} title="Bag Details">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <BilingualRow
+                  enName="bagMaterial.en"
+                  bnName="bagMaterial.bn"
+                  enPlaceholder="Material (e.g. Canvas, Leather)"
+                  bnPlaceholder="উপাদান (যেমন ক্যানভাস, চামড়া)"
+                />
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Capacity
+                  </label>
+                  <input
+                    {...register("bagCapacity")}
+                    className={inputClass}
+                    placeholder="e.g., 25L"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Dimensions (LxWxH)
+                  </label>
+                  <input
+                    {...register("bagDimensions")}
+                    className={inputClass}
+                    placeholder='e.g., "40x30x15 cm"'
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Compartments
+                  </label>
+                  <input
+                    type="number"
+                    {...register("bagCompartments", { valueAsNumber: true })}
+                    className={inputClass}
+                    placeholder="3"
+                  />
+                </div>
+              </div>
+            </Section>
+          )}
+
+          {category === "apparel" && (
+            <Section number={9} title="Apparel / T-Shirt Details">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <BilingualRow
+                  enName="apparelMaterial.en"
+                  bnName="apparelMaterial.bn"
+                  enPlaceholder="Fabric (e.g. 100% Cotton)"
+                  bnPlaceholder="ফেব্রিক (যেমন ১০০% কটন)"
+                />
+                <BilingualRow
+                  enName="apparelFit.en"
+                  bnName="apparelFit.bn"
+                  enPlaceholder="Fit Type (e.g. Regular Fit)"
+                  bnPlaceholder="ফিট টাইপ (যেমন রেগুলার ফিট)"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-1">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Available Sizes
+                  </label>
+                  <input
+                    {...register("apparelSizes")}
+                    className={inputClass}
+                    placeholder="S, M, L, XL, XXL"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Available Colors
+                  </label>
+                  <input
+                    {...register("apparelColors")}
+                    className={inputClass}
+                    placeholder="Red, Blue, Black, White"
+                  />
+                </div>
+              </div>
+            </Section>
+          )}
+
+          {category === "stationary" && (
+            <Section number={9} title="Stationary Details">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <BilingualRow
+                  enName="stationaryType.en"
+                  bnName="stationaryType.bn"
+                  enPlaceholder="Type (e.g. Notebook, Pen Set)"
+                  bnPlaceholder="ধরন (যেমন নোটবুক, কলম সেট)"
+                />
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Color
+                  </label>
+                  <input
+                    {...register("stationaryColor")}
+                    className={inputClass}
+                    placeholder="Blue, Black"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Pack Size
+                  </label>
+                  <input
+                    {...register("stationaryPackSize")}
+                    className={inputClass}
+                    placeholder="Pack of 5"
+                  />
+                </div>
+                <BilingualRow
+                  enName="stationaryMaterial.en"
+                  bnName="stationaryMaterial.bn"
+                  enPlaceholder="Material (e.g. Premium Paper)"
+                  bnPlaceholder="উপাদান (যেমন প্রিমিয়াম কাগজ)"
+                />
+              </div>
+            </Section>
+          )}
 
           {/* ===== SUBMIT ===== */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col sm:flex-row justify-end gap-3">

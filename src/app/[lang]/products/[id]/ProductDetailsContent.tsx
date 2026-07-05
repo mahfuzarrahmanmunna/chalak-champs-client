@@ -209,13 +209,32 @@ export default function ProductDetailsContent() {
   const router = useRouter();
   const { isBangla, getLink } = useLanguage();
 
+  // ✅ ALL STATE HOOKS MOVED TO TOP - BEFORE ANY CONDITIONAL RETURNS
   const [rawProduct, setRawProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [orderStep, setOrderStep] = useState<1 | 2 | 3>(1);
+  const [orderError, setOrderError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    address: "",
+  });
+  const [showStickyCta, setShowStickyCta] = useState(false);
+  const [showSideCard, setShowSideCard] = useState(false);
+
+  // ✅ ALL REFS MOVED TO TOP
+  const overviewRef = useRef<HTMLDivElement>(null);
+  const featuresRef = useRef<HTMLDivElement>(null);
+  const whyRef = useRef<HTMLDivElement>(null);
+  const specsRef = useRef<HTMLDivElement>(null);
+  const faqRef = useRef<HTMLDivElement>(null);
 
   const productId = params?.id as string;
 
-  // --- FETCH REAL DATA ---
+  // ✅ ALL EFFECTS MOVED TO TOP
   useEffect(() => {
     if (!productId) return;
     const fetchProduct = async () => {
@@ -231,114 +250,6 @@ export default function ProductDetailsContent() {
     };
     fetchProduct();
   }, [productId]);
-
-  // --- PARSE & TRANSFORM DATA FOR UI ---
-  const product: Product | null = useMemo(() => {
-    if (!rawProduct) return null;
-    return {
-      id: rawProduct._id,
-      title: getBilingual(rawProduct.title, isBangla),
-      category: rawProduct.category || "book",
-      subtitle: getBilingual(rawProduct.subtitle, isBangla),
-      description: getBilingual(rawProduct.secondaryDescEn, isBangla),
-      fullDescription: getBilingual(rawProduct.contentEn, isBangla),
-      fullDescriptionSecond: "", // Adjust if you have a secondary rich text field
-      image: rawProduct.image || null,
-      fee: rawProduct.fee ? `৳${rawProduct.fee}` : "",
-      originalFee: rawProduct.originalFee ? `৳${rawProduct.originalFee}` : "",
-      badge: rawProduct.badge || null,
-      highlights: (rawProduct.highlights || [])
-        .map((h: any) => getBilingual(h, isBangla))
-        .filter(Boolean),
-      features: (rawProduct.features || []).map((f: any) => ({
-        title: getBilingual(f.title, isBangla),
-        desc: getBilingual(f.desc, isBangla),
-        icon: f.icon,
-      })),
-      whyPoints: (rawProduct.whyPoints || [])
-        .map((w: any) => getBilingual(w, isBangla))
-        .filter(Boolean),
-      specs: (rawProduct.specs || []).map((s: any) => ({
-        label: getBilingual(s.label, isBangla),
-        value: getBilingual(s.value, isBangla),
-      })),
-      author: getBilingual(rawProduct.author, isBangla),
-      publisher: getBilingual(rawProduct.publisher, isBangla),
-      edition: getBilingual(rawProduct.edition, isBangla),
-      pages: rawProduct.pages || "",
-      country: getBilingual(rawProduct.country, isBangla),
-      language: getBilingual(rawProduct.language, isBangla),
-    };
-  }, [rawProduct, isBangla]);
-
-  if (loading) return <DetailsSkeleton />;
-
-  if (error || !product) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 pb-20">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Product Not Found
-        </h1>
-        <Link
-          href={getLink("/products")}
-          className="text-[#F3056D] font-semibold hover:underline"
-        >
-          Back to Products
-        </Link>
-      </div>
-    );
-  }
-
-  const isComingSoon =
-    product.badge?.toLowerCase().includes("coming") ||
-    product.badge?.includes("শীঘ্রই") ||
-    product.badge?.includes("আসছে");
-  const isBook = product.category === "book";
-
-  const [activeTab, setActiveTab] = useState("overview");
-  const [showOrderModal, setShowOrderModal] = useState(false);
-  const [orderStep, setOrderStep] = useState<1 | 2 | 3>(1);
-  const [orderError, setOrderError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    address: "",
-  });
-  const [showStickyCta, setShowStickyCta] = useState(false);
-  const [showSideCard, setShowSideCard] = useState(false);
-
-  const overviewRef = useRef<HTMLDivElement>(null);
-  const featuresRef = useRef<HTMLDivElement>(null);
-  const whyRef = useRef<HTMLDivElement>(null);
-  const specsRef = useRef<HTMLDivElement>(null);
-  const faqRef = useRef<HTMLDivElement>(null);
-
-  const sections = [
-    {
-      id: "overview",
-      label: isBangla ? "বিবরণ" : "Description",
-      icon: LayoutGrid,
-    },
-  ];
-  if (product.features && product.features.length > 0)
-    sections.push({
-      id: "features",
-      label: isBangla ? "ফিচার" : "Features",
-      icon: ListChecks,
-    });
-  if (product.whyPoints && product.whyPoints.length > 0)
-    sections.push({
-      id: "why",
-      label: isBangla ? "কেন স্পেশাল?" : "Why Special?",
-      icon: UserCheck,
-    });
-  if (product.specs && product.specs.length > 0)
-    sections.push({
-      id: "specs",
-      label: isBangla ? "স্পেসিফিকেশন" : "Specifications",
-      icon: Tag,
-    });
-  sections.push({ id: "faq", label: "FAQ", icon: HelpCircle });
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -379,6 +290,80 @@ export default function ProductDetailsContent() {
     };
   }, []);
 
+  // ✅ ALL MEMOS MOVED TO TOP
+  const product: Product | null = useMemo(() => {
+    if (!rawProduct) return null;
+    return {
+      id: rawProduct._id,
+      title: getBilingual(rawProduct.title, isBangla),
+      category: rawProduct.category || "book",
+      subtitle: getBilingual(rawProduct.subtitle, isBangla),
+      description: getBilingual(rawProduct.secondaryDescEn, isBangla),
+      fullDescription: getBilingual(rawProduct.contentEn, isBangla),
+      fullDescriptionSecond: "",
+      image: rawProduct.image || null,
+      fee: rawProduct.fee ? `৳${rawProduct.fee}` : "",
+      originalFee: rawProduct.originalFee ? `৳${rawProduct.originalFee}` : "",
+      badge: rawProduct.badge || null,
+      highlights: (rawProduct.highlights || [])
+        .map((h: any) => getBilingual(h, isBangla))
+        .filter(Boolean),
+      features: (rawProduct.features || []).map((f: any) => ({
+        title: getBilingual(f.title, isBangla),
+        desc: getBilingual(f.desc, isBangla),
+        icon: f.icon,
+      })),
+      whyPoints: (rawProduct.whyPoints || [])
+        .map((w: any) => getBilingual(w, isBangla))
+        .filter(Boolean),
+      specs: (rawProduct.specs || []).map((s: any) => ({
+        label: getBilingual(s.label, isBangla),
+        value: getBilingual(s.value, isBangla),
+      })),
+      author: getBilingual(rawProduct.author, isBangla),
+      publisher: getBilingual(rawProduct.publisher, isBangla),
+      edition: getBilingual(rawProduct.edition, isBangla),
+      pages: rawProduct.pages || "",
+      country: getBilingual(rawProduct.country, isBangla),
+      language: getBilingual(rawProduct.language, isBangla),
+    };
+  }, [rawProduct, isBangla]);
+
+  // ✅ DERIVED VALUES (not hooks, so can be anywhere but cleaner here)
+  const isComingSoon =
+    product?.badge?.toLowerCase().includes("coming") ||
+    product?.badge?.includes("শীঘ্রই") ||
+    product?.badge?.includes("আসছে");
+  const isBook = product?.category === "book";
+
+  const sections = [
+    {
+      id: "overview",
+      label: isBangla ? "বিবরণ" : "Description",
+      icon: LayoutGrid,
+    },
+  ];
+  if (product?.features && product.features.length > 0)
+    sections.push({
+      id: "features",
+      label: isBangla ? "ফিচার" : "Features",
+      icon: ListChecks,
+    });
+  if (product?.whyPoints && product.whyPoints.length > 0)
+    sections.push({
+      id: "why",
+      label: isBangla ? "কেন স্পেশাল?" : "Why Special?",
+      icon: UserCheck,
+    });
+  if (product?.specs && product.specs.length > 0)
+    sections.push({
+      id: "specs",
+      label: isBangla ? "স্পেসিফিকেশন" : "Specifications",
+      icon: Tag,
+    });
+  sections.push({ id: "faq", label: "FAQ", icon: HelpCircle });
+
+  // ✅ HANDLER FUNCTIONS (not hooks, so can be anywhere)
   const scrollToSection = (id: string) => {
     const refMap: { [key: string]: React.RefObject<HTMLDivElement | null> } = {
       overview: overviewRef,
@@ -396,6 +381,7 @@ export default function ProductDetailsContent() {
     setOrderError(null);
     setShowOrderModal(true);
   };
+
   const handleOrderSubmit = () => {
     if (orderStep === 1) {
       setOrderStep(2);
@@ -415,19 +401,21 @@ export default function ProductDetailsContent() {
     }
   };
 
-  const breadcrumbItems = [
-    {
-      label: isBangla ? "হোম" : "Home",
-      href: isBangla ? "/bn" : "/en",
-      icon: Home,
-    },
-    {
-      label: isBangla ? "প্রোডাক্টস" : "Products",
-      href: isBangla ? "/bn/products" : "/en/products",
-      icon: null,
-    },
-    { label: product.title, href: null, icon: null },
-  ];
+  const breadcrumbItems = product
+    ? [
+        {
+          label: isBangla ? "হোম" : "Home",
+          href: isBangla ? "/bn" : "/en",
+          icon: Home,
+        },
+        {
+          label: isBangla ? "প্রোডাক্টস" : "Products",
+          href: isBangla ? "/bn/products" : "/en/products",
+          icon: null,
+        },
+        { label: product.title, href: null, icon: null },
+      ]
+    : [];
 
   const faqData = isBook
     ? isBangla
@@ -480,6 +468,25 @@ export default function ProductDetailsContent() {
             a: "Usually delivered within 3-5 business days.",
           },
         ];
+
+  // ✅ NOW CONDITIONAL RETURNS ARE SAFE - ALL HOOKS ARE ALREADY CALLED
+  if (loading) return <DetailsSkeleton />;
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 pb-20">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">
+          Product Not Found
+        </h1>
+        <Link
+          href={getLink("/products")}
+          className="text-[#F3056D] font-semibold hover:underline"
+        >
+          Back to Products
+        </Link>
+      </div>
+    );
+  }
 
   // ====== COMING SOON PAGE ======
   if (isComingSoon) {
@@ -628,7 +635,11 @@ export default function ProductDetailsContent() {
                       <button
                         key={section.id}
                         onClick={() => scrollToSection(section.id)}
-                        className={`py-2.5 px-4 md:px-5 rounded-xl font-medium text-sm md:text-base whitespace-nowrap transition-all duration-200 flex items-center ${activeTab === section.id ? "bg-[#214187] border-2 border-primary text-white shadow-md scale-[1.02]" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"}`}
+                        className={`py-2.5 px-4 md:px-5 rounded-xl font-medium text-sm md:text-base whitespace-nowrap transition-all duration-200 flex items-center ${
+                          activeTab === section.id
+                            ? "bg-[#214187] border-2 border-primary text-white shadow-md scale-[1.02]"
+                            : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                        }`}
                       >
                         <Icon className="h-4 w-4 mr-2" />
                         {section.label}
@@ -804,7 +815,11 @@ export default function ProductDetailsContent() {
 
               <div className="sticky hidden md:block top-28">
                 <div
-                  className={`transition-all duration-500 ${showSideCard ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}
+                  className={`transition-all duration-500 ${
+                    showSideCard
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-4 pointer-events-none"
+                  }`}
                 >
                   <div className="bg-[#214187] border-2 border-[#FF8FCA] rounded-2xl p-5 text-white text-center shadow-xl">
                     <p className="text-sm text-blue-200 mb-1">
@@ -1115,4 +1130,3 @@ export default function ProductDetailsContent() {
     </div>
   );
 }
-

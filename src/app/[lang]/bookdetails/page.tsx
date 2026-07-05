@@ -47,7 +47,7 @@ interface LibraryItem {
     studentsCount: number;
   };
   tableOfContents: string[];
-  faqs: string; // Renamed from string[] to string for data compatibility
+  faqs: Array<{ q: string; a: string }>; // FAQ items with questions and answers
   googleDriveUrl?: string; // Added for Google Drive support
   pdfUrl?: string;
 }
@@ -271,22 +271,10 @@ export default function BookDetailsPage() {
       ? "এই বই টি শিশিশুদের জন্য সেরা পথেকা অত্যন্ত গুরুত্বপূর্ণ অভিজ্ঞাস এবং উপস্থাপন প্রদান করে। রঙিন সচিত্র এবং আকর্ষণমুখ স্টোরিটেলিং দ্বারা শিশিশুদের মনোযগ আকর্ষণ করতে সাহায্য করে।"
       : "This book is designed to spark imagination and encourage early learning. With colorful illustrations and engaging stories, your child will fall in love with reading.",
     features: [
-      {
-        title: isBangla ? "প্রিন্টেড কোয়ালিটি" : "Printed Sheets",
-        body: isBangla ? "উচ্চ মানের রঙিন প্রিন্টেড" : "High Quality Print",
-      },
-      {
-        title: isBangla ? "মজবুত বাঁধাই গল্প" : "Durable Cover",
-        body: isBangla ? "নিরাপত্ত ও টেকস্টচার উপকরণ" : "Protective Design",
-      },
-      {
-        title: isBangla ? "বড়দের জন্য" : "Vibrant Art",
-        body: isBangla ? "বাবা-মাযের সাথে পড়ানো সহজ" : "Colorful Illustrations",
-      },
-      {
-        title: isBangla ? "পেজ কাউন্টিং" : "Interactive",
-        body: isBangla ? "১০+ পেজ পূর্ণ বই" : "100+ Pages",
-      },
+      isBangla ? "প্রিন্টেড কোয়ালিটি - উচ্চ মানের রঙিন প্রিন্টেড" : "Printed Sheets - High Quality Print",
+      isBangla ? "মজবুত বাঁধাই - নিরাপত্ত ও টেকসই উপকরণ" : "Durable Cover - Protective Design",
+      isBangla ? "বড়দের জন্য - বাবা-মায়ের সাথে পড়ানো সহজ" : "Vibrant Art - Colorful Illustrations",
+      isBangla ? "পেজ কাউন্টিং - ১০০+ পেজ পূর্ণ বই" : "Interactive - 100+ Pages",
     ],
     author: {
       name: isBangla ? "শিক্ষা বিশেষক দল" : "Team Chalak Champs",

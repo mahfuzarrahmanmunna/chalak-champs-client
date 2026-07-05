@@ -155,10 +155,10 @@ export default function AdminDashboardLayout({
           },
           {
             name: "Add Product",
-            href: getLink("/admin-dashboard/products/add-product"),
+            href: getLink("/admin-dashboard/products/create"),
             icon: PlusCircle,
             current:
-              pathname === getLink("/admin-dashboard/products/add-product"),
+              pathname === getLink("/admin-dashboard/products/create"),
           },
         ],
       },

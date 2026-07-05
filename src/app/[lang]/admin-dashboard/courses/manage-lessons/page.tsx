@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { Suspense, useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "@/lib/axios";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -87,6 +87,14 @@ const formatDuration = (mins?: number) => {
 // MAIN COMPONENT — Handles BOTH list view and detail view
 // =============================================================
 export default function ManageLessonsPage() {
+  return (
+    <Suspense fallback={<ManageLessonsFallback />}>
+      <ManageLessonsContent />
+    </Suspense>
+  );
+}
+
+function ManageLessonsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -102,6 +110,17 @@ export default function ManageLessonsPage() {
   }
 
   return <CourseListingView />;
+}
+
+function ManageLessonsFallback() {
+  return (
+    <div className="min-h-screen bg-[#F9FAFB] p-6 md:p-10 flex items-center justify-center">
+      <div className="flex items-center gap-3 text-gray-600">
+        <Loader2 className="h-5 w-5 animate-spin" />
+        <span>Loading lessons...</span>
+      </div>
+    </div>
+  );
 }
 
 // =============================================================

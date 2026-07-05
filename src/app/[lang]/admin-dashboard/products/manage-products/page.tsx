@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray, Controller, useWatch } from "react-hook-form";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "@/lib/axios";
 import { useParams } from "next/navigation";
@@ -70,12 +70,33 @@ interface ProductFormData {
   features: BilingualFeature[];
   whyPoints: BilingualText[];
   specs: BilingualSpec[];
+
+  // Book Specifics
   author: BilingualText;
   pages: string;
   publisher: BilingualText;
   edition: BilingualText;
   country: BilingualText;
   language: BilingualText;
+
+  // Bag Specifics
+  bagMaterial?: BilingualText;
+  bagCapacity?: string;
+  bagDimensions?: string;
+  bagCompartments?: number;
+
+  // Apparel Specifics
+  apparelMaterial?: BilingualText;
+  apparelFit?: BilingualText;
+  apparelSizes?: string;
+  apparelColors?: string;
+
+  // Stationary Specifics
+  stationaryType?: BilingualText;
+  stationaryColor?: string;
+  stationaryPackSize?: string;
+  stationaryMaterial?: BilingualText;
+
   contentEn: string;
   contentBn: string;
   secondaryDescEn: string;
@@ -193,6 +214,19 @@ const DEFAULT_VALUES: ProductFormData = {
   contentBn: "",
   secondaryDescEn: "",
   secondaryDescBn: "",
+  // Category Specifics
+  bagMaterial: { en: "", bn: "" },
+  bagCapacity: "",
+  bagDimensions: "",
+  bagCompartments: 0,
+  apparelMaterial: { en: "", bn: "" },
+  apparelFit: { en: "", bn: "" },
+  apparelSizes: "",
+  apparelColors: "",
+  stationaryType: { en: "", bn: "" },
+  stationaryColor: "",
+  stationaryPackSize: "",
+  stationaryMaterial: { en: "", bn: "" },
 };
 
 export default function ProductsListPage() {
@@ -234,11 +268,9 @@ export default function ProductsListPage() {
       id?: string;
     }) => {
       if (id) {
-        // Update existing product
         const response = await axios.put(`/api/products/${id}`, formData);
         return response.data;
       }
-      // Create new product
       const response = await axios.post("/api/products", formData);
       return response.data;
     },
@@ -290,6 +322,9 @@ export default function ProductsListPage() {
     defaultValues: DEFAULT_VALUES,
   });
 
+  // ✅ Watch category for conditional rendering
+  const category = useWatch({ control, name: "category" });
+
   // --- FIELD ARRAYS ---
   const {
     fields: highlightFields,
@@ -338,6 +373,19 @@ export default function ProductsListPage() {
         contentBn: editingProduct.contentBn || "",
         secondaryDescEn: editingProduct.secondaryDescEn || "",
         secondaryDescBn: editingProduct.secondaryDescBn || "",
+        // Category Specifics
+        bagMaterial: parseBilingual(editingProduct.bagMaterial),
+        bagCapacity: editingProduct.bagCapacity || "",
+        bagDimensions: editingProduct.bagDimensions || "",
+        bagCompartments: editingProduct.bagCompartments || 0,
+        apparelMaterial: parseBilingual(editingProduct.apparelMaterial),
+        apparelFit: parseBilingual(editingProduct.apparelFit),
+        apparelSizes: editingProduct.apparelSizes || "",
+        apparelColors: editingProduct.apparelColors || "",
+        stationaryType: parseBilingual(editingProduct.stationaryType),
+        stationaryColor: editingProduct.stationaryColor || "",
+        stationaryPackSize: editingProduct.stationaryPackSize || "",
+        stationaryMaterial: parseBilingual(editingProduct.stationaryMaterial),
       });
     } else if (isModalOpen) {
       reset(DEFAULT_VALUES);
@@ -353,16 +401,10 @@ export default function ProductsListPage() {
       if (data.originalFee)
         formData.append("originalFee", data.originalFee.toString());
       if (data.badge) formData.append("badge", data.badge);
-      if (data.pages) formData.append("pages", data.pages);
       formData.append("sortOrder", (data.sortOrder || 0).toString());
 
       formData.append("title", JSON.stringify(data.title));
       formData.append("subtitle", JSON.stringify(data.subtitle));
-      formData.append("author", JSON.stringify(data.author));
-      formData.append("publisher", JSON.stringify(data.publisher));
-      formData.append("edition", JSON.stringify(data.edition));
-      formData.append("country", JSON.stringify(data.country));
-      formData.append("language", JSON.stringify(data.language));
 
       formData.append("highlights", JSON.stringify(data.highlights));
       formData.append("features", JSON.stringify(data.features));
@@ -376,6 +418,40 @@ export default function ProductsListPage() {
 
       if (data.image && data.image[0]) {
         formData.append("image", data.image[0]);
+      }
+
+      // ✅ Append Category Specific Fields
+      if (category === "book") {
+        formData.append("pages", data.pages || "");
+        formData.append("author", JSON.stringify(data.author));
+        formData.append("publisher", JSON.stringify(data.publisher));
+        formData.append("edition", JSON.stringify(data.edition));
+        formData.append("country", JSON.stringify(data.country));
+        formData.append("language", JSON.stringify(data.language));
+      } else if (category === "bags") {
+        formData.append("bagMaterial", JSON.stringify(data.bagMaterial));
+        formData.append("bagCapacity", data.bagCapacity || "");
+        formData.append("bagDimensions", data.bagDimensions || "");
+        formData.append(
+          "bagCompartments",
+          (data.bagCompartments || 0).toString(),
+        );
+      } else if (category === "apparel") {
+        formData.append(
+          "apparelMaterial",
+          JSON.stringify(data.apparelMaterial),
+        );
+        formData.append("apparelFit", JSON.stringify(data.apparelFit));
+        formData.append("apparelSizes", data.apparelSizes || "");
+        formData.append("apparelColors", data.apparelColors || "");
+      } else if (category === "stationary") {
+        formData.append("stationaryType", JSON.stringify(data.stationaryType));
+        formData.append("stationaryColor", data.stationaryColor || "");
+        formData.append("stationaryPackSize", data.stationaryPackSize || "");
+        formData.append(
+          "stationaryMaterial",
+          JSON.stringify(data.stationaryMaterial),
+        );
       }
 
       saveMutation.mutate({ formData, id: editingProduct?._id });
@@ -549,9 +625,9 @@ export default function ProductsListPage() {
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex items-center justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                            {/* ✅ UPDATED LINK FORMAT */}
                             <Link
-                              href={`/${lang}/products/${product._id}`}
-                              target="_blank"
+                              href={`?id=${product._id}`}
                               className="p-2.5 text-gray-500 hover:text-[#214187] hover:bg-[#214187]/5 rounded-lg"
                             >
                               <Eye className="w-4 h-4" />
@@ -684,7 +760,7 @@ export default function ProductsListPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-gray-700 uppercase">
                         Badge
@@ -693,16 +769,6 @@ export default function ProductsListPage() {
                         {...register("badge")}
                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#214187] outline-none"
                         placeholder='e.g. "Best Seller"'
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700 uppercase">
-                        Pages
-                      </label>
-                      <input
-                        {...register("pages")}
-                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#214187] outline-none"
-                        placeholder="120"
                       />
                     </div>
                     <div className="space-y-2">
@@ -936,7 +1002,7 @@ export default function ProductsListPage() {
                   </div>
                 </section>
 
-                {/* SECTION 7 & 8 Condensed for brevity, fully functional */}
+                {/* SECTION 7 */}
                 <section className="space-y-4">
                   <div className="flex justify-between items-center border-b-2 border-[#214187]/10 pb-2">
                     <h3 className="text-lg font-bold text-[#214187]">
@@ -965,6 +1031,7 @@ export default function ProductsListPage() {
                   </div>
                 </section>
 
+                {/* SECTION 8 */}
                 <section className="space-y-4">
                   <div className="flex justify-between items-center border-b-2 border-[#214187]/10 pb-2">
                     <h3 className="text-lg font-bold text-[#214187]">
@@ -1015,44 +1082,193 @@ export default function ProductsListPage() {
                   </div>
                 </section>
 
-                {/* SECTION 9 */}
-                <section className="space-y-4">
-                  <h3 className="text-lg font-bold text-[#214187] border-b-2 border-[#214187]/10 pb-2">
-                    9. Book Details (Optional)
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <BilingualRow
-                      enName="author.en"
-                      bnName="author.bn"
-                      enPlaceholder="Author name"
-                      bnPlaceholder="লেখকের নাম"
-                    />
-                    <BilingualRow
-                      enName="publisher.en"
-                      bnName="publisher.bn"
-                      enPlaceholder="Publisher"
-                      bnPlaceholder="প্রকাশক"
-                    />
-                    <BilingualRow
-                      enName="edition.en"
-                      bnName="edition.bn"
-                      enPlaceholder="1st Edition"
-                      bnPlaceholder="১ম সংস্করণ"
-                    />
-                    <BilingualRow
-                      enName="country.en"
-                      bnName="country.bn"
-                      enPlaceholder="Bangladesh"
-                      bnPlaceholder="বাংলাদেশ"
-                    />
-                    <BilingualRow
-                      enName="language.en"
-                      bnName="language.bn"
-                      enPlaceholder="Bangla"
-                      bnPlaceholder="বাংলা"
-                    />
-                  </div>
-                </section>
+                {/* ✅ SECTION 9: DYNAMIC CATEGORY SPECIFIC DETAILS */}
+                {category === "book" && (
+                  <section className="space-y-6">
+                    <h3 className="text-lg font-bold text-[#214187] border-b-2 border-[#214187]/10 pb-2">
+                      9. Book Details
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <BilingualRow
+                        enName="author.en"
+                        bnName="author.bn"
+                        enPlaceholder="Author name"
+                        bnPlaceholder="লেখকের নাম"
+                      />
+                      <BilingualRow
+                        enName="publisher.en"
+                        bnName="publisher.bn"
+                        enPlaceholder="Publisher"
+                        bnPlaceholder="প্রকাশক"
+                      />
+                      <BilingualRow
+                        enName="edition.en"
+                        bnName="edition.bn"
+                        enPlaceholder="1st Edition"
+                        bnPlaceholder="১ম সংস্করণ"
+                      />
+                      <BilingualRow
+                        enName="country.en"
+                        bnName="country.bn"
+                        enPlaceholder="Bangladesh"
+                        bnPlaceholder="বাংলাদেশ"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <BilingualRow
+                        enName="language.en"
+                        bnName="language.bn"
+                        enPlaceholder="Bangla"
+                        bnPlaceholder="বাংলা"
+                      />
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 uppercase">
+                          Pages
+                        </label>
+                        <input
+                          {...register("pages")}
+                          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#214187] outline-none"
+                          placeholder="120"
+                        />
+                      </div>
+                    </div>
+                  </section>
+                )}
+
+                {category === "bags" && (
+                  <section className="space-y-6">
+                    <h3 className="text-lg font-bold text-[#214187] border-b-2 border-[#214187]/10 pb-2">
+                      9. Bag Details
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <BilingualRow
+                        enName="bagMaterial.en"
+                        bnName="bagMaterial.bn"
+                        enPlaceholder="Material (e.g. Canvas, Leather)"
+                        bnPlaceholder="উপাদান (যেমন ক্যানভাস, চামড়া)"
+                      />
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 uppercase">
+                          Capacity
+                        </label>
+                        <input
+                          {...register("bagCapacity")}
+                          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#214187] outline-none"
+                          placeholder="e.g., 25L"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 uppercase">
+                          Dimensions (LxWxH)
+                        </label>
+                        <input
+                          {...register("bagDimensions")}
+                          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#214187] outline-none"
+                          placeholder='e.g., "40x30x15 cm"'
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 uppercase">
+                          Compartments
+                        </label>
+                        <input
+                          type="number"
+                          {...register("bagCompartments", {
+                            valueAsNumber: true,
+                          })}
+                          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#214187] outline-none"
+                          placeholder="3"
+                        />
+                      </div>
+                    </div>
+                  </section>
+                )}
+
+                {category === "apparel" && (
+                  <section className="space-y-6">
+                    <h3 className="text-lg font-bold text-[#214187] border-b-2 border-[#214187]/10 pb-2">
+                      9. Apparel / T-Shirt Details
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <BilingualRow
+                        enName="apparelMaterial.en"
+                        bnName="apparelMaterial.bn"
+                        enPlaceholder="Fabric (e.g. 100% Cotton)"
+                        bnPlaceholder="ফেব্রিক (যেমন ১০০% কটন)"
+                      />
+                      <BilingualRow
+                        enName="apparelFit.en"
+                        bnName="apparelFit.bn"
+                        enPlaceholder="Fit Type (e.g. Regular Fit)"
+                        bnPlaceholder="ফিট টাইপ (যেমন রেগুলার ফিট)"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 uppercase">
+                          Available Sizes
+                        </label>
+                        <input
+                          {...register("apparelSizes")}
+                          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#214187] outline-none"
+                          placeholder="S, M, L, XL, XXL"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 uppercase">
+                          Available Colors
+                        </label>
+                        <input
+                          {...register("apparelColors")}
+                          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#214187] outline-none"
+                          placeholder="Red, Blue, Black, White"
+                        />
+                      </div>
+                    </div>
+                  </section>
+                )}
+
+                {category === "stationary" && (
+                  <section className="space-y-6">
+                    <h3 className="text-lg font-bold text-[#214187] border-b-2 border-[#214187]/10 pb-2">
+                      9. Stationary Details
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <BilingualRow
+                        enName="stationaryType.en"
+                        bnName="stationaryType.bn"
+                        enPlaceholder="Type (e.g. Notebook, Pen Set)"
+                        bnPlaceholder="ধরন (যেমন নোটবুক, কলম সেট)"
+                      />
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 uppercase">
+                          Color
+                        </label>
+                        <input
+                          {...register("stationaryColor")}
+                          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#214187] outline-none"
+                          placeholder="Blue, Black"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 uppercase">
+                          Pack Size
+                        </label>
+                        <input
+                          {...register("stationaryPackSize")}
+                          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#214187] outline-none"
+                          placeholder="Pack of 5"
+                        />
+                      </div>
+                      <BilingualRow
+                        enName="stationaryMaterial.en"
+                        bnName="stationaryMaterial.bn"
+                        enPlaceholder="Material (e.g. Premium Paper)"
+                        bnPlaceholder="উপাদান (যেমন প্রিমিয়াম কাগজ)"
+                      />
+                    </div>
+                  </section>
+                )}
               </form>
             </div>
 

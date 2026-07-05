@@ -1,36 +1,14 @@
 import React from "react";
 import ProductDetailsContent from "./ProductDetailsContent";
+import { getProducts } from "../productData";
 
-// ✅ Define the return type
-export async function generateStaticParams(): Promise<
-  { lang: string; id: string }[]
-> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    const res = await fetch(`${baseUrl}/api/products`, {
-      next: { revalidate: 3600 },
-    });
+export function generateStaticParams(): { lang: string; id: string }[] {
+  const products = getProducts(false);
 
-    if (!res.ok) return [];
-
-    const data = await res.json();
-    const products: any[] = data?.data || data || [];
-
-    // ✅ Explicitly typed array
-    const params: { lang: string; id: string }[] = [];
-
-    products.forEach((product: any) => {
-      if (product._id) {
-        params.push({ lang: "en", id: String(product._id) });
-        params.push({ lang: "bn", id: String(product._id) });
-      }
-    });
-
-    return params;
-  } catch (error) {
-    console.error("Failed to generate static params:", error);
-    return [];
-  }
+  return products.flatMap((product) => [
+    { lang: "en", id: String(product.id) },
+    { lang: "bn", id: String(product.id) },
+  ]);
 }
 
 export const metadata = {
