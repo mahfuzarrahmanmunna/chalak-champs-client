@@ -1,0 +1,16 @@
+{
+  "titlePrefix": "Chalak Champs",
+  "titleSuffix": "Shop",
+  "shortDescription": "Your Child's Best Learning Companion",
+  "ctaCard": "See Details",
+  "ctaFooter": "See More",
+  "items": [
+    {
+      "id": 1,
+      "image": "/kidsbook.png",
+      "badge": "Printed Colorful Book",
+      "badge2":"35% OFF",
+      "title": "Kids' অনর্গল English Book"
+    }
+  ]
+}

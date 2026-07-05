@@ -3,9 +3,17 @@ import { getAuth } from "firebase/auth"; // 1. Import this
 import app from "./firebase";
 // import { app } from "@/config/firebase"; // 2. Import your initialized firebase app (Check this path!)
 
+const rawApiBaseUrl =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:5000/api";
+
+const apiBaseUrl = rawApiBaseUrl.endsWith("/api")
+  ? rawApiBaseUrl.replace(/\/+$/, "")
+  : rawApiBaseUrl.replace(/\/+$/, "") + "/api";
+
 const api = axios.create({
-  // Your backend is at :5000, and your routes start with /api
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  baseURL: apiBaseUrl,
   headers: {
     "Content-Type": "application/json",
   },
@@ -14,14 +22,18 @@ const api = axios.create({
 // Request Interceptor
 api.interceptors.request.use(
   async (config) => {
-    // 3. Make this function async
     try {
       const auth = getAuth(app);
+      let token: string | null = null;
       const user = auth.currentUser;
 
       if (user) {
-        // 4. Get the fresh token from Firebase user
-        const token = await user.getIdToken();
+        token = await user.getIdToken();
+      } else if (typeof window !== "undefined") {
+        token = localStorage.getItem("token");
+      }
+
+      if (token) {
         config.headers["Authorization"] = `Bearer ${token}`;
       }
     } catch (error) {
@@ -40,7 +52,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       console.error("Unauthorized - Redirecting to login...");
       if (typeof window !== "undefined") {
-        window.location.href = "/login";
+        window.location.href = "/signin";
       }
     }
     return Promise.reject(error);

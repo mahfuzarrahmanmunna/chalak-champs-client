@@ -1,26 +1,15 @@
 {
-  "title": "Welcome to Chalak Champs",
-  "subtitle": "Master new languages with expert instructors from around the world",
-  "description": "Join thousands of students who are already learning with us. Our comprehensive courses are designed to help you achieve fluency in your target language.",
-  "ctaButton": "Get Started",
-  "features": [
-    {
-      "title": "Expert Instructors",
-      "description": "Learn from native speakers and language experts"
-    },
-    {
-      "title": "Interactive Learning",
-      "description": "Engage with immersive lessons and real-world practice"
-    },
-    {
-      "title": "Flexible Schedule",
-      "description": "Study at your own pace with 24/7 access to materials"
-    }
-  ],
+  "title": "We Believe Every Child Is A Champ",
+  "subtitle": "Chalak Champs is Bangladesh's #1 Skill-Based Kids Learning Platform, designed for children aged 3 to 15. From Spoken English, Abacus Mind Math, Drawing, Programming, to Quran Learning, every course is built around one simple idea: kids learn best by doing, not just listening. With our Learning by Doing approach, your child becomes confident, capable, and ready for the real world - one fun class at a time.",
+  "ctaButton": "Try 1 Free Class Absolutely Free!",
+  "secondaryLink": "Want to explore our courses? See them now →",
+  "features": [],
+  "cta2":"Want to explore our courses?",
+  "cta2Btn":"See them now",
   "stats": {
-    "students": "10,000+",
-    "courses": "50+",
-    "instructors": "30+",
-    "languages": "15+"
+    "students": "",
+    "courses": "",
+    "instructors": "",
+    "languages": ""
   }
 }

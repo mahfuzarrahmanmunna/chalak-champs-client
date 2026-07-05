@@ -1,18 +1,80 @@
 {
-  "logo": "/logo.png",
-  "courses": "Book A Free Class",
-  "liveCourses": "Live Courses",
-  "allcourses": "All Courses",
-  "kidenglish": "Kids English",
+  "bookAFreeClass": "Book A Free Class",
+  "allCourses": "All Courses",
+  "skills": "Skills",
+  "kidsEnglish": "Kids English",
   "more": "More",
-  "recordedCourses": "Recorded Courses",
-  "skillDev": "Skill Development",
-  "category": "Categories",
-  "modelTest": "Model Test",
-  "blog": "Blog",
-  "store": "Store",
+  "callUs": "Call Us",
   "login": "Login",
-  "signUp": "Sign Up",
-  "searchPlaceholder": "Search...",
-  "skill": "Skills"
+  "menus": {
+    "courses": [
+      {
+        "title": "Language Learning",
+        "description": "Fluency for everyday life"
+      },
+      {
+        "title": "Art & Drawing",
+        "description": "Professional communication"
+      },
+      {
+        "title": "Brain Development ",
+        "description": "Score 7.0+ guaranteed",
+        "icon": "../icon/brain.tsx"
+      },
+      {
+        "title": "Math Skills",
+        "description": "Master professional writing"
+      },
+      {
+        "title": "Academic Courses",
+        "description": "Master professional writing"
+      }
+    ],
+    "skills": [
+      {
+        "title": "Public Speaking",
+        "description": "Speak to crowds confidently"
+      },
+      {
+        "title": "Personality Dev",
+        "description": "Build your soft skills"
+      },
+      {
+        "title": "Interview Prep",
+        "description": "Ace your next job interview"
+      }
+    ],
+    "kids": [
+      {
+        "title": "Online",
+        "description": "Fun learning for toddlers"
+      },
+      {
+        "title": "Offline ",
+        "description": "Grammar and vocabulary"
+      }
+    ],
+    "more": [
+      {
+        "title": "Free Courses",
+        "description": "Learn our story and mission"
+      },
+      {
+        "title": "Live Courses",
+        "description": "Join our growing team"
+      },
+      {
+        "title": "Recorded Courses",
+        "description": "Latest tips and articles"
+      },
+      {
+        "title": "চালাক Champs Shop",
+        "description": "Get in touch with support"
+      },
+      {
+        "title": "Book Store",
+        "description": "Get in touch with support"
+      }
+    ]
+  }
 }

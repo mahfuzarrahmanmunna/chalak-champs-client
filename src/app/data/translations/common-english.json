@@ -1,13 +1,24 @@
 {
-  "language": "Language",
-  "darkMode": "Dark Mode",
-  "lightMode": "Light Mode",
-  "search": "Search",
-  "menu": "Menu",
-  "close": "Close",
-  "home": "Home",
-  "about": "About",
-  "contact": "Contact",
-  "privacy": "Privacy Policy",
-  "terms": "Terms of Service"
+  "bookAFreeClass": "Book A Free Class",
+  "allCourses": "All Courses",
+  "skills": "Skills",
+  "kidsEnglish": "Kids English",
+  "more": "More",
+  "callUs": "Call Us",
+  "login": "Login",
+  "featureCourses": {
+    "title": "Kids Spoken English Course",
+    "suffix": "",
+    "discount": "15% OFF",
+    "discountNote": "(Limited Seats!)",
+    "subtitle": "Does your child freeze up when it's time to speak English? This course is made exactly for them. Enroll today! Tomorrow, they'll be your pride and ours.",
+    "points": [
+      "Live Class",
+      "6-Month Course",
+      "3 Days/Week",
+      "Free Colorful Notes"
+    ],
+    "cta": "Enroll Now  Before Seats Run Out! ",
+    "contact": "Have questions? +88 01740176774 (24/7)"
+  }
 }

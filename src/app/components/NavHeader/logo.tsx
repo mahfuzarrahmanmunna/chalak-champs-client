@@ -4,8 +4,8 @@ const NavLogo = () => {
   return (
     <div className="">
       <svg
-        width="150"
-        height="85"
+        width="200"
+        height="100"
         viewBox="0 0 163 98"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

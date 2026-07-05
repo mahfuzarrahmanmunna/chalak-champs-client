@@ -1,23 +1,21 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { ThemeProvider } from "@/app/context/ThemeContext";
 import { LanguageProvider } from "@/app/context/LanguageContext";
-import { AuthProvider } from "./FirebaseProvider";
-// import DataLoadedWrapper from "./DataLoadedWrapper";
-// import { DataProvider } from "../context/DataProvider";
 import { LoadingProvider } from "../context/LoadingContext";
-import Navbar from "../components/Navbar/Navbar";
-import { usePathname } from "next/navigation";
-import Footer from "../components/Footer/Footer";
-import { useCurrentUser } from "../hooks/useCurrentUser";
-import Navbar1 from "../components/Navbar/Navbar1";
 import NavHeader from "../components/NavHeader/NavHeader";
-import FooterMassenger from "../components/Footer/FooterMassenger";
-import PromoModal from "../components/PromoModal/PromoModal";
-// import { ThemeProvider2 } from "../context/ThemeContext2";
+import Footer from "../components/Footer/Footer";
+import { usePathname } from "next/navigation";
+import { AuthProvider } from "../context/AuthContext";
+import { BookingProvider } from "./BookingProvider";
+import MobileBottomNav from "../components/MobileBottomNav/MobileBottomNav";
 
-// Type definition for beforeinstallprompt event
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{
@@ -25,18 +23,24 @@ interface BeforeInstallPromptEvent extends Event {
   }>;
 }
 
-const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const Providers: React.FC<{
+  children: React.ReactNode;
+  initialLang: string;
+}> = ({ children, initialLang }) => {
   const pathname = usePathname();
-  const isDashboard = pathname.startsWith("/admin-dashboard");
-  const isStDashboard = pathname.startsWith("/dashboard");
-  // const { currentUser } = useCurrentUser();
-  // console.log(currentUser);
+
+  // Query Client
+  const [queryClient] = useState(() => new QueryClient());
+
+  // Dashboard Check
+  const isDashboard = pathname.includes("/admin-dashboard");
+  const isStDashboard = pathname.includes("/dashboard");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator)) return;
 
-    // Only register on production builds over HTTPS
+    // Check environment
     const isLocalhost =
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1";
@@ -45,49 +49,89 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       navigator.serviceWorker
         .register("/sw.js")
         .then((registration) => {
-          console.log("Service worker registered:", registration.scope);
+          console.log(
+            "Service worker registered:",
+            registration.scope
+          );
         })
         .catch((error) => {
-          console.error("Service worker registration failed:", error);
+          console.error(
+            "Service worker registration failed:",
+            error
+          );
         });
     }
 
-    // Capture beforeinstallprompt event
+    // PWA Install Prompt Logic
     let deferredPrompt: BeforeInstallPromptEvent | null = null;
 
-    window.addEventListener("beforeinstallprompt", (e: Event) => {
+    const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       deferredPrompt = e as BeforeInstallPromptEvent;
-      console.log("Install prompt captured");
-      // Store in sessionStorage to make it available globally
-      (window as any).deferredInstallPrompt = deferredPrompt;
-    });
 
-    window.addEventListener("appinstalled", () => {
+      console.log("Install prompt captured");
+
+      (window as any).deferredInstallPrompt =
+        deferredPrompt;
+    };
+
+    const handleAppInstalled = () => {
       console.log("PWA installed successfully");
+
       deferredPrompt = null;
+
       (window as any).deferredInstallPrompt = null;
-    });
+    };
+
+    window.addEventListener(
+      "beforeinstallprompt",
+      handleBeforeInstallPrompt
+    );
+
+    window.addEventListener(
+      "appinstalled",
+      handleAppInstalled
+    );
+
+    return () => {
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+
+      window.removeEventListener(
+        "appinstalled",
+        handleAppInstalled
+      );
+    };
   }, []);
 
   return (
-    // <DataLoadedWrapper>
-    //   <DataProvider>
-    <AuthProvider>
-      <LoadingProvider>
-        <ThemeProvider>
-          <LanguageProvider>
-            {!isDashboard && !isStDashboard && <NavHeader />}
-            {children}
-            {!isDashboard && !isStDashboard && <Footer />}
-            <FooterMassenger />
-            {/* <PromoModal/> */}
-          </LanguageProvider>
-        </ThemeProvider>
-      </LoadingProvider>
-    </AuthProvider>
-    //   </DataProvider>
-    // </DataLoadedWrapper>
+    <section className="min-h-screen bg-white">
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <LoadingProvider>
+            <ThemeProvider>
+              <LanguageProvider initialLang={initialLang}>
+                <BookingProvider>
+                  {!isDashboard &&
+                    !isStDashboard && <NavHeader />}
+
+                  {children}
+
+                  {!isDashboard &&
+                    !isStDashboard && <Footer />}
+
+                  <div className="flex md:hidden">
+                    <MobileBottomNav />
+                  </div>
+                </BookingProvider>
+              </LanguageProvider>
+            </ThemeProvider>
+          </LoadingProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </section>
   );
 };
 

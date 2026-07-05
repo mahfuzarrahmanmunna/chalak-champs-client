@@ -9,7 +9,7 @@ import MessangerIcon from "./MessangerIcon";
 
 const Footer = () => {
   return (
-    <footer className="bg-white pt-16 pb-8 text-black dark:text-white">
+    <footer className="bg-white pt-16 pb-16 md:pb-8 text-black dark:text-white">
       <div className="container mx-auto px-6 text-base font-inter">
         {/* --- MAIN GRID LAYOUT --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[3fr_2fr_2fr_3fr] gap-12 mb-12">
@@ -39,19 +39,25 @@ const Footer = () => {
               <div className="flex gap-3 mt-3">
                 <div className="text-[#1777F2] bg-[#1777F21A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
                   {/* facebook */}
-                  <Link href="#">
+                  <a
+                    href="https://www.facebook.com/chalakchamps"
+                    target="_blank"
+                  >
                     <FaFacebookF size={18} />
-                  </Link>
+                  </a>
                 </div>
                 {/* youtube */}
                 <div className="text-[#FE0000] bg-[#FE00001A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
-                  <Link href="#">
+                  <a
+                    href="https://www.youtube.com/@chalakchamps"
+                    target="_blank"
+                  >
                     <FaYoutube size={18} />
-                  </Link>
+                  </a>
                 </div>
 
                 {/* Instagram */}
-                <div className="bg-[#FFAB4D26] h-10 w-10 flex items-center justify-center rounded-lg">
+                {/* <div className="bg-[#FFAB4D26] h-10 w-10 flex items-center justify-center rounded-lg">
                   <Link href="#">
                     <FaInstagram
                       size={18}
@@ -72,15 +78,19 @@ const Footer = () => {
                       </linearGradient>
                     </svg>
                   </Link>
-                </div>
+                </div> */}
 
                 <div className="text-[#1777F2] bg-[#448AFF1A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
-                  <Link href="#">
+                  <Link href="https://m.me/chalakchamps" target="_blank">
                     <FaFacebookMessenger size={18} />
                   </Link>
                 </div>
                 <div className="text-[#25D366] bg-[#25D3661A]  h-10 w-10.5 flex items-center justify-center rounded-lg">
-                  <Link href="#">
+                  <Link
+                    href="https://wa.me/8801740176774?text=Hello!%20I%20want%20to%20know%20more%20about%20Chalak%20Champs."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <FaWhatsapp size={18} />
                   </Link>
                 </div>
@@ -88,131 +98,44 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* --- Explore 1st --- */}
-          <div className="space-y-6 dark:text-white text-[#2D2D2D] font-medium">
-            <h3 className=" text-lg font-semibold mb-6  inline-block">
-              এক্সপ্লোর
-            </h3>
-            <ul className="space-y-3 text-sm ] ">
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-[#F3066E] transition-colors font-medium"
-                >
-                  আমাদের সম্পর্কে
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="hover:text-[#F3066E] transition-colors font-medium"
-                >
-                  যোগাযোগ করুন
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-[#F3066E] transition-colors font-medium flex items-center gap-3"
-                >
-                  স্কিলস <div className="h-1.5 w-1.5 bg-primary rounded-full" />
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-[#F3066E] transition-colors font-medium flex items-center gap-3"
-                >
-                  ই-বুক
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-[#F3066E] transition-colors"
-                >
-                  ফ্রি নোটস ও গাইড
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-[#F3066E] transition-colors font-medium"
-                >
-                  ফ্রি কোর্স
-                </Link>
-              </li>
-              <li >
-                <Link
-                  href="/"
-                  className="relative bg-linear-to-r from-[#C6005F] to-[#00477C] bg-clip-text text-transparent hover:text-[#F3066E] transition-colors"
-                >
-                  চালাক Champs অফার
-                  <div className="absolute -top-1.25 -left-3">
-                    <svg
-                      width="32"
-                      height="33"
-                      viewBox="0 0 32 33"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M-0.000462056 5.24779L2.86619 6.42807C3.62939 6.74287 4.21282 7.36455 4.46394 8.13164L5.40613 11.0123L6.62381 8.23025C6.94821 7.48965 7.58747 6.92376 8.37795 6.68007L11.3462 5.76442L8.47958 4.58414C8.10259 4.42893 7.76466 4.19645 7.48893 3.90264C7.2132 3.60883 7.00619 3.26063 6.88211 2.88193L5.93964 -0.000103482L4.72224 2.78331C4.39756 3.52256 3.75718 4.09008 2.9681 4.33349L-0.000462056 5.24779ZM27.5179 6.48759L28.1755 5.88433C28.4734 5.6115 28.8285 5.40442 29.2166 5.2773C29.6047 5.15017 30.0166 5.10601 30.4239 5.14783L31.3233 5.23889L30.7016 4.60077C30.4207 4.31182 30.2075 3.96737 30.0765 3.591C29.9456 3.21464 29.9 2.81525 29.9429 2.4202L30.0368 1.54748L29.3792 2.15074C28.7775 2.70222 27.9562 2.97167 27.1321 2.88696L26.2328 2.79591L26.8544 3.43403C27.4227 4.01787 27.7004 4.81493 27.6131 5.61459L27.5179 6.48759ZM12.6441 30.4951L14.6522 30.4152C15.4807 30.3822 16.2824 30.7007 16.8474 31.2894L18.2179 32.7166L18.1341 30.7683C18.1173 30.371 18.1892 29.9749 18.345 29.6072C18.5007 29.2394 18.7366 28.9087 19.0364 28.6378L20.5058 27.3081L18.498 27.3894C18.089 27.4057 17.6811 27.336 17.3025 27.1851C16.9238 27.0341 16.5833 26.8055 16.3042 26.5149L14.9337 25.0876L15.016 27.0363C15.0331 27.4334 14.9614 27.8294 14.8059 28.1971C14.6504 28.5648 14.4148 28.8955 14.1151 29.1665L12.6441 30.4951Z"
-                        fill="#F3066E"
-                      />
-                    </svg>
-                  </div>
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* OTHER LINKS 2nd */}
-          <div className="space-y-6 dark:text-white text-[#2D2D2D] font-medium">
-            <div>
+          <div className="md:flex hidden  col-span-2 justify-around">
+            {/* --- Explore 1st --- */}
+            <div className="space-y-6 dark:text-white text-[#2D2D2D] font-medium">
               <h3 className=" text-lg font-semibold mb-6  inline-block">
-                অন্যান্য
+                এক্সপ্লোর
               </h3>
-              <ul className="space-y-3 text-sm">
+              <ul className="space-y-3 text-sm ] ">
                 <li>
                   <Link
                     href="#"
-                    className="hover:text-[#F3066E] transition-colors"
+                    className="hover:text-[#F3066E] transition-colors font-medium"
                   >
-                    শিক্ষক হিসাবে যোগ দিন
+                    আমাদের সম্পর্কে
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/contact"
+                    className="hover:text-[#F3066E] transition-colors font-medium"
+                  >
+                    যোগাযোগ করুন
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="#"
-                    className="hover:text-[#F3066E] transition-colors flex items-center gap-2"
+                    className="hover:text-[#F3066E] transition-colors font-medium flex items-center gap-3"
                   >
-                    ক্যারিয়ার / নিয়োগ বিজ্ঞপ্তি{" "}
-                    <span className="h-2 w-2 bg-[#06F341] hover:bg-[#F3066E] rounded-full" />
+                    স্কিলস{" "}
+                    <div className="h-1.5 w-1.5 bg-primary rounded-full" />
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="#"
-                    className="hover:text-[#F3066E] transition-colors"
+                    className="hover:text-[#F3066E] transition-colors font-medium flex items-center gap-3"
                   >
-                    অ্যাফিলিয়েট রেজিস্ট্রেশন
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#F3066E] transition-colors"
-                  >
-                    প্রাইভেসি পলিসি
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-[#F3066E] transition-colors"
-                  >
-                    ব্যবহারকারীর শর্তাবলি
+                    ই-বুক
                   </Link>
                 </li>
                 <li>
@@ -220,10 +143,100 @@ const Footer = () => {
                     href="#"
                     className="hover:text-[#F3066E] transition-colors"
                   >
-                    অ্যাফিলিয়েট রেজিস্ট্রেশন
+                    ফ্রি নোটস ও গাইড
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="hover:text-[#F3066E] transition-colors font-medium"
+                  >
+                    ফ্রি কোর্স
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/"
+                    className="relative bg-linear-to-r from-[#C6005F] to-[#00477C] bg-clip-text text-transparent hover:text-[#F3066E] transition-colors"
+                  >
+                    চালাক Champs অফার
+                    <div className="absolute -top-1.25 -left-3">
+                      <svg
+                        width="32"
+                        height="33"
+                        viewBox="0 0 32 33"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M-0.000462056 5.24779L2.86619 6.42807C3.62939 6.74287 4.21282 7.36455 4.46394 8.13164L5.40613 11.0123L6.62381 8.23025C6.94821 7.48965 7.58747 6.92376 8.37795 6.68007L11.3462 5.76442L8.47958 4.58414C8.10259 4.42893 7.76466 4.19645 7.48893 3.90264C7.2132 3.60883 7.00619 3.26063 6.88211 2.88193L5.93964 -0.000103482L4.72224 2.78331C4.39756 3.52256 3.75718 4.09008 2.9681 4.33349L-0.000462056 5.24779ZM27.5179 6.48759L28.1755 5.88433C28.4734 5.6115 28.8285 5.40442 29.2166 5.2773C29.6047 5.15017 30.0166 5.10601 30.4239 5.14783L31.3233 5.23889L30.7016 4.60077C30.4207 4.31182 30.2075 3.96737 30.0765 3.591C29.9456 3.21464 29.9 2.81525 29.9429 2.4202L30.0368 1.54748L29.3792 2.15074C28.7775 2.70222 27.9562 2.97167 27.1321 2.88696L26.2328 2.79591L26.8544 3.43403C27.4227 4.01787 27.7004 4.81493 27.6131 5.61459L27.5179 6.48759ZM12.6441 30.4951L14.6522 30.4152C15.4807 30.3822 16.2824 30.7007 16.8474 31.2894L18.2179 32.7166L18.1341 30.7683C18.1173 30.371 18.1892 29.9749 18.345 29.6072C18.5007 29.2394 18.7366 28.9087 19.0364 28.6378L20.5058 27.3081L18.498 27.3894C18.089 27.4057 17.6811 27.336 17.3025 27.1851C16.9238 27.0341 16.5833 26.8055 16.3042 26.5149L14.9337 25.0876L15.016 27.0363C15.0331 27.4334 14.9614 27.8294 14.8059 28.1971C14.6504 28.5648 14.4148 28.8955 14.1151 29.1665L12.6441 30.4951Z"
+                          fill="#F3066E"
+                        />
+                      </svg>
+                    </div>
                   </Link>
                 </li>
               </ul>
+            </div>
+
+            {/* OTHER LINKS 2nd */}
+            <div className="space-y-6 dark:text-white text-[#2D2D2D] font-medium">
+              <div>
+                <h3 className=" text-lg font-semibold mb-6  inline-block">
+                  অন্যান্য
+                </h3>
+                <ul className="space-y-3 text-sm">
+                  <li>
+                    <Link
+                      href="#"
+                      className="hover:text-[#F3066E] transition-colors"
+                    >
+                      শিক্ষক হিসাবে যোগ দিন
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="hover:text-[#F3066E] transition-colors flex items-center gap-2"
+                    >
+                      ক্যারিয়ার / নিয়োগ বিজ্ঞপ্তি{" "}
+                      <span className="h-2 w-2 bg-[#06F341] hover:bg-[#F3066E] rounded-full" />
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="hover:text-[#F3066E] transition-colors"
+                    >
+                      অ্যাফিলিয়েট রেজিস্ট্রেশন
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="hover:text-[#F3066E] transition-colors"
+                    >
+                      প্রাইভেসি পলিসি
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="hover:text-[#F3066E] transition-colors"
+                    >
+                      ব্যবহারকারীর শর্তাবলি
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="hover:text-[#F3066E] transition-colors"
+                    >
+                      অ্যাফিলিয়েট রেজিস্ট্রেশন
+                    </Link>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
@@ -301,8 +314,8 @@ const Footer = () => {
             স্বত্ব &copy; {new Date().getFullYear()}{" "}
             <span className="text-[#1B386BB2]">Lignual</span>{" "}
             <span className="text-[#F3066EB2]">Academy</span> এবং{" "}
-            <span className="#1B386BB2">চালাক</span>{" "}
-            <span className="text-[">Champs</span> কর্তৃক
+            {/* <span className="#1B386BB2">চালাক</span>{" "}
+            <span className="text-[">Champs</span> কর্তৃক */}
             <span className="#1B386BB2">চালাক</span>{" "}
             <span className="text-[#F3066EB2]">Champs</span> কর্তৃক সর্বস্বত্ব
             সংরক্ষিত

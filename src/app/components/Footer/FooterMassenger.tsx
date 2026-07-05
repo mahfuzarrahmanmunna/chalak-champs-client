@@ -8,7 +8,7 @@ const FooterMassenger = () => {
 
   return (
     // এখানে container সরিয়ে w-fit ব্যবহার করা হয়েছে
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 w-fit">
+    <div className="fixed bottom-25 right-6 z-50 flex flex-col items-end gap-3 w-fit">
       <div
         className={`flex flex-col gap-3 transition-all duration-500 transform ${
           isOpen
@@ -33,7 +33,7 @@ const FooterMassenger = () => {
 
         {/* Messenger Option */}
         <a
-          href="https://m.me/chalakchampsbd"
+          href="https://m.me/chalakchamps"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 group/msg"

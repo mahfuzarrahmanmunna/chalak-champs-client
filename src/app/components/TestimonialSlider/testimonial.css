@@ -1,0 +1,32 @@
+.card-flow {
+  position: relative;
+  overflow: hidden;
+  border-radius: 35px;
+}
+
+.card-flow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+
+  background: linear-gradient(
+    135deg,
+    #F3066E,
+    #1B386B,
+    #F3066E
+  );
+
+  background-size: 300% 300%;
+  animation: gradientFlow 6s linear infinite;
+}
+
+/* Smooth diagonal flow */
+@keyframes gradientFlow {
+  0% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}

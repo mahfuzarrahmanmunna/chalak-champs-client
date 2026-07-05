@@ -1,0 +1,39 @@
+{
+  "title": {
+    "prefix": "Our",
+    "highlight": "Little Champs",
+    "suffix": "Get"
+  },
+  "cards": [
+    {
+      "id": 1,
+      "title": "Bangladesh's Best<br />Teacher Panel",
+      "alt": "Best Teacher Panel"
+    },
+    {
+      "id": 2,
+      "title": "High Quality<br />Live Classes",
+      "alt": "Live Classes"
+    },
+    {
+      "id": 3,
+      "title": "Topic-wise tests to<br />track real progress",
+      "alt": "Topic wise tests"
+    },
+    {
+      "id": 4,
+      "title": "Colorful Notes<br />& Worksheets",
+      "alt": "Notes and Worksheets"
+    },
+    {
+      "id": 5,
+      "title": "Teachers available 24/7,<br />Doubts solved in<br /><span class='text-green-300'>WhatsApp</span> Secret Group",
+      "alt": "Whatsapp Group Support"
+    },
+    {
+      "id": 6,
+      "title": "Missed a class?<br />Recorded classes<br />are always there<br />for you!",
+      "alt": "Recorded Class Backup"
+    }
+  ]
+}

@@ -2,16 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useTheme } from "@/app/context/ThemeContext";
-import { Phone, User, ChevronDown, Search } from "lucide-react"; // Added Search and ChevronDown
-import Link from "next/link";
+import { Phone, User, ChevronDown, Search } from "lucide-react";
 import Image from "next/image";
+import { createBooking } from "@/app/services/freeBookingService";
+import { useBooking } from "@/app/providers/BookingProvider";
 
-interface FreebookingProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-// Type for Country Data
 interface Country {
   name: string;
   flag: string;
@@ -19,8 +14,312 @@ interface Country {
   cca2: string;
 }
 
-const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
+// --- FIXED: Static Data to replace unstable API ---
+// This ensures the form never crashes due to network errors.
+const STATIC_COUNTRIES: Country[] = [
+  {
+    name: "Bangladesh",
+    flag: "https://flagcdn.com/bd.svg",
+    code: "+880",
+    cca2: "BD",
+  },
+  {
+    name: "United States",
+    flag: "https://flagcdn.com/us.svg",
+    code: "+1",
+    cca2: "US",
+  },
+  {
+    name: "United Kingdom",
+    flag: "https://flagcdn.com/gb.svg",
+    code: "+44",
+    cca2: "GB",
+  },
+  {
+    name: "Canada",
+    flag: "https://flagcdn.com/ca.svg",
+    code: "+1",
+    cca2: "CA",
+  },
+  {
+    name: "Australia",
+    flag: "https://flagcdn.com/au.svg",
+    code: "+61",
+    cca2: "AU",
+  },
+  {
+    name: "India",
+    flag: "https://flagcdn.com/in.svg",
+    code: "+91",
+    cca2: "IN",
+  },
+  {
+    name: "Pakistan",
+    flag: "https://flagcdn.com/pk.svg",
+    code: "+92",
+    cca2: "PK",
+  },
+  {
+    name: "Saudi Arabia",
+    flag: "https://flagcdn.com/sa.svg",
+    code: "+966",
+    cca2: "SA",
+  },
+  {
+    name: "United Arab Emirates",
+    flag: "https://flagcdn.com/ae.svg",
+    code: "+971",
+    cca2: "AE",
+  },
+  {
+    name: "Malaysia",
+    flag: "https://flagcdn.com/my.svg",
+    code: "+60",
+    cca2: "MY",
+  },
+  {
+    name: "Singapore",
+    flag: "https://flagcdn.com/sg.svg",
+    code: "+65",
+    cca2: "SG",
+  },
+  {
+    name: "Germany",
+    flag: "https://flagcdn.com/de.svg",
+    code: "+49",
+    cca2: "DE",
+  },
+  {
+    name: "France",
+    flag: "https://flagcdn.com/fr.svg",
+    code: "+33",
+    cca2: "FR",
+  },
+  {
+    name: "Italy",
+    flag: "https://flagcdn.com/it.svg",
+    code: "+39",
+    cca2: "IT",
+  },
+  {
+    name: "Spain",
+    flag: "https://flagcdn.com/es.svg",
+    code: "+34",
+    cca2: "ES",
+  },
+  {
+    name: "Japan",
+    flag: "https://flagcdn.com/jp.svg",
+    code: "+81",
+    cca2: "JP",
+  },
+  {
+    name: "China",
+    flag: "https://flagcdn.com/cn.svg",
+    code: "+86",
+    cca2: "CN",
+  },
+  {
+    name: "South Korea",
+    flag: "https://flagcdn.com/kr.svg",
+    code: "+82",
+    cca2: "KR",
+  },
+  {
+    name: "Nepal",
+    flag: "https://flagcdn.com/np.svg",
+    code: "+977",
+    cca2: "NP",
+  },
+  {
+    name: "Sri Lanka",
+    flag: "https://flagcdn.com/lk.svg",
+    code: "+94",
+    cca2: "LK",
+  },
+  {
+    name: "Oman",
+    flag: "https://flagcdn.com/om.svg",
+    code: "+968",
+    cca2: "OM",
+  },
+  {
+    name: "Qatar",
+    flag: "https://flagcdn.com/qa.svg",
+    code: "+974",
+    cca2: "QA",
+  },
+  {
+    name: "Kuwait",
+    flag: "https://flagcdn.com/kw.svg",
+    code: "+965",
+    cca2: "KW",
+  },
+  {
+    name: "Bahrain",
+    flag: "https://flagcdn.com/bh.svg",
+    code: "+973",
+    cca2: "BH",
+  },
+  {
+    name: "Turkey",
+    flag: "https://flagcdn.com/tr.svg",
+    code: "+90",
+    cca2: "TR",
+  },
+  { name: "Iran", flag: "https://flagcdn.com/ir.svg", code: "+98", cca2: "IR" },
+  {
+    name: "Thailand",
+    flag: "https://flagcdn.com/th.svg",
+    code: "+66",
+    cca2: "TH",
+  },
+  {
+    name: "Indonesia",
+    flag: "https://flagcdn.com/id.svg",
+    code: "+62",
+    cca2: "ID",
+  },
+  {
+    name: "Vietnam",
+    flag: "https://flagcdn.com/vn.svg",
+    code: "+84",
+    cca2: "VN",
+  },
+  {
+    name: "Philippines",
+    flag: "https://flagcdn.com/ph.svg",
+    code: "+63",
+    cca2: "PH",
+  },
+  {
+    name: "Russia",
+    flag: "https://flagcdn.com/ru.svg",
+    code: "+7",
+    cca2: "RU",
+  },
+  {
+    name: "Brazil",
+    flag: "https://flagcdn.com/br.svg",
+    code: "+55",
+    cca2: "BR",
+  },
+  {
+    name: "South Africa",
+    flag: "https://flagcdn.com/za.svg",
+    code: "+27",
+    cca2: "ZA",
+  },
+  {
+    name: "Nigeria",
+    flag: "https://flagcdn.com/ng.svg",
+    code: "+234",
+    cca2: "NG",
+  },
+  {
+    name: "Egypt",
+    flag: "https://flagcdn.com/eg.svg",
+    code: "+20",
+    cca2: "EG",
+  },
+  {
+    name: "Mexico",
+    flag: "https://flagcdn.com/mx.svg",
+    code: "+52",
+    cca2: "MX",
+  },
+  {
+    name: "Sweden",
+    flag: "https://flagcdn.com/se.svg",
+    code: "+46",
+    cca2: "SE",
+  },
+  {
+    name: "Norway",
+    flag: "https://flagcdn.com/no.svg",
+    code: "+47",
+    cca2: "NO",
+  },
+  {
+    name: "Denmark",
+    flag: "https://flagcdn.com/dk.svg",
+    code: "+45",
+    cca2: "DK",
+  },
+  {
+    name: "Netherlands",
+    flag: "https://flagcdn.com/nl.svg",
+    code: "+31",
+    cca2: "NL",
+  },
+  {
+    name: "Belgium",
+    flag: "https://flagcdn.com/be.svg",
+    code: "+32",
+    cca2: "BE",
+  },
+  {
+    name: "Switzerland",
+    flag: "https://flagcdn.com/ch.svg",
+    code: "+41",
+    cca2: "CH",
+  },
+  {
+    name: "Ireland",
+    flag: "https://flagcdn.com/ie.svg",
+    code: "+353",
+    cca2: "IE",
+  },
+  {
+    name: "New Zealand",
+    flag: "https://flagcdn.com/nz.svg",
+    code: "+64",
+    cca2: "NZ",
+  },
+  {
+    name: "Greece",
+    flag: "https://flagcdn.com/gr.svg",
+    code: "+30",
+    cca2: "GR",
+  },
+  {
+    name: "Portugal",
+    flag: "https://flagcdn.com/pt.svg",
+    code: "+351",
+    cca2: "PT",
+  },
+  {
+    name: "Poland",
+    flag: "https://flagcdn.com/pl.svg",
+    code: "+48",
+    cca2: "PL",
+  },
+  {
+    name: "Ukraine",
+    flag: "https://flagcdn.com/ua.svg",
+    code: "+380",
+    cca2: "UA",
+  },
+  {
+    name: "Argentina",
+    flag: "https://flagcdn.com/ar.svg",
+    code: "+54",
+    cca2: "AR",
+  },
+  {
+    name: "Israel",
+    flag: "https://flagcdn.com/il.svg",
+    code: "+972",
+    cca2: "IL",
+  },
+];
+
+const Freebooking: React.FC = () => {
+  // --- USE CONTEXT ---
+  // Use booking provider toast instead of react-toastify
+  const { isOpen, closeBooking, toast } = useBooking();
   const { colors } = useTheme();
+
   const phoneNumber = "01740176774";
   const message = encodeURIComponent(
     "Hello, I have a question about your service.",
@@ -36,38 +335,26 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
     course: "",
   });
 
+  // Loading State
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // 2. Country Code State
   const [countries, setCountries] = useState<Country[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 3. Fetch Countries on Mount & Set Default to Bangladesh
+  // 3. Initialize Countries on Mount
   useEffect(() => {
-    fetch("https://restcountries.com/v3.1/all?fields=name,flags,idd,cca2")
-      .then((res) => res.json())
-      .then((data) => {
-        const processed: Country[] = data
-          .map((country: { name: { common: string }; flags: { svg: string }; idd?: { root: string; suffixes?: string[] }; cca2: string }) => {
-            const root = country.idd?.root || "";
-            const suffix = country.idd?.suffixes?.[0] || "";
-            return {
-              name: country.name.common,
-              flag: country.flags.svg,
-              code: root + suffix,
-              cca2: country.cca2,
-            };
-          })
-          .filter((c: Country) => c.code.length > 0)
-          .sort((a: Country, b: Country) => a.name.localeCompare(b.name));
+    // Using static data ensures no network errors occur
+    const sortedCountries = [...STATIC_COUNTRIES].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+    setCountries(sortedCountries);
 
-        setCountries(processed);
-
-        // Set Default to Bangladesh
-        const bd = processed.find((c: Country) => c.cca2 === "BD");
-        setSelectedCountry(bd || processed[0]);
-      })
-      .catch((err) => console.error("Failed to fetch countries", err));
+    // Set Default to Bangladesh
+    const bd = sortedCountries.find((c: Country) => c.cca2 === "BD");
+    setSelectedCountry(bd || sortedCountries[0]);
   }, []);
 
   // 4. Handle Input Changes
@@ -89,25 +376,46 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
   // Close modal logic
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      onClose();
-      setIsDropdownOpen(false); // Close dropdown when clicking modal backdrop
+      closeBooking(); // Use context function
+      setIsDropdownOpen(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isFormValid && selectedCountry) {
+      setIsSubmitting(true);
+
       const fullPhone = `${selectedCountry.code} ${formData.phone}`;
-      console.log("Form Submitted:", { ...formData, fullPhone });
-      alert(`Submitted with Phone: ${fullPhone}`);
-      onClose();
-      setFormData({
-        studentName: "",
-        guardianName: "",
-        phone: "",
-        studentClass: "",
-        course: "",
-      });
+
+      const payload = {
+        ...formData,
+        countryCode: selectedCountry.code,
+        fullPhone: fullPhone,
+      };
+
+      try {
+        const response = await createBooking(payload);
+
+        if (response.success) {
+          toast("ডেমো ক্লাস বুক সফলভাবে সম্পন্ন হয়েছে!", "success");
+          closeBooking();
+          setFormData({
+            studentName: "",
+            guardianName: "",
+            phone: "",
+            studentClass: "",
+            course: "",
+          });
+        } else {
+          toast(response.message || "Submission failed", "error");
+        }
+      } catch (error: any) {
+        console.error("Submission Error:", error);
+        toast("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।", "error");
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -118,19 +426,20 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
       c.code.includes(searchTerm),
   );
 
+  // RETURN NULL IF NOT OPEN (Managed by Provider)
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed overflow-auto opacity-100 inset-0 z-50 flex items-center justify-center p-4"
       onClick={handleBackdropClick}
     >
-      {/* Backdrop Blur (Keeping your exact design) */}
+      {/* Backdrop Blur */}
       <div className="absolute inset-0 bg-[#490023]/15 backdrop-blur-sm transition-opacity" />
 
-      {/* Modal Content (Keeping your exact design) */}
+      {/* Modal Content */}
       <div
-        className="relative w-full max-w-md rounded-2xl border-2 border-primary shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in duration-200"
+        className="relative  w-full max-w-md rounded-2xl border-2 border-primary shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in duration-200"
         style={{
           backgroundColor: "var(--color-card)",
           border: `1px solid var(--color-border)`,
@@ -148,9 +457,10 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
         <div className="absolute top-12 -left-8">
           <Image
             src={"/bellicon.webp"}
-            width={60}
-            height={80}
+            width={50}
+            height={70}
             alt="live Icon"
+            className="w-auto h-auto"
           />
         </div>
         {/* Header / Close Button */}
@@ -163,7 +473,7 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
           <div className=" bg-radial from-[#FF8FCA] to-[#D9D9D9] p-px">
             <button
               onClick={() => {
-                onClose();
+                closeBooking(); // Use context function
                 setIsDropdownOpen(false);
               }}
               className="p-1 absolute  -top-4 -right-4 bg-[#FF8FCA]/70 rounded-full  dark:hover:bg-white/10 transition-colors"
@@ -204,7 +514,7 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                     <feColorMatrix
                       in="SourceAlpha"
                       type="matrix"
-                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
                       result="hardAlpha"
                     />
                     <feOffset />
@@ -217,12 +527,12 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                     <feBlend
                       mode="normal"
                       in2="BackgroundImageFix"
-                      result="effect1_dropShadow_462_31722"
+                      result="effect1_dropshadow_462_31722"
                     />
                     <feBlend
                       mode="normal"
                       in="SourceGraphic"
-                      in2="effect1_dropShadow_462_31722"
+                      in2="effect1_dropshadow_462_31722"
                       result="shape"
                     />
                   </filter>
@@ -256,7 +566,8 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                   name="studentName"
                   value={formData.studentName}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all"
+                  disabled={isSubmitting}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all disabled:opacity-50"
                   style={{
                     backgroundColor: "var(--color-background)",
                     borderColor: "var(--color-border)",
@@ -285,7 +596,8 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                   name="guardianName"
                   value={formData.guardianName}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all"
+                  disabled={isSubmitting}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all disabled:opacity-50"
                   style={{
                     backgroundColor: "var(--color-background)",
                     borderColor: "var(--color-border)",
@@ -313,12 +625,15 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
               <div className="relative w-32 md:w-40 shrink-0">
                 <button
                   type="button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full h-full flex items-center justify-between px-2 border-r transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                  onClick={() =>
+                    !isSubmitting && setIsDropdownOpen(!isDropdownOpen)
+                  }
+                  disabled={isSubmitting}
+                  className="w-full h-full flex items-center justify-between px-2 border-r transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
                   style={{
                     borderColor: "var(--color-border)",
                     backgroundColor: "var(--color-background)",
-                    borderTopLeftRadius: "0.5rem", // Add radius to left side
+                    borderTopLeftRadius: "0.5rem",
                     borderBottomLeftRadius: "0.5rem",
                   }}
                 >
@@ -395,7 +710,8 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder=""
-                className="flex-1 px-4 py-2.5 outline-none bg-transparent rounded-r-lg" // Added rounded-r-lg for right side corners
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-2.5 outline-none bg-transparent rounded-r-lg disabled:opacity-50"
                 style={{ color: "var(--color-foreground)" }}
               />
             </div>
@@ -413,7 +729,8 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
               name="studentClass"
               value={formData.studentClass}
               onChange={handleChange}
-              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all"
+              disabled={isSubmitting}
+              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all disabled:opacity-50"
               style={{
                 backgroundColor: "var(--color-background)",
                 borderColor: "var(--color-border)",
@@ -449,7 +766,8 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
               name="course"
               value={formData.course}
               onChange={handleChange}
-              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all"
+              disabled={isSubmitting}
+              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none transition-all disabled:opacity-50"
               style={{
                 backgroundColor: "var(--color-background)",
                 borderColor: "var(--color-border)",
@@ -478,27 +796,33 @@ const Freebooking: React.FC<FreebookingProps> = ({ isOpen, onClose }) => {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={!isFormValid}
+            disabled={!isFormValid || isSubmitting}
             className={`w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-xl text-white font-bold text-lg shadow-lg transform active:scale-[0.98] transition-all ${
               isFormValid
                 ? "hover:shadow-xl bg-[var(--color-primary)] cursor-pointer"
                 : "bg-gray-400 opacity-50 cursor-not-allowed"
             }`}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
-            সাবমিট করো
+            {isSubmitting ? (
+              <span>প্রসেসিং...</span>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+                সাবমিট করো
+              </>
+            )}
           </button>
         </form>
 

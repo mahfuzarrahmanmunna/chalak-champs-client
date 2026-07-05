@@ -26,7 +26,7 @@ function VerifyOtpInner() {
       setPhoneNumber(phone);
     } else {
       // If no phone number is in the URL, redirect back to login
-      //   router.push("/login");
+      //   router.push("/signin");
     }
   }, [searchParams, router]);
 
@@ -132,7 +132,7 @@ function VerifyOtpInner() {
         <div className="max-w-md w-full">
           <div className="mb-6">
             <Link
-              href="/login"
+              href="/signin"
               className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />

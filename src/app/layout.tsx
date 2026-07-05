@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Hind_Siliguri, Open_Sans } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
-import Providers from "./providers/Providers";
 
-// Configure Fonts
+// --- Configure Fonts ---
 const hindSiliguri = Hind_Siliguri({
   subsets: ["bengali", "latin"],
   weight: ["300", "400", "500", "600", "700"],
@@ -18,69 +18,124 @@ const googleSans = Open_Sans({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.com";
+
+// --- Root Metadata ---
 export const metadata: Metadata = {
-  title: "Chalak Champs - Learn English with Fun",
+  metadataBase: new URL(siteUrl),
+
+  // CORE SEO
+  title: "চালক Champs | Be clever, Be a champ",
   description:
-    "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.",
+    "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
+
+  keywords: [
+    "চালক চ্যাম্পস",
+    "Chalak Champs",
+    "kids education",
+    "child development",
+    "Bangla education",
+    "math for kids",
+  ],
+  category: "Education",
+
+  // LANGUAGE & INDEXING
+  alternates: {
+    canonical: siteUrl,
+    languages: {
+      en: `${siteUrl}/en`,
+      bn: `${siteUrl}/bn`,
+    },
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+
+  verification: {
+    google: "YOUR_GOOGLE_SEARCH_CONSOLE_CODE",
+  },
+
+  authors: [{ name: "Chalak Champs", url: siteUrl }],
 
   icons: {
-    icon: "/icon.png", 
+    icon: "/icon.png",
     shortcut: "/icon.png",
     apple: "/icon.png",
   },
   manifest: "/manifest.json",
 
+  // SOCIAL MEDIA (Fallback for root)
   openGraph: {
     type: "website",
-    locale: "en_US",
-    url: "https://chalakchamps.vercel.app", 
+    url: siteUrl,
     siteName: "Chalak Champs",
-    title: "Chalak Champs - Learn English with Fun",
+    locale: "bn_BD",
+    title: "চালক Champs | Be clever, Be a champ",
     description:
-      "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.",
+      "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
     images: [
       {
-        url: "/icon.png", 
-        width: 1200, 
-        height: 630, 
-        alt: "Chalak Champs Logo",
+        url: `${siteUrl}/homecover.jpg`,
+        width: 1200,
+        height: 630,
+        alt: "Chalak Champs Social Cover",
       },
     ],
   },
 
-  // --- FIX 3: Twitter Sharing ---
   twitter: {
     card: "summary_large_image",
-    title: "Chalak Champs - Learn English with Fun",
+    title: "চালক Champs | Be clever, Be a champ",
     description:
-      "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.",
-    images: ["/icon.png"],
+      "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
+    images: [`${siteUrl}/homecover.jpg`],
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  // --- Root Level Structured Data ---
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "চালক Champs",
+    alternateName: "Chalak Champs",
+    url: siteUrl,
+    description:
+      "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
-    <html lang="en" data-theme="light">
-      <head>
-        {/* Ensure Chrome can detect the PWA manifest */}
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#ec4899" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta
-          name="apple-mobile-web-app-status-bar-style"
-          content="black-translucent"
-        />
-      </head>
+    <html lang="bn" data-theme="light">
       <body
-        cz-shortcut-listen="true"
-        className={`${hindSiliguri.variable}  ${googleSans.variable} font-sans antialiased bg-base-100 text-black dark:text-white`}
+        className={`${hindSiliguri.variable} ${googleSans.variable} font-sans antialiased`}
       >
-        <Providers>{children}</Providers>
+        <Script
+          id="structured-data-root"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        {children}
       </body>
     </html>
   );

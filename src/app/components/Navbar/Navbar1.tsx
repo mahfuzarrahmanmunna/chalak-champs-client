@@ -162,7 +162,7 @@ const Navbar1 = () => {
 
             {/* Auth Buttons */}
             <Link
-              href="/login"
+              href="/signin"
               className="px-3 py-2 rounded-md text-sm font-medium transition-colors"
               style={{ color: "var(--color-foreground)" }}
             >
@@ -259,7 +259,7 @@ const Navbar1 = () => {
             {/* Mobile Auth */}
             <div className="pt-2 space-y-2">
               <Link
-                href="/login"
+                href="/signin"
                 onClick={closeMenu}
                 className="block w-full text-center px-3 py-2 rounded-md text-base font-medium border"
                 style={{

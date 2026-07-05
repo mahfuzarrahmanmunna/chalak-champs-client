@@ -17,7 +17,6 @@ interface CustomButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   mx?: string;
   my?: string;
   fullWidth?: boolean;
-  // Text Size Prop
   textSize?: string;
 }
 
@@ -36,11 +35,10 @@ const Button: React.FC<CustomButtonProps> = ({
   mx = "mx-0",
   my = "my-0",
   fullWidth = false,
-  textSize = "text-base", // Added default text size
+  textSize = "text-base",
   className = "",
   ...props
 }) => {
-  // Normal and Hover Shadow Logic
   const shadowStyles = {
     "--normal-shadow": `
       inset 0px 1.5px 0px 0px ${highlightColor}, 
@@ -66,33 +64,35 @@ const Button: React.FC<CustomButtonProps> = ({
       className={`
         group relative cursor-pointer flex items-center justify-center gap-2 
         rounded-lg font-bold active:animate-pulse transition-all duration-300
-        
-        /* Base Styles */
-        ${textSize} /* Dynamic Text Size applied here */
-        bg-[var(--bg-color)] text-[var(--text-color)] [box-shadow:var(--normal-shadow)]
-        
-        /* Dynamic Hover State */
-        hover:bg-[var(--hover-bg)] hover:text-[var(--hover-text)] 
+
+        ${textSize}
+        bg-[var(--bg-color)] text-[var(--text-color)]
+        [box-shadow:var(--normal-shadow)]
+
+        hover:bg-[var(--hover-bg)]
+        hover:text-[var(--hover-text)]
         hover:[box-shadow:var(--hover-shadow)]
-        
-        /* Active/Disabled States */
+
         active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed
-        
+
         ${px} ${py} ${mx} ${my}
         ${fullWidth ? "w-full" : "w-auto"}
         ${className}
       `}
     >
+      {/* Left Icon */}
       {icon && iconPosition === "left" && (
-        <span className="w-5 h-5 flex items-center shrink-0 transition-colors">
+        <span className="w-5 h-5 flex items-center justify-center shrink-0 [color:var(--text-color)] group-hover:[color:var(--hover-text)] transition-colors">
           {icon}
         </span>
       )}
 
+      {/* Text */}
       <span className="relative select-none">{children}</span>
 
+      {/* Right Icon */}
       {icon && iconPosition === "right" && (
-        <span className="w-5 h-5 flex items-center shrink-0 transition-colors">
+        <span className="w-5 h-5 flex items-center justify-center shrink-0 [color:var(--text-color)] group-hover:[color:var(--hover-text)] transition-colors">
           {icon}
         </span>
       )}

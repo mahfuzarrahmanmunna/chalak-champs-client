@@ -1,0 +1,15 @@
+{
+  "titlePrefix": "Best & Popular",
+  "titleSuffix": "Skill Programs",
+  "shortDescription": "Most Popular Kids Skill Programs in Bangladesh",
+  "cta": "Explore All Skill Programs →",
+  "cards": [
+    {
+      "id": 1,
+      "title": "Kids Spoken English Course",
+      "subtitle": "Class 1 to 8 <br/> Bangla Medium, English Medium, perfect for all",
+      "image": "/courses/kidsonorgol.png"
+    }
+  ]
+}
+

@@ -214,7 +214,7 @@ const Navbar = () => {
               ) : (
                 <>
                   <Link
-                    href="/login"
+                    href="/signin"
                     className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                     style={{ color: "var(--color-foreground)" }}
                   >
@@ -438,7 +438,7 @@ const Navbar = () => {
               ) : (
                 <div className="flex items-center px-4 space-x-3">
                   <Link
-                    href="/login"
+                    href="/signin"
                     className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
                     style={{ color: "var(--color-foreground)" }}
                   >
