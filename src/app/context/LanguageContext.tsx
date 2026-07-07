@@ -59,6 +59,8 @@ type Translations = {
   [key: string]: string | Translations;
 };
 
+
+
 interface MenuItem {
   title: string;
   description: string;
@@ -303,6 +305,14 @@ export interface SingleCourseData {
   overview: {
     title: string;
     content: string;
+  };
+  instructions: {
+    title: string;
+    steps: Array<{
+      step: string;
+      title: string;
+      desc: string;
+    }>;
   };
   levels: {
     title: string;

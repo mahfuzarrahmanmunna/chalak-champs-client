@@ -14,7 +14,6 @@ interface Country {
   cca2: string;
 }
 
-// --- FIXED: Static Data to replace unstable API ---
 // This ensures the form never crashes due to network errors.
 const STATIC_COUNTRIES: Country[] = [
   {
@@ -454,11 +453,11 @@ const Freebooking: React.FC = () => {
             alt="live Icon"
           />
         </div>
-        <div className="absolute top-12 -left-8">
+        <div className="absolute w-20 top-12 -left-9">
           <Image
             src={"/bellicon.webp"}
-            width={50}
-            height={70}
+            width={40}
+            height={60}
             alt="live Icon"
             className="w-auto h-auto"
           />
