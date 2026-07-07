@@ -5,7 +5,13 @@ export async function generateStaticParams() {
   return [{ lang: "en" }, { lang: "bn" }];
 }
 
-export default function Home({ params }: { params: { lang: string } }) {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  await params;
+
   return (
     <main className="min-h-screen">
       <HomeContent />

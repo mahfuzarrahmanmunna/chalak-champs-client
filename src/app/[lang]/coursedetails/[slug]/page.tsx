@@ -1,29 +1,40 @@
 // src/app/[lang]/coursedetails/[slug]/page.tsx
 
 import CoursesDetails from "../CoursesDetails";
+import coursesDataBangla from "@/app/data/translations/singlecourse-bangla.json";
+import coursesDataEnglish from "@/app/data/translations/singlecourse-english.json";
 
-// Auto-generate params from your courses data
+const courseSlugs = Array.from(
+  new Set(
+    [
+      ...(Array.isArray(coursesDataBangla.courses)
+        ? coursesDataBangla.courses
+        : []),
+      ...(Array.isArray(coursesDataEnglish.courses)
+        ? coursesDataEnglish.courses
+        : []),
+    ]
+      .map((course) => course?.slug)
+      .filter((slug): slug is string => Boolean(slug)),
+  ),
+);
+
 export function generateStaticParams() {
-  const languages = ["en", "bn"];
-
-  return languages.flatMap((lang) =>
-    (coursesData.courses || []).map((course: { slug: string }) => ({
-      lang,
-      slug: course.slug,
-    })),
+  return ["en", "bn"].flatMap((lang) =>
+    courseSlugs.map((slug) => ({ lang, slug })),
   );
 }
-
-export const dynamicParams = true;
 
 export async function generateMetadata({
   params,
 }: {
-  params: { lang: string; slug: string };
+  params: Promise<{ lang: string; slug: string }>;
 }) {
-  const course = coursesData.courses?.find(
-    (c: { slug: string }) => c.slug === params.slug,
-  );
+  const { lang, slug } = await params;
+  const courseData = lang === "bn" ? coursesDataBangla : coursesDataEnglish;
+  const course = Array.isArray(courseData.courses)
+    ? courseData.courses.find((c: { slug?: string }) => c.slug === slug)
+    : null;
 
   return {
     title: course?.hero?.title || "Course Details",
@@ -38,10 +49,11 @@ export async function generateMetadata({
   };
 }
 
-export default function Page({
+export default async function Page({
   params,
 }: {
-  params: { lang: string; slug: string };
+  params: Promise<{ lang: string; slug: string }>;
 }) {
-  return <CoursesDetails slug={params.slug} />;
+  const { slug } = await params;
+  return <CoursesDetails slug={slug} />;
 }
