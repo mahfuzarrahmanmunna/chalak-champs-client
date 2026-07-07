@@ -157,22 +157,37 @@ export default function AdminDashboardLayout({
             name: "Add Product",
             href: getLink("/admin-dashboard/products/create"),
             icon: PlusCircle,
-            current:
-              pathname === getLink("/admin-dashboard/products/create"),
+            current: pathname === getLink("/admin-dashboard/products/create"),
           },
         ],
       },
       {
         name: "Leads",
-        icon: HiPlus,
-        current: pathname.includes(getLink("/admin-dashboard/manage-leads")),
+        icon: GrDocumentText,
+        current:
+          pathname.includes(
+            getLink("/admin-dashboard/leads/manage-leads-modal"),
+          ) ||
+          pathname.includes(
+            getLink("/admin-dashboard/leads/manage-courses-details-leads"),
+          ),
         children: [
           {
-            name: "Manage Leads",
-            href: getLink("/admin-dashboard/manage-leads-modal"),
-            icon: HiPlus,
+            name: "Free Booking Leads",
+            href: getLink("/admin-dashboard/leads/manage-leads-modal"),
+            icon: GrDocumentText,
             current:
-              pathname === getLink("/admin-dashboard/manage-leads-modal"),
+              pathname === getLink("/admin-dashboard/leads/manage-leads-modal"),
+          },
+          {
+            name: "Course Enrollments",
+            href: getLink(
+              "/admin-dashboard/leads/manage-courses-details-leads",
+            ),
+            icon: HiAcademicCap,
+            current:
+              pathname ===
+              getLink("/admin-dashboard/leads/manage-courses-details-leads"),
           },
         ],
       },

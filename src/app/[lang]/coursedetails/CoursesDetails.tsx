@@ -11,7 +11,6 @@ import {
   ChevronRight,
   Star,
   Users,
-  X,
   LayoutGrid,
   ListChecks,
   HelpCircle,
@@ -19,21 +18,11 @@ import {
   ChevronDown,
   MessageCircle,
   Home,
-  CreditCard,
-  AlertCircle,
-  Check,
-  Calendar,
-  Clock,
-  Phone,
-  UserCircle,
-  Shield,
   BadgeCheck,
-  Sparkles,
   Award,
   GraduationCap,
   Briefcase,
   TrendingUp,
-  ArrowUp,
 } from "lucide-react";
 import { FaSadCry } from "react-icons/fa";
 
@@ -41,11 +30,11 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import EnrollmentCard from "./EnrollmentCard";
 import Button from "@/app/ui/button/Button";
 import EnrollmentSideSticky from "./EnrollmentSideSticky";
-import { createEnrollment } from "@/app/services/enrollmentService";
 
 // ─── Import the new multi-course JSON ───
 import coursesDataBangla from "@/app/data/translations/singlecourse-bangla.json";
 import coursesDataEnglish from "@/app/data/translations/singlecourse-english.json";
+import EnrollmentModal from "./[slug]/copmonents/EnrollmentModal";
 
 /* ═══════════════════════════════════════════════════
    TYPES
@@ -507,7 +496,8 @@ function CourseNotFound({
                   className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200 hover:border-[#F3056D]/30 hover:shadow-md transition-all text-left group"
                 >
                   <ChevronRight className="h-4 w-4 text-[#F3056D] rotate-90 group-hover:rotate-90 transition-transform" />
-                  <span className="text-[14px] font-medium text-gray-700 group-hover:text-[#F3056D] transition-colors line-clamp-1">
+                  <span className="text-[14px] font-medium text-gray-700
+                   group-hover:text-[#F3056D] transition-colors line-clamp-1">
                     {c.hero?.title}
                   </span>
                 </Link>
@@ -543,10 +533,6 @@ export default function CoursesDetails({ slug }: { slug: string }) {
 
   const [activeTab, setActiveTab] = useState("overview");
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
-  const [enrollmentStep, setEnrollmentStep] = useState<1 | 2 | 3 | 4>(1);
-  const [enrollmentLoading, setEnrollmentLoading] = useState(false);
-  const [enrollmentError, setEnrollmentError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: "", phone: "" });
   const [showStickyCta, setShowStickyCta] = useState(false);
   const [showSideEnrollment, setShowSideEnrollment] = useState(false);
 
@@ -630,59 +616,7 @@ export default function CoursesDetails({ slug }: { slug: string }) {
   };
 
   const handleEnroll = () => {
-    setEnrollmentStep(1);
-    setFormData({ name: "", phone: "" });
-    setEnrollmentError(null);
     setShowEnrollmentModal(true);
-  };
-
-  const handleEnrollmentSubmit = async () => {
-    if (enrollmentStep === 1) {
-      setEnrollmentStep(2);
-      setEnrollmentError(null);
-      return;
-    }
-    if (enrollmentStep === 2) {
-      if (!formData.name || !formData.phone) {
-        setEnrollmentError(
-          isBangla ? "সকল তথ্য পূরণ করুন" : "Please fill in all fields",
-        );
-        return;
-      }
-      if (!/^01[3-9]\d{8}$/.test(formData.phone.trim())) {
-        setEnrollmentError(
-          isBangla
-            ? "সঠিক ফোন নম্বর দিন (01XXXXXXXXX)"
-            : "Enter a valid BD phone number",
-        );
-        return;
-      }
-      setEnrollmentStep(3);
-      setEnrollmentError(null);
-      return;
-    }
-
-    setEnrollmentLoading(true);
-    setEnrollmentError(null);
-    try {
-      const result = await createEnrollment({
-        name: formData.name,
-        phone: formData.phone,
-        courseId: slug || "unknown",
-        courseTitle: data?.hero?.title || "Course",
-        amount: data?.quickInfo?.offerPrice || "0",
-      });
-      if (result.success) setEnrollmentStep(4);
-      else throw new Error(result.message || "Enrollment failed");
-    } catch (error: any) {
-      setEnrollmentError(
-        error.response?.data?.message ||
-          error.message ||
-          (isBangla ? "কিছু সমস্যা হয়েছে।" : "Something went wrong."),
-      );
-    } finally {
-      setEnrollmentLoading(false);
-    }
   };
 
   // ─── 404 ───
@@ -696,10 +630,6 @@ export default function CoursesDetails({ slug }: { slug: string }) {
     priceParts.length > 2
       ? `${priceParts[2]} ${priceParts[3]}`
       : data.quickInfo.offerPrice;
-  const originalPrice =
-    priceParts.length > 2 ? `${priceParts[0]} ${priceParts[1]}` : "";
-  const startDate = "10 Jan, 2025";
-  const endDate = "10 Jul, 2025";
 
   const breadcrumbItems = [
     {
@@ -798,7 +728,11 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                       <button
                         key={section.id}
                         onClick={() => scrollToSection(section.id)}
-                        className={`py-2.5 px-4 md:px-5 rounded-xl font-medium text-sm md:text-base whitespace-nowrap transition-all duration-200 flex items-center ${activeTab === section.id ? "bg-[#214187] border-2 border-primary text-white shadow-md scale-[1.02]" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"}`}
+                        className={`py-2.5 px-4 md:px-5 rounded-xl font-medium text-sm md:text-base whitespace-nowrap transition-all duration-200 flex items-center ${
+                          activeTab === section.id
+                            ? "bg-[#214187] border-2 border-primary text-white shadow-md scale-[1.02]"
+                            : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                        }`}
                       >
                         <Icon className="h-4 w-4 mr-2" />
                         {section.label}
@@ -1023,469 +957,15 @@ export default function CoursesDetails({ slug }: { slug: string }) {
       )}
 
       {/* ═══════════════════════════════════════════════════
-          4-STEP MODAL
+          ENROLLMENT MODAL
           ═══════════════════════════════════════════════════ */}
-      {showEnrollmentModal && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-2 md:p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity"
-            onClick={() => setShowEnrollmentModal(false)}
-          />
-          <div
-            className={`bg-white w-full rounded-[28px] md:rounded-[32px] shadow-2xl overflow-hidden relative z-10 flex flex-col animate-in zoom-in-95 duration-300 ${enrollmentStep === 3 ? "max-w-5xl h-[90vh] md:h-auto" : "max-w-md"}`}
-          >
-            {/* HEADER */}
-            {enrollmentStep === 1 ? (
-              <div className="relative bg-white p-5 md:p-6 border-b border-gray-100">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  {[1, 2, 3].map((step) => (
-                    <React.Fragment key={step}>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${enrollmentStep >= step ? "bg-[#F3056D] text-white scale-110 shadow-md shadow-pink-200" : "bg-gray-200 text-gray-500"}`}
-                        >
-                          {step}
-                        </div>
-                        <span
-                          className={`text-sm font-bold transition-colors ${enrollmentStep >= step ? "text-[#F3056D]" : "text-gray-400"}`}
-                        >
-                          Step {step}
-                        </span>
-                      </div>
-                      {step < 3 && (
-                        <div
-                          className={`h-0.5 w-10 md:w-14 rounded-full transition-colors duration-300 ${enrollmentStep > step ? "bg-[#F3056D]" : "bg-gray-200"}`}
-                        />
-                      )}
-                    </React.Fragment>
-                  ))}
-                </div>
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg md:text-xl font-bold text-gray-900">
-                    {isBangla ? "আবেদন ফর্ম পূরণ" : "Fill Application Form"}
-                  </h2>
-                  <button
-                    onClick={() => setShowEnrollmentModal(false)}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                  >
-                    <X className="h-5 w-5 text-gray-500" />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="relative bg-gradient-to-br from-[#214187] to-[#1a2f6e] p-5 md:p-6 pt-7 md:pt-8 text-white">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-16 h-16 bg-pink-500/10 rounded-full translate-y-1/2 -translate-x-1/2" />
-                <div className="relative z-10 flex justify-between items-start">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-7 h-7 rounded-full bg-white/20 text-white flex items-center justify-center text-xs font-bold border border-white/30">
-                        {enrollmentStep}
-                      </div>
-                      <span className="text-xs font-medium text-blue-200">
-                        Step {enrollmentStep}
-                      </span>
-                    </div>
-                    <h2 className="text-lg md:text-xl font-bold">
-                      {enrollmentStep === 2
-                        ? isBangla
-                          ? "এর ঠিকানা দিন"
-                          : "Provide Your Information"
-                        : enrollmentStep === 3
-                          ? isBangla
-                            ? "চেকআউট"
-                            : "Checkout"
-                          : isBangla
-                            ? "সফলভাবে সম্পন্ন!"
-                            : "Successfully Completed!"}
-                    </h2>
-                    <p className="text-blue-200 text-sm font-medium mt-1 line-clamp-1">
-                      {data.hero.title}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowEnrollmentModal(false)}
-                    className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* BODY */}
-            <div className="p-5 md:p-6 lg:p-8 flex-1 overflow-y-auto">
-              {/* STEP 1 */}
-              {enrollmentStep === 1 && (
-                <div className="animate-in fade-in duration-300 space-y-5">
-                  <div className="flex items-start gap-3 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
-                    <div className="w-10 h-10 rounded-xl bg-[#214187] flex items-center justify-center flex-shrink-0">
-                      <BookOpen className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-gray-900 text-sm md:text-base line-clamp-2">
-                        {data.hero.title}
-                      </h3>
-                      <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                        <Calendar className="h-3.5 w-3.5" />
-                        <span>
-                          {startDate} - {endDate}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                    <div className="grid grid-cols-3 bg-gray-50 px-4 py-2.5 border-b border-gray-100">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        {isBangla ? "বিবরণ" : "Description"}
-                      </span>
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                        {isBangla ? "ধরণ" : "Type"}
-                      </span>
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider text-right">
-                        {isBangla ? "মূল্য" : "Amount"}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-3 px-4 py-3.5 border-b border-gray-50 items-center">
-                      <span className="text-sm text-gray-700 font-medium truncate pr-2">
-                        {isBangla ? "কোর্স ফি" : "Course Fee"}
-                      </span>
-                      <span className="text-xs text-gray-500 text-center">
-                        {isBangla ? "মূল ফি" : "Base Fee"}
-                      </span>
-                      <span className="text-sm font-bold text-gray-900 text-right">
-                        {displayPrice}
-                      </span>
-                    </div>
-                    {originalPrice && (
-                      <div className="grid grid-cols-3 px-4 py-3.5 border-b border-gray-50 items-center">
-                        <span className="text-sm text-green-600 font-medium">
-                          {isBangla ? "ছাড়" : "Discount"}
-                        </span>
-                        <span className="text-xs text-green-500 text-center">
-                          {isBangla ? "বিশেষ অফার" : "Special Offer"}
-                        </span>
-                        <span className="text-sm font-bold text-green-600 text-right">
-                          -{originalPrice}
-                        </span>
-                      </div>
-                    )}
-                    <div className="grid grid-cols-3 px-4 py-3.5 items-center">
-                      <span className="text-sm text-gray-700 font-medium truncate pr-2">
-                        {isBangla ? "কোর্স ম্যাটেরিয়াল" : "Course Material"}
-                      </span>
-                      <span className="text-xs text-green-600 text-center font-medium">
-                        {isBangla ? "ফ্রি" : "Free"}
-                      </span>
-                      <span className="text-sm font-bold text-green-600 text-right">
-                        ৳0
-                      </span>
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-r from-[#F3056D]/5 to-pink-50 rounded-xl p-4 border-2 border-[#F3056D]/20">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-[#F3056D] flex items-center justify-center">
-                          <Sparkles className="h-4 w-4 text-white" />
-                        </div>
-                        <span className="font-bold text-gray-900 text-lg">
-                          {isBangla ? "মোট" : "Total"}
-                        </span>
-                      </div>
-                      <span className="text-2xl md:text-3xl font-extrabold text-[#F3056D]">
-                        {displayPrice}
-                      </span>
-                    </div>
-                    {data.quickInfo.offerText && (
-                      <p className="text-xs text-gray-500 mt-2 ml-10">
-                        {data.quickInfo.offerText}
-                      </p>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 pt-2">
-                    <button
-                      onClick={() => setShowEnrollmentModal(false)}
-                      className="py-3.5 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors text-sm md:text-base"
-                    >
-                      {isBangla ? "বাতিল" : "Cancel"}
-                    </button>
-                    <button
-                      onClick={handleEnrollmentSubmit}
-                      className="py-3.5 bg-[#F3056D] hover:bg-[#d9045f] text-white font-bold rounded-xl shadow-lg shadow-pink-200/50 hover:shadow-xl transition-all text-sm md:text-base flex items-center justify-center gap-2"
-                    >
-                      {isBangla ? "ভর্তি করুন" : "Enroll"}{" "}
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 2 */}
-              {enrollmentStep === 2 && (
-                <div className="space-y-5 animate-in slide-in-from-right-4 duration-300">
-                  <p className="text-sm text-blue-100 -mt-1">
-                    {isBangla
-                      ? "ভর্তি সম্পন্ন করতে আপনার তথ্য দিন। আমরা আপনার তথ্য সুরক্ষিত রাখবো।"
-                      : "Provide your information to complete enrollment."}
-                  </p>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      {isBangla ? "নাম ও নিবন্ধন" : "Name & Registration"}
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
-                        className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F3056D] focus:border-transparent outline-none transition-all font-medium text-gray-800 placeholder:text-gray-400"
-                        placeholder={
-                          isBangla ? "আপনার নাম লিখুন" : "Enter your name"
-                        }
-                      />
-                      <UserCircle className="absolute left-3.5 top-4 h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      {isBangla ? "সেলুলার নম্বর" : "Phone Number"}
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) =>
-                          setFormData({ ...formData, phone: e.target.value })
-                        }
-                        className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#F3056D] focus:border-transparent outline-none transition-all font-medium text-gray-800 placeholder:text-gray-400"
-                        placeholder="01XXXXXXXXX"
-                        maxLength={11}
-                      />
-                      <Phone className="absolute left-3.5 top-4 h-5 w-5 text-gray-400" />
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1.5 ml-1">
-                      {isBangla
-                        ? "১১ ডিজিটের বাংলাদেশি নম্বর দিন"
-                        : "Enter 11-digit BD number"}
-                    </p>
-                  </div>
-                  {enrollmentError && (
-                    <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-100 animate-in slide-in-from-top-2 duration-200">
-                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                      {enrollmentError}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 text-xs text-gray-400 bg-gray-50 p-3 rounded-lg">
-                    <Shield className="h-3.5 w-3.5 text-green-500" />
-                    <span>
-                      {isBangla
-                        ? "আপনার তথ্য সম্পূর্ণ সুরক্ষিত"
-                        : "Your information is completely secure"}
-                    </span>
-                  </div>
-                  <button
-                    onClick={handleEnrollmentSubmit}
-                    className="w-full py-3.5 bg-[#214187] hover:bg-[#1a2f6e] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
-                  >
-                    {isBangla ? "অনুসরণ করুন" : "Proceed"}{" "}
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => setEnrollmentStep(1)}
-                    className="w-full text-sm text-blue-200 hover:text-white mt-1 transition-colors font-medium"
-                  >
-                    {isBangla ? "ফিরে যান" : "Go Back"}
-                  </button>
-                </div>
-              )}
-
-              {/* STEP 3 */}
-              {enrollmentStep === 3 && (
-                <div className="animate-in slide-in-from-right-4 duration-300 h-full flex flex-col">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-                    <div className="flex flex-col gap-5">
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">
-                          {isBangla ? "পেমেন্ট তথ্য" : "Payment Details"}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {isBangla
-                            ? "নিচের তথ্যগুলো যাচাই করুন"
-                            : "Verify the details below"}
-                        </p>
-                      </div>
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-100 flex flex-col items-center text-center justify-center h-56 md:h-72 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-blue-100 rounded-full blur-2xl opacity-60" />
-                        <BookOpen className="h-14 w-14 text-[#214187] mb-4 relative z-10" />
-                        <h4 className="font-bold text-gray-900 text-base md:text-lg relative z-10 line-clamp-2 px-4">
-                          {data.hero.title}
-                        </h4>
-                        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-full text-xs font-semibold text-gray-600 shadow-sm border border-gray-100 relative z-10">
-                          <Clock className="h-3 w-3 text-[#F3056D]" />
-                          {startDate} - {endDate}
-                        </div>
-                      </div>
-                      <div className="space-y-3 text-sm text-gray-600 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <UserCircle className="h-4 w-4 text-gray-400" />
-                            <span>{isBangla ? "নাম" : "Name"}</span>
-                          </div>
-                          <span className="font-medium text-gray-900">
-                            {formData.name}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-gray-400" />
-                            <span>{isBangla ? "ফোন" : "Phone"}</span>
-                          </div>
-                          <span className="font-medium text-gray-900 tabular-nums">
-                            {formData.phone}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-900 mb-4 pb-3 border-b border-gray-100">
-                            {isBangla ? "বিল সংক্রান্ত তথ্য" : "Bill Info"}
-                          </h3>
-                          <div className="space-y-3.5">
-                            <div className="flex justify-between text-sm text-gray-600">
-                              <span>{isBangla ? "পণ্য" : "Item"}</span>
-                              <span className="font-medium text-gray-900 text-right max-w-[180px] truncate">
-                                {data.hero.title}
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-sm text-gray-600">
-                              <span>{isBangla ? "ফি" : "Fee"}</span>
-                              <span className="font-medium text-gray-900">
-                                {displayPrice}
-                              </span>
-                            </div>
-                            {originalPrice && (
-                              <div className="flex justify-between text-sm text-gray-600">
-                                <span>{isBangla ? "ছাড়" : "Discount"}</span>
-                                <span className="font-medium text-green-600">
-                                  -{originalPrice}
-                                </span>
-                              </div>
-                            )}
-                            <div className="border-t border-gray-200 my-1" />
-                            <div className="flex justify-between items-end pt-1">
-                              <span className="text-sm font-bold text-gray-900">
-                                {isBangla ? "সর্বমোট" : "Total"}
-                              </span>
-                              <span className="text-2xl font-black text-[#F3056D] tabular-nums leading-none">
-                                {displayPrice}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        {enrollmentError && (
-                          <div className="my-4 flex items-center gap-2 text-red-500 text-xs bg-red-50 p-3 rounded-xl border border-red-100">
-                            <AlertCircle className="h-3.5 w-3.5" />
-                            {enrollmentError}
-                          </div>
-                        )}
-                        <div className="mt-5 pt-4 border-t border-gray-100 space-y-3">
-                          <button
-                            onClick={handleEnrollmentSubmit}
-                            disabled={enrollmentLoading}
-                            className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-bold text-[15px] rounded-xl shadow-lg shadow-green-200/40 hover:shadow-xl transition-all flex items-center justify-center gap-2.5 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98]"
-                          >
-                            {enrollmentLoading ? (
-                              <span className="flex items-center gap-2">
-                                <svg
-                                  className="animate-spin h-4 w-4"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                    fill="none"
-                                  />
-                                  <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                                  />
-                                </svg>
-                                {isBangla ? "প্রসেসিং..." : "Processing..."}
-                              </span>
-                            ) : (
-                              <>
-                                <CreditCard className="h-4.5 w-4.5" />
-                                {isBangla ? "পেমেন্ট করুন" : "Pay Now"}
-                              </>
-                            )}
-                          </button>
-                          <button
-                            onClick={() => setEnrollmentStep(1)}
-                            className="w-full text-sm font-medium text-gray-400 hover:text-gray-700 transition-colors py-1"
-                          >
-                            {isBangla ? "← ফিরে যান" : "← Go Back"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 4 */}
-              {enrollmentStep === 4 && (
-                <div className="flex flex-col items-center justify-center py-14 animate-in zoom-in-95 duration-300 text-center flex-1">
-                  <div className="relative mb-8">
-                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-lg shadow-green-200/50">
-                      <Check className="h-12 w-12 text-green-600 stroke-[2.5]" />
-                    </div>
-                    <div className="absolute inset-0 w-24 h-24 rounded-full border-4 border-green-300 animate-ping opacity-20" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                    {isBangla
-                      ? "সফলভাবে ভর্তি হয়েছে!"
-                      : "Enrollment Successful!"}
-                  </h2>
-                  <p className="text-gray-500 text-[15px] max-w-[280px] mb-2 leading-relaxed">
-                    {isBangla
-                      ? "আপনার ফোন নম্বরে বিস্তারিত তথ্য পাঠানো হবে"
-                      : "We will send you a confirmation with details"}
-                  </p>
-                  <p className="text-[13px] text-gray-400 mb-8 tabular-nums">
-                    {isBangla
-                      ? `ফোন: ${formData.phone}`
-                      : `Phone: ${formData.phone}`}
-                  </p>
-                  <button
-                    onClick={() => setShowEnrollmentModal(false)}
-                    className="w-full max-w-xs py-3.5 bg-[#214187] text-white font-bold text-[15px] rounded-xl hover:bg-[#1a2f6e] transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"
-                  >
-                    {isBangla ? "বন্ধ করুন" : "Close"}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* SCROLL TO TOP */}
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="fixed bottom-8 right-8 z-50 flex h-11 w-11 items-center justify-center rounded-2xl bg-navy text-white shadow-xl shadow-navy/30 hover:bg-primary hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-500 opacity-0 pointer-events-none"
-        style={{ opacity: 0 }}
-        aria-label="Scroll to top"
-      >
-        <ArrowUp className="h-4 w-4" />
-      </button>
+      <EnrollmentModal
+        isOpen={showEnrollmentModal}
+        onClose={() => setShowEnrollmentModal(false)}
+        slug={slug}
+        courseTitle={data.hero.title}
+        amount={data.quickInfo.offerPrice}
+      />
     </div>
   );
 }
