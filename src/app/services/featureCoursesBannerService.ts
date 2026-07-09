@@ -1,6 +1,12 @@
 // services/featureCoursesBannerService.ts
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const rawApiBaseUrl =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:5000";
+
+const API_BASE = rawApiBaseUrl.replace(/\/+$/, "");
+const API_URL = API_BASE.endsWith("/api") ? API_BASE : `${API_BASE}/api`;
 
 // ---------- Types ----------
 
@@ -35,7 +41,7 @@ export async function fetchFeatureCoursesBanner(
 ): Promise<FeatureCoursesBannerData | null> {
   try {
     const res = await fetch(
-      `${API_BASE}/api/feature-courses-banner?lang=${lang}`,
+      `${API_URL}/feature-courses-banner?lang=${lang}`,
       { next: { revalidate: 60 } },
     );
 
@@ -54,7 +60,7 @@ export async function fetchFeatureCoursesBanner(
 export async function listFeatureCoursesBanners(): Promise<
   FeatureCoursesBannerData[]
 > {
-  const res = await fetch(`${API_BASE}/api/feature-courses-banner/admin/list`);
+  const res = await fetch(`${API_URL}/feature-courses-banner/admin/list`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
   const json: ApiResponse<FeatureCoursesBannerData[]> = await res.json();
@@ -79,7 +85,7 @@ export async function createFeatureCoursesBanner(payload: {
   if (payload.active !== undefined)
     formData.append("active", String(payload.active));
 
-  const res = await fetch(`${API_BASE}/api/feature-courses-banner/admin`, {
+  const res = await fetch(`${API_URL}/feature-courses-banner/admin`, {
     method: "POST",
     body: formData, // No Content-Type header! Browser sets it with boundary automatically
   });
@@ -111,7 +117,7 @@ export async function updateFeatureCoursesBanner(
     formData.append("active", String(payload.active));
 
   const res = await fetch(
-    `${API_BASE}/api/feature-courses-banner/admin/${id}`,
+    `${API_URL}/feature-courses-banner/admin/${id}`,
     {
       method: "PUT",
       body: formData,
@@ -129,7 +135,7 @@ export async function deleteFeatureCoursesBanner(
   id: string,
 ): Promise<FeatureCoursesBannerData> {
   const res = await fetch(
-    `${API_BASE}/api/feature-courses-banner/admin/${id}`,
+    `${API_URL}/feature-courses-banner/admin/${id}`,
     {
       method: "DELETE",
     },
