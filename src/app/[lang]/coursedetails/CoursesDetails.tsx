@@ -23,6 +23,7 @@ import {
   GraduationCap,
   Briefcase,
   TrendingUp,
+  Clock,
 } from "lucide-react";
 import { FaSadCry } from "react-icons/fa";
 
@@ -35,6 +36,7 @@ import EnrollmentSideSticky from "./EnrollmentSideSticky";
 import coursesDataBangla from "@/app/data/translations/singlecourse-bangla.json";
 import coursesDataEnglish from "@/app/data/translations/singlecourse-english.json";
 import EnrollmentModal from "./[slug]/copmonents/EnrollmentModal";
+import InstructorSection from "./components/InstructorSection";
 
 /* ═══════════════════════════════════════════════════
    TYPES
@@ -261,198 +263,7 @@ const CourseDecorate = ({
   </section>
 );
 
-/* ═══════════════════════════════════════════════════
-   INSTRUCTOR SECTION
-   ═══════════════════════════════════════════════════ */
-const InstructorSection = ({ instructor }: { instructor: InstructorData }) => {
-  const { isBangla } = useLanguage();
-  const hasDetailedInfo = !!(instructor.name || instructor.designation);
 
-  return (
-    <div className="scroll-mt-36 md:scroll-mt-40 mb-12">
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
-        <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-pink-100/40 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute bottom-[-20px] left-[-20px] w-24 h-24 bg-blue-100/40 rounded-full blur-2xl pointer-events-none" />
-        <div className="relative z-10 p-6 md:p-8">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[14px] font-semibold bg-[#F3056D]/10 text-[#F3056D] border border-[#F3056D]/20 mb-6">
-            <Star className="h-3.5 w-3.5 fill-[#F3056D] text-[#F3056D]" />
-            {instructor.title ||
-              (isBangla ? "কোর্স ইন্সট্রাক্টর" : "Course Instructor")}
-          </span>
-
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="relative shrink-0">
-              {instructor.image ? (
-                <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden shadow-xl border-2 border-white/20">
-                  <Image
-                    src={instructor.image}
-                    alt={instructor.name || "Instructor"}
-                    width={128}
-                    height={128}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-[#214187] to-[#1e3a8a] flex items-center justify-center shadow-xl border-2 border-white/20">
-                  <Users className="h-12 w-12 text-white/70" />
-                </div>
-              )}
-              {instructor.rating && (
-                <div className="absolute -bottom-2 -right-2 flex items-center gap-1 bg-white rounded-lg px-2.5 py-1.5 shadow-lg border border-gray-100">
-                  <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-                  <span className="text-[13px] font-bold text-gray-900">
-                    {instructor.rating}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">
-                {instructor.name ||
-                  (isBangla ? "বিশেষজ্ঞ প্রশিক্ষক" : "Expert Instructor")}
-              </h3>
-              {instructor.designation && (
-                <p className="text-[14px] font-semibold text-[#F3056D] mb-3">
-                  {instructor.designation}
-                </p>
-              )}
-              <p className="text-[15px] text-gray-600 leading-relaxed mb-5">
-                {instructor.bio ||
-                  instructor.info ||
-                  (isBangla
-                    ? "অভিজ্ঞ প্রশিক্ষক দ্বারা ক্লাস পরিচালিত হয়।"
-                    : "Classes are conducted by experienced instructors.")}
-              </p>
-
-              {hasDetailedInfo && (
-                <div className="flex flex-wrap gap-3 mb-5">
-                  {instructor.experience && (
-                    <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3.5 py-2">
-                      <Briefcase className="h-4 w-4 text-[#214187]" />
-                      <div>
-                        <p className="text-[11px] text-gray-400 font-medium leading-none">
-                          {isBangla ? "অভিজ্ঞতা" : "Experience"}
-                        </p>
-                        <p className="text-[14px] font-bold text-gray-900 leading-tight mt-0.5">
-                          {instructor.experience}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {instructor.studentsCount && (
-                    <div className="flex items-center gap-2 bg-green-50 border border-green-100 rounded-xl px-3.5 py-2">
-                      <TrendingUp className="h-4 w-4 text-green-600" />
-                      <div>
-                        <p className="text-[11px] text-gray-400 font-medium leading-none">
-                          {isBangla ? "শিক্ষার্থী" : "Students"}
-                        </p>
-                        <p className="text-[14px] font-bold text-gray-900 leading-tight mt-0.5">
-                          {instructor.studentsCount.toLocaleString()}+
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {instructor.education && (
-                    <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 rounded-xl px-3.5 py-2">
-                      <GraduationCap className="h-4 w-4 text-purple-600" />
-                      <p className="text-[12px] font-semibold text-gray-700 leading-tight">
-                        {instructor.education}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {instructor.specializations &&
-                instructor.specializations.length > 0 && (
-                  <div className="mb-5">
-                    <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2">
-                      {isBangla ? "বিশেষজ্ঞতা" : "Specializations"}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {instructor.specializations.map((spec, i) => (
-                        <span
-                          key={i}
-                          className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-[12px] font-medium text-gray-700"
-                        >
-                          <BadgeCheck className="h-3 w-3 text-[#214187]" />
-                          {spec}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-              {instructor.achievements &&
-                instructor.achievements.length > 0 && (
-                  <div className="mb-5">
-                    <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">
-                      {isBangla ? "অর্জনসমূহ" : "Achievements"}
-                    </p>
-                    <div className="space-y-2">
-                      {instructor.achievements
-                        .slice(0, 3)
-                        .map((achievement, i) => (
-                          <div key={i} className="flex items-start gap-2.5">
-                            <Award className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
-                            <p className="text-[13px] text-gray-600 leading-relaxed">
-                              {achievement}
-                            </p>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
-
-              {instructor.social && (
-                <div className="flex items-center gap-3">
-                  {instructor.social.facebook && (
-                    <a
-                      href={instructor.social.facebook}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg px-3 py-2 text-[12px] font-medium text-blue-600 transition-colors"
-                    >
-                      <svg
-                        className="h-3.5 w-3.5"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                      </svg>
-                      Facebook
-                    </a>
-                  )}
-                  {instructor.social.linkedin && (
-                    <a
-                      href={instructor.social.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg px-3 py-2 text-[12px] font-medium text-blue-700 transition-colors"
-                    >
-                      <svg
-                        className="h-3.5 w-3.5"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                      </svg>
-                      LinkedIn
-                    </a>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 /* ═══════════════════════════════════════════════════
    404 — COURSE NOT FOUND
@@ -868,7 +679,8 @@ export default function CoursesDetails({ slug }: { slug: string }) {
 
               {/* 5. INSTRUCTOR */}
               <InstructorSection instructor={data.instructor} />
-
+              {/* ============ 5. TEACHER / INSTRUCTOR ============ */}
+              
               {/* 6. FAQ */}
               <div
                 ref={faqRef}
