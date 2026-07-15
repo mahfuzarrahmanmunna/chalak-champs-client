@@ -53,6 +53,30 @@ const Providers: React.FC<{
             "Service worker registered:",
             registration.scope
           );
+          // If there's a waiting worker, ask it to skip waiting
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: "SKIP_WAITING" });
+          }
+
+          // Listen for updates found (new SW installing)
+          registration.addEventListener("updatefound", () => {
+            const newWorker = registration.installing;
+            if (!newWorker) return;
+            newWorker.addEventListener("statechange", () => {
+              if (newWorker.state === "installed" && registration.waiting) {
+                // Tell the waiting worker to activate immediately
+                registration.waiting.postMessage({ type: "SKIP_WAITING" });
+              }
+            });
+          });
+
+          // When the active service worker changes, reload the page to load new assets
+          navigator.serviceWorker.addEventListener("controllerchange", () => {
+            // Avoid double reload
+            if ((window as any)._swReloading) return;
+            (window as any)._swReloading = true;
+            window.location.reload();
+          });
         })
         .catch((error) => {
           console.error(

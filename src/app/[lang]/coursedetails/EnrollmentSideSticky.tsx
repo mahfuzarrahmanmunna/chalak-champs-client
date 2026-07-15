@@ -30,10 +30,10 @@ const EnrollmentSideSticky = ({
   isVisible,
 }: EnrollmentSideStickyProps) => {
   // --- Price Parsing ---
-  const parts = data.quickInfo.offerPrice.split(" ");
+  const pricingText = data?.quickInfo?.offerPrice || "";
+  const parts = pricingText.split(" ").filter(Boolean);
   const originalPrice = parts.length > 2 ? `${parts[0]} ${parts[1]}` : null;
-  const currentPrice =
-    parts.length > 2 ? `${parts[2]} ${parts[3]}` : data.quickInfo.offerPrice;
+  const currentPrice = parts.length > 2 ? `${parts[2]} ${parts[3] || ""}`.trim() : pricingText;
 
   // --- ICON & COLOR CONFIGURATION ---
   // Maps specific index to a unique icon and a light background color
@@ -77,7 +77,7 @@ const EnrollmentSideSticky = ({
             )}
           </div>
           <div className="text-sm text-gray-500 font-medium">
-            {data.quickInfo.offerText}
+            {data?.quickInfo?.offerText || ""}
           </div>
         </div>
 
@@ -91,7 +91,7 @@ const EnrollmentSideSticky = ({
             hoverTextColor="#F3056D"
             className="w-full py-2.5 rounded-lg text-white font-bold text-base shadow-md hover:shadow-lg transition-all active:scale-95 bg-[#F3056D]"
           >
-            {data.quickInfo.cta1}
+            {data?.quickInfo?.cta1 || "Enroll Now"}
           </Button>
 
           <Button
@@ -104,18 +104,18 @@ const EnrollmentSideSticky = ({
             onClick={onEnroll}
             className="text-sm py-2"
           >
-            {data.quickInfo.cta2}
+            {data?.quickInfo?.cta2 || "Book a Free Demo"}
           </Button>
         </div>
 
         {/* --- FULL LIST SECTION (SCROLLABLE) --- */}
         <div className="p-5 max-h-[500px] overflow-y-auto custom-scrollbar">
           <p className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide opacity-80">
-            {data.quickInfo.title}
+            {data?.quickInfo?.title || "Course Includes"}
           </p>
 
           <div className="space-y-0.5">
-            {data.quickInfo.items.map((item: string, idx: number) => {
+            {(data?.quickInfo?.items || []).map((item: string, idx: number) => {
               const { Icon, color, bg } = getConfig(idx);
               return (
                 <div
@@ -141,7 +141,7 @@ const EnrollmentSideSticky = ({
 
         {/* --- FOOTER NOTE --- */}
         <div className="bg-gray-50 px-6 py-3 text-center border-t border-gray-100">
-          <p className="text-xs text-gray-500">{data.quickInfo.ctaBelow}</p>
+          <p className="text-xs text-gray-500">{data?.quickInfo?.ctaBelow || ""}</p>
         </div>
       </div>
     </div>

@@ -39,7 +39,9 @@ const AddsCard = () => {
       </button>
 
       <figure className="p-0.5 md:rounded-[51px] overflow-hidden">
-        <Link href={`${isBangla ? "/bn/coursedetails" : "/en/coursedetails"}`}>
+        <Link
+          href={`${isBangla ? "/bn/coursedetails/kids-onorgol-english" : "/en/coursedetails/kids-onorgol-english"}`}
+        >
           <Image
             src={"/videoimg.png"}
             alt="Adds section image"

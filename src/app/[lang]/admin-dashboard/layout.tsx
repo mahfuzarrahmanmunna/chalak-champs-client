@@ -1,5 +1,3 @@
-// src/app/[lang]/admin-dashboard/layout.tsx
-
 "use client";
 import { useState, useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -16,6 +14,9 @@ import {
   LogOut,
   Shield,
   Sparkles,
+  FileText,
+  MessageSquare,
+  Info,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +41,7 @@ export interface NavItem {
   icon: any;
   current: boolean;
   children?: NavItem[];
+  isLabel?: boolean; // NEW: For dropdown section headers like "Home Page", "About Page"
 }
 
 export default function AdminDashboardLayout({
@@ -157,22 +159,99 @@ export default function AdminDashboardLayout({
             name: "Add Product",
             href: getLink("/admin-dashboard/products/create"),
             icon: PlusCircle,
+            current: pathname === getLink("/admin-dashboard/products/create"),
+          },
+        ],
+      },
+      {
+        name: "Content",
+        icon: FileText,
+        current: pathname.includes(getLink("/admin-dashboard/content")),
+        children: [
+          {
+            name: "Home Page",
+            isLabel: true,
+            href: undefined,
+            icon: null,
+            current: false,
+          },
+          {
+            name: "Hero Section",
+            href: getLink("/admin-dashboard/content/home/manage-hero-banner"),
+            icon: Sparkles,
             current:
-              pathname === getLink("/admin-dashboard/products/create"),
+              pathname ===
+              getLink("/admin-dashboard/content/home/manage-hero-banner"),
+          },
+          {
+            name: "CTA Section",
+            href: getLink("/admin-dashboard/content/home/manage-cta-section"),
+            icon: MessageSquare,
+            current:
+              pathname ===
+              getLink("/admin-dashboard/content/home/manage-cta-section"),
+          },
+          {
+            name: "About Page",
+            isLabel: true,
+            href: undefined,
+            icon: null,
+            current: false,
+          },
+          {
+            name: "About Content",
+            href: getLink("/admin-dashboard/content/about/manage-about"),
+            icon: Info,
+            current:
+              pathname ===
+              getLink("/admin-dashboard/content/about/manage-about"),
+          },
+          {
+            name: "Course Page",
+            isLabel: true,
+            href: undefined,
+            icon: null,
+            current: false,
+          },
+          {
+            name: "Course Content",
+            href: getLink(
+              "/admin-dashboard/content/courses/manage-courses-page",
+            ),
+            icon: HiAcademicCap,
+            current:
+              pathname ===
+              getLink("/admin-dashboard/content/courses/manage-courses-page"),
           },
         ],
       },
       {
         name: "Leads",
-        icon: HiPlus,
-        current: pathname.includes(getLink("/admin-dashboard/manage-leads")),
+        icon: GrDocumentText,
+        current:
+          pathname.includes(
+            getLink("/admin-dashboard/leads/manage-leads-modal"),
+          ) ||
+          pathname.includes(
+            getLink("/admin-dashboard/leads/manage-courses-details-leads"),
+          ),
         children: [
           {
-            name: "Manage Leads",
-            href: getLink("/admin-dashboard/manage-leads-modal"),
-            icon: HiPlus,
+            name: "Free Booking Leads",
+            href: getLink("/admin-dashboard/leads/manage-leads-modal"),
+            icon: GrDocumentText,
             current:
-              pathname === getLink("/admin-dashboard/manage-leads-modal"),
+              pathname === getLink("/admin-dashboard/leads/manage-leads-modal"),
+          },
+          {
+            name: "Course Enrollments",
+            href: getLink(
+              "/admin-dashboard/leads/manage-courses-details-leads",
+            ),
+            icon: HiAcademicCap,
+            current:
+              pathname ===
+              getLink("/admin-dashboard/leads/manage-courses-details-leads"),
           },
         ],
       },
@@ -285,41 +364,60 @@ export default function AdminDashboardLayout({
 
             <div
               className={`overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                isOpen ? "max-h-[500px] mt-2 opacity-100" : "max-h-0 opacity-0"
+                isOpen ? "max-h-[600px] mt-2 opacity-100" : "max-h-0 opacity-0"
               }`}
             >
               <div className="pl-5 py-1 space-y-0.5 relative">
                 <div className="absolute left-[22px] top-2 bottom-2 w-px bg-gradient-to-b from-[#F3056D]/40 via-white/10 to-transparent" />
-                {item.children.map((child, index) => (
-                  <Link
-                    key={String(child.name)}
-                    href={child.href || "#"}
-                    onClick={() => {
-                      if (isMobile) setSidebarOpen(false);
-                    }}
-                    className={`relative flex items-center gap-3 px-3 py-2 text-[12.5px] rounded-lg transition-all duration-300 ${
-                      pathname === child.href ||
-                      pathname.startsWith(child.href + "/")
-                        ? "text-white bg-[#F3056D]/15 font-semibold shadow-sm"
-                        : "text-white/40 hover:text-white/80 hover:bg-white/[0.04]"
-                    }`}
-                  >
-                    {(pathname === child.href ||
-                      pathname.startsWith(child.href + "/")) && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#F3056D] rounded-r-full shadow-sm shadow-[#F3056D]/50" />
-                    )}
-                    <child.icon
-                      className={`w-3.5 h-3.5 flex-shrink-0 ${
+                {item.children.map((child, index) => {
+                  // ✅ CHECK IF IT'S A SECTION LABEL (e.g., "Home Page", "About Page")
+                  if (child.isLabel) {
+                    return (
+                      <div
+                        key={`label-${String(child.name)}`}
+                        className={`pl-3 pt-4 pb-1 ${index === 0 ? "pt-0" : ""}`}
+                      >
+                        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">
+                          {String(child.name)}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  // ✅ RENDER NORMAL LINK
+                  return (
+                    <Link
+                      key={String(child.name)}
+                      href={child.href || "#"}
+                      onClick={() => {
+                        if (isMobile) setSidebarOpen(false);
+                      }}
+                      className={`relative flex items-center gap-3 px-3 py-2 text-[12.5px] rounded-lg transition-all duration-300 ${
                         pathname === child.href ||
                         pathname.startsWith(child.href + "/")
-                          ? "text-[#F3056D]"
-                          : "text-white/30"
+                          ? "text-white bg-[#F3056D]/15 font-semibold shadow-sm"
+                          : "text-white/40 hover:text-white/80 hover:bg-white/[0.04]"
                       }`}
-                      aria-hidden="true"
-                    />
-                    <span className="tracking-wide">{String(child.name)}</span>
-                  </Link>
-                ))}
+                    >
+                      {(pathname === child.href ||
+                        pathname.startsWith(child.href + "/")) && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#F3056D] rounded-r-full shadow-sm shadow-[#F3056D]/50" />
+                      )}
+                      <child.icon
+                        className={`w-3.5 h-3.5 flex-shrink-0 ${
+                          pathname === child.href ||
+                          pathname.startsWith(child.href + "/")
+                            ? "text-[#F3056D]"
+                            : "text-white/30"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span className="tracking-wide">
+                        {String(child.name)}
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>

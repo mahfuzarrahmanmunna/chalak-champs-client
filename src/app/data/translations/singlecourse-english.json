@@ -124,9 +124,19 @@
     "description": "Watch This Video To Learn More About How To Make A Payment."
   },
   "instructor": {
-    "title": "Course Instructor",
-    "info": "Teacher Name, Designation, Experience etc,",
-    "cardSystem": "Card System"
+        "title": "Chalak Champs Spoken English Instructor",
+        "name": "Md. Rafi Islam",
+        "designation": "Spoken English Instructor & Pronunciation Expert",
+        "bio": "শিশুদের স্পোকেন ইংরেজি শেখানোর ক্ষেত্রে ৬ বছরের দীর্ঘ অভিজ্ঞতা। ফোনেটিক্স, অ্যাকসেন্ট ট্রেনিং এবং চিলড্রেন কমিউনিকেশন ডেভেলপমেন্টে বিশেষজ্ঞ। ইতিমধ্যে ১,৪০০+ শিক্ষার্থীকে সফলভাবে ইংরেজি শেখানোর অভিজ্ঞতা রয়েছে।",
+        "experience": "6 years",
+        "studentsCount": 1449,
+        "rating": 4.9,
+        "specializations": [
+          "Phonetics & Pronunciation",
+          "Child Communication Development",
+          "Accent Training",
+          "Interactive Teaching Methodology"
+        ]
   },
   "review": {
     "title": "Course Instructor"

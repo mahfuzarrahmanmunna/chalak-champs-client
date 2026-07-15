@@ -201,7 +201,7 @@ const Banner = () => {
         {/* Below CTA Text */}
         <p className="text-[#000000]/50 font-medium text-base mt-4 tracking-[-2%]">
           {heroData.cta2}{" "}
-          <Link className="text-secondary font-bold" href={"/en/signup"}>
+          <Link className="text-secondary font-bold" href={`${currentLang}/courses`}>
             {heroData.cta2Btn}
           </Link>
         </p>

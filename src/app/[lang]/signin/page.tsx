@@ -316,7 +316,7 @@ const AuthPage = () => {
     <div className="w-full bg-white">
       <div id="recaptcha-container" style={{ display: "none" }}></div>
 
-      <div className="flex container mx-auto items-center justify-between h-[calc(100vh-200px)] md:h-[calc(100vh-100px)]">
+      <div className="flex pt-24 md:pt-0 container mx-auto items-center justify-between h-[calc(100vh-200px)] md:h-[calc(100vh-100px)]">
         {/* LEFT SIDE: Dynamic Content */}
         <div className="w-full flex flex-col justify-center items-center p-6 md:p-12 lg:px-20 relative z-10">
           <div className="w-full max-w-md">

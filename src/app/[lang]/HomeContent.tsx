@@ -25,7 +25,7 @@ export default function HomeContent() {
       <PopularCourse />
       <ChalakCourses />
       <ChalakLibrary />
-      <LittleChamps />
+      {/* <LittleChamps /> */}
       <OfflineCourses />
       <ImageSlider />
       <GallerySlider />

@@ -48,10 +48,10 @@ const EnrollmentCard = ({
   mediaAssets = [],
 }: EnrollmentCardProps) => {
   // --- Price Parsing ---
-  const parts = data.quickInfo.offerPrice.split(" ");
+  const pricingText = data?.quickInfo?.offerPrice || "";
+  const parts = pricingText.split(" ").filter(Boolean);
   const originalPrice = parts.length > 2 ? `${parts[0]} ${parts[1]}` : null;
-  const currentPrice =
-    parts.length > 2 ? `${parts[2]} ${parts[3]}` : data.quickInfo.offerPrice;
+  const currentPrice = parts.length > 2 ? `${parts[2]} ${parts[3] || ""}`.trim() : pricingText;
 
   // --- Slider Logic ---
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -306,7 +306,7 @@ const EnrollmentCard = ({
             )}
           </div>
           <div className="text-sm text-gray-500 mb-6 min-h-[40px]">
-            {data.quickInfo.offerText}
+            {data?.quickInfo?.offerText || ""}
           </div>
 
           <div className="flex flex-col gap-3">
@@ -319,7 +319,7 @@ const EnrollmentCard = ({
               hoverTextColor="#F3056D"
               className="w-full py-3 rounded-lg text-white font-bold text-lg shadow-md hover:shadow-lg transition-all active:scale-95 bg-[#F3056D]"
             >
-              {data.quickInfo.cta1}
+              {data?.quickInfo?.cta1 || "Enroll Now"}
             </Button>
 
             {/* Secondary CTA */}
@@ -333,16 +333,16 @@ const EnrollmentCard = ({
               onClick={onEnroll}
               className=""
             >
-              {data.quickInfo.cta2}
+              {data?.quickInfo?.cta2 || "Book a Free Demo"}
             </Button>
           </div>
 
           {/* --- UPDATED LIST SECTION WITH COLORFUL ICONS --- */}
           <div className="space-y-3 text-sm text-gray-600 mt-6">
             <p className="font-bold text-gray-900 mb-2">
-              {data.quickInfo.title}
+              {data?.quickInfo?.title || "Course Includes"}
             </p>
-            {data.quickInfo.items.map((item: string, idx: number) => {
+            {(data?.quickInfo?.items || []).map((item: string, idx: number) => {
               const { Icon, color, bg } = getConfig(idx);
               return (
                 <div key={idx} className="flex items-start gap-3">

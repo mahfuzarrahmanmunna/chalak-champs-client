@@ -284,7 +284,7 @@ const NavHeader = () => {
                 px="px-3.5"
                 icon=<UserIcon />
               >
-                {isBangla ? "প্রোফাইল" : "Profile"}
+                {isBangla ? "ড্যাশবোর্ড" : "Dashboard"}
               </Button>
             </Link>
           ) : (

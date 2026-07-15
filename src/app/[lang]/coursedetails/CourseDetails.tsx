@@ -24,6 +24,8 @@ import {
   Calendar,
   Clock,
   Tag,
+  TrendingUp,
+  Briefcase,
 } from "lucide-react";
 import { FaSadCry } from "react-icons/fa";
 
@@ -33,6 +35,8 @@ import EnrollmentCard from "./EnrollmentCard";
 import Button from "@/app/ui/button/Button";
 import EnrollmentSideSticky from "./EnrollmentSideSticky";
 import { createEnrollment } from "@/app/services/enrollmentService";
+import kidsEnglishEnglish from "@/app/data/translations/singlecourse-english.json";
+import kidsEnglishBangla from "@/app/data/translations/singlecourse-bangla.json";
 
 // --- SUB-COMPONENT: FAQ ---
 const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
@@ -183,6 +187,22 @@ const CourseDecorate = ({
 export default function CourseDetails() {
   const router = useRouter();
   const { singleCourseData, isBangla } = useLanguage();
+
+  const fallbackCourse = (isBangla ? kidsEnglishBangla : kidsEnglishEnglish) as any;
+  const fallbackCourseData =
+    isBangla && Array.isArray(fallbackCourse?.courses)
+      ? fallbackCourse.courses.find(
+          (course: any) => course?.slug === "kids-onorgol-english",
+        ) || fallbackCourse.courses[0] || null
+      : fallbackCourse;
+
+  const courseData =
+    singleCourseData &&
+    typeof singleCourseData === "object" &&
+    Object.keys(singleCourseData).length > 0 &&
+    singleCourseData.quickInfo?.offerPrice
+      ? singleCourseData
+      : fallbackCourseData;
 
   const [activeTab, setActiveTab] = useState("overview");
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
@@ -349,7 +369,7 @@ export default function CourseDetails() {
     }
   };
 
-  if (!singleCourseData || Object.keys(singleCourseData).length === 0) {
+  if (!courseData || Object.keys(courseData).length === 0) {
     return (
       <div className="p-10 text-center bg-gray-50 min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-xl text-gray-500 font-medium">
@@ -359,12 +379,11 @@ export default function CourseDetails() {
     );
   }
 
-  const data = singleCourseData;
-  const priceParts = data.quickInfo.offerPrice.split(" ");
+  const data = courseData;
+  const pricingText = data?.quickInfo?.offerPrice || "";
+  const priceParts = pricingText.split(" ").filter(Boolean);
   const displayPrice =
-    priceParts.length > 2
-      ? `${priceParts[2]} ${priceParts[3]}`
-      : data.quickInfo.offerPrice;
+    priceParts.length > 2 ? `${priceParts[2]} ${priceParts[3] || ""}`.trim() : pricingText;
 
   const breadcrumbItems = [
     {
@@ -426,7 +445,7 @@ export default function CourseDetails() {
 
       {/* Hero + Main Content */}
       <div className="relative bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8  md:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8  md:py-6">
           <div className="flex flex-col lg:flex-row gap-10">
             {/* Left Column */}
             <div className="w-full lg:w-[65%] order-2 lg:order-1">
@@ -449,9 +468,9 @@ export default function CourseDetails() {
                 </div>
                 <div className="md:hidden mb-6 flex">
                   <EnrollmentCard
-                    data={singleCourseData}
+                    data={courseData}
                     onEnroll={handleEnroll}
-                    mediaAssets={singleCourseData.mediaAssets || []}
+                    mediaAssets={(courseData as any).mediaAssets || []}
                   />
                 </div>
               </div>
@@ -609,30 +628,75 @@ export default function CourseDetails() {
 
               {/* ============ 5. TEACHER / INSTRUCTOR ============ */}
               <div className="scroll-mt-36 md:scroll-mt-40 mb-12">
-                <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-pink-100/40 rounded-full blur-2xl pointer-events-none" />
-                  <div className="absolute bottom-[-20px] left-[-20px] w-24 h-24 bg-blue-100/40 rounded-full blur-2xl pointer-events-none" />
+                <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm shadow-gray-200/50 relative overflow-hidden group">
+                  {/*  Enhanced Background Decorations */}
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-pink-50 to-rose-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 transition-transform duration-700 group-hover:scale-110" />
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-50 to-indigo-100/50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 transition-transform duration-700 group-hover:scale-110" />
+
+                  {/*  Unique Corner Accent */}
+                  <div className="absolute top-0 right-0 w-32 h-32 overflow-hidden rounded-bl-[80px]">
+                    <div className="absolute top-4 right-4 w-24 h-24 border-[16px] border-[#F3056D]/[0.04] rounded-full"></div>
+                  </div>
 
                   <div className="relative z-10">
-                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[14px] font-semibold bg-[#F3056D]/10 text-[#F3056D] border border-[#F3056D]/20 mb-6">
+                    {/*  Upgraded Badge */}
+                    <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest bg-gradient-to-r from-[#F3056D]/10 to-rose-50 text-[#F3056D] border border-[#F3056D]/15 mb-7 shadow-sm shadow-[#F3056D]/5">
                       <Star className="h-3.5 w-3.5 fill-[#F3056D] text-[#F3056D]" />
                       {data.instructor.title}
                     </span>
 
-                    <div className="flex flex-col sm:flex-row gap-6 items-start">
-                      <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-gradient-to-br from-[#214187] to-[#1e3a8a] flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-white/20">
-                        <Users className="h-10 w-10 text-white/70" />
+                    <div className="flex flex-col sm:flex-row gap-6 md:gap-8 items-start">
+                      {/*  Premium Avatar with Glow & Status */}
+                      <div className="relative flex-shrink-0">
+                        {/* Glow Effect */}
+                        <div className="absolute -inset-1.5 bg-gradient-to-br from-[#214187] to-[#F3056D] rounded-2xl opacity-20 blur-md group-hover:opacity-30 transition-opacity duration-500"></div>
+
+                        {/* Avatar Container */}
+                        <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-gradient-to-br from-[#214187] via-[#1e3a8a] to-[#0f172a] flex items-center justify-center shadow-xl shadow-[#214187]/20 border border-white/20">
+                          <Users
+                            className="h-10 w-10 text-white/80"
+                            strokeWidth={1.5}
+                          />
+                        </div>
+
+                        {/* Online/Active Status Dot */}
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center">
+                          <div className="w-3 h-3 bg-emerald-500 rounded-full border-2 border-white"></div>
+                        </div>
                       </div>
 
-                      <div className="flex-1">
-                        <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
-                          {isBangla
-                            ? "বিশেষজ্ঞ প্রশিক্ষক"
-                            : "Expert Instructor"}
+                      {/*  Refined Text Content */}
+                      <div className="flex-1 pt-1">
+                        <h3 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1.5 tracking-tight">
+                          {data.instructor.name}
                         </h3>
-                        <p className="text-[16px] text-gray-600 leading-relaxed">
-                          {data.instructor.info}
+
+                        {/* Designation with Icon */}
+                        <p className="text-[15px] text-gray-500 font-medium mb-5 flex items-center gap-2">
+                          <Briefcase className="w-4 h-4 text-gray-400" />
+                          {data.instructor.designation}
                         </p>
+
+                        {/*  Upgraded Stats into "Metric Pills" */}
+                        <div className="flex flex-wrap gap-3">
+                          <div className="inline-flex items-center gap-2.5 px-4 py-2.5 bg-gray-50/80 rounded-xl border border-gray-100 group-hover:border-gray-200 transition-colors">
+                            <div className="p-1 bg-[#214187]/10 rounded-md">
+                              <Clock className="w-3.5 h-3.5 text-[#214187]" />
+                            </div>
+                            <span className="text-sm font-semibold text-gray-700">
+                              {data.instructor.experience}
+                            </span>
+                          </div>
+
+                          <div className="inline-flex items-center gap-2.5 px-4 py-2.5 bg-amber-50/50 rounded-xl border border-amber-100/60 group-hover:border-amber-200/60 transition-colors">
+                            <div className="p-1 bg-amber-100/80 rounded-md">
+                              <TrendingUp className="w-3.5 h-3.5 text-amber-600" />
+                            </div>
+                            <span className="text-sm font-semibold text-gray-700">
+                              {data.instructor.rating}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -653,15 +717,15 @@ export default function CourseDetails() {
             <div className="w-full lg:w-[35%] order-1 mt-0 lg:order-2 space-y-6">
               <div className="hidden md:flex">
                 <EnrollmentCard
-                  data={singleCourseData}
+                  data={courseData}
                   onEnroll={handleEnroll}
-                  mediaAssets={singleCourseData.mediaAssets || []}
+                  mediaAssets={(courseData as any).mediaAssets || []}
                 />
               </div>
 
               <div className="sticky hidden md:block top-28">
                 <EnrollmentSideSticky
-                  data={singleCourseData}
+                  data={courseData}
                   onEnroll={handleEnroll}
                   isVisible={showSideEnrollment}
                 />
@@ -706,7 +770,7 @@ export default function CourseDetails() {
 
       {/* Sticky Mobile CTA */}
       {showStickyCta && (
-        <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 z-[60] lg:hidden shadow-[0_-5px_20px_rgba(0,0,0,0.1)] animate-in slide-in-from-bottom-4">
+        <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 py-6 z-[60] lg:hidden shadow-[0_-5px_20px_rgba(0,0,0,0.1)] animate-in slide-in-from-bottom-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex flex-col">
               <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
