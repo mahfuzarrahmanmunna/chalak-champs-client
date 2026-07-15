@@ -261,7 +261,7 @@ export default function BookDetailsPage() {
     image: "/kidsbook.png",
     badge: isBangla ? "প্রিন্টেড কলরফুল বুক" : "Printed Colorful Book",
     badge2: isBangla ? "৩৫% ছাড়" : "35% OFF",
-    title: "Kids' অনর্গল English বুক",
+    title: "Kids অনর্গল English বুক",
     subtitle: isBangla
       ? "চালাক Champs Best Seller"
       : "Chalak Champs Best Seller",

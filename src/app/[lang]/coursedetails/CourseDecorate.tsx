@@ -1127,7 +1127,7 @@ export default function CourseDetails() {
                 <EnrollmentCard
                   data={singleCourseData}
                   onEnroll={handleEnroll}
-                  mediaAssets={singleCourseData.mediaAssets || []}
+                  mediaAssets={(singleCourseData as any).mediaAssets || []}
                 />
               </div>
 

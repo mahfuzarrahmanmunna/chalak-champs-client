@@ -1,0 +1,644 @@
+"use client";
+
+import {
+  createContext,
+  useState,
+  useContext,
+  useMemo,
+  ReactNode,
+  useEffect,
+  useCallback,
+} from "react";
+import { useRouter, usePathname } from "next/navigation";
+
+import { fetchHeroData } from "../services/heroService";
+
+// Imports
+import heroEnglish from "../data/translations/hero-english.json";
+import heroBangla from "../data/translations/hero-bangla.json";
+import navbarEnglish from "../data/translations/navbar-english.json";
+import navbarBangla from "../data/translations/navbar-bangla.json";
+import commonEnglish from "../data/translations/common-english.json";
+import commonBangla from "../data/translations/common-bangla.json";
+import faqEnglish from "../data/translations/faq-english.json";
+import faqBangla from "../data/translations/faq-bangla.json";
+import mailchimpEnglish from "../data/translations/mailchimp-english.json";
+import mailchimpBangla from "../data/translations/mailchimp-bangla.json";
+
+import featuresEnglish from "../data/translations/features-english.json";
+import featuresBangla from "../data/translations/features-bangla.json";
+
+import coursesEnglish from "../data/translations/courses-english.json";
+import coursesBangla from "../data/translations/courses-bangla.json";
+
+import libraryEnglish from "../data/translations/library-english.json";
+import libraryBangla from "../data/translations/library-bangla.json";
+
+import littleChampsEnglish from "../data/translations/littlechamps-english.json";
+import littleChampsBangla from "../data/translations/littlechamps-bangla.json";
+
+import offlineEnglish from "../data/translations/offline-english.json";
+import offlineBangla from "../data/translations/offline-bangla.json";
+
+import ctaEnglish from "../data/translations/cta-english.json";
+import ctaBangla from "../data/translations/cta-bangla.json";
+
+import footerEnglish from "../data/translations/footer-english.json";
+import footerBangla from "../data/translations/footer-bangla.json";
+
+// --- NEW IMPORTS FOR SINGLE COURSE ---
+import singlecourseEnglish from "../data/translations/singlecourse-english.json";
+import singlecourseBangla from "../data/translations/singlecourse-bangla.json";
+
+import aboutUsEnglish from "../data/translations/aboutus-english.json";
+import aboutUsBangla from "../data/translations/aboutus-bangla.json";
+
+import instructorsEnglish from "../data/translations/instructors-english.json";
+import instructorsBangla from "../data/translations/instructors-bangla.json";
+
+// ============================================================
+// Types
+// ============================================================
+
+type Translations = {
+  [key: string]: string | Translations;
+};
+
+interface MenuItem {
+  title: string;
+  description: string;
+}
+
+interface MenuData {
+  courses: MenuItem[];
+  skills: MenuItem[];
+  kids: MenuItem[];
+  more: MenuItem[];
+}
+
+interface FeatureCoursesData {
+  title: string;
+  suffix?: string;
+  discount: string;
+  discountNote: string;
+  subtitle: string;
+  points: string[];
+  cta: string;
+  contact: string;
+}
+
+interface FeaturesData {
+  titlePrefix: string;
+  titleSuffix: string;
+  shortDescription: string;
+  cta: string;
+  cards: {
+    id: number;
+    title: string;
+    subtitle: string;
+    image: string;
+  }[];
+}
+
+interface HeroFeature {
+  title: string;
+  description: string;
+}
+
+interface HeroStats {
+  students: string;
+  courses: string;
+  instructors: string;
+  languages: string;
+}
+
+interface HeroData {
+  title: string;
+  subtitle: string;
+  ctaButton: string;
+  secondaryLink: string;
+  features: HeroFeature[];
+  stats: HeroStats;
+  cta2: string;
+  cta2Btn: string;
+  // --- API-only fields (not in local JSON, but safe to add) ---
+  kingImage?: string;
+  lang?: string;
+  _id?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
+interface CoursesData {
+  titlePrefix: string;
+  titleSuffix: string;
+  shortDescription: string;
+  tabs: string[];
+  ctaCard: string;
+  ctaFooter: string;
+  footerNote: string;
+  courses: {
+    id: number;
+    title: string;
+    category: string;
+    highlights: string[];
+    image: string;
+  }[];
+}
+
+interface LibraryData {
+  titlePrefix: string;
+  titleSuffix: string;
+  shortDescription: string;
+  ctaCard: string;
+  ctaFooter: string;
+  items: {
+    id: number;
+    image: string;
+    badge: string;
+    title: string;
+  }[];
+}
+
+interface LittleChampsData {
+  title: {
+    prefix: string;
+    highlight: string;
+    suffix: string;
+  };
+  cards: {
+    id: number;
+    title: string;
+    alt: string;
+  }[];
+}
+
+interface OfflineCoursesData {
+  header: {
+    prefix: string;
+    highlight: string;
+  };
+  cta: string;
+  cards: {
+    id: number;
+    title: string;
+    desc: string;
+    image: string;
+  }[];
+  whyUs: {
+    title: string;
+    highlight: string;
+    points: Array<{
+      id: number;
+      text?: string;
+      quote?: string;
+      desc?: string;
+    }>;
+    imageAlt: string;
+  };
+}
+
+interface CTAData {
+  form: {
+    title: string;
+    studentName: string;
+    fatherName: string;
+    phone: string;
+    class: string;
+    course: string;
+    cta: string;
+  };
+  needHelp: {
+    title: string;
+    desc: string;
+    cta: string;
+    subCta: string;
+  };
+  videoLibrary: {
+    title: string;
+    cta: string;
+  };
+  facebook: {
+    title: string;
+    cta: string;
+  };
+}
+
+interface FooterData {
+  about: {
+    title: string;
+    tagline: string;
+  };
+  links: Array<{
+    title: string;
+    items: string[];
+  }>;
+  contact: {
+    address: string;
+    phone: string;
+    email: string;
+  };
+  socials: {
+    facebook: string;
+    youtube: string;
+    linkedin: string;
+    instagram: string;
+  };
+  copyright: string;
+}
+
+export interface AboutUsData {
+  hero: {
+    title: string;
+    subtitle: string;
+  };
+  whoWeAre: {
+    title: string;
+    bangla: string;
+    english: string;
+  };
+  missionVision: {
+    title: string;
+    mission: {
+      title: string;
+      bangla: string;
+      english: string;
+    };
+    vision: {
+      title: string;
+      bangla: string;
+      english: string;
+    };
+    values: {
+      title: string;
+      bangla: string;
+      english: string;
+    };
+  };
+  whatWeOffer: {
+    title: string;
+    introBangla: string;
+    introEnglish: string;
+    tagsBangla: string;
+    tagsEnglish: string;
+  };
+  cta: {
+    title: string;
+    body: string;
+    cta1: string;
+    cta2: string;
+    below: string;
+  };
+}
+
+export interface SingleCourseData {
+  breadcrumb: string;
+  hero: {
+    title: string;
+    subtitle: string;
+  };
+  quickInfo: {
+    title: string;
+    items: string[];
+    offerPrice: string;
+    offerText: string;
+    cta1: string;
+    cta2: string;
+    ctaBelow: string;
+  };
+  overview: {
+    title: string;
+    content: string;
+  };
+  instructions: {
+    title: string;
+    steps: Array<{
+      step: string;
+      title: string;
+      desc: string;
+    }>;
+  };
+  levels: {
+    title: string;
+    intro: string;
+    level1: {
+      title: string;
+      for: string;
+      intro: string;
+      items: string[];
+    };
+    level2: {
+      title: string;
+      for: string;
+      intro: string;
+      items: string[];
+    };
+  };
+  whoIsThisFor: {
+    title: string;
+    intro: string;
+    items: string[];
+    boldStatement: string;
+  };
+  features: {
+    title: string;
+    cards: Array<{
+      title: string;
+      body: string;
+    }>;
+  };
+  syllabus: {
+    title: string;
+    content: string;
+  };
+  finalCta: {
+    title: string;
+    body: string;
+    cta1: string;
+    cta2: string;
+    cta3: string;
+    ctaBelow: string;
+  };
+  payment: {
+    title: string;
+    description: string;
+  };
+  instructor: {
+    title: string;
+    info: string;
+  };
+  review: {
+    title: string;
+  };
+  faq: {
+    title: string;
+    items: Array<{
+      q: string;
+      a: string;
+    }>;
+  };
+}
+
+export interface InstructorsData {
+  hero: {
+    title: string;
+    subtitle: string;
+    description: string;
+    searchPlaceholder: string;
+    allBtn: string;
+    teamBtn1: string;
+    teamBtn2: string;
+  };
+  instructors: Array<{
+    id: number;
+    name: string;
+    role: string;
+    image: string;
+    description: string;
+  }>;
+}
+
+// ============================================================
+// Context Type — only `isLoading` and `heroData` change
+// ============================================================
+
+type LanguageContextType = {
+  isBangla: boolean;
+  currentLang: "en" | "bn";
+  toggleLanguage: () => void;
+  getLink: (path: string) => string;
+  t: Record<string, string>;
+  heroData: HeroData | null; // ← now driven by API, falls back to local JSON
+  isLoading: boolean; // ← now dynamic (true while fetching)
+  error: string | null; // ← NEW
+  menuData: MenuData;
+  featureCourses: FeatureCoursesData;
+  featuresData: FeaturesData;
+  coursesData: CoursesData;
+  libraryData: LibraryData;
+  littleChampsData: LittleChampsData;
+  offlineData: OfflineCoursesData;
+  ctaData: CTAData;
+  footerData: FooterData;
+  singleCourseData: SingleCourseData;
+  aboutUsData: AboutUsData;
+  instructorsData: InstructorsData;
+};
+
+const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined,
+);
+
+// ============================================================
+// Local JSON loader (unchanged)
+// ============================================================
+
+const getLanguageData = (isBangla: boolean) => {
+  const hero = (isBangla ? heroBangla : heroEnglish) as HeroData;
+  const navbarFull = isBangla ? navbarBangla : navbarEnglish;
+
+  const { menus, ...navbarStrings } = navbarFull || {};
+
+  const common = isBangla ? commonBangla : commonEnglish;
+  const faq = isBangla ? faqBangla : faqEnglish;
+  const mailchimp = isBangla ? mailchimpBangla : mailchimpEnglish;
+  const cta = (isBangla ? ctaBangla : ctaEnglish) as CTAData;
+  const { featureCourses, ...commonStrings } = common || {};
+  const footer = (isBangla ? footerBangla : footerEnglish) as FooterData;
+
+  const features = (
+    isBangla ? featuresBangla : featuresEnglish
+  ) as FeaturesData;
+
+  const library = (isBangla ? libraryBangla : libraryEnglish) as LibraryData;
+  const littleChamps = (
+    isBangla ? littleChampsBangla : littleChampsEnglish
+  ) as LittleChampsData;
+
+  const offline = (
+    isBangla ? offlineBangla : offlineEnglish
+  ) as OfflineCoursesData;
+
+  const instructors = (
+    isBangla ? instructorsBangla : instructorsEnglish
+  ) as InstructorsData;
+
+  const courses = (isBangla ? coursesBangla : coursesEnglish) as CoursesData;
+
+  const singleCourse = (isBangla
+    ? singlecourseBangla
+    : singlecourseEnglish) as unknown as SingleCourseData;
+
+  const aboutUs = (isBangla ? aboutUsBangla : aboutUsEnglish) as AboutUsData;
+
+  const merged = {
+    ...(navbarStrings as unknown as Translations),
+    ...(commonStrings as unknown as Translations),
+    ...(faq as unknown as Translations),
+    ...(mailchimp as unknown as Translations),
+  } as Record<string, string>;
+
+  const defaultMenu: MenuData = {
+    courses: [],
+    skills: [],
+    kids: [],
+    more: [],
+  };
+
+  const menu = { ...defaultMenu, ...(menus as MenuData) };
+
+  return {
+    hero,
+    merged,
+    menu,
+    featureCourses,
+    features,
+    courses,
+    library,
+    littleChamps,
+    offline,
+    cta,
+    footer,
+    singleCourse,
+    aboutUs,
+    instructors,
+  };
+};
+
+// ============================================================
+// Provider
+// ============================================================
+
+interface LanguageProviderProps {
+  children: ReactNode;
+  initialLang: string;
+}
+
+export const LanguageProvider = ({
+  children,
+  initialLang,
+}: LanguageProviderProps) => {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const isBangla = initialLang === "bn";
+  const currentLang: "en" | "bn" = isBangla ? "bn" : "en";
+
+  // --- Local JSON data (unchanged, synchronous) ---
+  const {
+    hero: localHero,
+    merged,
+    menu,
+    featureCourses,
+    features,
+    courses,
+    library,
+    littleChamps,
+    offline,
+    cta,
+    footer,
+    singleCourse,
+    aboutUs,
+    instructors,
+  } = useMemo(() => getLanguageData(isBangla), [isBangla]);
+
+  // --- API hero state (new) ---
+  const [apiHero, setApiHero] = useState<HeroData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // --- Fetch hero from API (new) ---
+  const fetchHero = useCallback(async (lang: "en" | "bn") => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await fetchHeroData(lang);
+      setApiHero(data);
+    } catch (err) {
+      console.error("[LanguageContext] Hero API fetch failed:", err);
+      setError(err instanceof Error ? err.message : "Unknown error");
+      setApiHero(null); // fall back to local JSON
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchHero(currentLang);
+  }, [currentLang, fetchHero]);
+
+  // --- Merge: API hero overrides local hero (per-field) ---
+  // If API returns null or is loading, local JSON is used automatically
+  const heroData: HeroData | null = useMemo(() => {
+    if (!apiHero) return localHero;
+    // Spread API data first, then fill any missing fields from local JSON
+    return { ...localHero, ...apiHero };
+  }, [apiHero, localHero]);
+
+  // --- Link helper (unchanged) ---
+  const getLink = (path: string) => {
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    return `/${currentLang}${cleanPath}`;
+  };
+
+  // --- Language toggle (unchanged) ---
+  const toggleLanguage = () => {
+    const scrollY = window.scrollY;
+    const currentLangStr = isBangla ? "bn" : "en";
+    const newLang = isBangla ? "en" : "bn";
+
+    let newPath = "";
+
+    if (pathname === "/" || pathname === "") {
+      newPath = `/${newLang}`;
+    } else if (pathname.startsWith(`/${currentLangStr}`)) {
+      newPath = pathname.replace(`/${currentLangStr}`, `/${newLang}`);
+    } else {
+      newPath = `/${newLang}${pathname}`;
+    }
+
+    router.push(newPath);
+
+    setTimeout(() => {
+      window.scrollTo(0, scrollY);
+    }, 50);
+  };
+
+  return (
+    <LanguageContext.Provider
+      value={{
+        isBangla,
+        currentLang,
+        toggleLanguage,
+        getLink,
+        t: merged,
+        heroData, // ← API-first, local fallback
+        isLoading, // ← true during API fetch
+        error, // ← NEW: null | error message
+        menuData: menu,
+        featureCourses: featureCourses || ({} as FeatureCoursesData),
+        featuresData: features || ({} as FeaturesData),
+        coursesData: courses || ({} as CoursesData),
+        libraryData: library || ({} as LibraryData),
+        littleChampsData: littleChamps || ({} as LittleChampsData),
+        offlineData: offline || ({} as OfflineCoursesData),
+        ctaData: cta || ({} as CTAData),
+        footerData: footer || ({} as FooterData),
+        singleCourseData: singleCourse || ({} as SingleCourseData),
+        aboutUsData: aboutUs || ({} as AboutUsData),
+        instructorsData: instructors || ({} as InstructorsData),
+      }}
+    >
+      {children}
+    </LanguageContext.Provider>
+  );
+};
+
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (context === undefined) {
+    throw new Error("useLanguage must be used within a LanguageProvider");
+  }
+  return context;
+};

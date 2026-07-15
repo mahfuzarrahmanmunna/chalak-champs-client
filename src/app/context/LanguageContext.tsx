@@ -10,6 +10,8 @@ import {
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
+import { fetchHeroData } from "../services/heroService";
+
 // Imports
 import heroEnglish from "../data/translations/hero-english.json";
 import heroBangla from "../data/translations/hero-bangla.json";
@@ -54,10 +56,13 @@ import instructorsEnglish from "../data/translations/instructors-english.json";
 import instructorsBangla from "../data/translations/instructors-bangla.json";
 
 
+
 // Types
 type Translations = {
   [key: string]: string | Translations;
 };
+
+
 
 interface MenuItem {
   title: string;
@@ -304,6 +309,14 @@ export interface SingleCourseData {
     title: string;
     content: string;
   };
+  instructions: {
+    title: string;
+    steps: Array<{
+      step: string;
+      title: string;
+      desc: string;
+    }>;
+  };
   levels: {
     title: string;
     intro: string;
@@ -370,7 +383,11 @@ export interface InstructorsData {
   hero: {
     title: string;
     subtitle: string;
-    ctaText: string;
+    description: string;
+    searchPlaceholder: string;
+    allBtn: string;
+    teamBtn1: string;
+    teamBtn2: string;
   };
   instructors: Array<{
     id: number;
@@ -422,6 +439,7 @@ const getLanguageData = (isBangla: boolean) => {
   // Extract featureCourses from common
   const { featureCourses, ...commonStrings } = common || {};
   const footer = (isBangla ? footerBangla : footerEnglish) as FooterData;
+  
 
   const features = (
     isBangla ? featuresBangla : featuresEnglish
@@ -445,7 +463,7 @@ const getLanguageData = (isBangla: boolean) => {
   // --- GET SINGLE COURSE DATA ---
   const singleCourse = (
     isBangla ? singlecourseBangla : singlecourseEnglish
-  ) as SingleCourseData;
+  ) as unknown as SingleCourseData;
 
   const aboutUs = (isBangla ? aboutUsBangla : aboutUsEnglish) as AboutUsData;
 
@@ -495,11 +513,7 @@ export const LanguageProvider = ({
   const router = useRouter();
   const pathname = usePathname();
 
-  const [isBangla, setIsBangla] = useState<boolean>(initialLang === "bn");
-
-  useEffect(() => {
-    setIsBangla(initialLang === "bn");
-  }, [initialLang]);
+  const isBangla = initialLang === "bn";
 
   const {
     hero,
@@ -592,3 +606,4 @@ export const useLanguage = () => {
   }
   return context;
 };
+
