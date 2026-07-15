@@ -24,17 +24,15 @@ import {
 } from "lucide-react";
 import CourseFormModal from "./CourseFormModal";
 
-
-
-
+// ✅ FIX: Updated interface to match actual API response (title is an object, not string)
 interface Course {
   _id: string;
-  title: string;
+  title: { en: string; bn: string } | string;
   thumbnail?: string;
   price: number;
   originalPrice?: number;
   isPublished: boolean;
-  heroSubtitle?: string;
+  heroSubtitle?: { en: string; bn: string } | string;
   instructorName?: string;
   category?: string;
   level?: string;
@@ -61,46 +59,33 @@ function TableSkeleton({ rows = 8 }: { rows?: number }) {
             className="group animate-pulse"
             style={{ animationDelay: `${rowIdx * 60}ms` }}
           >
-            {/* Course — thumbnail + title + subtitle */}
             <td className="px-6 py-4">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-xl bg-gray-200 flex-shrink-0" />
                 <div className="flex flex-col gap-2 min-w-0 w-full">
-                  {/* ✅ Fixed: Replaced Math.random() with static Tailwind classes */}
                   <div className="h-4 bg-gray-200 rounded-md w-3/4" />
                   <div className="h-3 bg-gray-100 rounded-md w-1/2" />
                 </div>
               </div>
             </td>
-
-            {/* Instructor — avatar + name */}
             <td className="px-5 py-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0" />
-                {/* ✅ Fixed: Replaced Math.random() with static Tailwind class */}
                 <div className="h-4 bg-gray-200 rounded-md w-16" />
               </div>
             </td>
-
-            {/* Price */}
             <td className="px-5 py-4">
               <div className="flex flex-col gap-1.5">
                 <div className="h-5 w-16 bg-gray-200 rounded-md" />
                 <div className="h-3 w-12 bg-gray-100 rounded-md" />
               </div>
             </td>
-
-            {/* Status badge */}
             <td className="px-5 py-4">
               <div className="h-7 w-16 bg-gray-200 rounded-lg" />
             </td>
-
-            {/* Category pill */}
             <td className="px-5 py-4">
               <div className="h-6 w-16 bg-gray-200 rounded-md" />
             </td>
-
-            {/* Action buttons */}
             <td className="px-5 py-4">
               <div className="flex items-center justify-end gap-2">
                 <div className="w-9 h-9 rounded-lg bg-gray-200" />
@@ -170,15 +155,23 @@ export default function ManageCourses() {
     },
   });
 
+  // --- Helper to safely get text from bilingual or string ---
+  const getText = (val: string | { en?: string; bn?: string } | undefined, fallback = "—") => {
+    if (!val) return fallback;
+    if (typeof val === "string") return val || fallback;
+    return val.en || val.bn || fallback;
+  };
+
   // --- Filtering & Pagination ---
   const filteredCourses = (data?.data || []).filter((c: Course) => {
     const s = searchTerm.toLowerCase();
+    const titleStr = getText(c.title, "").toLowerCase();
+    const instructorStr = (c.instructorName || "").toLowerCase();
+    const categoryStr = (c.category || "").toLowerCase();
     const matchSearch =
-      (typeof c.title === "string" ? c.title : c.title?.en || "")
-        .toLowerCase()
-        .includes(s) ||
-      c.instructorName?.toLowerCase().includes(s) ||
-      c.category?.toLowerCase().includes(s);
+      titleStr.includes(s) ||
+      instructorStr.includes(s) ||
+      categoryStr.includes(s);
     const matchStatus =
       filterStatus === "all" ||
       (filterStatus === "published" && c.isPublished) ||
@@ -424,7 +417,6 @@ export default function ManageCourses() {
                       className="group hover:bg-[#214187]/[0.02] transition-colors duration-150"
                     >
                       {/* Course */}
-                      {/* Course */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#214187]/10 to-[#F3056D]/10 border border-gray-200/80 overflow-hidden flex-shrink-0 relative">
@@ -444,20 +436,11 @@ export default function ManageCourses() {
                             )}
                           </div>
                           <div className="min-w-0">
-                            {/* ✅ FIX: Handle both Object {en, bn} and String formats safely */}
                             <h4 className="font-bold text-gray-900 text-[15px] truncate max-w-[280px] group-hover:text-[#214187] transition-colors">
-                              {typeof course.title === "object"
-                                ? course.title?.en ||
-                                  course.title?.bn ||
-                                  "Untitled"
-                                : course.title}
+                              {getText(course.title, "Untitled")}
                             </h4>
                             <p className="text-xs text-gray-400 truncate max-w-[280px] mt-0.5">
-                              {typeof course.heroSubtitle === "object"
-                                ? course.heroSubtitle?.en ||
-                                  course.heroSubtitle?.bn ||
-                                  "No subtitle"
-                                : course.heroSubtitle || "No subtitle"}
+                              {getText(course.heroSubtitle, "No subtitle")}
                             </p>
                           </div>
                         </div>
@@ -554,7 +537,7 @@ export default function ManageCourses() {
                                     onClick={() => openEditModal(course)}
                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
                                   >
-                                    <Edit3 className="w-4 h-4 text-[#214187]" />{" "}
+                                    <Edit3 className="w-4 h-4 text-[#214187]" />
                                     Edit Course
                                   </button>
                                   <button

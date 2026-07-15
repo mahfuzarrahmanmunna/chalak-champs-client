@@ -33,6 +33,7 @@ import { BsCurrencyDollar } from "react-icons/bs";
 import { HiArrowRightOnRectangle } from "react-icons/hi2";
 import { FaBars } from "react-icons/fa";
 import { useAuth } from "@/app/context/AuthContext";
+import Image from "next/image";
 
 export interface NavItem {
   name: string;
@@ -389,7 +390,14 @@ export default function AdminDashboardLayout({
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="w-9 h-9 bg-gradient-to-br from-[#F3056D] to-[#ff4d94] rounded-xl flex items-center justify-center shadow-lg shadow-[#F3056D]/40">
-                  <Sparkles className="w-4 h-4 text-white" />
+                  {/* <Sparkles className="w-4 h-4 text-white" /> */}
+                  <Image
+                  src="/chalak-logo.jpg"
+                  alt="Chalak Champs Logo"
+                  width={20}
+                  height={20}
+                  className="rounded-md"
+                  />
                 </div>
                 <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#1a2f5e]" />
               </div>
@@ -446,8 +454,14 @@ export default function AdminDashboardLayout({
           {/* Logo */}
           <div className="flex items-center h-[80px] px-5 border-b border-white/[0.08]">
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#F3056D] to-[#ff4d94] rounded-xl flex items-center justify-center shadow-lg shadow-[#F3056D]/30 rotate-3 hover:rotate-0 transition-transform duration-500">
-                <Sparkles className="w-5 h-5 text-white" />
+              <div className="w-10 h-10  rounded-xl flex items-center justify-center shadow-lg shadow-[#F3056D]/30  hover:rotate-0 transition-transform duration-500">
+                 <Image
+                  src="/chalak-logo.jpg"
+                  alt="Chalak Champs Logo"
+                  width={40}
+                  height={40}
+                  className="rounded-md"
+                  />
               </div>
               <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#1a2f5e] shadow-sm shadow-emerald-400/50" />
             </div>

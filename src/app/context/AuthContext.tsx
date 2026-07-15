@@ -357,11 +357,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// --- Hook ---
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
-    return {
+    // Cast so the inferred fallback type matches AuthContextType
+    const fallback: AuthContextType = {
       currentUser: null,
       appUser: null,
       loading: true,
@@ -377,6 +378,8 @@ export const useAuth = () => {
       checkOtpPhone: async () => {},
       completeRegistration: async () => {},
     };
+    return fallback;
   }
+
   return context;
 };
