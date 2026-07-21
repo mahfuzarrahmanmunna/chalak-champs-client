@@ -10,8 +10,6 @@ import {
   Play,
   ChevronLeft,
   ChevronRight,
-  Check,
-  // --- NEW ICONS FOR COLORFUL LIST ---
   Video,
   Layers,
   Globe,

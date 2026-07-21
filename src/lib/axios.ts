@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import app from "./firebase";
 
 // FIX: Remove /api from the end. Point directly to the backend server root.
-const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://apichalakchamps.vercel.app";
 
 const axiosInstance = axios.create({
   baseURL,

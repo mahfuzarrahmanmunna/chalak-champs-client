@@ -1,14 +1,45 @@
-// src/app/[lang]/admin-dashboard/courses/manage-courses/CourseFormModal.tsx
-
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "@/lib/axios";
 import {
   Plus, Loader2, BookOpen, Upload, X, Trash2, Globe,
   ChevronDown, ChevronUp,
 } from "lucide-react";
+
+// ====================================================================
+// DEEP MERGE UTILITY - Essential for proper nested object merging
+// ====================================================================
+function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>): T {
+  const output = { ...target };
+  
+  for (const key of Object.keys(source) as (keyof T)[]) {
+    const sourceVal = source[key];
+    const targetVal = output[key];
+    
+    if (
+      sourceVal !== null &&
+      sourceVal !== undefined &&
+      typeof sourceVal === "object" &&
+      !Array.isArray(sourceVal) &&
+      targetVal !== null &&
+      targetVal !== undefined &&
+      typeof targetVal === "object" &&
+      !Array.isArray(targetVal)
+    ) {
+      // Both are objects - recursively merge
+      output[key] = deepMerge(targetVal as Record<string, any>, sourceVal as Record<string, any>) as T[keyof T];
+    } else if (sourceVal !== undefined) {
+      // Source value exists (including empty strings, empty arrays, 0, false)
+      // Only skip if explicitly undefined
+      output[key] = sourceVal as T[keyof T];
+    }
+    // If sourceVal is undefined, keep targetVal (don't overwrite with undefined)
+  }
+  
+  return output;
+}
 
 // --- Default Content ---
 const getDefaultContent = () => ({
@@ -18,28 +49,71 @@ const getDefaultContent = () => ({
   quickInfo: {
     title: { en: "", bn: "" },
     items: { en: [] as string[], bn: [] as string[] },
-    offerPrice: { en: "", bn: "" }, offerText: { en: "", bn: "" },
-    cta1: { en: "", bn: "" }, cta2: { en: "", bn: "" }, ctaBelow: { en: "", bn: "" },
+    offerPrice: { en: "", bn: "" }, 
+    offerText: { en: "", bn: "" },
+    cta1: { en: "", bn: "" }, 
+    cta2: { en: "", bn: "" }, 
+    ctaBelow: { en: "", bn: "" },
   },
   overview: { title: { en: "", bn: "" }, content: { en: "", bn: "" } },
   levels: {
-    title: { en: "", bn: "" }, intro: { en: "", bn: "" },
-    level1: { title: { en: "", bn: "" }, for: { en: "", bn: "" }, intro: { en: "", bn: "" }, items: { en: [] as string[], bn: [] as string[] } },
-    level2: { title: { en: "", bn: "" }, for: { en: "", bn: "" }, intro: { en: "", bn: "" }, items: { en: [] as string[], bn: [] as string[] } },
+    title: { en: "", bn: "" }, 
+    intro: { en: "", bn: "" },
+    level1: { 
+      title: { en: "", bn: "" }, 
+      for: { en: "", bn: "" }, 
+      intro: { en: "", bn: "" }, 
+      items: { en: [] as string[], bn: [] as string[] } 
+    },
+    level2: { 
+      title: { en: "", bn: "" }, 
+      for: { en: "", bn: "" }, 
+      intro: { en: "", bn: "" }, 
+      items: { en: [] as string[], bn: [] as string[] } 
+    },
   },
-  whoIsThisFor: { title: { en: "", bn: "" }, intro: { en: "", bn: "" }, items: { en: [] as string[], bn: [] as string[] }, boldStatement: { en: "", bn: "" } },
-  features: { title: { en: "", bn: "" }, cards: [] as { title: { en: string; bn: string }; body: { en: string; bn: string } }[] },
+  whoIsThisFor: { 
+    title: { en: "", bn: "" }, 
+    intro: { en: "", bn: "" }, 
+    items: { en: [] as string[], bn: [] as string[] }, 
+    boldStatement: { en: "", bn: "" } 
+  },
+  features: { 
+    title: { en: "", bn: "" }, 
+    cards: [] as { title: { en: string; bn: string }; body: { en: string; bn: string } }[] 
+  },
   syllabus: { title: { en: "", bn: "" }, content: { en: "", bn: "" } },
-  finalCta: { title: { en: "", bn: "" }, body: { en: "", bn: "" }, cta1: { en: "", bn: "" }, cta2: { en: "", bn: "" }, cta3: { en: "", bn: "" }, ctaBelow: { en: "", bn: "" } },
-  payment: { title: { en: "", bn: "" }, description: { en: "", bn: "" } },
+  finalCta: { 
+    title: { en: "", bn: "" }, 
+    body: { en: "", bn: "" }, 
+    cta1: { en: "", bn: "" }, 
+    cta2: { en: "", bn: "" }, 
+    cta3: { en: "", bn: "" }, 
+    ctaBelow: { en: "", bn: "" } 
+  },
+  payment: { 
+    title: { en: "", bn: "" }, 
+    description: { en: "", bn: "" } 
+  },
   instructor: {
-    title: { en: "", bn: "" }, name: "", designation: { en: "", bn: "" }, bio: { en: "", bn: "" },
-    experience: { en: "", bn: "" }, studentsCount: 0, rating: 0,
-    specializations: { en: [] as string[], bn: [] as string[] }, achievements: { en: [] as string[], bn: [] as string[] },
-    education: { en: "", bn: "" }, image: "", social: { facebook: "", linkedin: "", youtube: "" },
+    title: { en: "", bn: "" }, 
+    name: "", 
+    designation: { en: "", bn: "" }, 
+    bio: { en: "", bn: "" },
+    experience: { en: "", bn: "" }, 
+    studentsCount: 0, 
+    rating: 0,
+    specializations: { en: [] as string[], bn: [] as string[] }, 
+    achievements: { en: [] as string[], bn: [] as string[] },
+    education: { en: "", bn: "" }, 
+    image: "", 
+    social: { facebook: "", linkedin: "", youtube: "" },
   },
   review: { title: { en: "", bn: "" } },
-  faq: { title: { en: "", bn: "" }, items: [] as { q: { en: string; bn: string }; a: { en: string; bn: string } }[] },
+  faq: { 
+    title: { en: "", bn: "" }, 
+    items: [] as { q: { en: string; bn: string }; a: { en: string; bn: string } }[] 
+  },
   mediaAssets: [] as { type: "image" | "video"; src: string; poster?: string; isNew?: boolean; tempIndex?: number }[],
 });
 
@@ -197,15 +271,35 @@ export default function CourseFormModal({ isOpen, onClose, initialData }: Course
   const isEditing = !!initialData?._id;
 
   const [formData, setFormData] = useState({
-    slug: "", title: { en: "", bn: "" }, category: "general", price: 0, originalPrice: 0, isPublished: false,
-    thumbnail: null as File | null, instructorImage: null as File | null, mediaFiles: [] as File[],
+    slug: "", 
+    title: { en: "", bn: "" }, 
+    category: "general", 
+    price: 0, 
+    originalPrice: 0, 
+    isPublished: false,
+    thumbnail: null as File | null, 
+    instructorImage: null as File | null, 
+    mediaFiles: [] as File[],
     content: getDefaultContent(),
   });
 
-  // Populate form when editing
+  // ====================================================================
+  // ✅ FIX #1: Use DEEP MERGE when populating form for editing
+  // This preserves ALL nested keys from defaults that might be missing in DB
+  // ====================================================================
   useEffect(() => {
     if (isOpen && initialData?._id) {
       const dbContent = initialData.content || {};
+      
+      // ✅ DEEP MERGE instead of shallow spread
+      // This ensures nested objects like instructor.title aren't lost
+      const mergedContent = deepMerge(getDefaultContent(), dbContent);
+      
+      console.log("=== EDIT FORM INITIALIZATION ===");
+      console.log("DB content keys:", Object.keys(dbContent));
+      console.log("Merged content instructor keys:", Object.keys(mergedContent.instructor || {}));
+      console.log("Merged content payment keys:", Object.keys(mergedContent.payment || {}));
+      
       setFormData({
         slug: initialData.slug || "",
         title: typeof initialData.title === "object" ? initialData.title : { en: initialData.title || "", bn: "" },
@@ -216,41 +310,55 @@ export default function CourseFormModal({ isOpen, onClose, initialData }: Course
         thumbnail: null,
         instructorImage: null,
         mediaFiles: [],
-        content: { ...getDefaultContent(), ...dbContent },
+        content: mergedContent,
       });
     } else if (isOpen && !initialData?._id) {
       setFormData({
-        slug: "", title: { en: "", bn: "" }, category: "general", price: 0, originalPrice: 0, isPublished: false,
-        thumbnail: null, instructorImage: null, mediaFiles: [], content: getDefaultContent(),
+        slug: "", 
+        title: { en: "", bn: "" }, 
+        category: "general", 
+        price: 0, 
+        originalPrice: 0, 
+        isPublished: false,
+        thumbnail: null, 
+        instructorImage: null, 
+        mediaFiles: [], 
+        content: getDefaultContent(),
       });
     }
   }, [isOpen, initialData]);
 
-  const updateContent = (path: string, value: any) => {
+  const updateContent = useCallback((path: string, value: any) => {
     setFormData((prev) => {
       const newContent = JSON.parse(JSON.stringify(prev.content));
       const keys = path.split(".");
       let current: any = newContent;
-      for (let i = 0; i < keys.length - 1; i++) { if (!current[keys[i]]) current[keys[i]] = {}; current = current[keys[i]]; }
+      for (let i = 0; i < keys.length - 1; i++) { 
+        if (!current[keys[i]]) current[keys[i]] = {}; 
+        current = current[keys[i]]; 
+      }
       current[keys[keys.length - 1]] = value;
       return { ...prev, content: newContent };
     });
-  };
+  }, []);
 
-  const getVal = (path: string, lang: "en" | "bn"): string => {
+  const getVal = useCallback((path: string, lang: "en" | "bn"): string => {
     const keys = path.split(".");
     let obj: any = formData.content;
     for (const k of keys) obj = obj?.[k];
     return obj?.[lang] || "";
-  };
+  }, [formData.content]);
 
-  const setVal = (path: string, lang: "en" | "bn", val: string) => {
+  const setVal = useCallback((path: string, lang: "en" | "bn", val: string) => {
     const otherLang = lang === "en" ? "bn" : "en";
     const otherVal = getVal(path, otherLang);
     updateContent(path, { en: lang === "en" ? val : otherVal, bn: lang === "bn" ? val : otherVal });
-  };
+  }, [getVal, updateContent]);
 
-   const mutation = useMutation({
+  // ====================================================================
+  // ✅ FIX #2: Remove manual Content-Type header - let Axios handle it
+  // ====================================================================
+  const mutation = useMutation({
     mutationFn: async () => {
       const finalSlug = formData.slug || `course-${Date.now()}`;
       const data = new FormData();
@@ -263,18 +371,37 @@ export default function CourseFormModal({ isOpen, onClose, initialData }: Course
       if (formData.thumbnail) data.append("thumbnail", formData.thumbnail);
       if (formData.instructorImage) data.append("instructorImage", formData.instructorImage);
       formData.mediaFiles.forEach((file) => data.append("mediaFiles", file));
-      data.append("content", JSON.stringify(formData.content));
+      
+      // ====================================================================
+      // ✅ FIX #3: Log the content BEFORE sending to verify data
+      // ====================================================================
+      const contentString = JSON.stringify(formData.content);
+      console.log("=== SENDING CONTENT ===");
+      console.log("Content string length:", contentString.length);
+      console.log("payment.title:", formData.content.payment?.title);
+      console.log("finalCta.title:", formData.content.finalCta?.title);
+      console.log("syllabus.title:", formData.content.syllabus?.title);
+      console.log("whoIsThisFor.title:", formData.content.whoIsThisFor?.title);
+      console.log("instructor.title:", formData.content.instructor?.title);
+      console.log("instructor.designation:", formData.content.instructor?.designation);
+      console.log("instructor.experience:", formData.content.instructor?.experience);
+      console.log("instructor.education:", formData.content.instructor?.education);
+      console.log("review.title:", formData.content.review?.title);
+      console.log("=== END CONTENT LOG ===");
+      
+      data.append("content", contentString);
 
       const url = isEditing ? `/api/courses/${initialData?._id}` : "/api/courses";
       const method = isEditing ? "put" : "post";
-      return (await axios({ method, url, data, headers: { "Content-Type": "multipart/form-data" } })).data;
+      
+      // ✅ FIX: Don't set Content-Type header - let Axios auto-detect and add boundary
+      return (await axios({ method, url, data })).data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
       alert(isEditing ? "Course Updated Successfully!" : "Course Created Successfully!");
       onClose();
     },
-    // 👇 REPLACE YOUR OLD onError WITH THIS EXACT BLOCK 👇
     onError: (err: any) => {
       const serverResponse = err?.response?.data;
       let alertMessage = "Unknown Error";
@@ -287,8 +414,8 @@ export default function CourseFormModal({ isOpen, onClose, initialData }: Course
         alertMessage = err.message;
       }
       
-      console.log("FULL SERVER ERROR:", serverResponse);
-      alert("DETAILED ERROR:\n\n" + alertMessage);
+      console.error("FULL ERROR:", serverResponse);
+      alert("ERROR:\n\n" + alertMessage);
     },
   });
 
@@ -385,7 +512,7 @@ export default function CourseFormModal({ isOpen, onClose, initialData }: Course
             <BilingualInput label="Breadcrumbs (Singular)" path="breadcrumbs" getVal={getVal} setVal={setVal} placeholderEn="Kids Fluent English Course" placeholderBn="Kids অনর্গল English Course" />
           </Section>
 
-          <Section id="quickInfo" title="Quick Info Section" number={3}>
+          <Section id="quickInfo" title="Quick Info Section" number={3} defaultOpen={false}>
             <BilingualInput label="Section Title" path="quickInfo.title" getVal={getVal} setVal={setVal} placeholderEn="This course includes" placeholderBn="এই কোর্সে যা থাকে" />
             <BilingualArrayInput label="Info Items" path="quickInfo.items" placeholderEn="64 Live Classes" placeholderBn="৬৪ টি লাইভ ক্লাস" content={formData.content} updateContent={updateContent} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -399,12 +526,12 @@ export default function CourseFormModal({ isOpen, onClose, initialData }: Course
             </div>
           </Section>
 
-          <Section id="overview" title="Course Overview" number={4}>
+          <Section id="overview" title="Course Overview" number={4} defaultOpen={false}>
             <BilingualInput label="Section Title" path="overview.title" getVal={getVal} setVal={setVal} placeholderEn="Course Details" placeholderBn="কোর্স সম্পর্কে বিস্তারিত" />
             <BilingualInput label="Overview Content" path="overview.content" type="textarea" getVal={getVal} setVal={setVal} placeholderEn="The Kids English Course is..." placeholderBn="এই কোর্সটি ৬ থেকে ১১ বছর..." />
           </Section>
 
-          <Section id="levels" title="Course Levels" number={5}>
+          <Section id="levels" title="Course Levels" number={5} defaultOpen={false}>
             <BilingualInput label="Section Title" path="levels.title" getVal={getVal} setVal={setVal} placeholderEn="Two Course Levels" placeholderBn="কোর্সের দুটি লেভেল" />
             <BilingualInput label="Section Intro" path="levels.intro" type="textarea" getVal={getVal} setVal={setVal} />
             <div className="bg-blue-50 p-5 rounded-2xl space-y-4 border border-blue-100">
@@ -423,24 +550,24 @@ export default function CourseFormModal({ isOpen, onClose, initialData }: Course
             </div>
           </Section>
 
-          <Section id="whoIsThisFor" title="Who Is This For" number={6}>
+          <Section id="whoIsThisFor" title="Who Is This For" number={6} defaultOpen={false}>
             <BilingualInput label="Section Title" path="whoIsThisFor.title" getVal={getVal} setVal={setVal} placeholderEn="Course is Designed For" placeholderBn="কোর্সটি যাদের জন্য" />
             <BilingualInput label="Section Intro" path="whoIsThisFor.intro" getVal={getVal} setVal={setVal} placeholderEn="Does your child relate to any of these?" placeholderBn="আপনার সন্তান কি এরকম?" />
             <BilingualArrayInput label="Target Items" path="whoIsThisFor.items" placeholderEn="Can't speak English..." placeholderBn="ইংলিশ একদমই বলতে পারে না..." content={formData.content} updateContent={updateContent} />
             <BilingualInput label="Bold Statement" path="whoIsThisFor.boldStatement" getVal={getVal} setVal={setVal} placeholderEn="This course was built exactly for your child." placeholderBn="তাহলে এই কোর্সটা ঠিক তার জন্যই।" />
           </Section>
 
-          <Section id="features" title="Course Features" number={7}>
+          <Section id="features" title="Course Features" number={7} defaultOpen={false}>
             <BilingualInput label="Section Title" path="features.title" getVal={getVal} setVal={setVal} placeholderEn="Course Exclusive Feature" placeholderBn="কোর্সটি কেন সেরা?" />
             <FeatureCardsEditor content={formData.content} updateContent={updateContent} />
           </Section>
 
-          <Section id="syllabus" title="Syllabus" number={8}>
+          <Section id="syllabus" title="Syllabus" number={8} defaultOpen={false}>
             <BilingualInput label="Title" path="syllabus.title" getVal={getVal} setVal={setVal} placeholderEn="Course Syllabus/Curriculum" placeholderBn="কোর্স সিলেবাস/কারিকুলাম" />
             <BilingualInput label="Content" path="syllabus.content" type="textarea" getVal={getVal} setVal={setVal} placeholderEn="Tab system" />
           </Section>
 
-          <Section id="finalCta" title="Final Call to Action" number={9}>
+          <Section id="finalCta" title="Final Call to Action" number={9} defaultOpen={false}>
             <BilingualInput label="Title" path="finalCta.title" getVal={getVal} setVal={setVal} placeholderEn="Any More Questions?" placeholderBn="আরও কোন জিজ্ঞাসা আছে?" />
             <BilingualInput label="Body Text" path="finalCta.body" type="textarea" getVal={getVal} setVal={setVal} />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -451,12 +578,12 @@ export default function CourseFormModal({ isOpen, onClose, initialData }: Course
             </div>
           </Section>
 
-          <Section id="payment" title="Payment Section" number={10}>
+          <Section id="payment" title="Payment Section" number={10} defaultOpen={false}>
             <BilingualInput label="Title" path="payment.title" getVal={getVal} setVal={setVal} placeholderEn="Payment Process" placeholderBn="ভর্তি হওয়ার প্রক্রিয়া" />
             <BilingualInput label="Description" path="payment.description" type="textarea" getVal={getVal} setVal={setVal} placeholderEn="Watch This Video To Learn More..." placeholderBn="কীভাবে পেমেন্ট করবেন..." />
           </Section>
 
-          <Section id="instructor" title="Instructor Details" number={11}>
+          <Section id="instructor" title="Instructor Details" number={11} defaultOpen={false}>
             <BilingualInput label="Section Title" path="instructor.title" getVal={getVal} setVal={setVal} placeholderEn="Course Instructor" placeholderBn="চালাক চ্যাম্পস ইন্সট্রাক্টর" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2"><label className="text-sm font-bold text-gray-700 uppercase tracking-wider">Instructor Name</label><input value={formData.content.instructor.name} onChange={(e) => updateContent("instructor.name", e.target.value)} className={inputClass} placeholder="মোঃ রাফি ইসলাম" /></div>
@@ -476,19 +603,22 @@ export default function CourseFormModal({ isOpen, onClose, initialData }: Course
             </div>
           </Section>
 
-          <Section id="faq" title="FAQ Section" number={12}>
+          <Section id="faq" title="FAQ Section" number={12} defaultOpen={false}>
             <BilingualInput label="Section Title" path="faq.title" getVal={getVal} setVal={setVal} placeholderEn="Frequently Asked Questions" placeholderBn="সাধারণ জিজ্ঞাসা" />
             <FaqEditor content={formData.content} updateContent={updateContent} />
           </Section>
 
-                    <Section id="media" title="Media Assets (Images/Videos)" number={13}>
+          <Section id="review" title="Review Section" number={13} defaultOpen={false}>
+            <BilingualInput label="Section Title" path="review.title" getVal={getVal} setVal={setVal} placeholderEn="Student Reviews" placeholderBn="শিক্ষার্থীদের মতামত" />
+          </Section>
+
+          <Section id="media" title="Media Assets (Images/Videos)" number={14} defaultOpen={false}>
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <label className="text-sm font-bold text-gray-700 mb-2 block">Upload Files</label>
                 <input type="file" multiple onChange={handleMediaFileAdd} className={fileClass} accept="image/*,video/*" />
               </div>
               <div className="flex-1">
-                {/* ✅ FIX: Use setFormData to append a new object instead of updateMediaAsset */}
                 <button 
                   type="button" 
                   onClick={() => {

@@ -6,7 +6,7 @@ import app from "./firebase";
 const rawApiBaseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:5000/api";
+  "https://apichalakchamps.vercel.app/api";
 
 const apiBaseUrl = rawApiBaseUrl.endsWith("/api")
   ? rawApiBaseUrl.replace(/\/+$/, "")

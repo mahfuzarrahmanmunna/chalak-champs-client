@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 
   // CORE SEO
-  title: "চালক Champs | Be clever, Be a champ",
+  title: "চালক Champs | Every child is a champ hobe",
   description:
     "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
 
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: "Chalak Champs",
     locale: "bn_BD",
-    title: "চালক Champs | Be clever, Be a champ",
+    title: "চালক Champs | Every child is a champ hobe",
     description:
       "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
     images: [
@@ -94,7 +94,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "চালক Champs | Be clever, Be a champ",
+    title: "চালক Champs | Every child is a champ hobe",
     description:
       "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
     images: [`${siteUrl}/homecover.jpg`],

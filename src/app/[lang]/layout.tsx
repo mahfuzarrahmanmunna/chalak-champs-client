@@ -17,11 +17,11 @@ export async function generateMetadata({
 
   const coverImage = `${siteUrl}/homecover.jpg`;
 
-  const bnTitle = "চালক Champs | Be clever, Be a champ";
+  const bnTitle = "চালক Champs | Every child is a champ hobe";
   const bnDesc =
     "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।";
 
-  const enTitle = "Chalak Champs | Be clever, Be a champ";
+  const enTitle = "Chalak Champs | Every child is a champ hobe";
   const enDesc =
     "Chalak Champs is an interactive English learning platform designed for children. With engaging games, fun activities, and a vibrant community, we make learning English enjoyable and effective for young learners.";
 

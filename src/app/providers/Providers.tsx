@@ -146,9 +146,9 @@ const Providers: React.FC<{
                   {!isDashboard &&
                     !isStDashboard && <Footer />}
 
-                  <div className="flex md:hidden">
+                  {/* <div className="flex md:hidden">
                     <MobileBottomNav />
-                  </div>
+                  </div> */}
                 </BookingProvider>
               </LanguageProvider>
             </ThemeProvider>

@@ -198,7 +198,7 @@ export default function MyCoursesPage() {
     null,
   );
   const BACKEND_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    process.env.NEXT_PUBLIC_API_URL || "https://apichalakchamps.vercel.app";
 
   // --- Fetch purchased courses ---
   // --- Fetch purchased courses ---

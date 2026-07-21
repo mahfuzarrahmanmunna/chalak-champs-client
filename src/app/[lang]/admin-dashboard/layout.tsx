@@ -67,11 +67,11 @@ export default function AdminDashboardLayout({
   useEffect(() => {
     if (!loading) {
       if (!currentUser) {
-        router.push("/signin");
+        router.push("/en/signin");
         return;
       }
       if (appUser && appUser.role !== "admin") {
-        router.push("/signin");
+        router.push("/en/signin");
       }
     }
   }, [currentUser, appUser, loading, router]);
@@ -79,7 +79,7 @@ export default function AdminDashboardLayout({
   const handleLogout = async () => {
     try {
       await logout();
-      router.push("/signin");
+      router.push("/en/signin");
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -183,6 +183,14 @@ export default function AdminDashboardLayout({
             current:
               pathname ===
               getLink("/admin-dashboard/content/home/manage-hero-banner"),
+          },
+          {
+            name: "Video Gallery",
+            href: getLink("/admin-dashboard/content/home/manage-video-gallery"),
+            icon: Sparkles,
+            current:
+              pathname ===
+              getLink("/admin-dashboard/content/home/manage-video-gallery"),
           },
           {
             name: "CTA Section",

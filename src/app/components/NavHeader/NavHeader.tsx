@@ -9,7 +9,6 @@ import { useAuth } from "@/app/context/AuthContext"; // ADDED IMPORT
 import {
   FaFacebookF,
   FaYoutube,
-  FaInstagram,
   FaFacebookMessenger,
   FaWhatsapp,
 } from "react-icons/fa";
@@ -18,61 +17,21 @@ import {
 import {
   ArrowRight,
   BookOpen,
-  Award,
   ChevronRight,
   Smile,
-  Palette,
-  Calculator,
-  Sparkles,
-  Brain,
-  Users,
-  Megaphone,
   Globe,
-  ShoppingBag,
-  Video,
-  Library,
-  Plus,
-  Minus,
-  X,
-  Facebook,
-  Instagram,
-  Youtube,
-  Linkedin,
 } from "lucide-react";
 
 // --- Your Local Imports ---
 import Button from "@/app/ui/button/Button";
 import NavLogo from "./logo";
-import DropIcon from "./DropIcon";
 import CallIcon from "../Icon/CallIcon";
-import MulStar from "../Icon/MulStar";
-import CloseIcon from "../Icon/CloseIcon";
 import BnEnLogo from "./BnEnLogo";
 import UserIcon from "./UserIcon";
-import { FaMicrophone } from "react-icons/fa6";
-import Freebooking from "../Freebooking/Freebooking";
 import { useBooking } from "@/app/providers/BookingProvider";
-import Hambar from "./Hambar";
-import CloseHamburger from "./CloseHamburger";
 
 // --- Modern Menu Icon Component ---
-const ModernMenuIcon = () => (
-  <svg
-    width="28"
-    height="28"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="text-[#214187]"
-  >
-    <line x1="4" x2="20" y1="12" y2="12" />
-    <line x1="4" x2="20" y1="6" y2="6" />
-    <line x1="4" x2="20" y1="18" y2="18" />
-  </svg>
-);
+
 
 const NavHeader = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -227,9 +186,9 @@ const NavHeader = () => {
           </div>
 
           {/* --- KIDS ENGLISH MODAL --- */}
-          <div className="relative">
+          {/* <div className="relative">
             <Link
-              href={`${isBangla ? "/bn/coursedetails" : "/en/coursedetails"}`}
+              href={`${isBangla ? "/bn/coursedetails/kids-onorgol-english" : "/en/coursedetails/kids-onorgol-english"}`}
             >
               <button
                 className={`flex items-center font-medium flex gap-2 leading-auto tracking-[-2%] text-sm cursor-pointer transition-all ${
@@ -244,7 +203,7 @@ const NavHeader = () => {
                 ></div>
               </button>
             </Link>
-          </div>
+          </div> */}
 
           {/* --- CALL US --- */}
           <div>
@@ -462,38 +421,6 @@ const NavHeader = () => {
               </div>
 
               {/* --- UPDATED: PROFESSIONAL KIDS ENGLISH CARD --- */}
-              <div className="mb-8">
-                <Link
-                  href={`${isBangla ? "/bn/coursedetails" : "/en/coursedetails"}`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="group block w-full"
-                >
-                  <div className="relative overflow-hidden bg-white border border-gray-100 rounded-3xl p-6 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-all duration-300 group-hover:border-[#F3056D]/30 group-hover:shadow-[0_20px_50px_-12px_rgba(243,5,109,0.2)]">
-                    {/* Decorative animated blob */}
-                    <div className="absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-br from-blue-100 to-pink-100 rounded-full blur-2xl opacity-70 transition-transform duration-500 group-hover:scale-110"></div>
-
-                    <div className="relative z-10 flex items-center gap-5">
-                      {/* Icon Container */}
-                      <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-[#214187] to-[#163676] text-white flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <Smile size={28} className="fill-white/20" />
-                      </div>
-
-                      <div className="flex-1">
-                        <h3 className="text-lg font-bold text-[#214187] mb-1">
-                          {t?.kidsEnglish || "Kids English"}
-                        </h3>
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                          Interactive Learning
-                        </p>
-                      </div>
-
-                      <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-[#214187] group-hover:bg-[#F3056D] group-hover:text-white transition-colors">
-                        <ChevronRight size={18} />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
 
               <div className="flex-grow"></div>
 

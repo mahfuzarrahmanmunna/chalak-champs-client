@@ -169,7 +169,7 @@ function CheckoutPageContent() {
 
   // =================== CONFIG ===================
   const BACKEND_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    process.env.NEXT_PUBLIC_API_URL || "https://apichalakchamps.vercel.app";
 
   // =================== STEP 0: Auth Gate ===================
   // Wait for Firebase to resolve, then auto-skip auth if already logged in.

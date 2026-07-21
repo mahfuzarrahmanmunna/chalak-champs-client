@@ -13,6 +13,7 @@ import PopularCourse from "../components/PopularCourse/PopularCourse";
 import TestimonialSlider from "../components/TestimonialSlider/TestimonialSlider";
 import { useLanguage } from "@/app/context/LanguageContext";
 import VideoTestomonial from "../components/VideoTestomonial/VideoTestomonial";
+import VideoGallerySlider1 from "../components/GallerySlider/GallerySlider1";
 
 export default function HomeContent() {
   // This component already knows the language from your Context!
@@ -28,8 +29,8 @@ export default function HomeContent() {
       {/* <LittleChamps /> */}
       <OfflineCourses />
       <ImageSlider />
-      <GallerySlider />
-      <VideoTestomonial />
+      <VideoGallerySlider1 />
+      {/* <VideoTestomonial /> */}
       <CTA />
     </div>
   );

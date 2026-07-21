@@ -3,7 +3,7 @@
 const rawApiBaseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:5000";
+  "https://apichalakchamps.vercel.app";
 
 const API_BASE = rawApiBaseUrl.replace(/\/+$/, "");
 const API_URL = API_BASE.endsWith("/api") ? API_BASE : `${API_BASE}/api`;
