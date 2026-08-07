@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "@/lib/axios";
 import {
@@ -21,10 +21,13 @@ import {
   GraduationCap,
   TrendingUp,
   Image as ImageIcon,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import CourseFormModal from "./CourseFormModal";
+import Link from "next/link";
 
-// ✅ FIX: Updated interface to match actual API response (title is an object, not string)
+// ✅ Updated interface to match actual API response
 interface Course {
   _id: string;
   title: { en: string; bn: string } | string;
@@ -38,6 +41,10 @@ interface Course {
   level?: string;
   createdAt?: string;
 }
+
+// ====================================================================
+// SKELETON COMPONENTS
+// ====================================================================
 
 function TableSkeleton({ rows = 8 }: { rows?: number }) {
   return (
@@ -120,6 +127,35 @@ function StatsSkeleton() {
   );
 }
 
+// ====================================================================
+// SMART PAGINATION — ellipsis for many pages
+// ====================================================================
+
+function getPageNumbers(
+  current: number,
+  total: number,
+): (number | "ellipsis")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+  const pages: (number | "ellipsis")[] = [1];
+
+  if (current > 3) pages.push("ellipsis");
+
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+
+  for (let i = start; i <= end; i++) pages.push(i);
+
+  if (current < total - 2) pages.push("ellipsis");
+
+  pages.push(total);
+  return pages;
+}
+
+// ====================================================================
+// MAIN COMPONENT
+// ====================================================================
+
 export default function ManageCourses() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -132,31 +168,103 @@ export default function ManageCourses() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  // ==================================================================
+  // ✅ IMPROVED QUERY: staleTime, gcTime, placeholderData, refetch config
+  // ==================================================================
+  const {
+    data,
+    isLoading,
+    isFetching, // true during background refetches (not initial load)
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["courses"],
     queryFn: async () => {
-      const res = await axios.get("/api/courses");
+      const res = await axios.get("/api/courses?published=all");
       return res.data;
     },
+    staleTime: 1000 * 60 * 2, // Data considered fresh for 2 minutes
+    gcTime: 1000 * 60 * 10, // Keep unused data in cache for 10 minutes
+    refetchOnWindowFocus: true, // Re-fetch when user returns to the tab
+    refetchOnReconnect: true, // Re-fetch on network reconnect
+    // ✅ Keep showing previous data while a background refetch is happening
+    // This prevents the table from flashing/going blank during refetch
+    placeholderData: (previousData) => previousData,
   });
 
+  // ==================================================================
+  // ✅ OPTIMISTIC DELETE: instant UI update + rollback on error
+  // ==================================================================
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       await axios.delete(`/api/courses/${id}`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["courses"] });
-      setOpenMenuId(null);
+
+    // --- Before the request fires ---
+    onMutate: async (id) => {
+      // 1. Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ["courses"] });
+
+      // 2. Snapshot the current data so we can rollback
+      const previousCourses = queryClient.getQueryData(["courses"]);
+
+      // 3. Optimistically remove the course from the cached list
+      queryClient.setQueryData(["courses"], (old: any) => {
+        if (!old?.data) return old;
+        return {
+          ...old,
+          data: old.data.filter((c: Course) => c._id !== id),
+        };
+      });
+
+      // 4. Return the snapshot for potential rollback
+      return { previousCourses };
     },
-    onError: (err: any) => {
+
+    // --- If the request fails ---
+    onError: (err: any, _id, context) => {
+      // 5. Rollback to the snapshot
+      if (context?.previousCourses) {
+        queryClient.setQueryData(["courses"], context.previousCourses);
+      }
       alert(
         "Failed to delete: " + (err.response?.data?.message || err.message),
       );
     },
+
+    // --- Whether success or failure, after everything settles ---
+    onSettled: () => {
+      // 6. Always re-fetch to ensure cache is in sync with server
+      //    - On success: confirms the deletion
+      //    - On error (after rollback): re-fetches the accurate state
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      setOpenMenuId(null);
+    },
   });
 
-  // --- Helper to safely get text from bilingual or string ---
-  const getText = (val: string | { en?: string; bn?: string } | undefined, fallback = "—") => {
+  // ==================================================================
+  // ✅ Close dropdown on Escape key or outside click (scroll)
+  // ==================================================================
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenMenuId(null);
+    };
+    const handleScroll = () => setOpenMenuId(null);
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("scroll", handleScroll, true);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("scroll", handleScroll, true);
+    };
+  }, []);
+
+  // --- Helpers ---
+  const getText = (
+    val: string | { en?: string; bn?: string } | undefined,
+    fallback = "—",
+  ) => {
     if (!val) return fallback;
     if (typeof val === "string") return val || fallback;
     return val.en || val.bn || fallback;
@@ -184,6 +292,7 @@ export default function ManageCourses() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentItems = filteredCourses.slice(startIndex, endIndex);
+  const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   const publishedCount = (data?.data || []).filter(
     (c: Course) => c.isPublished,
@@ -194,6 +303,7 @@ export default function ManageCourses() {
     0,
   );
 
+  // --- Modal handlers ---
   const openCreateModal = () => {
     setSelectedCourse(null);
     setIsModalOpen(true);
@@ -217,6 +327,9 @@ export default function ManageCourses() {
     }
   };
 
+  // ==================================================================
+  // RENDER
+  // ==================================================================
   return (
     <div className="min-h-screen bg-[#F5F6FA]">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -230,19 +343,25 @@ export default function ManageCourses() {
               <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
                 Manage Courses
               </h1>
+              {/* ✅ Background refetch indicator — subtle spinning icon */}
+              {isFetching && !isLoading && (
+                <div className="ml-2 p-1.5 rounded-lg bg-blue-50 animate-spin">
+                  <RefreshCw className="w-4 h-4 text-blue-500" />
+                </div>
+              )}
             </div>
             <p className="text-gray-500 text-sm ml-[52px]">
               Create, edit, and organize your course catalog.
             </p>
           </div>
 
-          <button
-            onClick={openCreateModal}
+          <Link
+            href={"/bn/admin-dashboard/courses/create"}
             className="self-start lg:self-auto flex items-center gap-2.5 bg-[#F3056D] hover:bg-[#d9045e] text-white px-6 py-3 rounded-xl font-bold text-sm shadow-xl shadow-[#F3056D]/30 transition-all hover:shadow-[#F3056D]/40 hover:scale-[1.02] active:scale-95"
           >
             <Plus className="w-5 h-5" strokeWidth={3} />
             Create New Course
-          </button>
+          </Link>
         </div>
 
         {/* ===== STATS CARDS ===== */}
@@ -316,8 +435,9 @@ export default function ManageCourses() {
           </div>
         )}
 
-        {/* ===== TOOLBAR ===== */}
+        {/* ===== TOOLBAR + TABLE CONTAINER ===== */}
         <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
+          {/* --- Toolbar --- */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 p-5 border-b border-gray-100">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
@@ -372,10 +492,37 @@ export default function ManageCourses() {
             </select>
           </div>
 
-          {/* ===== TABLE ===== */}
+          {/* --- Table Body --- */}
           <div className="overflow-x-auto">
             {isLoading ? (
               <TableSkeleton rows={itemsPerPage} />
+            ) : isError ? (
+              /* ✅ ERROR STATE with retry button */
+              <div className="text-center py-24">
+                <div className="w-20 h-20 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                  <AlertCircle className="w-9 h-9 text-red-400" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-600 mb-2">
+                  Failed to load courses
+                </h3>
+                <p className="text-sm text-red-500 mb-6 max-w-md mx-auto">
+                  {(error as any)?.response?.data?.message ||
+                    (error as any)?.message ||
+                    "An unexpected error occurred. Please try again."}
+                </p>
+                <button
+                  onClick={() => refetch()}
+                  disabled={isFetching}
+                  className="inline-flex items-center gap-2 bg-[#214187] hover:bg-[#1a3570] text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-[#214187]/30 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60"
+                >
+                  {isFetching ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  Retry
+                </button>
+              </div>
             ) : currentItems.length === 0 ? (
               <div className="text-center py-24">
                 <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
@@ -389,12 +536,13 @@ export default function ManageCourses() {
                     ? "Try adjusting your filters or search terms."
                     : "Get started by creating your first course."}
                 </p>
-                <button
-                  onClick={openCreateModal}
-                  className="inline-flex items-center gap-2 bg-[#214187] text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-[#192d6e] transition shadow-lg shadow-[#214187]/30"
+                <Link
+                  href={"/bn/admin-dashboard/courses/create"}
+                  className="inline-flex items-center gap-2.5 bg-[#F3056D] hover:bg-[#d9045e] text-white px-6 py-3 rounded-xl font-bold text-sm shadow-xl shadow-[#F3056D]/30 transition-all hover:shadow-[#F3056D]/40 hover:scale-[1.02] active:scale-95"
                 >
-                  <Plus className="w-4 h-4" /> Create Course
-                </button>
+                  <Plus className="w-5 h-5" strokeWidth={3} />
+                  Create New Course
+                </Link>
               </div>
             ) : (
               <table className="w-full text-left">
@@ -422,7 +570,11 @@ export default function ManageCourses() {
                           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#214187]/10 to-[#F3056D]/10 border border-gray-200/80 overflow-hidden flex-shrink-0 relative">
                             {course.thumbnail ? (
                               <img
-                                src={course.thumbnail}
+                                src={
+                                  course.thumbnail.startsWith("http")
+                                    ? course.thumbnail
+                                    : `https://${course.thumbnail}`
+                                }
                                 alt=""
                                 className="w-full h-full object-cover"
                               />
@@ -588,20 +740,31 @@ export default function ManageCourses() {
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                {totalPages > 1 &&
-                  Array.from({ length: totalPages }).map((_, i) => (
+
+                {/* ✅ Smart pagination with ellipsis */}
+                {pageNumbers.map((page, idx) =>
+                  page === "ellipsis" ? (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="w-9 h-9 flex items-center justify-center text-gray-400 text-sm select-none"
+                    >
+                      …
+                    </span>
+                  ) : (
                     <button
-                      key={i + 1}
-                      onClick={() => setCurrentPage(i + 1)}
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
                       className={`w-9 h-9 flex items-center justify-center rounded-lg text-xs font-bold transition-all ${
-                        currentPage === i + 1
+                        currentPage === page
                           ? "bg-[#214187] text-white shadow-lg shadow-[#214187]/40"
                           : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
                       }`}
                     >
-                      {i + 1}
+                      {page}
                     </button>
-                  ))}
+                  ),
+                )}
+
                 <button
                   onClick={() =>
                     setCurrentPage((p) => Math.min(p + 1, totalPages))

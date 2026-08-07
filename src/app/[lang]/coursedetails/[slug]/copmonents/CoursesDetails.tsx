@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -19,6 +20,8 @@ import {
   MessageCircle,
   Home,
   Check,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { FaSadCry } from "react-icons/fa";
 
@@ -89,14 +92,11 @@ interface SingleCourse {
   instructor: InstructorData;
   review: { title: string };
   faq: { title: string; items: Array<{ q: string; a: string }> };
-  
-  // ✅ FIX: Explicit union type to match EnrollmentCard
-  mediaAssets: Array<{ type: "image" | "video"; src: string; poster?: string }>; 
+  mediaAssets: Array<{ type: "image" | "video"; src: string; poster?: string }>;
 }
 
 /* ═══════════════════════════════════════════════════
-   DATA FLATTENER 
-   Transforms Backend API {en, bn} objects into flat strings
+   DATA FLATTENER
    ═══════════════════════════════════════════════════ */
 const getLang = (obj: any, lang: "en" | "bn"): string => {
   if (!obj) return "";
@@ -104,15 +104,21 @@ const getLang = (obj: any, lang: "en" | "bn"): string => {
   return obj[lang] || "";
 };
 
-const flattenCourseData = (apiData: any, isBangla: boolean): SingleCourse | null => {
+const flattenCourseData = (
+  apiData: any,
+  isBangla: boolean,
+): SingleCourse | null => {
   if (!apiData || !apiData.success) return null;
-  
+
   const course = apiData.data;
   const lang = isBangla ? "bn" : "en";
   const c = course.content || {};
 
-  // ✅ Build mediaAssets from thumbnail + videoUrl if content.mediaAssets is empty
-  const buildMediaAssets = (): Array<{ type: "image" | "video"; src: string; poster?: string }> => {
+  const buildMediaAssets = (): Array<{
+    type: "image" | "video";
+    src: string;
+    poster?: string;
+  }> => {
     const contentAssets = c.mediaAssets || [];
     if (contentAssets.length > 0) {
       return contentAssets.map((a: any) => ({
@@ -122,27 +128,31 @@ const flattenCourseData = (apiData: any, isBangla: boolean): SingleCourse | null
       }));
     }
 
-    // Fallback: build from root-level thumbnail + videoUrl
-    const built: Array<{ type: "image" | "video"; src: string; poster?: string }> = [];
-    
+    const built: Array<{
+      type: "image" | "video";
+      src: string;
+      poster?: string;
+    }> = [];
+
     if (course.thumbnail) {
-      const thumbSrc = course.thumbnail.startsWith("http") 
-        ? course.thumbnail 
+      const thumbSrc = course.thumbnail.startsWith("http")
+        ? course.thumbnail
         : `https://${course.thumbnail}`;
       built.push({ type: "image", src: thumbSrc });
     }
-    
+
     if (course.videoUrl) {
       built.push({ type: "video", src: course.videoUrl });
     }
-    
+
     return built;
   };
 
   const buildOfferPrice = (): string => {
     const quickPrice = getLang(c.quickInfo?.offerPrice, lang);
-    if (quickPrice && quickPrice !== "0" && quickPrice.includes(" ")) return quickPrice;
-    
+    if (quickPrice && quickPrice !== "0" && quickPrice.includes(" "))
+      return quickPrice;
+
     const orig = course.originalPrice || 0;
     const curr = course.price || 0;
     if (orig > 0 && curr > 0 && orig !== curr) return `৳${orig} ৳${curr}`;
@@ -150,54 +160,79 @@ const flattenCourseData = (apiData: any, isBangla: boolean): SingleCourse | null
     return quickPrice || "0";
   };
 
-  // ✅ Build items - check both nested and root locations
   const buildItems = (): string[] => {
     const contentItems = c.quickInfo?.items?.[lang] || [];
     if (contentItems.length > 0) return contentItems;
     return course.quickInfo?.items?.[lang] || [];
   };
 
-  // ✅ Helper to skip "0" placeholders
   const getCta = (field: any, fallback: string): string => {
     const val = getLang(field, lang);
-    return (val && val !== "0") ? val : fallback;
+    return val && val !== "0" ? val : fallback;
   };
 
-  // ✅ FIX: The complete return statement that was missing
   return {
     slug: course.slug,
     breadcrumbs: getLang(c.breadcrumbs, lang) || getLang(c.breadcrumb, lang),
     hero: {
       title: getLang(c.hero?.title, lang) || getLang(course.title, lang),
-      subtitle: getLang(c.hero?.subtitle, lang) || getLang(course.heroSubtitle, lang),
+      subtitle:
+        getLang(c.hero?.subtitle, lang) || getLang(course.heroSubtitle, lang),
     },
     quickInfo: {
-      title: getLang(c.quickInfo?.title, lang) || getLang(course.quickInfo?.title, lang),
+      title:
+        getLang(c.quickInfo?.title, lang) ||
+        getLang(course.quickInfo?.title, lang),
       items: buildItems(),
       offerPrice: buildOfferPrice(),
-      offerText: getLang(c.quickInfo?.offerText, lang) || getLang(course.quickInfo?.offerText, lang),
+      offerText:
+        getLang(c.quickInfo?.offerText, lang) ||
+        getLang(course.quickInfo?.offerText, lang),
       cta1: getCta(c.quickInfo?.cta1, "Enroll Now"),
       cta2: getCta(c.quickInfo?.cta2, "Book a Free Demo"),
-      ctaBelow: getLang(c.quickInfo?.ctaBelow, lang) || getLang(course.quickInfo?.ctaBelow, lang),
+      ctaBelow:
+        getLang(c.quickInfo?.ctaBelow, lang) ||
+        getLang(course.quickInfo?.ctaBelow, lang),
     },
     overview: {
       title: getLang(c.overview?.title, lang) || getLang(course.title, lang),
-      content: getLang(c.overview?.content, lang) || getLang(course.description, lang),
+      content:
+        getLang(c.overview?.content, lang) || getLang(course.description, lang),
     },
     levels: {
-      title: getLang(c.levels?.title, lang) || getLang(course.levels?.title, lang),
-      intro: getLang(c.levels?.intro, lang) || getLang(course.levels?.intro, lang),
+      title:
+        getLang(c.levels?.title, lang) || getLang(course.levels?.title, lang),
+      intro:
+        getLang(c.levels?.intro, lang) || getLang(course.levels?.intro, lang),
       level1: {
-        title: getLang(c.levels?.level1?.title, lang) || getLang(course.levels?.level1?.title, lang),
-        for: getLang(c.levels?.level1?.for, lang) || getLang(course.levels?.level1?.for, lang),
-        intro: getLang(c.levels?.level1?.intro, lang) || getLang(course.levels?.level1?.intro, lang),
-        items: c.levels?.level1?.items?.[lang] || course.levels?.level1?.items?.[lang] || [],
+        title:
+          getLang(c.levels?.level1?.title, lang) ||
+          getLang(course.levels?.level1?.title, lang),
+        for:
+          getLang(c.levels?.level1?.for, lang) ||
+          getLang(course.levels?.level1?.for, lang),
+        intro:
+          getLang(c.levels?.level1?.intro, lang) ||
+          getLang(course.levels?.level1?.intro, lang),
+        items:
+          c.levels?.level1?.items?.[lang] ||
+          course.levels?.level1?.items?.[lang] ||
+          [],
       },
       level2: {
-        title: getLang(c.levels?.level2?.title, lang) || getLang(course.levels?.level2?.title, lang),
-        for: getLang(c.levels?.level2?.for, lang) || getLang(course.levels?.level2?.for, lang),
-        intro: getLang(c.levels?.level2?.intro, lang) || getLang(course.levels?.level2?.intro, lang),
-        items: c.levels?.level2?.items?.[lang] || course.levels?.level2?.items?.[lang] || [],
+        title:
+          getLang(c.levels?.level2?.title, lang) ||
+          getLang(course.levels?.level2?.title, lang),
+        for:
+          getLang(c.levels?.level2?.for, lang) ||
+          getLang(course.levels?.level2?.for, lang),
+        intro:
+          getLang(c.levels?.level2?.intro, lang) ||
+          getLang(course.levels?.level2?.intro, lang),
+        items:
+          c.levels?.level2?.items?.[lang] ||
+          course.levels?.level2?.items?.[lang] ||
+          [],
       },
     },
     whoIsThisFor: {
@@ -207,8 +242,13 @@ const flattenCourseData = (apiData: any, isBangla: boolean): SingleCourse | null
       boldStatement: getLang(c.whoIsThisFor?.boldStatement, lang),
     },
     features: {
-      title: getLang(c.features?.title, lang) || getLang(course.features?.title, lang),
-      cards: (c.features?.cards?.length ? c.features.cards : course.features?.cards || []).map((card: any) => ({
+      title:
+        getLang(c.features?.title, lang) ||
+        getLang(course.features?.title, lang),
+      cards: (c.features?.cards?.length
+        ? c.features.cards
+        : course.features?.cards || []
+      ).map((card: any) => ({
         title: getLang(card?.title, lang),
         body: getLang(card?.body, lang),
       })),
@@ -240,7 +280,11 @@ const flattenCourseData = (apiData: any, isBangla: boolean): SingleCourse | null
       specializations: c.instructor?.specializations?.[lang] || [],
       achievements: c.instructor?.achievements?.[lang] || [],
       education: getLang(c.instructor?.education, lang),
-      image: c.instructor?.image ? (c.instructor.image.startsWith("http") ? c.instructor.image : `https://${c.instructor.image}`) : "",
+      image: c.instructor?.image
+        ? c.instructor.image.startsWith("http")
+          ? c.instructor.image
+          : `https://${c.instructor.image}`
+        : "",
       social: c.instructor?.social || {},
     },
     review: {
@@ -248,7 +292,10 @@ const flattenCourseData = (apiData: any, isBangla: boolean): SingleCourse | null
     },
     faq: {
       title: getLang(c.faq?.title, lang) || getLang(course.faqs?.title, lang),
-      items: (c.faq?.items?.length ? c.faq.items : course.faqs?.items || []).map((item: any) => ({
+      items: (c.faq?.items?.length
+        ? c.faq.items
+        : course.faqs?.items || []
+      ).map((item: any) => ({
         q: getLang(item?.q, lang),
         a: getLang(item?.a, lang),
       })),
@@ -256,6 +303,308 @@ const flattenCourseData = (apiData: any, isBangla: boolean): SingleCourse | null
     mediaAssets: buildMediaAssets(),
   };
 };
+
+/* ═══════════════════════════════════════════════════
+   SKELETON — pixel-perfect shimmer matching the layout
+   ═══════════════════════════════════════════════════ */
+function Sk({ className, delay = 0 }: { className?: string; delay?: number }) {
+  return (
+    <div
+      className={`relative overflow-hidden bg-gray-200 ${className}`}
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="skel-shine" />
+    </div>
+  );
+}
+
+function CourseDetailSkeleton() {
+  return (
+    <div className="min-h-screen mt-12 text-gray-900 font-sans bg-[#FAFAFA] skel-root">
+      {/* ── Breadcrumb ── */}
+      <div className="py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2">
+            <Sk className="h-4 w-10 rounded" delay={0} />
+            <Sk className="h-2.5 w-2.5 rounded-full" delay={40} />
+            <Sk className="h-4 w-16 rounded" delay={80} />
+            <Sk className="h-2.5 w-2.5 rounded-full" delay={120} />
+            <Sk className="h-4 w-24 rounded" delay={160} />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Two-column body ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:py-12">
+        <div className="flex flex-col lg:flex-row gap-10">
+          {/* ── LEFT COLUMN (65%) ── */}
+          <div className="w-full lg:w-[65%] order-2 lg:order-1 space-y-10">
+            {/* Back link */}
+            <Sk className="h-5 w-36 rounded" delay={0} />
+
+            {/* Hero title + subtitle */}
+            <div className="space-y-4">
+              <Sk className="h-10 md:h-14 w-full rounded-xl" delay={60} />
+              <Sk className="h-10 md:h-14 w-4/5 rounded-xl" delay={100} />
+              <Sk className="h-6 w-full rounded-lg" delay={140} />
+              <Sk className="h-6 w-5/6 rounded-lg" delay={180} />
+            </div>
+
+            {/* Mobile enrollment card (md:hidden) */}
+            <div className="md:hidden">
+              <div className="w-full rounded-[30px] border-2 border-gray-200 p-2 pb-5 space-y-4">
+                <Sk className="w-full aspect-video rounded-[25px]" delay={0} />
+                <div className="flex justify-center gap-2">
+                  <Sk className="h-6 w-16 rounded-full" delay={40} />
+                  <Sk className="h-6 w-20 rounded-full" delay={80} />
+                  <Sk className="h-6 w-14 rounded-full" delay={120} />
+                </div>
+                <Sk className="h-7 w-3/4 mx-auto rounded-lg" delay={60} />
+                <div className="flex justify-center gap-2">
+                  <Sk className="h-5 w-14 rounded-md" delay={80} />
+                  <Sk className="h-6 w-16 rounded-md" delay={100} />
+                </div>
+                <Sk className="h-12 w-40 mx-auto rounded-xl" delay={40} />
+              </div>
+            </div>
+
+            {/* Sticky tab bar */}
+            <div className="rounded-2xl border border-gray-200 bg-white/95 p-2 space-y-0">
+              <div className="flex gap-2 overflow-hidden">
+                <Sk className="h-10 w-28 rounded-xl flex-shrink-0" delay={0} />
+                <Sk className="h-10 w-24 rounded-xl flex-shrink-0" delay={60} />
+                <Sk
+                  className="h-10 w-32 rounded-xl flex-shrink-0"
+                  delay={120}
+                />
+                <Sk
+                  className="h-10 w-20 rounded-xl flex-shrink-0"
+                  delay={180}
+                />
+                <Sk
+                  className="h-10 w-16 rounded-xl flex-shrink-0"
+                  delay={240}
+                />
+              </div>
+            </div>
+
+            {/* ── Overview section ── */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Sk className="h-8 w-1 rounded-full" delay={0} />
+                <Sk className="h-8 w-48 rounded-lg" delay={40} />
+              </div>
+              <Sk className="h-44 w-full rounded-2xl" delay={80} />
+            </div>
+
+            {/* ── Features section (dark block) ── */}
+            <div className="w-full bg-gray-300 rounded-2xl p-6 md:p-8 space-y-5">
+              <Sk className="h-7 w-48 rounded-lg !bg-gray-400" delay={0} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="space-y-3 p-4 rounded-xl bg-gray-400/40"
+                  >
+                    <Sk
+                      className="h-10 w-10 rounded-xl !bg-gray-500"
+                      delay={i * 60}
+                    />
+                    <Sk
+                      className="h-5 w-3/4 rounded !bg-gray-500"
+                      delay={i * 60 + 40}
+                    />
+                    <Sk
+                      className="h-4 w-full rounded !bg-gray-500"
+                      delay={i * 60 + 80}
+                    />
+                    <Sk
+                      className="h-4 w-5/6 rounded !bg-gray-500"
+                      delay={i * 60 + 120}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Who is this for ── */}
+            <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 space-y-5">
+              <Sk className="h-8 w-44 rounded-lg" delay={0} />
+              <Sk className="h-5 w-full rounded" delay={40} />
+              <Sk className="h-5 w-5/6 rounded" delay={80} />
+              <div className="space-y-3 pt-2">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <Sk
+                      className="h-6 w-6 rounded-full flex-shrink-0"
+                      delay={i * 50}
+                    />
+                    <Sk className="h-5 w-full rounded" delay={i * 50 + 30} />
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50">
+                <Sk className="h-5 w-1 rounded-full flex-shrink-0" delay={0} />
+                <Sk className="h-6 w-3/4 rounded" delay={40} />
+              </div>
+            </div>
+
+            {/* ── Syllabus / Levels ── */}
+            <div className="space-y-5">
+              <div className="flex items-center gap-3">
+                <Sk className="h-8 w-1 rounded-full" delay={0} />
+                <Sk className="h-8 w-52 rounded-lg" delay={40} />
+              </div>
+              <Sk className="h-5 w-2/3 rounded" delay={80} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Level 1 */}
+                <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 space-y-4">
+                  <Sk className="h-7 w-3/4 rounded-lg" delay={0} />
+                  <Sk className="h-5 w-1/2 rounded" delay={40} />
+                  <Sk className="h-5 w-full rounded" delay={80} />
+                  <div className="space-y-3 pt-2">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <Sk
+                          className="h-4 w-4 rounded flex-shrink-0"
+                          delay={i * 50}
+                        />
+                        <Sk
+                          className="h-4 w-full rounded"
+                          delay={i * 50 + 30}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Level 2 */}
+                <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 space-y-4">
+                  <Sk className="h-7 w-3/4 rounded-lg" delay={20} />
+                  <Sk className="h-5 w-1/2 rounded" delay={60} />
+                  <Sk className="h-5 w-full rounded" delay={100} />
+                  <div className="space-y-3 pt-2">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <Sk
+                          className="h-4 w-4 rounded flex-shrink-0"
+                          delay={i * 50 + 20}
+                        />
+                        <Sk
+                          className="h-4 w-full rounded"
+                          delay={i * 50 + 50}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Instructor ── */}
+            <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 space-y-5">
+              <Sk className="h-6 w-32 rounded-full" delay={0} />
+              <div className="flex flex-col sm:flex-row gap-6 items-start">
+                <Sk
+                  className="w-24 h-24 md:w-28 md:h-28 rounded-2xl flex-shrink-0"
+                  delay={40}
+                />
+                <div className="flex-1 space-y-3 w-full">
+                  <Sk className="h-7 w-40 rounded-lg" delay={60} />
+                  <Sk className="h-5 w-32 rounded" delay={100} />
+                  <Sk className="h-5 w-full rounded" delay={140} />
+                </div>
+              </div>
+            </div>
+
+            {/* ── FAQ ── */}
+            <div className="bg-gradient-to-br from-blue-50 to-pink-50/30 p-6 md:p-10 rounded-[32px] border border-white/60 space-y-5">
+              <div className="flex items-center gap-3">
+                <Sk className="h-10 w-10 rounded-2xl" delay={0} />
+                <Sk className="h-7 w-52 rounded-lg" delay={40} />
+              </div>
+              <div className="space-y-3">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-2xl border-2 border-gray-100 p-5 space-y-3"
+                  >
+                    <div className="flex items-center gap-4">
+                      <Sk
+                        className="h-9 w-9 rounded-xl flex-shrink-0"
+                        delay={i * 80}
+                      />
+                      <Sk className="h-5 w-3/4 rounded" delay={i * 80 + 30} />
+                    </div>
+                    <Sk
+                      className="h-4 w-2/3 rounded ml-[52px]"
+                      delay={i * 80 + 60}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ── RIGHT COLUMN (35%) ── */}
+          <div className="w-full lg:w-[35%] order-1 mt-0 lg:order-2 space-y-6">
+            {/* Desktop enrollment card */}
+            <div className="hidden md:block">
+              <div className="w-full rounded-[30px] border-2 border-gray-200 p-2 pb-5 space-y-4">
+                <Sk className="w-full aspect-video rounded-[25px]" delay={0} />
+                <div className="px-2 space-y-3">
+                  <Sk className="h-7 w-3/4 rounded-lg" delay={40} />
+                  <div className="flex justify-center gap-2">
+                    <Sk className="h-6 w-16 rounded-full" delay={60} />
+                    <Sk className="h-6 w-20 rounded-full" delay={80} />
+                    <Sk className="h-6 w-14 rounded-full" delay={100} />
+                  </div>
+                  <div className="flex justify-center gap-2 pt-1">
+                    <Sk className="h-6 w-14 rounded-md" delay={80} />
+                    <Sk className="h-7 w-16 rounded-md" delay={100} />
+                  </div>
+                  <div className="space-y-2 pt-1">
+                    <Sk className="h-4 w-full rounded" delay={60} />
+                    <Sk className="h-4 w-5/6 rounded" delay={80} />
+                    <Sk className="h-4 w-4/6 rounded" delay={100} />
+                    <Sk className="h-4 w-full rounded" delay={120} />
+                  </div>
+                  <Sk className="h-12 w-full rounded-xl mx-auto" delay={40} />
+                  <Sk
+                    className="h-10 w-full rounded-xl mx-auto !bg-gray-100"
+                    delay={60}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Final CTA ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-gray-300 rounded-3xl p-8 md:p-12 space-y-5 text-center">
+          <Sk className="h-10 w-72 mx-auto rounded-xl !bg-gray-400" delay={0} />
+          <Sk
+            className="h-6 w-full max-w-3xl mx-auto rounded !bg-gray-400"
+            delay={40}
+          />
+          <Sk
+            className="h-6 w-2/3 max-w-3xl mx-auto rounded !bg-gray-400"
+            delay={80}
+          />
+          <div className="flex justify-center gap-4 pt-2">
+            <Sk className="h-14 w-48 rounded-xl !bg-gray-400" delay={60} />
+            <Sk className="h-14 w-40 rounded-xl !bg-gray-400" delay={100} />
+          </div>
+          <Sk
+            className="h-8 w-48 mx-auto rounded-full !bg-gray-400"
+            delay={40}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ═══════════════════════════════════════════════════
    SUB-COMPONENTS
@@ -285,20 +634,53 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
           faqs.map((faq, idx) => {
             const isOpen = activeFaq === faq.q;
             return (
-              <div key={idx} className={`bg-white rounded-2xl border-2 transition-all duration-300 group hover:shadow-xl ${isOpen ? "border-[#F3056D] shadow-md ring-4 ring-pink-50/50" : "border-gray-100 hover:border-pink-200"}`}>
-                <button onClick={() => setActiveFaq(isOpen ? null : faq.q)} className="w-full flex items-center justify-between p-5 text-left focus:outline-none group/btn" aria-expanded={isOpen}>
+              <div
+                key={idx}
+                className={`bg-white rounded-2xl border-2 transition-all duration-300 group hover:shadow-xl ${
+                  isOpen
+                    ? "border-[#F3056D] shadow-md ring-4 ring-pink-50/50"
+                    : "border-gray-100 hover:border-pink-200"
+                }`}
+              >
+                <button
+                  onClick={() => setActiveFaq(isOpen ? null : faq.q)}
+                  className="w-full flex items-center justify-between p-5 text-left focus:outline-none group/btn"
+                  aria-expanded={isOpen}
+                >
                   <div className="flex items-center gap-4 flex-1">
-                    <span className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm transition-all duration-300 transform group-hover/btn:scale-110 ${isOpen ? "bg-[#F3056D] text-white scale-110 rotate-3" : "bg-gray-100 text-gray-400 group-hover/btn:bg-pink-100 group-hover/btn:text-[#F3056D]"}`}>{idx + 1}</span>
-                    <span className={`font-semibold text-base md:text-lg pr-4 leading-tight transition-colors ${isOpen ? "text-[#F3056D]" : "text-gray-700"}`}>{faq.q}</span>
+                    <span
+                      className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm transition-all duration-300 transform group-hover/btn:scale-110 ${
+                        isOpen
+                          ? "bg-[#F3056D] text-white scale-110 rotate-3"
+                          : "bg-gray-100 text-gray-400 group-hover/btn:bg-pink-100 group-hover/btn:text-[#F3056D]"
+                      }`}
+                    >
+                      {idx + 1}
+                    </span>
+                    <span
+                      className={`font-semibold text-base md:text-lg pr-4 leading-tight transition-colors ${
+                        isOpen ? "text-[#F3056D]" : "text-gray-700"
+                      }`}
+                    >
+                      {faq.q}
+                    </span>
                   </div>
-                  <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isOpen ? "bg-[#F3056D] text-white rotate-180" : "bg-gray-50 text-gray-400 group-hover/btn:bg-pink-100 group-hover/btn:text-[#F3056D]"}`}>
+                  <div
+                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      isOpen
+                        ? "bg-[#F3056D] text-white rotate-180"
+                        : "bg-gray-50 text-gray-400 group-hover/btn:bg-pink-100 group-hover/btn:text-[#F3056D]"
+                    }`}
+                  >
                     <ChevronDown className="w-5 h-5" strokeWidth={3} />
                   </div>
                 </button>
                 {isOpen && (
                   <div className="px-6 pb-6 pt-0 overflow-hidden">
                     <div className="animate-in slide-in-from-top-2 fade-in duration-300">
-                      <div className="mt-4 pl-[52px] border-l-4 border-pink-100 text-gray-600 leading-7 text-base">{faq.a}</div>
+                      <div className="mt-4 pl-[52px] border-l-4 border-pink-100 text-gray-600 leading-7 text-base">
+                        {faq.a}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -307,7 +689,9 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
           })
         ) : (
           <div className="text-center py-10 bg-white/50 rounded-3xl border border-dashed border-gray-300 flex items-center justify-center gap-2">
-            <p className="text-gray-500 font-medium text-lg">{isBangla ? "কোনো প্রশ্ন পাওয়া যায়নি" : "No Questions Found"}</p>
+            <p className="text-gray-500 font-medium text-lg">
+              {isBangla ? "কোনো প্রশ্ন পাওয়া যায়নি" : "No Questions Found"}
+            </p>
             <FaSadCry className="text-xl text-gray-400" />
           </div>
         )}
@@ -316,18 +700,40 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
   );
 };
 
-const CourseDecorate = ({ cards, title }: { cards: Array<{ title: string; body: string }>; title: string; }) => (
-  <section id="courseDecorator" className="w-full bg-[#214187] border-2 border-[#FF8FCA] rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-xl">
+const CourseDecorate = ({
+  cards,
+  title,
+}: {
+  cards: Array<{ title: string; body: string }>;
+  title: string;
+}) => (
+  <section
+    id="courseDecorator"
+    className="w-full bg-[#214187] border-2 border-[#FF8FCA] rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-xl"
+  >
     <div className="container mx-auto max-w-6xl relative z-10">
-      <div className="mb-6"><h2 className="font-bold text-xl md:text-2xl text-white tracking-wide">{title}</h2></div>
+      <div className="mb-6">
+        <h2 className="font-bold text-xl md:text-2xl text-white tracking-wide">
+          {title}
+        </h2>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         {cards.map((feature, index) => (
-          <div key={index} className="group relative p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300">
+          <div
+            key={index}
+            className="group relative p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300"
+          >
             <div className="flex flex-col gap-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#F3056D] shadow-lg group-hover:scale-110 transition-transform duration-300"><CheckCircle className="h-6 w-6 text-white" /></div>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#F3056D] shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <CheckCircle className="h-6 w-6 text-white" />
+              </div>
               <div>
-                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-pink-200 transition-colors">{feature.title}</h3>
-                <p className="text-gray-200 text-sm md:text-base leading-relaxed font-normal">{feature.body}</p>
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-pink-200 transition-colors">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-200 text-sm md:text-base leading-relaxed font-normal">
+                  {feature.body}
+                </p>
               </div>
             </div>
           </div>
@@ -352,14 +758,22 @@ const InstructorSection = ({ instructor }: { instructor: InstructorData }) => {
           <div className="flex flex-col sm:flex-row gap-6 items-start">
             <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-gradient-to-br from-[#214187] to-[#1e3a8a] flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-white/20 overflow-hidden">
               {instructor.image ? (
-                <img src={instructor.image} alt={instructor.name} className="w-full h-full object-cover" />
+                <img
+                  src={instructor.image}
+                  alt={instructor.name}
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <Users className="h-10 w-10 text-white/70" />
               )}
             </div>
             <div className="flex-1">
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">{isBangla ? "বিশেষজ্ঞ প্রশিক্ষক" : "Expert Instructor"}</h3>
-              <p className="text-[16px] text-gray-600 leading-relaxed">{instructor.name}</p>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
+                {isBangla ? "বিশেষজ্ঞ প্রশিক্ষক" : "Expert Instructor"}
+              </h3>
+              <p className="text-[16px] text-gray-600 leading-relaxed">
+                {instructor.name}
+              </p>
             </div>
           </div>
         </div>
@@ -368,17 +782,74 @@ const InstructorSection = ({ instructor }: { instructor: InstructorData }) => {
   );
 };
 
-function CourseNotFound({ isBangla, slug }: { isBangla: boolean; slug: string }) {
+function CourseNotFound({
+  isBangla,
+  slug,
+}: {
+  isBangla: boolean;
+  slug: string;
+}) {
   const router = useRouter();
   return (
     <div className="min-h-screen mt-12 flex items-center justify-center bg-[#FAFAFA]">
       <div className="text-center px-6 max-w-lg">
-        <div className="w-20 h-20 rounded-3xl bg-gray-100 flex items-center justify-center mx-auto mb-6"><BookOpen className="h-10 w-10 text-gray-300" /></div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">{isBangla ? "কোর্স পাওয়া যায়নি" : "Course Not Found"}</h1>
-        <p className="text-gray-500 mb-8 text-[15px] leading-relaxed">{isBangla ? `"${slug}" স্লাগটির কোনো কোর্স খুঁজে পাওয়া যায়নি।` : `No course found with slug "${slug}".`}</p>
-        <button onClick={() => router.back()} className="inline-flex items-center gap-2 rounded-xl px-6 py-3.5 bg-[#214187] text-white font-bold text-[14px] hover:bg-[#1a2f6e] transition-colors shadow-lg">
+        <div className="w-20 h-20 rounded-3xl bg-gray-100 flex items-center justify-center mx-auto mb-6">
+          <BookOpen className="h-10 w-10 text-gray-300" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">
+          {isBangla ? "কোর্স পাওয়া যায়নি" : "Course Not Found"}
+        </h1>
+        <p className="text-gray-500 mb-8 text-[15px] leading-relaxed">
+          {isBangla
+            ? `"${slug}" স্লাগটির কোনো কোর্স খুঁজে পাওয়া যায়নি।`
+            : `No course found with slug "${slug}".`}
+        </p>
+        <button
+          onClick={() => router.back()}
+          className="inline-flex items-center gap-2 rounded-xl px-6 py-3.5 bg-[#214187] text-white font-bold text-[14px] hover:bg-[#1a2f6e] transition-colors shadow-lg"
+        >
           <ArrowLeft className="h-4 w-4" />
           {isBangla ? "ফিরে যান" : "Go Back"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CourseError({
+  isBangla,
+  onRetry,
+  isFetching,
+}: {
+  isBangla: boolean;
+  onRetry: () => void;
+  isFetching: boolean;
+}) {
+  return (
+    <div className="min-h-screen mt-12 flex items-center justify-center bg-[#FAFAFA]">
+      <div className="text-center px-6 max-w-lg">
+        <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center mx-auto mb-6">
+          <AlertCircle className="h-10 w-10 text-red-400" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">
+          {isBangla ? "কোর্স লোড করতে সমস্যা হয়েছে" : "Failed to Load Course"}
+        </h1>
+        <p className="text-gray-500 mb-8 text-[15px] leading-relaxed">
+          {isBangla
+            ? "দুঃখিত, কোর্সের তথ্য লোড করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।"
+            : "Sorry, something went wrong while loading the course. Please try again."}
+        </p>
+        <button
+          onClick={onRetry}
+          disabled={isFetching}
+          className="inline-flex items-center gap-2 rounded-xl px-8 py-3.5 bg-[#214187] text-white font-bold text-[14px] hover:bg-[#1a2f6e] transition-colors shadow-lg disabled:opacity-60"
+        >
+          {isFetching ? (
+            <RefreshCw className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+          {isBangla ? "আবার চেষ্টা করুন" : "Try Again"}
         </button>
       </div>
     </div>
@@ -392,30 +863,30 @@ export default function CoursesDetails({ slug }: { slug: string }) {
   const router = useRouter();
   const { isBangla, getLink } = useLanguage();
 
-  // ✅ NEW: State for API Data
-  const [data, setData] = useState<SingleCourse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    data: courseData,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["course-detail", slug, isBangla],
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/api/courses/slug/${slug}`);
+      return flattenCourseData(response.data, isBangla);
+    },
+    enabled: !!slug,
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: true,
+    placeholderData: (previousData, previousQuery) =>
+      previousQuery?.queryKey?.[1] === slug ? previousData : undefined,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+  });
 
-  // ✅ NEW: Fetch Data on Mount & Language Change
-  useEffect(() => {
-    const fetchCourse = async () => {
-      setIsLoading(true);
-      try {
-        const response = await axiosInstance.get(`/api/courses/slug/${slug}`);
-        const flattenedData = flattenCourseData(response.data, isBangla);
-        setData(flattenedData);
-      } catch (error) {
-        console.error("Failed to fetch course:", error);
-        setData(null); // Trigger 404
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (slug) {
-      fetchCourse();
-    }
-  }, [slug, isBangla]);
+  const data = courseData || null;
 
   const [activeTab, setActiveTab] = useState("overview");
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
@@ -430,18 +901,39 @@ export default function CoursesDetails({ slug }: { slug: string }) {
   const faqRef = useRef<HTMLDivElement>(null);
 
   const sections = [
-    { id: "overview", label: isBangla ? "বিবরণ" : "Description", icon: LayoutGrid },
-    { id: "features", label: isBangla ? "ফিচার" : "Features", icon: ListChecks },
-    { id: "whoIsThisFor", label: isBangla ? "এটি কাদের জন্য?" : "Who is this for?", icon: UserCheck },
-    { id: "syllabus", label: isBangla ? "সিলেবাস" : "Syllabus", icon: BookOpen },
+    {
+      id: "overview",
+      label: isBangla ? "বিবরণ" : "Description",
+      icon: LayoutGrid,
+    },
+    {
+      id: "features",
+      label: isBangla ? "ফিচার" : "Features",
+      icon: ListChecks,
+    },
+    {
+      id: "whoIsThisFor",
+      label: isBangla ? "এটি কাদের জন্য?" : "Who is this for?",
+      icon: UserCheck,
+    },
+    {
+      id: "syllabus",
+      label: isBangla ? "সিলেবাস" : "Syllabus",
+      icon: BookOpen,
+    },
     { id: "faq", label: "FAQ", icon: HelpCircle },
   ];
 
   useEffect(() => {
     if (!data) return;
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => { if (entry.isIntersecting) setActiveTab(entry.target.id); });
-    }, { threshold: 0.3 });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActiveTab(entry.target.id);
+        });
+      },
+      { threshold: 0.3 },
+    );
     const refs = [
       { current: overviewRef.current, id: "overview" },
       { current: featuresRef.current, id: "features" },
@@ -449,39 +941,76 @@ export default function CoursesDetails({ slug }: { slug: string }) {
       { current: syllabusRef.current, id: "syllabus" },
       { current: faqRef.current, id: "faq" },
     ];
-    refs.forEach((ref) => { if (ref.current) observer.observe(ref.current); });
+    refs.forEach((ref) => {
+      if (ref.current) observer.observe(ref.current);
+    });
     const handleScroll = () => {
       setShowStickyCta(window.scrollY > 300);
       setShowSideEnrollment(window.scrollY > 1500);
     };
     window.addEventListener("scroll", handleScroll);
     return () => {
-      refs.forEach((ref) => { if (ref.current) observer.unobserve(ref.current); });
+      refs.forEach((ref) => {
+        if (ref.current) observer.unobserve(ref.current);
+      });
       window.removeEventListener("scroll", handleScroll);
     };
   }, [data]);
 
   const scrollToSection = (id: string) => {
-    const refs: { [key: string]: React.RefObject<HTMLDivElement | null> } = { overview: overviewRef, features: featuresRef, whoIsThisFor: whoIsThisForRef, syllabus: syllabusRef, faq: faqRef };
+    const refs: {
+      [key: string]: React.RefObject<HTMLDivElement | null>;
+    } = {
+      overview: overviewRef,
+      features: featuresRef,
+      whoIsThisFor: whoIsThisForRef,
+      syllabus: syllabusRef,
+      faq: faqRef,
+    };
     const ref = refs[id];
-    if (ref?.current) ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (ref?.current)
+      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handleEnroll = () => { setEnrollmentSuccess(false); setShowEnrollmentModal(true); };
+  const handleEnroll = () => {
+    setEnrollmentSuccess(false);
+    setShowEnrollmentModal(true);
+  };
 
-  const handleEnrollmentSubmit = async (formData: { name: string; phone: string; }) => {
+  const handleEnrollmentSubmit = async (formData: {
+    name: string;
+    phone: string;
+  }) => {
     try {
-      const result = await createEnrollment({ name: formData.name, phone: formData.phone, courseId: slug || "unknown", courseTitle: data?.hero?.title || "Course", amount: data?.quickInfo?.offerPrice || "0" });
-      if (result.success) { setEnrollmentSuccess(true); setShowEnrollmentModal(false); } else { throw new Error(result.message || "Enrollment failed"); }
-    } catch (error: any) { throw error; }
+      const result = await createEnrollment({
+        name: formData.name,
+        phone: formData.phone,
+        courseId: slug || "unknown",
+        courseTitle: data?.hero?.title || "Course",
+        amount: data?.quickInfo?.offerPrice || "0",
+      });
+      if (result.success) {
+        setEnrollmentSuccess(true);
+        setShowEnrollmentModal(false);
+      } else {
+        throw new Error(result.message || "Enrollment failed");
+      }
+    } catch (error: any) {
+      throw error;
+    }
   };
 
-  // ✅ NEW: Loading State UI
   if (isLoading) {
+    return <CourseDetailSkeleton />;
+  }
+
+  if (isError) {
     return (
-      <div className="min-h-screen mt-12 flex items-center justify-center bg-[#FAFAFA]">
-        <div className="text-center"><div className="w-12 h-12 border-4 border-[#F3056D] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div><p className="text-gray-500 font-medium">Loading course...</p></div>
-      </div>
+      <CourseError
+        isBangla={isBangla}
+        onRetry={() => refetch()}
+        isFetching={isFetching}
+      />
     );
   }
 
@@ -490,15 +1019,31 @@ export default function CoursesDetails({ slug }: { slug: string }) {
   }
 
   const priceParts = data.quickInfo.offerPrice.split(" ");
-  const displayPrice = priceParts.length > 2 ? `${priceParts[2]} ${priceParts[3]}` : data.quickInfo.offerPrice;
-  const originalPrice = priceParts.length > 2 ? `${priceParts[0]} ${priceParts[1]}` : "";
+  const displayPrice =
+    priceParts.length > 2
+      ? `${priceParts[2]} ${priceParts[3]}`
+      : data.quickInfo.offerPrice;
+  const originalPrice =
+    priceParts.length > 2 ? `${priceParts[0]} ${priceParts[1]}` : "";
   const startDate = "10 Jan, 2025";
   const endDate = "10 Jul, 2025";
 
   const breadcrumbItems = [
-    { label: isBangla ? "হোম" : "Home", href: isBangla ? "/bn" : "/en", icon: Home },
-    { label: isBangla ? "কোর্সসমূহ" : "Courses", href: getLink("/courses"), icon: null },
-    { label: data.breadcrumbs || (isBangla ? "বিস্তারিত" : "Details"), href: null, icon: null },
+    {
+      label: isBangla ? "হোম" : "Home",
+      href: isBangla ? "/bn" : "/en",
+      icon: Home,
+    },
+    {
+      label: isBangla ? "কোর্সসমূহ" : "Courses",
+      href: getLink("/courses"),
+      icon: null,
+    },
+    {
+      label: data.breadcrumbs || (isBangla ? "বিস্তারিত" : "Details"),
+      href: null,
+      icon: null,
+    },
   ];
 
   return (
@@ -513,14 +1058,26 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                 return (
                   <li key={index} className="flex items-center">
                     {item.href ? (
-                      <Link href={item.href} className="group flex items-center gap-1.5 text-sm md:text-[15px] font-medium text-gray-400 hover:text-[#F3056D] transition-all duration-200 px-2 py-1 rounded-lg hover:bg-pink-50/60">
-                        {item.icon && <item.icon className="h-3.5 w-3.5 text-gray-300 group-hover:text-[#F3056D] transition-colors duration-200" />}
+                      <Link
+                        href={item.href}
+                        className="group flex items-center gap-1.5 text-sm md:text-[15px] font-medium text-gray-400 hover:text-[#F3056D] transition-all duration-200 px-2 py-1 rounded-lg hover:bg-pink-50/60"
+                      >
+                        {item.icon && (
+                          <item.icon className="h-3.5 w-3.5 text-gray-300 group-hover:text-[#F3056D] transition-colors duration-200" />
+                        )}
                         <span>{item.label}</span>
                       </Link>
                     ) : (
-                      <span className="text-sm md:text-[15px] font-semibold text-gray-800 px-2 py-1 bg-gradient-to-r from-pink-50/80 to-blue-50/60 rounded-lg">{item.label}</span>
+                      <span className="text-sm md:text-[15px] font-semibold text-gray-800 px-2 py-1 bg-gradient-to-r from-pink-50/80 to-blue-50/60 rounded-lg">
+                        {item.label}
+                      </span>
                     )}
-                    {!isLast && <ChevronRight className="h-3.5 w-3.5 mx-0.5 text-gray-300/80 flex-shrink-0" strokeWidth={2.5} />}
+                    {!isLast && (
+                      <ChevronRight
+                        className="h-3.5 w-3.5 mx-0.5 text-gray-300/80 flex-shrink-0"
+                        strokeWidth={2.5}
+                      />
+                    )}
                   </li>
                 );
               })}
@@ -536,15 +1093,22 @@ export default function CoursesDetails({ slug }: { slug: string }) {
             {/* Left */}
             <div className="w-full lg:w-[65%] order-2 lg:order-1">
               <div className="mb-10">
-                <Link href={getLink("/courses")} className="inline-flex items-center text-sm md:text-base font-medium mb-4 text-gray-500 hover:text-[#F3056D] transition-colors group">
+                <Link
+                  href={getLink("/courses")}
+                  className="inline-flex items-center text-sm md:text-base font-medium mb-4 text-gray-500 hover:text-[#F3056D] transition-colors group"
+                >
                   <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
                   {isBangla ? "কোর্সে ফিরে যান" : "Back to Courses"}
                 </Link>
-                <h1 className="text-3xl md:text-5xl font-bold mb-6 text-gray-900 leading-tight tracking-tight">{data.hero.title}</h1>
-                <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">{data.hero.subtitle}</p>
+                <h1 className="text-3xl md:text-5xl font-bold mb-6 text-gray-900 leading-tight tracking-tight">
+                  {data.hero.title}
+                </h1>
+                <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
+                  {data.hero.subtitle}
+                </p>
               </div>
 
-              <div className="md:hidden mb-6 flex">
+              <div className="md:hidden mb-6 block">
                 <EnrollmentCard
                   data={data}
                   onEnroll={handleEnroll}
@@ -557,7 +1121,15 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                   {sections.map((section) => {
                     const Icon = section.icon;
                     return (
-                      <button key={section.id} onClick={() => scrollToSection(section.id)} className={`py-2.5 px-4 md:px-5 rounded-xl font-medium text-sm md:text-base whitespace-nowrap transition-all duration-200 flex items-center ${activeTab === section.id ? "bg-[#214187] border-2 border-primary text-white shadow-md scale-[1.02]" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"}`}>
+                      <button
+                        key={section.id}
+                        onClick={() => scrollToSection(section.id)}
+                        className={`py-2.5 px-4 md:px-5 rounded-xl font-medium text-sm md:text-base whitespace-nowrap transition-all duration-200 flex items-center ${
+                          activeTab === section.id
+                            ? "bg-[#214187] border-2 border-primary text-white shadow-md scale-[1.02]"
+                            : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                        }`}
+                      >
                         <Icon className="h-4 w-4 mr-2" />
                         {section.label}
                       </button>
@@ -567,62 +1139,177 @@ export default function CoursesDetails({ slug }: { slug: string }) {
               </div>
 
               {/* SECTIONS */}
-              <div ref={overviewRef} id="overview" className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12">
-                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 border-l-4 pl-4 border-[#F3056D]">{data.overview.title}</h2>
-                <div className="bg-gray-50/50 p-6 md:p-8 rounded-2xl border border-gray-100"><p className="text-lg md:text-xl text-gray-700 leading-relaxed">{data.overview.content}</p></div>
-              </div>
-
-              <div ref={featuresRef} id="features" className="scroll-mt-36 md:scroll-mt-40 mb-12">
-                <CourseDecorate cards={data.features.cards} title={data.features.title} />
-              </div>
-
-              <div ref={whoIsThisForRef} id="whoIsThisFor" className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12">
-                <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm">
-                  <h3 className="font-bold text-xl md:text-2xl text-gray-900 mb-6">{data.whoIsThisFor.title}</h3>
-                  <p className="mb-6 text-lg text-gray-600 leading-relaxed">{data.whoIsThisFor.intro}</p>
-                  <ul className="space-y-4 mb-8">{data.whoIsThisFor.items.map((item, i) => (<li key={i} className="flex items-start gap-3 text-base text-gray-700 group"><div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors"><CheckCircle className="h-4 w-4 text-green-600" /></div><span className="leading-relaxed">{item}</span></li>))}</ul>
-                  <div className="bg-[#214187]/5 p-4 rounded-xl border-l-4 border-[#F3056D]"><p className="font-bold text-lg text-[#214187]">{data.whoIsThisFor.boldStatement}</p></div>
+              <div
+                ref={overviewRef}
+                id="overview"
+                className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12"
+              >
+                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 border-l-4 pl-4 border-[#F3056D]">
+                  {data.overview.title}
+                </h2>
+                <div className="bg-gray-50/50 p-6 md:p-8 rounded-2xl border border-gray-100">
+                  <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
+                    {data.overview.content}
+                  </p>
                 </div>
               </div>
 
-              <div ref={syllabusRef} id="syllabus" className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12">
-                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 border-l-4 pl-4 border-[#F3056D]">{data.levels.title}</h2>
-                <p className="text-lg text-gray-600 mb-8 max-w-3xl">{data.levels.intro}</p>
+              <div
+                ref={featuresRef}
+                id="features"
+                className="scroll-mt-36 md:scroll-mt-40 mb-12"
+              >
+                <CourseDecorate
+                  cards={data.features.cards}
+                  title={data.features.title}
+                />
+              </div>
+
+              <div
+                ref={whoIsThisForRef}
+                id="whoIsThisFor"
+                className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12"
+              >
+                <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm">
+                  <h3 className="font-bold text-xl md:text-2xl text-gray-900 mb-6">
+                    {data.whoIsThisFor.title}
+                  </h3>
+                  <p className="mb-6 text-lg text-gray-600 leading-relaxed">
+                    {data.whoIsThisFor.intro}
+                  </p>
+                  <ul className="space-y-4 mb-8">
+                    {data.whoIsThisFor.items.map((item, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-3 text-base text-gray-700 group"
+                      >
+                        <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </div>
+                        <span className="leading-relaxed">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="bg-[#214187]/5 p-4 rounded-xl border-l-4 border-[#F3056D]">
+                    <p className="font-bold text-lg text-[#214187]">
+                      {data.whoIsThisFor.boldStatement}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                ref={syllabusRef}
+                id="syllabus"
+                className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12"
+              >
+                {/* SYLLABUS CONTENT */}
+                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 border-l-4 pl-4 border-[#F3056D]">
+                  {data.syllabus.title}
+                </h2>
+                <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm">
+                  <ul className="space-y-4">
+                    {data.syllabus.content
+                      .split("\n")
+                      .filter(Boolean)
+                      .map((item, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-3 text-base md:text-lg text-gray-700 group"
+                        >
+                          <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-pink-100 flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+                            <CheckCircle className="h-4 w-4 text-[#F3056D]" />
+                          </div>
+                          <span className="leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+
+                {/* LEVELS CONTENT */}
+                <h2 className="text-2xl md:text-3xl font-bold mb-6 mt-12 text-gray-900 border-l-4 pl-4 border-[#F3056D]">
+                  {data.levels.title}
+                </h2>
+                <p className="text-lg text-gray-600 mb-8 max-w-3xl">
+                  {data.levels.intro}
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#C7EAFF] rounded-bl-full -mr-8 -mt-8 opacity-30 group-hover:opacity-50 transition-opacity" />
-                    <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-3 relative z-10">{data.levels.level1.title}</h3>
-                    <p className="text-base text-[#F3056D] font-semibold mb-4 relative z-10">{data.levels.level1.for}</p>
-                    <p className="text-base text-gray-600 mb-6 relative z-10">{data.levels.level1.intro}</p>
-                    <ul className="space-y-3 relative z-10">{data.levels.level1.items.map((item, i) => (<li key={i} className="flex items-start gap-2 text-base text-gray-700"><ChevronRight className="h-5 w-5 text-[#F3056D] mt-0.5 flex-shrink-0" />{item}</li>))}</ul>
+                    <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-3 relative z-10">
+                      {data.levels.level1.title}
+                    </h3>
+                    <p className="text-base text-[#F3056D] font-semibold mb-4 relative z-10">
+                      {data.levels.level1.for}
+                    </p>
+                    <p className="text-base text-gray-600 mb-6 relative z-10">
+                      {data.levels.level1.intro}
+                    </p>
+                    <ul className="space-y-3 relative z-10">
+                      {data.levels.level1.items.map((item, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-base text-gray-700"
+                        >
+                          <ChevronRight className="h-5 w-5 text-[#F3056D] mt-0.5 flex-shrink-0" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                   <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFD0CD] rounded-bl-full -mr-8 -mt-8 opacity-30 group-hover:opacity-50 transition-opacity" />
-                    <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-3 relative z-10">{data.levels.level2.title}</h3>
-                    <p className="text-base text-[#214187] font-semibold mb-4 relative z-10">{data.levels.level2.for}</p>
-                    <p className="text-base text-gray-600 mb-6 relative z-10">{data.levels.level2.intro}</p>
-                    <ul className="space-y-3 relative z-10">{data.levels.level2.items.map((item, i) => (<li key={i} className="flex items-start gap-2 text-base text-gray-700"><ChevronRight className="h-5 w-5 text-[#214187] mt-0.5 flex-shrink-0" />{item}</li>))}</ul>
+                    <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-3 relative z-10">
+                      {data.levels.level2.title}
+                    </h3>
+                    <p className="text-base text-[#214187] font-semibold mb-4 relative z-10">
+                      {data.levels.level2.for}
+                    </p>
+                    <p className="text-base text-gray-600 mb-6 relative z-10">
+                      {data.levels.level2.intro}
+                    </p>
+                    <ul className="space-y-3 relative z-10">
+                      {data.levels.level2.items.map((item, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-base text-gray-700"
+                        >
+                          <ChevronRight className="h-5 w-5 text-[#214187] mt-0.5 flex-shrink-0" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </div>
 
               <InstructorSection instructor={data.instructor} />
 
-              <div ref={faqRef} id="faq" className="scroll-mt-36 md:scroll-mt-40 mb-12">
+              <div
+                ref={faqRef}
+                id="faq"
+                className="scroll-mt-36 md:scroll-mt-40 mb-12"
+              >
                 <FAQ faqs={data.faq.items} />
               </div>
             </div>
 
             {/* Right */}
             <div className="w-full lg:w-[35%] order-1 mt-0 lg:order-2 space-y-6">
-              <div className="hidden md:flex">
+              <div className="hidden md:block">
                 <EnrollmentCard
                   data={data}
                   onEnroll={handleEnroll}
                   mediaAssets={data.mediaAssets || []}
                 />
               </div>
-              <div className="sticky hidden md:block top-28"><EnrollmentSideSticky data={data} onEnroll={handleEnroll} isVisible={showSideEnrollment} /></div>
+              <div className="sticky hidden md:block top-28">
+                <EnrollmentSideSticky
+                  data={data}
+                  onEnroll={handleEnroll}
+                  isVisible={showSideEnrollment}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -633,13 +1320,30 @@ export default function CoursesDetails({ slug }: { slug: string }) {
         <div className="bg-gradient-to-r from-[#214187] to-[#1e3a8a] p-8 md:p-12 rounded-3xl shadow-2xl border border-white/10 text-center text-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
           <div className="relative z-10">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 tracking-tight">{data.finalCta.title}</h2>
-            <p className="text-gray-200 text-lg md:text-xl mb-8 max-w-3xl mx-auto leading-relaxed">{data.finalCta.body}</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 tracking-tight">
+              {data.finalCta.title}
+            </h2>
+            <p className="text-gray-200 text-lg md:text-xl mb-8 max-w-3xl mx-auto leading-relaxed">
+              {data.finalCta.body}
+            </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button onClick={handleEnroll} bgColor="#F3056D" highlightColor="#FF8FCA" darkShadowColor="#C6005F" className="w-full sm:w-auto text-lg py-4" px="px-10">{data.finalCta.cta1}</Button>
-              <div className="text-gray-300 font-medium flex items-center gap-2"><span>{data.finalCta.cta3}</span></div>
+              <Button
+                onClick={handleEnroll}
+                bgColor="#F3056D"
+                highlightColor="#FF8FCA"
+                darkShadowColor="#C6005F"
+                className="w-full sm:w-auto text-lg py-4"
+                px="px-10"
+              >
+                {data.finalCta.cta1}
+              </Button>
+              <div className="text-gray-300 font-medium flex items-center gap-2">
+                <span>{data.finalCta.cta3}</span>
+              </div>
             </div>
-            <p className="mt-6 text-base text-gray-300 font-medium bg-white/10 inline-block px-4 py-1.5 rounded-full">{data.finalCta.ctaBelow}</p>
+            <p className="mt-6 text-base text-gray-300 font-medium bg-white/10 inline-block px-4 py-1.5 rounded-full">
+              {data.finalCta.ctaBelow}
+            </p>
           </div>
         </div>
       </div>
@@ -648,26 +1352,58 @@ export default function CoursesDetails({ slug }: { slug: string }) {
         <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 z-[60] lg:hidden shadow-[0_-5px_20px_rgba(0,0,0,0.1)] animate-in slide-in-from-bottom-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex flex-col">
-              <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">{isBangla ? "মূল্য" : "Price"}</span>
-              <span className="text-2xl font-bold text-gray-900 leading-none mt-1">{displayPrice}</span>
+              <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
+                {isBangla ? "মূল্য" : "Price"}
+              </span>
+              <span className="text-2xl font-bold text-gray-900 leading-none mt-1">
+                {displayPrice}
+              </span>
             </div>
-            <Button onClick={handleEnroll} className="flex-1 py-3.5 text-lg" px="px-6">{data.quickInfo.cta1}</Button>
+            <Button
+              onClick={handleEnroll}
+              className="flex-1 py-3.5 text-lg"
+              px="px-6"
+            >
+              {data.quickInfo.cta1}
+            </Button>
           </div>
         </div>
       )}
 
-      <EnrollmentModal isOpen={showEnrollmentModal} onClose={() => setShowEnrollmentModal(false)} courseTitle={data.hero.title} coursePrice={displayPrice} originalPrice={originalPrice || undefined} startDate={startDate} endDate={endDate} onSubmit={handleEnrollmentSubmit} />
+      <EnrollmentModal
+        isOpen={showEnrollmentModal}
+        onClose={() => setShowEnrollmentModal(false)}
+        courseTitle={data.hero.title}
+        coursePrice={displayPrice}
+        originalPrice={originalPrice || undefined}
+        startDate={startDate}
+        endDate={endDate}
+        onSubmit={handleEnrollmentSubmit}
+      />
 
       {enrollmentSuccess && (
         <div className="fixed top-6 right-6 z-[80] animate-in slide-in-from-right-full duration-500">
           <div className="bg-white rounded-2xl shadow-2xl border border-green-100 p-5 max-w-sm">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0"><CheckCircle className="h-6 w-6 text-green-600" /></div>
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-900 text-base">{isBangla ? "এনরোলমেন্ট সফল!" : "Enrollment Successful!"}</h3>
-                <p className="text-sm text-gray-500 mt-1">{isBangla ? "আপনার আবেদনটি গ্রহণ করা হয়েছে। আমরা শীঘ্রই যোগাযোগ করব।" : "Your application has been received. We will contact you soon."}</p>
+              <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
-              <button onClick={() => setEnrollmentSuccess(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"><X className="h-4 w-4 text-gray-400" /></button>
+              <div className="flex-1">
+                <h3 className="font-bold text-gray-900 text-base">
+                  {isBangla ? "এনরোলমেন্ট সফল!" : "Enrollment Successful!"}
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  {isBangla
+                    ? "আপনার আবেদনটি গ্রহণ করা হয়েছে। আমরা শীঘ্রই যোগাযোগ করব।"
+                    : "Your application has been received. We will contact you soon."}
+                </p>
+              </div>
+              <button
+                onClick={() => setEnrollmentSuccess(false)}
+                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="h-4 w-4 text-gray-400" />
+              </button>
             </div>
           </div>
         </div>

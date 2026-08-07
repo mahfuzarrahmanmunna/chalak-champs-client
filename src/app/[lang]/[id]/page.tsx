@@ -1,6 +1,6 @@
 import React from "react";
 import ProductDetailsContent from "./ProductDetailsContent";
-import { getProducts } from "../productData";
+import { getProducts } from "../products/productData";
 
 export function generateStaticParams(): { lang: string; id: string }[] {
   const products = getProducts(false);

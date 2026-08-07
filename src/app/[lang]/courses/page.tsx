@@ -1,6 +1,10 @@
 import React from "react";
 import CoursesContent from "./CoursesContent";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export const metadata = {
   title: "All Courses - Chalak Champs | Support & Inquiries",
   description:
@@ -23,8 +27,6 @@ export const metadata = {
   },
 };
 
-const CoursePage = () => {
+export default function CoursePage() {
   return <CoursesContent />;
-};
-
-export default CoursePage;
+}

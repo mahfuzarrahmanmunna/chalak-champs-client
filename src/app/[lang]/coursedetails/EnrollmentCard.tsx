@@ -49,7 +49,8 @@ const EnrollmentCard = ({
   const pricingText = data?.quickInfo?.offerPrice || "";
   const parts = pricingText.split(" ").filter(Boolean);
   const originalPrice = parts.length > 2 ? `${parts[0]} ${parts[1]}` : null;
-  const currentPrice = parts.length > 2 ? `${parts[2]} ${parts[3] || ""}`.trim() : pricingText;
+  const currentPrice =
+    parts.length > 2 ? `${parts[2]} ${parts[3] || ""}`.trim() : pricingText;
 
   // --- Slider Logic ---
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -153,10 +154,10 @@ const EnrollmentCard = ({
   };
 
   return (
-    <div className="">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div className="w-full">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
         {/* --- IMAGE / VIDEO SLIDER SECTION --- */}
-        <div className="relative h-[220px] bg-black group overflow-hidden rounded-t-xl">
+        <div className="relative h-[220px] bg-black group overflow-hidden rounded-t-xl flex-shrink-0">
           {/* 1. IMAGE SLIDE */}
           {!isVideo && currentMedia && (
             <div className="absolute inset-0 w-full h-full">
@@ -248,7 +249,7 @@ const EnrollmentCard = ({
 
         {/* --- THUMBNAIL STRIP --- */}
         {mediaAssets.length > 1 && (
-          <div className="px-4 pt-3 pb-2">
+          <div className="px-4 pt-3 pb-2 flex-shrink-0">
             <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
               {mediaAssets.map((asset, idx) => {
                 const isActive = currentIndex === idx;
@@ -292,8 +293,8 @@ const EnrollmentCard = ({
         )}
 
         {/* --- CARD CONTENT (Price, Buttons, etc) --- */}
-        <div className="p-6">
-          <div className="flex items-end gap-3 mb-6">
+        <div className="p-6 flex flex-col flex-1">
+          <div className="flex items-end gap-3 mb-6 flex-shrink-0">
             <span className="text-3xl font-bold text-gray-900">
               {currentPrice}
             </span>
@@ -303,11 +304,11 @@ const EnrollmentCard = ({
               </span>
             )}
           </div>
-          <div className="text-sm text-gray-500 mb-6 min-h-[40px]">
+          <div className="text-sm text-gray-500 mb-6 min-h-[40px] flex-shrink-0">
             {data?.quickInfo?.offerText || ""}
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 mt-auto">
             {/* Primary CTA */}
             <Button
               onClick={onEnroll}
@@ -315,7 +316,7 @@ const EnrollmentCard = ({
               darkShadowColor="#F3066E"
               highlightColor="#FF8FCA"
               hoverTextColor="#F3056D"
-              className="w-full py-3 rounded-lg text-white font-bold text-lg shadow-md hover:shadow-lg transition-all active:scale-95 bg-[#F3056D]"
+              className="w-full min-h-[54px] py-0 flex items-center justify-center text-center leading-tight px-4 rounded-lg text-white font-bold text-lg shadow-md hover:shadow-lg transition-all active:scale-95 bg-[#F3056D] whitespace-normal break-words"
             >
               {data?.quickInfo?.cta1 || "Enroll Now"}
             </Button>
@@ -329,7 +330,7 @@ const EnrollmentCard = ({
               textColor="#F3056D"
               hoverBgColor="#F3056D"
               onClick={onEnroll}
-              className=""
+              className="w-full min-h-[54px] py-0 flex items-center justify-center text-center leading-tight px-4 rounded-lg font-bold text-lg shadow-sm border border-[#F3056D]/30 hover:shadow-md transition-all active:scale-95 whitespace-normal break-words"
             >
               {data?.quickInfo?.cta2 || "Book a Free Demo"}
             </Button>

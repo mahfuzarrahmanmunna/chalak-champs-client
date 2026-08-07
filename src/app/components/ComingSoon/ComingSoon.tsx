@@ -3,16 +3,57 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Rocket, Home, Send, CheckCircle } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface ComingSoonProps {
   pageTitle?: string; // Optional: To show which page is coming soon
   targetDate?: Date; // Optional: To set a specific launch date
 }
 
+// Local translations for the ComingSoon component
+const translations = {
+  en: {
+    comingSoon: "Coming Soon!",
+    subtitle:
+      "We are building an amazing experience for you. Check the countdown below for the exact launch time.",
+    days: "Days",
+    hours: "Hours",
+    minutes: "Minutes",
+    seconds: "Seconds",
+    notifyTitle: "Get Notified for Updates",
+    notifyDesc: "You will be notified as soon as we launch.",
+    successMsg: "Thank you! You will be notified.",
+    emailPlaceholder: "Enter your email address",
+    notifyBtn: "Notify Me",
+    backToHome: "Back to Homepage",
+  },
+  bn: {
+    comingSoon: "শীঘ্রই আসছে!",
+    subtitle:
+      "আমরা আপনার জন্য একটি চমৎকার অভিজ্ঞতা তৈরি করছি। লঞ্চ হওয়ার সঠিক সময় জানতে নিচের কাউন্টডাউনটি দেখুন।",
+    days: "দিন",
+    hours: "ঘণ্টা",
+    minutes: "মিনিট",
+    seconds: "সেকেন্ড",
+    notifyTitle: "আপডেট পেতে নোটিফিকেশন নিন",
+    notifyDesc: "লঞ্চ হওয়ার সাথে সাথেই আপনাকে জানানো হবে।",
+    successMsg: "ধন্যবাদ! আপনাকে নোটিফিকেশন পাঠানো হবে।",
+    emailPlaceholder: "আপনার ইমেইল অ্যাড্রেস লিখুন",
+    notifyBtn: "নোটিফাই করুন",
+    backToHome: "হোমপেজে ফিরে যান",
+  },
+} as const;
+
 const ComingSoon: React.FC<ComingSoonProps> = ({
-  pageTitle = "এই পেজটি",
+  pageTitle,
   targetDate,
 }) => {
+  // Access language context
+  const { isBangla, getLink } = useLanguage();
+
+  // Get current translations
+  const t = isBangla ? translations.bn : translations.en;
+
   // Set default target date to 30 days from now if not provided
   const defaultTargetDate = new Date();
   defaultTargetDate.setDate(defaultTargetDate.getDate() + 30);
@@ -42,7 +83,7 @@ const ComingSoon: React.FC<ComingSoonProps> = ({
       setTimeLeft({
         days: Math.floor(distance / (1000 * 60 * 60 * 24)),
         hours: Math.floor(
-          (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+          (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
         ),
         minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
         seconds: Math.floor((distance % (1000 * 60)) / 1000),
@@ -66,14 +107,21 @@ const ComingSoon: React.FC<ComingSoonProps> = ({
   };
 
   const timeUnits = [
-    { label: "দিন", value: timeLeft.days },
-    { label: "ঘণ্টা", value: timeLeft.hours },
-    { label: "মিনিট", value: timeLeft.minutes },
-    { label: "সেকেন্ড", value: timeLeft.seconds },
+    { label: t.days, value: timeLeft.days },
+    { label: t.hours, value: timeLeft.hours },
+    { label: t.minutes, value: timeLeft.minutes },
+    { label: t.seconds, value: timeLeft.seconds },
   ];
 
   return (
-    <div className="min-h-screen lex items-center justify-center relative overflow-hidden px-4 py-16">
+    <div
+      className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-16"
+      dir={isBangla ? "rtl" : "ltr"}
+    >
+      {/* Background gradient effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-pink-50" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#214187]/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#F3056D]/5 rounded-full blur-3xl" />
 
       <div className="relative z-10 text-center max-w-2xl mx-auto">
         {/* Rocket Icon */}
@@ -83,13 +131,17 @@ const ComingSoon: React.FC<ComingSoonProps> = ({
 
         {/* Heading */}
         <h1 className="text-4xl md:text-6xl font-extrabold text-[#214187] leading-tight tracking-tight mb-4">
-          {pageTitle} <span className="text-[#F3056D]">শীঘ্রই আসছে!</span>
+          {pageTitle && (
+            <>
+              {pageTitle}{" "}
+            </>
+          )}
+          <span className="text-[#F3056D]">{t.comingSoon}</span>
         </h1>
 
         {/* Subheading */}
         <p className="text-lg md:text-xl text-gray-500 mb-12 leading-relaxed max-w-lg mx-auto">
-          আমরা আপনার জন্য একটি চমৎকার অভিজ্ঞতা তৈরি করছি। লঞ্চ হওয়ার সঠিক সময়
-          জানতে নিচের কাউন্টডাউনটি দেখুন।
+          {t.subtitle}
         </p>
 
         {/* Countdown Timer */}
@@ -108,51 +160,13 @@ const ComingSoon: React.FC<ComingSoonProps> = ({
           ))}
         </div>
 
-        {/* Email Notification Form */}
-        <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 mb-8">
-          <h3 className="text-lg font-bold text-gray-900 mb-2">
-            আপডেট পেতে নোটিফিকেশন নিন
-          </h3>
-          <p className="text-sm text-gray-500 mb-5">
-            লঞ্চ হওয়ার সাথে সাথেই আপনাকে জানানো হবে।
-          </p>
-
-          {isSubscribed ? (
-            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold animate-in fade-in zoom-in-95 duration-300 py-3">
-              <CheckCircle className="w-5 h-5" />
-              ধন্যবাদ! আপনাকে নোটিফিকেশন পাঠানো হবে।
-            </div>
-          ) : (
-            <form
-              onSubmit={handleNotifySubmit}
-              className="flex flex-col sm:flex-row gap-3"
-            >
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="আপনার ইমেইল অ্যাড্রেস লিখুন"
-                className="flex-1 px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F3056D] focus:border-transparent text-gray-700 placeholder:text-gray-400 transition-shadow"
-              />
-              <button
-                type="submit"
-                className="px-6 py-3.5 bg-[#F3056D] hover:bg-[#d9045f] text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
-              >
-                <Send className="w-4 h-4" />
-                নোটিফাই করুন
-              </button>
-            </form>
-          )}
-        </div>
-
         {/* Back to Home Button */}
         <Link
-          href="/"
+          href={getLink("/")}
           className="inline-flex items-center gap-2 text-[#214187] font-semibold text-lg hover:text-[#F3056D] transition-colors group"
         >
           <Home className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
-          হোমপেজে ফিরে যান
+          {t.backToHome}
         </Link>
       </div>
     </div>

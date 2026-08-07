@@ -159,11 +159,10 @@ export default function CourseModulesClient() {
     },
   });
 
-  // --- CREATE MODULE MUTATION ---
+  // 1. Update createModuleMutation to send FormData
   const createModuleMutation = useMutation({
-    mutationFn: async (data: { title: string; titleBn?: string }) => {
-      return axios.post(`/api/courses/${courseId}/modules`, data);
-    },
+    mutationFn: async (data: FormData) =>
+      axios.post(`/api/courses/${courseId}/modules`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["courseStructure", courseId],
@@ -173,17 +172,15 @@ export default function CourseModulesClient() {
     },
   });
 
-  // --- UPDATE MODULE MUTATION ---
+  // 2. Update updateModuleMutation to send FormData
   const updateModuleMutation = useMutation({
     mutationFn: async ({
       moduleId,
       data,
     }: {
       moduleId: string;
-      data: { title: string; titleBn?: string };
-    }) => {
-      return axios.put(`/api/courses/${courseId}/modules/${moduleId}`, data);
-    },
+      data: FormData;
+    }) => axios.put(`/api/courses/${courseId}/modules/${moduleId}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["courseStructure", courseId],
@@ -216,32 +213,33 @@ export default function CourseModulesClient() {
     router.push(getLink("/admin-dashboard/courses/manage-lessons"));
   };
 
-  const handleModuleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const title = formData.get("moduleTitle") as string;
-    const titleBn = formData.get("moduleTitleBn") as string;
+    const handleModuleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const fd = new FormData(e.currentTarget);
+      const title = (fd.get("moduleTitle") as string)?.trim();
+      const titleBn = (fd.get("moduleTitleBn") as string)?.trim();
 
-    if (!title.trim()) {
-      alert("Module title is required");
-      return;
-    }
+      if (!title) {
+        alert("Module title is required");
+        return;
+      }
 
-    if (editingModule) {
-      updateModuleMutation.mutate({
-        moduleId: editingModule._id,
-        data: {
-          title: title.trim(),
-          titleBn: titleBn?.trim() || undefined,
-        },
-      });
-    } else {
-      createModuleMutation.mutate({
-        title: title.trim(),
-        titleBn: titleBn?.trim() || undefined,
-      });
-    }
-  };
+      // ✅ Create a FormData object to satisfy Multer on the backend
+      const payload = new FormData();
+      payload.append("title", title);
+      if (titleBn) {
+        payload.append("titleBn", titleBn);
+      }
+
+      if (editingModule) {
+        updateModuleMutation.mutate({
+          moduleId: editingModule._id,
+          data: payload,
+        });
+      } else {
+        createModuleMutation.mutate(payload);
+      }
+    };
 
   const handleDeleteModule = (mod: Module) => {
     const lessonCount = mod.lessons?.length || 0;

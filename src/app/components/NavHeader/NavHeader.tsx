@@ -234,7 +234,7 @@ const NavHeader = () => {
 
           {/* --- LOGIN / PROFILE BUTTON (UPDATED) --- */}
           {appUser ? (
-            <Link href={`/${isBangla ? "bn" : "en"}/dashboard`}>
+            <Link href={`/${isBangla ? "bn" : "en"}/${appUser?.role?.toString().trim().toLowerCase() === "admin" ? "admin-dashboard" : "dashboard"}`}>
               <Button
                 bgColor="#F3056D"
                 darkShadowColor="#F3066E"
@@ -524,7 +524,7 @@ const NavHeader = () => {
                 {/* Login Link / Profile Link (UPDATED) */}
                 {appUser ? (
                   <Link
-                    href={`/${isBangla ? "bn" : "en"}/dashboard`}
+                    href={`/${isBangla ? "bn" : "en"}/${appUser?.role?.toString().trim().toLowerCase() === "admin" ? "admin-dashboard" : "dashboard"}`}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-[#214187] hover:bg-blue-50 transition-colors"
                   >

@@ -1,20 +1,15 @@
 const CACHE_PREFIX = "chalakchamps-cache-";
-const CACHE_VERSION = "v2";
+// ✅ BUMP VERSION to instantly wipe old stale caches on user's device
+const CACHE_VERSION = "v3";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 
-const URLS_TO_CACHE = [
-  "/manifest.json",
-  "/icon.png",
-];
-
-// Install: pre-cache only non-HTML assets we want offline
+// Install: pre-cache PWA shell assets
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(URLS_TO_CACHE);
+      return cache.addAll(["/", "/manifest.json", "/icon.png"]);
     }),
   );
-  // In case we receive a SKIP_WAITING message instead of relying on install
 });
 
 // Activate: remove old caches and take control
@@ -43,46 +38,79 @@ self.addEventListener("message", (event) => {
   }
 });
 
-// Fetch handler: network-first for navigations (HTML), cache-first for others
+// ==========================================
+// FETCH HANDLER (FIXED: Network-Only for APIs)
+// ==========================================
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
 
-  if (request.method !== "GET") return;
-
-  // Determine if request is a navigation to HTML
-  const acceptHeader = request.headers.get("accept") || "";
-  const isNavigation = request.mode === "navigate" || acceptHeader.includes("text/html");
-
-  if (isNavigation) {
-    // Network-first: try network, fallback to cache
+  // 1. Non-GET requests: ALWAYS pass through to network
+  if (request.method !== "GET") {
     event.respondWith(
-      fetch(request)
-        .then((networkResponse) => {
-          // If valid response, update cache for future offline use
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => caches.match(request).then((cached) => cached || new Response("Offline", { status: 503 }))),
+      fetch(request).catch(() => new Response("Offline", { status: 503 })),
     );
     return;
   }
 
-  // For other requests (static assets) use cache-first, falling back to network
+  // 2. Determine if request is an HTML page navigation
+  const acceptHeader = request.headers.get("accept") || "";
+  const isNavigation =
+    request.mode === "navigate" ||
+    request.mode === "same-origin" ||
+    acceptHeader.includes("text/html");
+
+  // 3. API ROUTES: ALWAYS use network, NEVER cache
+  // This prevents serving stale course/product data
+  const url = new URL(request.url, self.location.origin);
+  const isApiRequest = url.pathname.startsWith("/api/");
+
+  if (isApiRequest) {
+    event.respondWith(
+      fetch(request).catch(() => new Response("Offline", { status: 503 })),
+    );
+    return;
+  }
+
+  // 4. HTML NAVIGATIONS: Network First (try network, fallback to cache for offline)
+  if (isNavigation) {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() =>
+          caches
+            .match(request)
+            .then(
+              (cachedResponse) =>
+                cachedResponse || new Response("Offline", { status: 503 }),
+            ),
+        ),
+    );
+    return;
+  }
+
+  // 5. STATIC ASSETS: Cache First (fast loading for JS, CSS, images)
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) return cachedResponse;
+
       return fetch(request)
         .then((networkResponse) => {
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type === "opaque") {
-            return networkResponse;
+          // Only cache valid, non-opaque responses
+          if (
+            networkResponse &&
+            networkResponse.status === 200 &&
+            networkResponse.type !== "opaque"
+          ) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
           return networkResponse;
         })
         .catch(() => new Response("Offline", { status: 503 }));

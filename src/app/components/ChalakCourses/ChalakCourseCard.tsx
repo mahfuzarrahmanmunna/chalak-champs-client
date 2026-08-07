@@ -35,16 +35,16 @@ interface ChalakCourseCardProps {
   ctaCardLabel: string;
 }
 
-// ✅ NEW: Helper to fix missing protocol in URLs
+// Helper to fix missing protocol in R2 URLs
 const fixImageUrl = (url: string | undefined): string => {
   if (!url) return "";
-  
-  // If URL already has a protocol, return as-is
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//")) {
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("//")
+  ) {
     return url;
   }
-  
-  // Otherwise, add https://
   return `https://${url}`;
 };
 
@@ -55,32 +55,68 @@ const ChalakCourseCard: React.FC<ChalakCourseCardProps> = ({
   const context = useLanguage();
   const isBangla = context?.isBangla || false;
 
-  const title = typeof course.title === "string"
-    ? course.title
-    : course.title?.[isBangla ? "bn" : "en"] || course.title?.en || "";
+  const title =
+    typeof course.title === "string"
+      ? course.title
+      : course.title?.[isBangla ? "bn" : "en"] || course.title?.en || "";
 
-  const items = course.content?.quickInfo?.items?.[isBangla ? "bn" : "en"] || 
-                course.content?.quickInfo?.items?.en || 
-                [];
+  const items =
+    course.content?.quickInfo?.items?.[isBangla ? "bn" : "en"] ||
+    course.content?.quickInfo?.items?.en ||
+    [];
 
   const getBadgeStyle = (text: string) => {
     const lowerText = text.toLowerCase();
-    if (lowerText.includes("live") || lowerText.includes("লাইভ") || lowerText.includes("recorded") || lowerText.includes("রেকর্ডড")) {
-      return { icon: <Video size={12} />, bg: "bg-red-50", text: "text-red-600", border: "border-red-200" };
+    if (
+      lowerText.includes("live") ||
+      lowerText.includes("লাইভ") ||
+      lowerText.includes("recorded") ||
+      lowerText.includes("রেকর্ডড")
+    ) {
+      return {
+        icon: <Video size={12} />,
+        bg: "bg-red-50",
+        text: "text-red-600",
+        border: "border-red-200",
+      };
     }
-    if (lowerText.includes("month") || lowerText.includes("মাস") || lowerText.includes("week") || lowerText.includes("সপ্তাহ")) {
-      return { icon: <CalendarIcon size={12} />, bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-200" };
+    if (
+      lowerText.includes("month") ||
+      lowerText.includes("মাস") ||
+      lowerText.includes("week") ||
+      lowerText.includes("সপ্তাহ")
+    ) {
+      return {
+        icon: <CalendarIcon size={12} />,
+        bg: "bg-blue-50",
+        text: "text-blue-600",
+        border: "border-blue-200",
+      };
     }
     if (lowerText.includes("free") || lowerText.includes("ফ্রি")) {
-      return { icon: <Gift size={12} />, bg: "bg-green-50", text: "text-green-600", border: "border-green-200" };
+      return {
+        icon: <Gift size={12} />,
+        bg: "bg-green-50",
+        text: "text-green-600",
+        border: "border-green-200",
+      };
     }
     if (lowerText.includes("limited") || lowerText.includes("সীমিত")) {
-      return { icon: <Info size={12} />, bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200" };
+      return {
+        icon: <Info size={12} />,
+        bg: "bg-orange-50",
+        text: "text-orange-600",
+        border: "border-orange-200",
+      };
     }
-    return { icon: <CheckCircle size={12} />, bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" };
+    return {
+      icon: <CheckCircle size={12} />,
+      bg: "bg-purple-50",
+      text: "text-purple-600",
+      border: "border-purple-200",
+    };
   };
 
-  // ✅ FIX: Use fixImageUrl for the image src
   const imageUrl = fixImageUrl(course.thumbnail);
 
   return (
@@ -93,7 +129,7 @@ const ChalakCourseCard: React.FC<ChalakCourseCardProps> = ({
             alt={title}
             fill
             className="object-cover object-bottom rounded-lg"
-            unoptimized={true} // ✅ ADD THIS: Prevents Next.js image optimization errors with external URLs
+            unoptimized={true}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300">

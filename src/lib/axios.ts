@@ -1,15 +1,17 @@
-import axios, { RawAxiosRequestHeaders } from "axios";
+// src/lib/axios.ts
+
+import axios from "axios";
 import { getAuth } from "firebase/auth";
 import app from "./firebase";
 
-// FIX: Remove /api from the end. Point directly to the backend server root.
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://apichalakchamps.vercel.app";
 
 const axiosInstance = axios.create({
   baseURL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  // ✅ FIX: REMOVED global Content-Type header.
+  // Axios is smart enough to set "application/json" automatically
+  // when you pass a plain object, and it will leave FormData alone
+  // so the browser can set the multipart boundary correctly.
 });
 
 // Request Interceptor: Attach Firebase ID Token
@@ -23,15 +25,18 @@ axiosInstance.interceptors.request.use(
     if (user) {
       try {
         const token = await user.getIdToken(true);
-        if (config.headers) {
-          config.headers.Authorization = `Bearer ${token}`;
-        } else {
-          config.headers = { Authorization: `Bearer ${token}` } as any;
-        }
+        config.headers.set("Authorization", `Bearer ${token}`);
       } catch (error) {
         console.error("Error getting token:", error);
       }
     }
+
+    // ✅ EXTRA SAFETY: If we are sending FormData, forcefully delete
+    // any Content-Type header so the browser sets the boundary correctly.
+    if (config.data instanceof FormData) {
+      config.headers.delete("Content-Type");
+    }
+
     return config;
   },
   (error) => {
@@ -39,13 +44,12 @@ axiosInstance.interceptors.request.use(
   },
 );
 
-// Response Interceptor: Handle common errors (e.g., 401 Unauthorized)
+// Response Interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token is invalid, user needs to re-authenticate
-      // Note: Actual logout is handled by AuthContext when getProfile fails
+      // Handled by AuthContext
     }
     return Promise.reject(error);
   },

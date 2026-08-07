@@ -71,19 +71,19 @@ interface AuthContextType {
     email: string,
     password: string,
     options?: AuthOptions,
-  ) => Promise<void>;
+  ) => Promise<AppUser | null>;
 
   signInWithEmail: (
     email: string,
     password: string,
     options?: AuthOptions,
-  ) => Promise<void>;
+  ) => Promise<AppUser | null>;
 
   signInWithPhone: (
     phone: string,
     password: string,
     options?: AuthOptions,
-  ) => Promise<void>;
+  ) => Promise<AppUser | null>;
 
   logout: (options?: AuthOptions) => Promise<void>;
 
@@ -163,12 +163,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // --- Helper: Fetch profile after auth state change ---
-  const refreshAppUser = useCallback(async () => {
+  const refreshAppUser = useCallback(async (): Promise<AppUser | null> => {
     try {
       const res = await getProfile();
       setAppUser(res.user);
+      return res.user;
     } catch {
       setAppUser(null);
+      return null;
     }
   }, []);
 
@@ -177,15 +179,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     email: string,
     password: string,
     options?: AuthOptions,
-  ) => {
+  ): Promise<AppUser | null> => {
     const cleanEmail = email.trim();
     const cleanPassword = password.trim();
     await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
 
-    // Wait for onAuthStateChanged to fire and sync DB
-    // Small delay to let the listener update state
+    // Wait a short period then refresh the app user from backend and return it
     await new Promise((resolve) => setTimeout(resolve, 300));
-    await refreshAppUser();
+    const loggedInUser = await refreshAppUser();
 
     options?.onSuccess?.();
 
@@ -193,6 +194,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (destination) {
       router.push(destination);
     }
+
+    return loggedInUser;
   };
 
   // --- Specific Login Wrappers ---
@@ -200,17 +203,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     email: string,
     password: string,
     options?: AuthOptions,
-  ) => {
-    await login(email, password, options);
+  ): Promise<AppUser | null> => {
+    return await login(email, password, options);
   };
 
   const signInWithPhone = async (
     phone: string,
     password: string,
     options?: AuthOptions,
-  ) => {
+  ): Promise<AppUser | null> => {
     const emailAlias = normalizePhoneToEmail(phone);
-    await login(emailAlias, password, options);
+    return await login(emailAlias, password, options);
   };
 
   // --- Logout ---
@@ -368,9 +371,9 @@ export const useAuth = (): AuthContextType => {
       loading: true,
       isAdmin: false,
       signUp: async () => {},
-      login: async () => {},
-      signInWithEmail: async () => {},
-      signInWithPhone: async () => {},
+      login: async () => null,
+      signInWithEmail: async () => null,
+      signInWithPhone: async () => null,
       logout: async () => {},
       sendOtpEmail: async () => {},
       checkOtpEmail: async () => {},

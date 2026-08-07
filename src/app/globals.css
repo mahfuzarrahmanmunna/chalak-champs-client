@@ -157,3 +157,105 @@ body {
   background: var(--gradient-primary);
 }
 
+
+/* Swiper Layout Fix: Use block instead of flex so absolute positioning works */
+.gallery-swiper .swiper-slide {
+  display: block;
+  will-change: transform, opacity;
+}
+
+/* GPU Acceleration Hints */
+.gallery-swiper .swiper-slide * {
+  will-change: transform, opacity;
+}
+
+/* Smooth Transitions */
+.gallery-swiper .swiper-slide {
+  transition-duration: 450ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Video.js Compact Overrides - ONLY apply to active slides to save GPU */
+.swiper-slide-active .video-js .vjs-big-play-button {
+  background-color: rgba(243, 6, 110, 0.85);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  width: 44px;
+  height: 44px;
+  line-height: 40px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.6em;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 10;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), 0 0 20px rgba(243, 6, 110, 0.2);
+  backdrop-filter: blur(4px);
+}
+.gallery-swiper:hover .swiper-slide-active .vjs-big-play-button {
+  transform: translate(-50%, -50%) scale(1.08);
+  background-color: #f3066e;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(243, 6, 110, 0.3);
+}
+
+/* Only show control bar on active slide */
+.swiper-slide-active .video-js .vjs-control-bar {
+  height: 32px !important;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%) !important;
+  padding: 0 6px !important;
+}
+.swiper-slide-active .video-js .vjs-control {
+  width: 28px !important;
+}
+.swiper-slide-active .video-js .vjs-play-progress,
+.swiper-slide-active .video-js .vjs-volume-level {
+  background-color: #f3066e !important;
+}
+.swiper-slide-active .video-js .vjs-slider {
+  background-color: rgba(255,255,255,0.15) !important;
+}
+
+/* Hide heavy controls on inactive slides to save memory */
+.swiper-slide:not(.swiper-slide-active) .video-js .vjs-control-bar,
+.swiper-slide:not(.swiper-slide-active) .video-js .vjs-big-play-button {
+  display: none !important;
+}
+
+/* Smooth active slide scaling */
+.swiper-slide-active {
+  opacity: 1 !important;
+}
+
+
+/* ═══════════════════════════════════════════════════
+   SKELETON SHIMMER — add once in your global CSS
+   ═══════════════════════════════════════════════════ */
+
+@keyframes skel-shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skel-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 40%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.45) 60%,
+    transparent 100%
+  );
+  animation: skel-shine 1.6s ease-in-out infinite;
+}
+
+/* Stagger the animation per block using the delay set via style attribute */
+.skel-root > * > * > * > * > * {
+  animation-delay: inherit;
+}

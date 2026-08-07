@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { BookOpen, ShoppingBag, Phone, CheckCircle, Tag } from "lucide-react";
 import Button from "@/app/ui/button/Button";
-import { Product } from "../types";
+import { Product } from "../products/types";
 
 interface ProductOrderCardProps {
   product: Product;

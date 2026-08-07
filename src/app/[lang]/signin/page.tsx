@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,6 +33,7 @@ const AuthPage = () => {
     "input",
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [timeLeft, setTimeLeft] = useState(90);
 
   const {
@@ -43,11 +45,14 @@ const AuthPage = () => {
     trigger,
   } = useForm();
 
-  const redirectByRole = (role: string = "student") => {
-    if (role === "admin") {
+  const redirectByRole = (role?: string | null) => {
+    const r = role?.toString().trim().toLowerCase();
+    if (r === "admin") {
       router.push(getLink("/admin-dashboard"));
-    } else {
+    } else if (r === "student") {
       router.push(getLink("/dashboard"));
+    } else {
+      window.alert("User role is unknown. Please contact support.");
     }
   };
 
@@ -133,14 +138,14 @@ const AuthPage = () => {
     const isEmail = /\S+@\S+\.\S+/.test(input);
 
     try {
+      let loggedInUser: any = null;
       if (isEmail) {
-        await signInWithEmail(input, password);
+        loggedInUser = await signInWithEmail(input, password, { redirect: false });
       } else {
-        await signInWithPhone(input, password);
+        loggedInUser = await signInWithPhone(input, password, { redirect: false });
       }
 
-      // FIX 2: Changed 'user?.role' to 'appUser?.role'
-      const role = appUser?.role || "student";
+      const role = loggedInUser?.role?.toString() || null;
       redirectByRole(role);
     } catch (error: any) {
       window.alert(
@@ -262,7 +267,38 @@ const AuthPage = () => {
               <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
                 {view === "input" && (<><input type="text" placeholder="মোবাইল নাম্বার/ ইমেইল লিখুন" className="placeholder:text-[#8897AD] p-3.5 shadow-[inset_0_0_0_1px_#D1D5DB] rounded-lg w-full text-black outline-none focus:shadow-[inset_0_0_0_2px_#F3066E] transition-all bg-gray-50" {...register("emailOrPhone", { required: true })} /><button type="submit" disabled={isLoading} className="px-8 w-full py-3 bg-[#2D2D2D] text-[#FFFFFF] rounded-[10px] font-medium transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? "প্রসেসিং..." : "এগিয়ে যান"}</button></>)}
                 
-                {view === "password" && (<><div className="space-y-1"><label className="text-xs font-semibold text-gray-700">মোবাইল নাম্বার / ইমেইল</label><input type="text" disabled placeholder="xxxxxxxxxxx@xxxx" className="placeholder:text-[#8897AD] p-3.5 shadow-[inset_0_0_0_1px_#D1D5DB] rounded-lg w-full text-black outline-none focus:shadow-[inset_0_0_0_2px_#F3066E] transition-all bg-gray-50 disabled:bg-gray-200 disabled:cursor-not-allowed" {...register("emailOrPhone")} /></div><div className="space-y-1"><label className="text-xs font-semibold text-gray-700">পাসওয়ার্ড <span className="text-red-500">*</span></label><input type="password" placeholder="পাসওয়ার্ড লিখুন" disabled={isLoading} className="placeholder:text-[#8897AD] p-3.5 shadow-[inset_0_0_0_1px_#D1D5DB] rounded-lg w-full text-black outline-none focus:shadow-[inset_0_0_0_2px_#F3066E] transition-all bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" {...register("password", { required: "পাসওয়ার্ড আবশ্যক" })} />{errors.password && (<p className="text-red-500 text-xs mt-1">{errors.password.message as string}</p>)}</div><div className="flex justify-end"><Link href={getLink("/forgot-password")} className="text-sm text-[#F3066D] font-medium hover:underline">পাসওয়ার্ড ভুলে গেছেন?</Link></div><button type="submit" disabled={isLoading} className="px-8 w-full py-3 bg-[#2D2D2D] text-[#FFFFFF] rounded-[10px] font-medium transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? "লগইন হচ্ছে..." : "লগইন করুন"}</button></>)}
+                {view === "password" && (<>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-700">মোবাইল নাম্বার / ইমেইল</label>
+                    <input type="text" disabled placeholder="xxxxxxxxxxx@xxxx" className="placeholder:text-[#8897AD] p-3.5 shadow-[inset_0_0_0_1px_#D1D5DB] rounded-lg w-full text-black outline-none focus:shadow-[inset_0_0_0_2px_#F3066E] transition-all bg-gray-50 disabled:bg-gray-200 disabled:cursor-not-allowed" {...register("emailOrPhone")} />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-700">পাসওয়ার্ড <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="পাসওয়ার্ড লিখুন"
+                        disabled={isLoading}
+                        className="placeholder:text-[#8897AD] p-3.5 pr-12 shadow-[inset_0_0_0_1px_#D1D5DB] rounded-lg w-full text-black outline-none focus:shadow-[inset_0_0_0_2px_#F3066E] transition-all bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        {...register("password", { required: "পাসওয়ার্ড আবশ্যক" })}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((s) => !s)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        disabled={isLoading}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                      >
+                        {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                      </button>
+                    </div>
+                    {errors.password && (<p className="text-red-500 text-xs mt-1">{errors.password.message as string}</p>)}
+                  </div>
+
+                  <div className="flex justify-end"><Link href={getLink("/forgot-password")} className="text-sm text-[#F3066D] font-medium hover:underline">পাসওয়ার্ড ভুলে গেছেন?</Link></div>
+                  <button type="submit" disabled={isLoading} className="px-8 w-full py-3 bg-[#2D2D2D] text-[#FFFFFF] rounded-[10px] font-medium transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? "লগইন হচ্ছে..." : "লগইন করুন"}</button>
+                </>)}
                 
                 {view === "otp" && (<><div className="mb-6"><p className="text-center text-sm font-medium text-gray-700 mb-3">6 সংখ্যা চেক করুন</p><div className="flex justify-center gap-4 mb-2 text-[#545454]">
                   {[0, 1, 2, 3, 4, 5].map((index) => (

@@ -12,13 +12,15 @@ import {
   TrendingUp,
   UserCheck,
   Activity,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 import { useParams } from "next/navigation";
 
-// ✅ FIXED: Helper to safely extract string from bilingual objects
+// ✅ FIX 1: Helper to safely extract string from bilingual objects
 const getText = (
   text: string | { en?: string; bn?: string } | undefined | null,
   fallback: string = "Untitled",
@@ -26,6 +28,20 @@ const getText = (
   if (!text) return fallback;
   if (typeof text === "string") return text;
   return text.en || text.bn || fallback;
+};
+
+// ✅ FIX 2: Safely extract instructor name from populated Mongoose object OR string
+const getInstructorName = (inst: any): string => {
+  if (!inst) return "Unknown Instructor";
+  if (typeof inst === "string") return inst;
+  const name = `${inst.firstName || ""} ${inst.lastName || ""}`.trim();
+  return name || inst.email || "Unknown Instructor";
+};
+
+// ✅ FIX 3: Ensure R2 URLs have https://
+const getImageUrl = (url?: string) => {
+  if (!url) return "/placeholder-course.jpg";
+  return url.startsWith("http") ? url : `https://${url}`;
 };
 
 interface DashboardStats {
@@ -36,27 +52,6 @@ interface DashboardStats {
   newUsersThisMonth: number;
   activeCourses: number;
 }
-
-// Helper for status badges
-const StatusBadge = ({ status }: { status: string }) => {
-  const styles = {
-    active: "bg-green-100 text-green-700 border-green-200",
-    inactive: "bg-gray-100 text-gray-700 border-gray-200",
-    pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
-  };
-
-  const normalizedStatus = status?.toLowerCase() || "inactive";
-  const style =
-    styles[normalizedStatus as keyof typeof styles] || styles.inactive;
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors ${style}`}
-    >
-      {status}
-    </span>
-  );
-};
 
 // --- PROFESSIONAL SKELETON LOADING UI ---
 const DashboardSkeleton = () => (
@@ -181,17 +176,8 @@ export default function AdminDashboardPage() {
       role: string;
     }[]
   >([]);
-  // ✅ FIXED: Updated title type to accept bilingual objects from the database
-  const [recentCourses, setRecentCourses] = useState<
-    {
-      id?: number | string;
-      _id?: string;
-      instructor: string;
-      status: string;
-      title: string | { en?: string; bn?: string };
-      thumbnail: string;
-    }[]
-  >([]);
+  // ✅ FIXED: Updated type to match actual database response
+  const [recentCourses, setRecentCourses] = useState<any[]>([]);
 
   async function fetchDashboardData() {
     try {
@@ -203,8 +189,11 @@ export default function AdminDashboardPage() {
       if (usersResponse.data.success) setRecentUsers(usersResponse.data.users);
 
       const coursesResponse = await api.get("/admin/courses?limit=5");
-      if (coursesResponse.data.success)
-        setRecentCourses(coursesResponse.data.courses);
+
+      // ✅ FIXED: Changed "courses" to "data" to match the new API response
+      if (coursesResponse.data.success && coursesResponse.data.data) {
+        setRecentCourses(coursesResponse.data.data);
+      }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
@@ -420,7 +409,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* ✅ FIXED: Recent Courses (Takes up 3 columns) */}
+        {/* Recent Courses (Takes up 3 columns) */}
         <div
           className="col-span-3 rounded-xl border bg-card shadow-sm"
           style={{
@@ -453,41 +442,62 @@ export default function AdminDashboardPage() {
             </Link>
           </div>
           <div className="p-4 space-y-4">
-            {recentCourses.map((course, index) => {
-              // ✅ FIX: Safely extract string from potential bilingual object
-              const courseTitle = getText(course.title);
+            {recentCourses.length > 0 ? (
+              recentCourses.map((course, index) => {
+                const courseTitle = getText(course.title);
 
-              return (
-                <div
-                  key={course.id ?? course._id ?? `course-${index}`}
-                  className="flex gap-4"
-                >
-                  <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200">
-                    <Image
-                      className="h-full w-full object-cover"
-                      src={course.thumbnail || "/placeholder-course.jpg"}
-                      alt={courseTitle}
-                      fill
-                      sizes="64px"
-                    />
+                return (
+                  <div
+                    key={course.id ?? course._id ?? `course-${index}`}
+                    className="flex gap-4"
+                  >
+                    <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200">
+                      <Image
+                        className="h-full w-full object-cover"
+                        // ✅ FIX: Use helper to add https:// if missing
+                        src={getImageUrl(course.thumbnail)}
+                        alt={courseTitle}
+                        fill
+                        sizes="64px"
+                      />
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-col justify-center">
+                      <p
+                        className="truncate text-sm font-medium text-foreground"
+                        style={{ color: "var(--color-foreground)" }}
+                      >
+                        {courseTitle}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {/* ✅ FIX: Use helper to extract name from object */}
+                        {getInstructorName(course.instructor)}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end justify-center gap-1">
+                      {/* ✅ FIX: Use isPublished boolean instead of generic status string */}
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors ${
+                          course.isPublished
+                            ? "bg-green-100 text-green-700 border-green-200"
+                            : "bg-gray-100 text-gray-700 border-gray-200"
+                        }`}
+                      >
+                        {course.isPublished ? (
+                          <Eye className="w-3 h-3" />
+                        ) : (
+                          <EyeOff className="w-3 h-3" />
+                        )}
+                        {course.isPublished ? "Live" : "Draft"}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex min-w-0 flex-1 flex-col justify-center">
-                    <p
-                      className="truncate text-sm font-medium text-foreground"
-                      style={{ color: "var(--color-foreground)" }}
-                    >
-                      {courseTitle}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {course.instructor}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end justify-center gap-1">
-                    <StatusBadge status={course.status} />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                No recent courses found.
+              </div>
+            )}
           </div>
         </div>
       </div>

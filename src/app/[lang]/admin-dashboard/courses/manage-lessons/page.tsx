@@ -83,8 +83,15 @@ const formatDuration = (mins?: number) => {
   return m > 0 ? `${hrs}h ${m}m` : `${hrs}h`;
 };
 
+// ✅ Helper function to fix missing https:// in image URLs
+const formatImageUrl = (url?: string) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `https://${url}`;
+};
+
 // =============================================================
-// MAIN COMPONENT — Handles BOTH list view and detail view
+// MAIN COMPONENT
 // =============================================================
 export default function ManageLessonsPage() {
   return (
@@ -100,11 +107,8 @@ function ManageLessonsContent() {
   const queryClient = useQueryClient();
   const { getLink, currentLang } = useLanguage();
 
-  // ✅ Read course ID from query param: ?id=xxx
   const courseId = searchParams.get("id");
 
-  // If courseId exists → show module/lesson editor
-  // If courseId is null → show course listing
   if (courseId) {
     return <CourseModulesView courseId={courseId} />;
   }
@@ -124,7 +128,7 @@ function ManageLessonsFallback() {
 }
 
 // =============================================================
-// VIEW 1: Course Listing (original table)
+// VIEW 1: Course Listing
 // =============================================================
 function CourseListingView() {
   const router = useRouter();
@@ -135,30 +139,27 @@ function CourseListingView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-    const { data, isLoading } = useQuery({
-      queryKey: ["courses"],
-      queryFn: async () => {
-        const res = await axios.get("/api/courses");
-        return res.data; // ✅ RETURN FULL OBJECT
-      },
+  const { data, isLoading } = useQuery({
+    queryKey: ["courses"],
+    queryFn: async () => {
+      const res = await axios.get("/api/courses");
+      return res.data;
+    },
+  });
+
+  const filteredCourses = useMemo(() => {
+    return (data?.data || []).filter((course: any) => {
+      const s = searchTerm.toLowerCase();
+      const title =
+        typeof course.title === "string"
+          ? course.title
+          : course.title?.en || course.title?.bn || "";
+      return (
+        title.toLowerCase().includes(s) ||
+        course.instructorName?.toLowerCase().includes(s)
+      );
     });
-
-
-    const filteredCourses = useMemo(() => {
-      return (data?.data || []).filter((course: any) => {
-        // ✅ ADD ?.data || []
-        const s = searchTerm.toLowerCase();
-        const title =
-          typeof course.title === "string"
-            ? course.title
-            : course.title?.en || course.title?.bn || "";
-        return (
-          title.toLowerCase().includes(s) ||
-          course.instructorName?.toLowerCase().includes(s)
-        );
-      });
-    }, [data, searchTerm]);
-
+  }, [data, searchTerm]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -276,9 +277,12 @@ function CourseListingView() {
                           <div className="h-12 w-16 rounded-lg bg-gray-100 border border-gray-200 shrink-0 overflow-hidden relative">
                             {course.thumbnail ? (
                               <img
-                                src={course.thumbnail}
+                                src={formatImageUrl(course.thumbnail)}
                                 alt={courseTitle}
                                 className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = "none";
+                                }}
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-gray-300">
@@ -346,7 +350,6 @@ function CourseListingView() {
                       </td>
                       <td className="p-5 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                          {/* ✅ FIXED: Uses query param instead of dynamic route */}
                           <Link
                             href={`${getLink("/admin-dashboard/courses/manage-lessons")}?id=${course._id}`}
                             className="flex items-center gap-1.5 px-3 py-2 bg-[#F3056D]/5 border border-[#F3056D]/20 text-[#F3056D] rounded-lg hover:bg-[#F3056D] hover:text-white hover:border-[#F3056D] hover:shadow-lg hover:shadow-[#F3056D]/25 transition-all text-xs font-bold"
@@ -448,7 +451,7 @@ function CourseListingView() {
 }
 
 // =============================================================
-// VIEW 2: Module & Lesson Editor (was in [id]/CourseModulesClient.tsx)
+// VIEW 2: Module & Lesson Editor
 // =============================================================
 function CourseModulesView({ courseId }: { courseId: string }) {
   const router = useRouter();
@@ -502,8 +505,9 @@ function CourseModulesView({ courseId }: { courseId: string }) {
       }),
   });
 
+  // ✅ FIXED: Send FormData directly. No headers needed.
   const createModuleMutation = useMutation({
-    mutationFn: async (data: { title: string; titleBn?: string }) =>
+    mutationFn: async (data: FormData) =>
       axios.post(`/api/courses/${courseId}/modules`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -514,13 +518,14 @@ function CourseModulesView({ courseId }: { courseId: string }) {
     },
   });
 
+  // ✅ FIXED: Send FormData directly. No headers needed.
   const updateModuleMutation = useMutation({
     mutationFn: async ({
       moduleId,
       data,
     }: {
       moduleId: string;
-      data: { title: string; titleBn?: string };
+      data: FormData;
     }) => axios.put(`/api/courses/${courseId}/modules/${moduleId}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -547,21 +552,32 @@ function CourseModulesView({ courseId }: { courseId: string }) {
   const handleBack = () =>
     router.push(getLink("/admin-dashboard/courses/manage-lessons"));
 
+  // ✅ FIXED: Wrap data in FormData object
   const handleModuleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const title = (fd.get("moduleTitle") as string)?.trim();
     const titleBn = (fd.get("moduleTitleBn") as string)?.trim();
+
     if (!title) {
       alert("Module title is required");
       return;
     }
-    if (editingModule)
+
+    const payload = new FormData();
+    payload.append("title", title);
+    if (titleBn) {
+      payload.append("titleBn", titleBn);
+    }
+
+    if (editingModule) {
       updateModuleMutation.mutate({
         moduleId: editingModule._id,
-        data: { title, titleBn: titleBn || undefined },
+        data: payload,
       });
-    else createModuleMutation.mutate({ title, titleBn: titleBn || undefined });
+    } else {
+      createModuleMutation.mutate(payload);
+    }
   };
 
   const handleDeleteModule = (mod: Module) => {
@@ -593,7 +609,6 @@ function CourseModulesView({ courseId }: { courseId: string }) {
   const isAllExpanded =
     totalModules > 0 && expandedModules.size === totalModules;
 
-  // --- ERROR ---
   if (isError) {
     return (
       <div className="max-w-6xl mx-auto pb-20">
@@ -647,7 +662,6 @@ function CourseModulesView({ courseId }: { courseId: string }) {
     );
   }
 
-  // --- LOADING ---
   if (isLoading) {
     return (
       <div className="max-w-6xl mx-auto pb-20">
@@ -689,7 +703,6 @@ function CourseModulesView({ courseId }: { courseId: string }) {
     );
   }
 
-  // --- MAIN ---
   return (
     <div className="max-w-6xl mx-auto pb-20">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
@@ -801,9 +814,12 @@ function CourseModulesView({ courseId }: { courseId: string }) {
                 <div className="w-20 h-12 rounded-lg overflow-hidden bg-gray-200 shrink-0 border border-gray-100">
                   {mod.thumbnail ? (
                     <img
-                      src={mod.thumbnail}
+                      src={formatImageUrl(mod.thumbnail)}
                       alt={mod.title}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">

@@ -30,7 +30,7 @@ import { FaSadCry } from "react-icons/fa";
 import { useLanguage } from "@/app/context/LanguageContext";
 import ProductOrderCard from "./ProductOrderCard";
 import Button from "@/app/ui/button/Button";
-import { Product } from "../types";
+import { Product } from "../products/types";
 
 // --- HELPER: Handles both Stringified JSON & Objects from DB ---
 const getBilingual = (val: any, isBangla: boolean): string => {

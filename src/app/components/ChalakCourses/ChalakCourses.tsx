@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
 import {
   ChevronLeft,
   ChevronRight,
@@ -12,16 +14,14 @@ import {
 } from "lucide-react";
 import Button from "@/app/ui/button/Button";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { FaBell, FaPhone } from "react-icons/fa6";
+import { FaBell } from "react-icons/fa6";
 import Link from "next/link";
 import ChalakCourseCard from "./ChalakCourseCard";
 
 const ChalakCourses = () => {
-  // 1. Get data from context
   const { coursesData } = useLanguage();
   const context = useLanguage();
 
-  // Fallback values in case context is undefined
   const t = context?.t || {};
   const isBangla = context?.isBangla || false;
 
@@ -30,20 +30,47 @@ const ChalakCourses = () => {
       (tab) => tab === "কিডস ইংলিশ" || tab === "Kids English",
     ) ?? 0;
 
-  // 3. State for active tab (Index based)
   const [activeTabIndex, setActiveTabIndex] = useState(defaultTabIndex);
-
-  // Ref for the slider container
   const sliderRef = useRef<HTMLDivElement>(null);
-
-  // State to check if scrolling is needed (to show/hide arrows)
   const [showArrows, setShowArrows] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
+  const [sliderPadding, setSliderPadding] = useState(0);
+
   const activeTab = coursesData.tabs?.[activeTabIndex] || "";
 
-  // 4. Icon Map
+  const { data: apiResponse, isLoading: isCoursesLoading } = useQuery({
+    queryKey: ["public-courses"],
+    queryFn: async () => {
+      const res = await api.get("/courses?published=true");
+      return res.data;
+    },
+  });
+
+  const dbCourses = (apiResponse?.data || []).map((course: any) => ({
+    id: course._id,
+    _id: course._id,
+    slug: course.slug,
+    title: course.title,
+    thumbnail: course.thumbnail,
+    category: course.category,
+    price: course.price,
+    originalPrice: course.originalPrice,
+    content: course.content,
+  }));
+
+  const categoryMap: Record<string, string | null> = {
+    "জনপ্রিয় কোর্স": null,
+    "Popular Courses": null,
+    "কিডস ইংলিশ": "spoken-english",
+    "Kids English": "spoken-english",
+    "স্কুল প্রোগ্রাম": "school-program",
+    "School Program": "school-program",
+    "কিডস স্কিলস": "art",
+    "Kids Skills": "art",
+  };
+
   const iconMap: Record<string, React.ReactNode> = {
     "জনপ্রিয় কোর্স": <BookOpen size={18} />,
     "কিডস ইংলিশ": <Languages size={18} />,
@@ -55,25 +82,52 @@ const ChalakCourses = () => {
     "Kids Skills": <Palette size={18} />,
   };
 
-  // Filter courses based on active tab
-  const filteredCourses = coursesData.courses.filter(
-    (course) => course.category === activeTab,
-  );
+  const targetCategory = categoryMap[activeTab];
+  const filteredCourses =
+    targetCategory === null
+      ? dbCourses
+      : dbCourses.filter((course) => course.category === targetCategory);
 
-  // --- NEW LOGIC: Force Coming Soon for School Program ---
   const isSchoolProgramTab =
     activeTab === "School Program" || activeTab === "স্কুল প্রোগ্রাম";
 
-  // Show Coming Soon if it IS School Program OR if there are genuinely no courses
   const shouldShowComingSoonCard =
     isSchoolProgramTab || filteredCourses.length === 0;
 
-  // --- Slider Logic ---
+  // --- Calculate padding to center cards perfectly ---
+  useEffect(() => {
+    const updatePadding = () => {
+      if (sliderRef.current && !isCoursesLoading && !shouldShowComingSoonCard) {
+        const containerWidth = sliderRef.current.clientWidth;
+        const isMobile = window.innerWidth < 768;
+        const cardWidth = isMobile ? 300 : 340;
+        const gap = 24; // gap-6 is 1.5rem = 24px
+
+        const totalCardsWidth =
+          filteredCourses.length * cardWidth +
+          (filteredCourses.length - 1) * gap;
+
+        if (totalCardsWidth < containerWidth) {
+          setSliderPadding((containerWidth - totalCardsWidth) / 2);
+        } else {
+          setSliderPadding(0);
+        }
+      } else {
+        setSliderPadding(0);
+      }
+    };
+
+    updatePadding();
+    window.addEventListener("resize", updatePadding);
+    return () => window.removeEventListener("resize", updatePadding);
+  }, [filteredCourses, isCoursesLoading, shouldShowComingSoonCard]);
+
+  // --- Slider Scroll Logic ---
   const checkScroll = () => {
     if (sliderRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = sliderRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+      setCanScrollLeft(scrollLeft > 5);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
       setShowArrows(scrollWidth > clientWidth);
     }
   };
@@ -82,19 +136,19 @@ const ChalakCourses = () => {
     checkScroll();
     window.addEventListener("resize", checkScroll);
     return () => window.removeEventListener("resize", checkScroll);
-  }, [filteredCourses, activeTab]); // Added activeTab dependency
+  }, [filteredCourses, sliderPadding]);
 
+  // ✅ FIX: Keep smooth scrolling ONLY for button clicks, not for hand swipes
   const scroll = (direction: "left" | "right") => {
     if (sliderRef.current) {
       const scrollAmount = 320;
       sliderRef.current.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
+        behavior: "smooth", // Smooth is applied here via JS, not in CSS
       });
     }
   };
 
-  // Helper function to render phone number link
   const renderFooterNote = () => {
     if (!coursesData.footerNote) return null;
     const parts = coursesData.footerNote.split("+88");
@@ -114,14 +168,26 @@ const ChalakCourses = () => {
     return coursesData.footerNote;
   };
 
-  // --- Bilingual Text for Coming Soon Card ---
   const comingSoonText = {
     title: isBangla ? "শীঘ্রই আসছে" : "Coming Soon",
-    subtitle: "Coming Soon", // Kept as English in design, or change to isBangla ? "শীঘ্রই আসছে" : "Coming Soon"
+    subtitle: "Coming Soon",
     description: isBangla
       ? "আমরা এই বিভাগে নতুন এবং উন্নত কোর্স নিয়ে আসছি। আপডেট পেতে চোখ রাখুন!"
       : "We are bringing new and improved courses to this section. Keep an eye out for updates!",
   };
+
+  const CardSkeleton = () => (
+    <div className="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] snap-center bg-white rounded-[30px] border-2 border-[#FF8FCA] p-2 pb-5 shadow-xl flex flex-col items-center animate-pulse">
+      <div className="w-full aspect-video rounded-[25px] bg-gray-200 mb-4" />
+      <div className="flex gap-2 mb-3 w-full px-2">
+        <div className="h-6 w-20 bg-gray-200 rounded-full" />
+        <div className="h-6 w-16 bg-gray-200 rounded-full" />
+        <div className="h-6 w-24 bg-gray-200 rounded-full" />
+      </div>
+      <div className="h-7 w-3/4 bg-gray-200 rounded mb-4" />
+      <div className="h-10 w-40 bg-gray-200 rounded-xl mt-auto" />
+    </div>
+  );
 
   return (
     <section className="container mx-auto border-2 border-[#FF8FCA] bg-[#D81B60] p-6 md:p-12 rounded-4xl md:rounded-[80px] relative overflow-hidden">
@@ -130,15 +196,11 @@ const ChalakCourses = () => {
         <h2 className="text-white text-xl md:text-5xl font-bold tracking-[0%] flex items-center justify-center gap-2">
           {coursesData.titlePrefix}
           <span className="relative inline-block px-3 md:py-3 py-1 group">
-            {/* Dashed Border */}
             <span className="absolute inset-0 border-2 md:border-[3px] border-dashed border-white"></span>
-
-            {/* Corner Dots */}
             <span className="absolute -top-0.75 -left-0.75 w-1.5 h-1.5 bg-white"></span>
             <span className="absolute -top-0.75 -right-0.75 w-1.5 h-1.5 bg-white"></span>
             <span className="absolute -bottom-0.75 -left-0.75 w-1.5 h-1.5 bg-white"></span>
             <span className="absolute -bottom-0.75 -right-0.75 w-1.5 h-1.5 bg-white"></span>
-
             <span className="text-white ">{coursesData.titleSuffix}</span>
           </span>
         </h2>
@@ -195,11 +257,13 @@ const ChalakCourses = () => {
         <div
           ref={sliderRef}
           onScroll={checkScroll}
-          className="flex gap-6 snap-x snap-mandatory justify-center pb-8 scroll-smooth no-scrollbar"
+          // ✅ CRITICAL FIX: Removed 'scroll-smooth' (breaks mobile swipe) & Added 'overflow-x-auto' (enables swipe)
+          className="flex gap-6 snap-x snap-mandatory overflow-x-auto pb-8 no-scrollbar"
+          style={{ paddingLeft: `${sliderPadding}px` }}
         >
-          {/* --- RENDER LOGIC --- */}
-          {shouldShowComingSoonCard ? (
-            // --- COMING SOON CARD ---
+          {isCoursesLoading ? (
+            Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
+          ) : shouldShowComingSoonCard ? (
             <div className="flex min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] justify-center w-full min-w-full">
               <div className="bg-white rounded-[30px] border-2 border-[#FF8FCA] p-10 md:p-16 shadow-xl flex flex-col items-center justify-center min-h-[400px] w-full max-w-2xl text-center">
                 <div className="bg-pink-50 rounded-full p-6 mb-6 border-2 border-dashed border-pink-300">
@@ -217,7 +281,6 @@ const ChalakCourses = () => {
               </div>
             </div>
           ) : (
-            // --- COURSES LIST ---
             filteredCourses.map((course) => (
               <ChalakCourseCard
                 key={course.id}
@@ -237,7 +300,7 @@ const ChalakCourses = () => {
           </Button>
         </Link>
 
-        <p className="text-white/80 md:flex items-center md:gap-3 text-sm  text-center">
+        <p className="text-white/80 md:flex items-center md:gap-3 text-sm text-center">
           <FaBell className="hidden md:flex" /> {renderFooterNote()}
         </p>
       </div>

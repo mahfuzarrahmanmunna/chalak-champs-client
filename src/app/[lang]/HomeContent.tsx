@@ -5,15 +5,12 @@ import ChalakCourses from "../components/ChalakCourses/ChalakCourses";
 import ChalakLibrary from "../components/ChalakLibrary/ChalakLibrary";
 import CTA from "../components/CTA/CTA";
 import FeatureCourses from "../components/FeatureCourses/FeatureCourses";
-import GallerySlider from "../components/GallerySlider/GallerySlider";
 import ImageSlider from "../components/ImageSlider/ImageSlider";
-import LittleChamps from "../components/LittleChamps/LittleChamps";
 import OfflineCourses from "../components/OfflineCourses/OfflineCourses";
 import PopularCourse from "../components/PopularCourse/PopularCourse";
-import TestimonialSlider from "../components/TestimonialSlider/TestimonialSlider";
 import { useLanguage } from "@/app/context/LanguageContext";
-import VideoTestomonial from "../components/VideoTestomonial/VideoTestomonial";
 import VideoGallerySlider1 from "../components/GallerySlider/GallerySlider1";
+import ChalakLibraryDynamic from "../components/ChalakLibrary/ChalakLibraryDynamic";
 
 export default function HomeContent() {
   // This component already knows the language from your Context!
@@ -25,7 +22,7 @@ export default function HomeContent() {
       <FeatureCourses />
       <PopularCourse />
       <ChalakCourses />
-      <ChalakLibrary />
+      <ChalakLibraryDynamic />
       {/* <LittleChamps /> */}
       <OfflineCourses />
       <ImageSlider />
