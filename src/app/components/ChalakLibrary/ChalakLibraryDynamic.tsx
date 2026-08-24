@@ -86,7 +86,7 @@ const ChalakLibraryDynamic = () => {
   const { data: rawProducts = [], isLoading } = useQuery<any[]>({
     queryKey: ["library-products"],
     queryFn: async () => {
-      const response = await api.get("/products");
+      const response = await api.get("/api/products");
       if (response.data?.success) {
         return response.data.data || [];
       }

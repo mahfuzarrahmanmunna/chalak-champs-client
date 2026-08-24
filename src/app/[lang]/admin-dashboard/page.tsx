@@ -182,13 +182,13 @@ export default function AdminDashboardPage() {
   async function fetchDashboardData() {
     try {
       setIsLoading(true);
-      const statsResponse = await api.get("/admin/dashboard/stats");
+      const statsResponse = await api.get("/api/admin/dashboard/stats");
       if (statsResponse.data.success) setStats(statsResponse.data.stats);
 
-      const usersResponse = await api.get("/admin/users?limit=5");
+      const usersResponse = await api.get("/api/admin/users?limit=5");
       if (usersResponse.data.success) setRecentUsers(usersResponse.data.users);
 
-      const coursesResponse = await api.get("/admin/courses?limit=5");
+      const coursesResponse = await api.get("/api/admin/courses?limit=5");
 
       // ✅ FIXED: Changed "courses" to "data" to match the new API response
       if (coursesResponse.data.success && coursesResponse.data.data) {
@@ -433,7 +433,7 @@ export default function AdminDashboardPage() {
               </p>
             </div>
             <Link
-              href={`/${lang}/admin-dashboard/manage-courses`}
+              href={`/${lang}/admin-dashboard/courses/manage-courses`}
               className="text-sm font-medium text-primary hover:underline flex items-center"
               style={{ color: "var(--color-primary)" }}
             >

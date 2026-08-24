@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/app/context/ThemeContext";
 import { useAuth } from "@/app/hooks/useAuth";
+import { useLanguage } from "@/app/context/LanguageContext";
 import {
   Home,
   BookOpen,
@@ -21,72 +22,70 @@ import {
   ChevronRight,
   ChevronDown,
   Star,
-  Trophy,
-  Gamepad2,
   GraduationCap,
-  Palette,
-  Music,
-  Code2,
-  Microscope,
-  Pencil,
   Flame,
-  Target,
-  Crown,
-  Sparkles,
-  ArrowRight,
-  PlayCircle,
-  Lock,
-  CheckCircle2,
-  Clock,
-  TrendingUp,
-  Zap,
+  User,
 } from "lucide-react";
 import gsap from "gsap";
 
-const navigation = [
+// Navigation config — paths are plain (no prefix), getLink adds /en or /bn at render time
+const NAV_CONFIG = [
   {
     name: "Home",
-    href: "/dashboard",
+    path: "/dashboard",
     icon: Home,
     color: "#F3056D",
-    badge: null,
+    badgeKey: null,
   },
   {
     name: "My Courses",
-    href: "/dashboard/mycourses",
+    path: "/dashboard/mycourses",
     icon: BookOpen,
     color: "#214187",
-    badge: "5",
+    badgeKey: "courses",
   },
   {
     name: "Schedule",
-    href: "/dashboard/schedule",
+    path: "/dashboard/schedule",
     icon: Calendar,
     color: "#ffd700",
-    badge: null,
+    badgeKey: null,
   },
   {
     name: "Results",
-    href: "/dashboard/grades",
+    path: "/dashboard/grades",
     icon: BarChart3,
     color: "#F3056D",
-    badge: null,
+    badgeKey: null,
   },
   {
     name: "Messages",
-    href: "/dashboard/messages",
+    path: "/dashboard/messages",
     icon: MessageCircle,
     color: "#214187",
-    badge: "2",
+    badgeKey: "messages",
   },
   {
     name: "Settings",
-    href: "/dashboard/settings",
+    path: "/dashboard/settings",
     icon: Settings,
     color: "#ffd700",
-    badge: null,
+    badgeKey: null,
   },
 ];
+
+// Dropdown menu config
+const DROPDOWN_ITEMS = [
+  { label: "My Profile", path: "/dashboard/my-profile", icon: User },
+  { label: "Settings", path: "/dashboard/settings", icon: Settings },
+  { label: "Help Center", path: "/dashboard/help", icon: HelpCircle },
+];
+
+// Badge values — in a real app these come from API / context
+const BADGE_MAP: Record<string, string> = {
+  courses: "5",
+  messages: "2",
+};
 
 export default function StudentLayout({
   children,
@@ -96,15 +95,34 @@ export default function StudentLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const pathname = usePathname();
-  const { colors, isDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
   const { currentUser, logout } = useAuth();
+  const { getLink, currentLang } = useLanguage();
   const navRef = useRef<HTMLElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
+
+  // Build navigation with dynamic links and active detection
+  const navigation = useMemo(() => {
+    return NAV_CONFIG.map((item) => ({
+      ...item,
+      href: getLink(item.path),
+      badge: item.badgeKey ? BADGE_MAP[item.badgeKey] || null : null,
+      isActive: pathname === getLink(item.path),
+    }));
+  }, [getLink, pathname]);
+
+  // Build dropdown items with dynamic links
+  const dropdownItems = useMemo(() => {
+    return DROPDOWN_ITEMS.map((item) => ({
+      ...item,
+      href: getLink(item.path),
+    }));
+  }, [getLink]);
 
   const handleLogout = async () => {
     try {
       await logout();
-      window.location.href = "/signin";
+      window.location.href = getLink("/signin");
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -190,7 +208,6 @@ export default function StudentLayout({
       >
         {/* Logo Area */}
         <div className="flex items-center justify-between h-20 px-5 relative overflow-hidden">
-          {/* Decorative circles */}
           <div
             className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-10"
             style={{ background: "#F3056D" }}
@@ -201,7 +218,7 @@ export default function StudentLayout({
           />
 
           <Link
-            href="/dashboard"
+            href={getLink("/dashboard")}
             className="flex items-center gap-3 relative z-10"
           >
             <div className="relative">
@@ -240,6 +257,45 @@ export default function StudentLayout({
           >
             <X className="h-5 w-5 text-white" />
           </button>
+        </div>
+
+        {/* Language Switcher */}
+        <div className="mx-4 mb-3">
+          <div
+            className="flex rounded-xl overflow-hidden"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            {(["en", "bn"] as const).map((lang) => {
+              const isActive = currentLang === lang;
+              return (
+                <Link
+                  key={lang}
+                  href={pathname.replace(`/${currentLang}`, `/${lang}`)}
+                  className="flex-1 py-2 text-center text-[11px] font-bold uppercase tracking-wider transition-all duration-200"
+                  style={{
+                    background: isActive
+                      ? "rgba(255,255,255,0.12)"
+                      : "transparent",
+                    color: isActive ? "#fff" : "rgba(255,255,255,0.35)",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive)
+                      e.currentTarget.style.background =
+                        "rgba(255,255,255,0.06)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive)
+                      e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  {lang === "en" ? "English" : "বাংলা"}
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
         {/* Streak Banner */}
@@ -287,7 +343,6 @@ export default function StudentLayout({
             Menu
           </p>
           {navigation.map((item) => {
-            const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
@@ -295,8 +350,7 @@ export default function StudentLayout({
                 className="group relative block"
                 onClick={() => setSidebarOpen(false)}
               >
-                {/* Active indicator bar */}
-                {isActive && (
+                {item.isActive && (
                   <div
                     className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full"
                     style={{ background: "#F3056D" }}
@@ -306,18 +360,18 @@ export default function StudentLayout({
                 <div
                   className="flex items-center justify-between mx-1 px-4 py-3 rounded-2xl transition-all duration-300"
                   style={{
-                    background: isActive
+                    background: item.isActive
                       ? "rgba(243,5,109,0.15)"
                       : "transparent",
                   }}
                   onMouseEnter={(e) => {
-                    if (!isActive) {
+                    if (!item.isActive) {
                       e.currentTarget.style.background =
                         "rgba(255,255,255,0.05)";
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (!isActive) {
+                    if (!item.isActive) {
                       e.currentTarget.style.background = "transparent";
                     }
                   }}
@@ -326,26 +380,28 @@ export default function StudentLayout({
                     <div
                       className="p-2 rounded-xl transition-all duration-300"
                       style={{
-                        background: isActive
+                        background: item.isActive
                           ? item.color
                           : "rgba(255,255,255,0.08)",
-                        boxShadow: isActive
+                        boxShadow: item.isActive
                           ? `0 4px 12px ${item.color}40`
                           : "none",
-                        transform: isActive ? "scale(1.05)" : "scale(1)",
+                        transform: item.isActive ? "scale(1.05)" : "scale(1)",
                       }}
                     >
                       <item.icon
                         className="h-[18px] w-[18px] transition-colors duration-300"
                         style={{
-                          color: isActive ? "#fff" : "rgba(255,255,255,0.5)",
+                          color: item.isActive
+                            ? "#fff"
+                            : "rgba(255,255,255,0.5)",
                         }}
                       />
                     </div>
                     <span
                       className="font-semibold text-sm transition-colors duration-300"
                       style={{
-                        color: isActive ? "#fff" : "rgba(255,255,255,0.6)",
+                        color: item.isActive ? "#fff" : "rgba(255,255,255,0.6)",
                       }}
                     >
                       {item.name}
@@ -355,10 +411,10 @@ export default function StudentLayout({
                     <span
                       className="text-[10px] font-bold text-white rounded-full px-2 py-0.5 min-w-[24px] text-center"
                       style={{
-                        background: isActive
+                        background: item.isActive
                           ? "rgba(255,255,255,0.2)"
                           : "#F3056D",
-                        boxShadow: isActive
+                        boxShadow: item.isActive
                           ? "none"
                           : "0 2px 8px rgba(243,5,109,0.3)",
                       }}
@@ -366,7 +422,7 @@ export default function StudentLayout({
                       {item.badge}
                     </span>
                   )}
-                  {isActive && (
+                  {item.isActive && (
                     <ChevronRight className="h-4 w-4 text-white/30" />
                   )}
                 </div>
@@ -384,7 +440,6 @@ export default function StudentLayout({
               border: "1px solid rgba(255,255,255,0.08)",
             }}
           >
-            {/* Shiny top line */}
             <div
               className="absolute top-0 left-4 right-4 h-[2px] rounded-full"
               style={{
@@ -521,8 +576,8 @@ export default function StudentLayout({
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = isDarkMode
-                    ? "rgba(255,255,255,0.08)"
-                    : "rgba(33,65,135,0.1)";
+                    ? "1px solid rgba(255,255,255,0.08)"
+                    : "1px solid rgba(33,65,135,0.1)";
                   e.currentTarget.style.boxShadow = "none";
                 }}
               />
@@ -692,19 +747,7 @@ export default function StudentLayout({
                     </p>
                   </div>
                   <div className="p-2">
-                    {[
-                      { icon: Crown, label: "My Profile", href: "/dashboard" },
-                      {
-                        icon: Settings,
-                        label: "Settings",
-                        href: "/dashboard/settings",
-                      },
-                      {
-                        icon: HelpCircle,
-                        label: "Help Center",
-                        href: "/dashboard/help",
-                      },
-                    ].map((item) => (
+                    {dropdownItems.map((item) => (
                       <Link
                         key={item.label}
                         href={item.href}

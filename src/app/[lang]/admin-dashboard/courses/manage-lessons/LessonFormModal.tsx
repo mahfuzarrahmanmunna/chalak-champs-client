@@ -1,5 +1,3 @@
-// src/app/[lang]/admin-dashboard/courses/manage-lessons/LessonFormModal.tsx
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -15,11 +13,9 @@ import {
   Link2,
   Plus,
   Trash2,
-  Clock,
   AlertCircle,
   CheckCircle,
   ChevronDown,
-  ChevronUp,
   Target,
   Newspaper,
 } from "lucide-react";
@@ -117,13 +113,13 @@ export default function LessonFormModal({
     },
   });
 
-    const lessonTypeOptions = [
-      { value: "video", label: "Video Lesson", icon: Video },
-      { value: "pdf", label: "PDF Document", icon: FileText },
-      { value: "exam", label: "Exam / Quiz", icon: FileQuestion },
-      { value: "capstone", label: "Capstone Project", icon: Target },
-      { value: "article", label: "Article", icon: Newspaper },
-    ];
+  const lessonTypeOptions = [
+    { value: "video", label: "Video Lesson", icon: Video },
+    { value: "pdf", label: "PDF Document", icon: FileText },
+    { value: "exam", label: "Exam / Quiz", icon: FileQuestion },
+    { value: "capstone", label: "Capstone Project", icon: Target },
+    { value: "article", label: "Article", icon: Newspaper },
+  ];
 
   const lessonType = useWatch({ control, name: "type" });
   const examMode = useWatch({ control, name: "examMode" });
@@ -210,49 +206,41 @@ export default function LessonFormModal({
 
   const mutation = useMutation({
     mutationFn: async (data: LessonFormData) => {
-      const formData = new FormData();
+      // ✅ FIXED: Send standard JSON payload instead of FormData
+      const payload: any = {
+        title: data.title,
+        type: data.type,
+        duration: Number(data.duration),
+        isFreePreview: !!data.isFreePreview,
+      };
 
-      // Basic fields
-      formData.append("title", JSON.stringify(data.title));
-      formData.append("type", data.type);
-      formData.append("duration", String(data.duration));
-      formData.append("isFreePreview", String(data.isFreePreview));
+      if (data.videoUrl) payload.videoUrl = data.videoUrl;
+      if (data.content) payload.content = data.content;
 
-      if (data.videoUrl) formData.append("videoUrl", data.videoUrl);
-      if (data.content) formData.append("content", data.content);
-
-      // Exam-specific fields
       if (data.type === "exam") {
-        formData.append("examMode", data.examMode || "existing");
+        payload.examMode = data.examMode || "existing";
 
         if (data.examMode === "existing" && data.examId) {
-          formData.append("examId", data.examId);
+          payload.examId = data.examId;
         } else if (data.examMode === "new") {
-          formData.append("examTitle", JSON.stringify(data.examTitle));
-          formData.append(
-            "examDescription",
-            JSON.stringify(data.examDescription),
-          );
-          formData.append("examDuration", String(data.examDuration));
-          formData.append("examPassingMarks", String(data.examPassingMarks));
-          formData.append(
-            "examNegativeMarking",
-            String(data.examNegativeMarking),
-          );
-          formData.append("examIsProctored", String(data.examIsProctored));
+          payload.examTitle = data.examTitle;
+          payload.examDescription = data.examDescription;
+          payload.examDuration = Number(data.examDuration);
+          payload.examPassingMarks = Number(data.examPassingMarks);
+          payload.examNegativeMarking = Number(data.examNegativeMarking);
+          payload.examIsProctored = !!data.examIsProctored;
 
           if (data.questions && data.questions.length > 0) {
-            const questionsPayload = data.questions.map((q) => ({
+            payload.questions = data.questions.map((q) => ({
               type: q.type,
               text: q.text,
-              marks: q.marks,
+              marks: Number(q.marks),
               correctAnswer: q.correctAnswer,
               options:
                 q.type === "mcq"
                   ? q.options?.map((opt) => opt.en || "")
                   : undefined,
             }));
-            formData.append("questions", JSON.stringify(questionsPayload));
           }
         }
       }
@@ -260,8 +248,9 @@ export default function LessonFormModal({
       const url = lesson
         ? `/api/courses/${courseId}/modules/${moduleId}/lessons/${lesson._id}`
         : `/api/courses/${courseId}/modules/${moduleId}/lessons`;
+
       const method = lesson ? "put" : "post";
-      return axios[method](url, formData);
+      return axios[method](url, payload); // Send JSON
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -275,7 +264,6 @@ export default function LessonFormModal({
   });
 
   const onSubmit = (data: LessonFormData) => {
-    // Validation for exam type
     if (data.type === "exam") {
       if (data.examMode === "existing" && !data.examId) {
         alert("Please select an exam");
@@ -393,9 +381,7 @@ export default function LessonFormModal({
           </div>
 
           {/* Type & Duration */}
-          {/* Type & Duration */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* ✅ CUSTOM ICON SELECT DROPDOWN */}
             <div className="relative">
               <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
                 Lesson Type
@@ -420,12 +406,10 @@ export default function LessonFormModal({
 
                 {isTypeDropdownOpen && (
                   <>
-                    {/* Invisible backdrop to detect outside clicks */}
                     <div
                       className="fixed inset-0 z-10"
                       onClick={() => setIsTypeDropdownOpen(false)}
                     />
-                    {/* Dropdown Menu */}
                     <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg py-2 overflow-hidden">
                       {lessonTypeOptions.map((option) => {
                         const Icon = option.icon;
@@ -549,8 +533,9 @@ export default function LessonFormModal({
                       }`}
                     />
                     <div>
-                      <p className="font-semibold text-gray-700
-                       text-sm">Use Existing Exam</p>
+                      <p className="font-semibold text-gray-700 text-sm">
+                        Use Existing Exam
+                      </p>
                       <p className="text-xs text-gray-500">
                         Select from your exam library
                       </p>
@@ -578,7 +563,9 @@ export default function LessonFormModal({
                       }`}
                     />
                     <div>
-                      <p className="font-semibold text-gray-700 text-sm">Create New Exam</p>
+                      <p className="font-semibold text-gray-700 text-sm">
+                        Create New Exam
+                      </p>
                       <p className="text-xs text-gray-500">
                         Build questions here
                       </p>

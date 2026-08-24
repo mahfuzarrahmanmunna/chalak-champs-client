@@ -1,16 +1,13 @@
 import axios from "axios";
-import { getAuth } from "firebase/auth"; // 1. Import this
-import app from "./firebase";
-// import { app } from "@/config/firebase"; // 2. Import your initialized firebase app (Check this path!)
+import { getAuth } from "firebase/auth";
+import app from "./firebase"; // Ensure this path points to your initialized firebase app
 
+// Use environment variable, fallback to localhost for development
 const rawApiBaseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://apichalakchamps.vercel.app/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
 
-const apiBaseUrl = rawApiBaseUrl.endsWith("/api")
-  ? rawApiBaseUrl.replace(/\/+$/, "")
-  : rawApiBaseUrl.replace(/\/+$/, "") + "/api";
+// Clean up trailing slashes to prevent // in URLs
+const apiBaseUrl = rawApiBaseUrl.replace(/\/+$/, "");
 
 const api = axios.create({
   baseURL: apiBaseUrl,

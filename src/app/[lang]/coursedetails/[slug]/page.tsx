@@ -5,15 +5,13 @@ type PageProps = {
   params: Promise<{ lang: string; slug: string }>;
 };
 
-// Force this page to be rendered dynamically
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// Fetch course data for SEO
 async function getCourseDataForSEO(slug: string) {
   const apiUrl =
     process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "https://apichalakchamps.vercel.app";
+    "http://localhost:5000";
 
   try {
     const res = await fetch(`${apiUrl}/api/courses/slug/${slug}`, {
@@ -29,7 +27,6 @@ async function getCourseDataForSEO(slug: string) {
   }
 }
 
-// Dynamic SEO Metadata
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -55,12 +52,14 @@ export async function generateMetadata({
     course?.title ||
     "Course";
 
-  const description =
+  const rawDescription =
     (isBangla
       ? course?.content?.overview?.content?.bn
       : course?.content?.overview?.content?.en) ||
     course?.description ||
     "";
+
+  const description = String(rawDescription || "");
 
   return {
     title,
@@ -74,7 +73,6 @@ export async function generateMetadata({
   };
 }
 
-// Page Component
 export default async function Page({ params }: PageProps) {
   const { slug } = await params;
 

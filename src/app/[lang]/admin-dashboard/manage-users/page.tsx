@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useTheme } from "@/app/context/ThemeContext"; // Using your global theme hook
+import { useTheme } from "@/app/context/ThemeContext";
 import { useLanguage } from "@/app/context/LanguageContext";
-import api from "@/lib/api";
+import { useAuth } from "@/app/context/AuthContext";
+import api from "@/lib/axios"; // Using your axios instance
 import {
   MagnifyingGlassIcon,
   PencilIcon,
@@ -10,6 +11,7 @@ import {
   UserPlusIcon,
   XMarkIcon,
   CheckIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 
 interface User {
@@ -25,41 +27,38 @@ interface User {
   isPhoneVerified: boolean;
 }
 
-// This component is now a "client" of the global theme provider
 function UsersPageContent() {
-  // Consume theme, toggleTheme, and colors from your global context
-  const { theme, toggleTheme, colors } = useTheme();
+  const { theme, colors } = useTheme();
   const { t } = useLanguage();
 
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Initial load is true
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
+  // Modals State
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState<Partial<User>>({});
+  const [savingUser, setSavingUser] = useState(false);
+
+  // Filters State
   const [filterRole, setFilterRole] = useState<string>("all");
   const [filterEmailVerified, setFilterEmailVerified] = useState<string>("all");
   const [filterPhoneVerified, setFilterPhoneVerified] = useState<string>("all");
 
-  // The 'isDark' check is no longer needed as the 'colors' object
-  // is already correctly populated by your theme provider.
   const isDark = theme === "dark";
+  const { currentUser, loading: authLoading } = useAuth();
 
-  useEffect(() => {
-    fetchUsers();
-  }, [
-    currentPage,
-    searchTerm,
-    filterRole,
-    filterEmailVerified,
-    filterPhoneVerified,
-  ]);
+  const fetchUsers = async () => {
+    if (!currentUser) return;
 
-    const fetchUsers = async () => {
     try {
-      setLoading(true);
+      // ✅ FIXED: Removed setLoading(true) to fix ESLint set-state-in-effect error.
+      // The UI will gracefully keep showing the old data while fetching new data.
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: "10",
@@ -72,47 +71,46 @@ function UsersPageContent() {
       if (filterPhoneVerified !== "all")
         params.append("isPhoneVerified", filterPhoneVerified);
 
-      const response = await api.get(`/auth/users?${params}`);
+      const response = await api.get(`/api/admin/users?${params}`);
 
-      // FIX 1: Handle API Errors explicitly
-      if (!response.data.success) {
-        console.error("API Error:", response.data.message);
-        // You might want to set an error state here to show the user
-        return; 
-      }
-
-      // FIX 2: Correct the data path. Backend returns 'users' directly, not inside 'data'.
-      // Also, your current backend doesn't seem to return 'pagination' object, so we calculate it or just handle what we have.
       if (response.data.users) {
         setUsers(response.data.users);
-        
-        // NOTE: Your backend currently returns 'count', not a 'pagination' object.
-        // You might need to update the backend to send pagination info, 
-        // or calculate totalPages here on the frontend if the count is total items.
-        // For now, let's assume the backend sends pagination or we just use what we have.
         if (response.data.pagination) {
-            setTotalPages(response.data.pagination.totalPages);
+          setTotalPages(response.data.pagination.totalPages);
         } else {
-             // Fallback if backend doesn't send pagination object yet
-             setTotalPages(Math.ceil((response.data.count || 0) / 10));
+          setTotalPages(Math.ceil((response.data.count || 0) / 10));
         }
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      // Optional: Set an error state to display in the UI
-      // setError("Failed to load users. Check console.");
     } finally {
-      setLoading(false);
+      setLoading(false); // Set to false once data is fetched or error occurs
     }
   };
 
+  useEffect(() => {
+    if (!authLoading && currentUser) {
+      const loadUsers = async () => {
+        await fetchUsers();
+      };
+
+      void loadUsers();
+    }
+  }, [
+    authLoading,
+    currentUser,
+    currentPage,
+    searchTerm,
+    filterRole,
+    filterEmailVerified,
+    filterPhoneVerified,
+  ]);
+
   const handleDeleteUser = async (userId: string) => {
     try {
-      // *** FIX: Corrected the endpoint path ***
-      await api.delete(`/auth/users/${userId}`);
+      await api.delete(`/api/admin/users/${userId}`);
       setUsers(users.filter((user) => user._id !== userId));
       setShowDeleteModal(false);
-      setUserToDelete(null);
     } catch (error) {
       console.error("Error deleting user:", error);
     }
@@ -120,10 +118,8 @@ function UsersPageContent() {
 
   const handleBulkDelete = async () => {
     if (selectedUsers.length === 0) return;
-
     try {
-      // *** FIX: Corrected the endpoint path ***
-      await api.delete("/auth/users/bulk", {
+      await api.delete("/api/admin/users/bulk", {
         data: { userIds: selectedUsers },
       });
       setUsers(users.filter((user) => !selectedUsers.includes(user._id)));
@@ -133,7 +129,35 @@ function UsersPageContent() {
     }
   };
 
-  if (loading) {
+  // --- Edit Handlers ---
+  const openEditModal = (user: User) => {
+    setEditFormData(user);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateUser = async () => {
+    try {
+      setSavingUser(true);
+      const res = await api.put(`/api/admin/users/${editFormData._id}`, {
+        firstName: editFormData.firstName,
+        lastName: editFormData.lastName,
+        email: editFormData.email,
+        phoneNumber: editFormData.phoneNumber,
+        role: editFormData.role,
+      });
+
+      setUsers(
+        users.map((u) => (u._id === editFormData._id ? res.data.user : u)),
+      );
+      setShowEditModal(false);
+    } catch (error) {
+      console.error("Error updating user:", error);
+    } finally {
+      setSavingUser(false);
+    }
+  };
+
+  if (loading && users.length === 0) {
     return (
       <div
         className="flex justify-center items-center h-64"
@@ -163,23 +187,24 @@ function UsersPageContent() {
               {String(t.users || "Users")}
             </h1>
             <p className="mt-2 text-sm" style={{ color: colors.muted }}>
-              {String(
-                t.manageUsersDescription ||
-                  "Manage your platform's users here.",
-              )}
+              Manage your platform&apos;s users, roles, and permissions here.
             </p>
           </div>
           <div className="mt-4 sm:mt-0 sm:flex sm:items-center space-x-3">
-            
+            {selectedUsers.length > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white transition-colors mr-2"
+                style={{ backgroundColor: colors.destructive }}
+              >
+                <TrashIcon className="mr-2 h-4 w-4" />
+                Delete Selected ({selectedUsers.length})
+              </button>
+            )}
             <button
               type="button"
-              className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium transition-colors"
-              style={{
-                backgroundColor: colors.primary,
-                color: "#ffffff",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+              className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white transition-colors"
+              style={{ backgroundColor: colors.primary }}
             >
               <UserPlusIcon className="mr-2 h-4 w-4" />
               {String(t.addUser || "Add User")}
@@ -191,7 +216,6 @@ function UsersPageContent() {
       {/* Filters and Search */}
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Search */}
           <div className="relative lg:col-span-2">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MagnifyingGlassIcon
@@ -201,7 +225,7 @@ function UsersPageContent() {
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2 rounded-lg leading-5 transition-colors"
+              className="block w-full pl-10 pr-3 py-2 rounded-lg border"
               style={{
                 backgroundColor: colors.card,
                 borderColor: colors.border,
@@ -213,11 +237,10 @@ function UsersPageContent() {
             />
           </div>
 
-          {/* Role Filter */}
           <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-            className="px-3 py-2 rounded-lg transition-colors"
+            className="px-3 py-2 rounded-lg border"
             style={{
               backgroundColor: colors.card,
               borderColor: colors.border,
@@ -227,13 +250,14 @@ function UsersPageContent() {
             <option value="all">All Roles</option>
             <option value="admin">Admin</option>
             <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+            <option value="instructor">Instructor</option>
           </select>
 
-          {/* Email Verification Filter */}
           <select
             value={filterEmailVerified}
             onChange={(e) => setFilterEmailVerified(e.target.value)}
-            className="px-3 py-2 rounded-lg transition-colors"
+            className="px-3 py-2 rounded-lg border"
             style={{
               backgroundColor: colors.card,
               borderColor: colors.border,
@@ -245,11 +269,10 @@ function UsersPageContent() {
             <option value="false">Not Verified</option>
           </select>
 
-          {/* Phone Verification Filter */}
           <select
             value={filterPhoneVerified}
             onChange={(e) => setFilterPhoneVerified(e.target.value)}
-            className="px-3 py-2 rounded-lg transition-colors"
+            className="px-3 py-2 rounded-lg border"
             style={{
               backgroundColor: colors.card,
               borderColor: colors.border,
@@ -279,9 +302,12 @@ function UsersPageContent() {
                   <th className="px-6 py-3 text-left">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300"
+                      className="h-4 w-4 rounded"
                       style={{ accentColor: colors.primary }}
-                      checked={selectedUsers.length === users.length}
+                      checked={
+                        selectedUsers.length === users.length &&
+                        users.length > 0
+                      }
                       onChange={() =>
                         setSelectedUsers(
                           selectedUsers.length === users.length
@@ -295,31 +321,31 @@ function UsersPageContent() {
                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{ color: colors.muted }}
                   >
-                    {String(t.name || "Name")}
+                    Name
                   </th>
                   <th
                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{ color: colors.muted }}
                   >
-                    {String(t.email || "Email")}
+                    Email
                   </th>
                   <th
                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{ color: colors.muted }}
                   >
-                    {String(t.role || "Role")}
+                    Role
                   </th>
                   <th
                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                     style={{ color: colors.muted }}
                   >
-                    {String(t.status || "Status")}
+                    Status
                   </th>
                   <th
                     className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
                     style={{ color: colors.muted }}
                   >
-                    {String(t.actions || "Actions")}
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -330,15 +356,13 @@ function UsersPageContent() {
                 {users.map((user) => (
                   <tr
                     key={user._id}
-                    className="transition-colors hover:bg-opacity-50"
-                    style={{
-                      backgroundColor: isDark ? "#334155" : "#f3f4f6",
-                    }}
+                    className="hover:bg-opacity-50"
+                    style={{ backgroundColor: isDark ? "#334155" : "#f3f4f6" }}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <input
                         type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300"
+                        className="h-4 w-4 rounded"
                         style={{ accentColor: colors.primary }}
                         checked={selectedUsers.includes(user._id)}
                         onChange={() =>
@@ -353,13 +377,11 @@ function UsersPageContent() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div
-                          className="h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center mr-4"
+                          className="h-10 w-10 rounded-full flex items-center justify-center mr-4"
                           style={{ backgroundColor: colors.primary }}
                         >
                           <span className="text-sm font-medium text-white">
-                            {user.firstName?.charAt(0) ||
-                              user.email?.charAt(0) ||
-                              "U"}
+                            {user.firstName?.charAt(0) || "U"}
                           </span>
                         </div>
                         <div>
@@ -378,23 +400,20 @@ function UsersPageContent() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div
-                        className="text-sm"
-                        style={{ color: colors.foreground }}
-                      >
-                        {user.email}
-                      </div>
+                    <td
+                      className="px-6 py-4 whitespace-nowrap text-sm"
+                      style={{ color: colors.foreground }}
+                    >
+                      {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                        className="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white capitalize"
                         style={{
                           backgroundColor:
                             user.role === "admin"
                               ? colors.secondary
                               : colors.accent,
-                          color: "#ffffff",
                         }}
                       >
                         {user.role}
@@ -403,12 +422,11 @@ function UsersPageContent() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex space-x-2">
                         <span
-                          className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full"
+                          className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full text-white"
                           style={{
                             backgroundColor: user.isEmailVerified
                               ? colors.success
                               : colors.destructive,
-                            color: "#ffffff",
                           }}
                         >
                           {user.isEmailVerified ? (
@@ -421,57 +439,23 @@ function UsersPageContent() {
                             </>
                           )}
                         </span>
-                        {user.phoneNumber && (
-                          <span
-                            className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full"
-                            style={{
-                              backgroundColor: user.isPhoneVerified
-                                ? colors.success
-                                : colors.destructive,
-                              color: "#ffffff",
-                            }}
-                          >
-                            {user.isPhoneVerified ? (
-                              <>
-                                <CheckIcon className="h-3 w-3 mr-1" /> Phone
-                              </>
-                            ) : (
-                              <>
-                                <XMarkIcon className="h-3 w-3 mr-1" /> Phone
-                              </>
-                            )}
-                          </span>
-                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        type="button"
-                        className="mr-3 transition-colors"
+                        onClick={() => openEditModal(user)}
+                        className="mr-3 p-2 transition-colors"
                         style={{ color: colors.primary }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.opacity = "0.7")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.opacity = "1")
-                        }
                       >
                         <PencilIcon className="h-5 w-5" />
                       </button>
                       <button
-                        type="button"
-                        className="transition-colors"
-                        style={{ color: colors.destructive }}
                         onClick={() => {
                           setUserToDelete(user._id);
                           setShowDeleteModal(true);
                         }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.opacity = "0.7")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.opacity = "1")
-                        }
+                        className="p-2 transition-colors"
+                        style={{ color: colors.destructive }}
                       >
                         <TrashIcon className="h-5 w-5" />
                       </button>
@@ -488,14 +472,13 @@ function UsersPageContent() {
       <div className="px-4 sm:px-6 lg:px-8 mt-6">
         <div className="flex items-center justify-between">
           <div className="text-sm" style={{ color: colors.muted }}>
-            Showing {(currentPage - 1) * 10 + 1} to{" "}
-            {Math.min(currentPage * 10, users.length)} of {users.length} results
+            Page {currentPage} of {totalPages}
           </div>
           <div className="flex space-x-2">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              className="px-3 py-1 rounded-lg text-sm font-medium disabled:opacity-50"
               style={{
                 backgroundColor: colors.card,
                 borderColor: colors.border,
@@ -509,7 +492,7 @@ function UsersPageContent() {
                 setCurrentPage(Math.min(totalPages, currentPage + 1))
               }
               disabled={currentPage === totalPages}
-              className="px-3 py-1 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              className="px-3 py-1 rounded-lg text-sm font-medium disabled:opacity-50"
               style={{
                 backgroundColor: colors.card,
                 borderColor: colors.border,
@@ -524,9 +507,9 @@ function UsersPageContent() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div
-            className="rounded-lg p-6 max-w-md w-full mx-4"
+            className="rounded-lg p-6 max-w-md w-full"
             style={{ backgroundColor: colors.card }}
           >
             <h3
@@ -541,11 +524,8 @@ function UsersPageContent() {
             </p>
             <div className="flex justify-end space-x-3">
               <button
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setUserToDelete(null);
-                }}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 rounded-lg text-sm"
                 style={{
                   backgroundColor: colors.border,
                   color: colors.foreground,
@@ -555,10 +535,191 @@ function UsersPageContent() {
               </button>
               <button
                 onClick={() => userToDelete && handleDeleteUser(userToDelete)}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+                className="px-4 py-2 rounded-lg text-sm text-white"
                 style={{ backgroundColor: colors.destructive }}
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal (Role & Info Change) */}
+      {showEditModal && editFormData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div
+            className="rounded-lg p-6 max-w-lg w-full"
+            style={{ backgroundColor: colors.card }}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-3">
+                <ShieldCheckIcon
+                  className="h-6 w-6"
+                  style={{ color: colors.primary }}
+                />
+                <h3
+                  className="text-xl font-bold"
+                  style={{ color: colors.foreground }}
+                >
+                  Edit User
+                </h3>
+              </div>
+              <button onClick={() => setShowEditModal(false)}>
+                <XMarkIcon
+                  className="h-6 w-6"
+                  style={{ color: colors.muted }}
+                />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    className="block text-sm mb-1"
+                    style={{ color: colors.muted }}
+                  >
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 rounded-lg border"
+                    style={{
+                      backgroundColor: colors.background,
+                      borderColor: colors.border,
+                      color: colors.foreground,
+                    }}
+                    value={editFormData.firstName || ""}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        firstName: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <label
+                    className="block text-sm mb-1"
+                    style={{ color: colors.muted }}
+                  >
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 rounded-lg border"
+                    style={{
+                      backgroundColor: colors.background,
+                      borderColor: colors.border,
+                      color: colors.foreground,
+                    }}
+                    value={editFormData.lastName || ""}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        lastName: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  className="block text-sm mb-1"
+                  style={{ color: colors.muted }}
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  className="w-full px-3 py-2 rounded-lg border"
+                  style={{
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                    color: colors.foreground,
+                  }}
+                  value={editFormData.email || ""}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, email: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label
+                  className="block text-sm mb-1"
+                  style={{ color: colors.muted }}
+                >
+                  Phone Number
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 rounded-lg border"
+                  style={{
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                    color: colors.foreground,
+                  }}
+                  value={editFormData.phoneNumber || ""}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      phoneNumber: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label
+                  className="block text-sm mb-1"
+                  style={{ color: colors.muted }}
+                >
+                  Role
+                </label>
+                <select
+                  className="w-full px-3 py-2 rounded-lg border capitalize"
+                  style={{
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                    color: colors.foreground,
+                  }}
+                  value={editFormData.role || "student"}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, role: e.target.value })
+                  }
+                >
+                  <option value="student">Student</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="instructor">Instructor</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            </div>
+
+            <div
+              className="flex justify-end space-x-3 mt-6 pt-4 border-t"
+              style={{ borderColor: colors.border }}
+            >
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 rounded-lg text-sm font-medium"
+                style={{
+                  backgroundColor: colors.border,
+                  color: colors.foreground,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateUser}
+                disabled={savingUser}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
+                style={{ backgroundColor: colors.primary }}
+              >
+                {savingUser ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>
@@ -568,6 +729,4 @@ function UsersPageContent() {
   );
 }
 
-// The component is now simpler and just exports the content,
-// relying on the root layout to provide the necessary contexts.
 export default UsersPageContent;

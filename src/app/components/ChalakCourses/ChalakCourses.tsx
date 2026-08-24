@@ -43,7 +43,7 @@ const ChalakCourses = () => {
   const { data: apiResponse, isLoading: isCoursesLoading } = useQuery({
     queryKey: ["public-courses"],
     queryFn: async () => {
-      const res = await api.get("/courses?published=true");
+      const res = await api.get("/api/courses?published=true");
       return res.data;
     },
   });

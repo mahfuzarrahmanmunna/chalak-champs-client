@@ -127,7 +127,7 @@ export default function CoursesContent() {
   } = useQuery({
     queryKey: ["public-courses"],
     queryFn: async () => {
-      const response = await api.get("/courses");
+      const response = await api.get("/api/courses");
       // Handle various possible response shapes defensively
       const payload = response?.data ?? response;
 

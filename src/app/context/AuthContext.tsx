@@ -37,6 +37,7 @@ interface AppUser {
   lastName: string;
   email?: string;
   phoneNumber?: string;
+  photoURL?: string;
   role: "student" | "teacher" | "admin";
 }
 
@@ -107,6 +108,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // --- Centralized Redirect Handler ---
+// NOTE: This default is a plain path. Components that need language-prefixed
+// paths (like AuthPage) should pass `redirect: false` and handle routing themselves
+// using `getLink()` from LanguageContext.
 const DEFAULT_REDIRECT = "/dashboard";
 
 function resolveRedirect(options?: AuthOptions): string | null {
@@ -364,7 +368,6 @@ export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
 
   if (context === undefined) {
-    // Cast so the inferred fallback type matches AuthContextType
     const fallback: AuthContextType = {
       currentUser: null,
       appUser: null,

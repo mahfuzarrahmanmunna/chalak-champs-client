@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "@/lib/axios";
 import {
@@ -23,11 +23,17 @@ import {
   Image as ImageIcon,
   RefreshCw,
   AlertCircle,
+  Users,
 } from "lucide-react";
 import CourseFormModal from "./CourseFormModal";
 import Link from "next/link";
 
-// ✅ Updated interface to match actual API response
+interface CourseInstructor {
+  name?: string;
+  image?: string;
+  designation?: { en?: string; bn?: string } | string;
+}
+
 interface Course {
   _id: string;
   title: { en: string; bn: string } | string;
@@ -40,6 +46,10 @@ interface Course {
   category?: string;
   level?: string;
   createdAt?: string;
+  content?: {
+    instructors?: CourseInstructor[];
+    instructor?: CourseInstructor;
+  };
 }
 
 // ====================================================================
@@ -51,8 +61,8 @@ function TableSkeleton({ rows = 8 }: { rows?: number }) {
     <table className="w-full text-left">
       <thead>
         <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] border-b border-gray-100">
-          <th className="px-6 py-4 min-w-[350px]">Course</th>
-          <th className="px-5 py-4 min-w-[100px]">Instructor</th>
+          <th className="px-6 py-4 min-w-[320px]">Course</th>
+          <th className="px-5 py-4 min-w-[160px]">Instructors</th>
           <th className="px-5 py-4 min-w-[100px]">Price</th>
           <th className="px-5 py-4 min-w-[110px]">Status</th>
           <th className="px-5 py-4 min-w-[90px]">Category</th>
@@ -76,9 +86,10 @@ function TableSkeleton({ rows = 8 }: { rows?: number }) {
               </div>
             </td>
             <td className="px-5 py-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0" />
-                <div className="h-4 bg-gray-200 rounded-md w-16" />
+              <div className="flex items-center gap-1.5">
+                <div className="w-7 h-7 rounded-full bg-gray-200 flex-shrink-0" />
+                <div className="w-7 h-7 rounded-full bg-gray-200 flex-shrink-0 -ml-3" />
+                <div className="h-4 bg-gray-200 rounded-md w-20 ml-1" />
               </div>
             </td>
             <td className="px-5 py-4">
@@ -128,7 +139,7 @@ function StatsSkeleton() {
 }
 
 // ====================================================================
-// SMART PAGINATION — ellipsis for many pages
+// SMART PAGINATION
 // ====================================================================
 
 function getPageNumbers(
@@ -136,20 +147,89 @@ function getPageNumbers(
   total: number,
 ): (number | "ellipsis")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-
   const pages: (number | "ellipsis")[] = [1];
-
   if (current > 3) pages.push("ellipsis");
-
   const start = Math.max(2, current - 1);
   const end = Math.min(total - 1, current + 1);
-
   for (let i = start; i <= end; i++) pages.push(i);
-
   if (current < total - 2) pages.push("ellipsis");
-
   pages.push(total);
   return pages;
+}
+
+// ====================================================================
+// INSTRUCTOR AVATARS — shows stacked avatars for multi-teacher
+// ====================================================================
+
+function InstructorAvatars({
+  instructors,
+  fallbackName,
+}: {
+  instructors: CourseInstructor[];
+  fallbackName?: string;
+}) {
+  if (!instructors || instructors.length === 0) {
+    return (
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#214187] to-[#F3056D] flex items-center justify-center text-white text-[11px] font-extrabold shadow-sm flex-shrink-0">
+          {fallbackName?.charAt(0) || "U"}
+        </div>
+        <span className="text-sm text-gray-600 font-medium truncate max-w-[120px]">
+          {fallbackName || "—"}
+        </span>
+      </div>
+    );
+  }
+
+  const MAX_VISIBLE = 3;
+  const visible = instructors.slice(0, MAX_VISIBLE);
+  const remaining = instructors.length - MAX_VISIBLE;
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex -space-x-2">
+        {visible.map((inst, i) => {
+          const initial = inst.name?.charAt(0) || "?";
+          const hasImage = inst.image;
+          return (
+            <div
+              key={i}
+              className="w-8 h-8 rounded-full border-2 border-white shadow-sm flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#214187] to-[#F3056D] flex items-center justify-center"
+              title={inst.name || "Instructor"}
+            >
+              {hasImage ? (
+                <img
+                  src={
+                    inst.image!.startsWith("http")
+                      ? inst.image
+                      : `https://${inst.image}`
+                  }
+                  alt={inst.name || ""}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-white text-[10px] font-bold">
+                  {initial}
+                </span>
+              )}
+            </div>
+          );
+        })}
+        {remaining > 0 && (
+          <div className="w-8 h-8 rounded-full border-2 border-white shadow-sm flex-shrink-0 bg-gray-100 flex items-center justify-center">
+            <span className="text-[10px] font-bold text-gray-500">
+              +{remaining}
+            </span>
+          </div>
+        )}
+      </div>
+      <span className="text-xs text-gray-500 font-medium">
+        {instructors.length === 1
+          ? instructors[0].name || "—"
+          : `${instructors.length} teachers`}
+      </span>
+    </div>
+  );
 }
 
 // ====================================================================
@@ -168,63 +248,33 @@ export default function ManageCourses() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  // ==================================================================
-  // ✅ IMPROVED QUERY: staleTime, gcTime, placeholderData, refetch config
-  // ==================================================================
-  const {
-    data,
-    isLoading,
-    isFetching, // true during background refetches (not initial load)
-    isError,
-    error,
-    refetch,
-  } = useQuery({
+  const { data, isLoading, isFetching, isError, error, refetch } = useQuery({
     queryKey: ["courses"],
     queryFn: async () => {
       const res = await axios.get("/api/courses?published=all");
       return res.data;
     },
-    staleTime: 1000 * 60 * 2, // Data considered fresh for 2 minutes
-    gcTime: 1000 * 60 * 10, // Keep unused data in cache for 10 minutes
-    refetchOnWindowFocus: true, // Re-fetch when user returns to the tab
-    refetchOnReconnect: true, // Re-fetch on network reconnect
-    // ✅ Keep showing previous data while a background refetch is happening
-    // This prevents the table from flashing/going blank during refetch
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     placeholderData: (previousData) => previousData,
   });
 
-  // ==================================================================
-  // ✅ OPTIMISTIC DELETE: instant UI update + rollback on error
-  // ==================================================================
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       await axios.delete(`/api/courses/${id}`);
     },
-
-    // --- Before the request fires ---
     onMutate: async (id) => {
-      // 1. Cancel any outgoing refetches so they don't overwrite our optimistic update
       await queryClient.cancelQueries({ queryKey: ["courses"] });
-
-      // 2. Snapshot the current data so we can rollback
       const previousCourses = queryClient.getQueryData(["courses"]);
-
-      // 3. Optimistically remove the course from the cached list
       queryClient.setQueryData(["courses"], (old: any) => {
         if (!old?.data) return old;
-        return {
-          ...old,
-          data: old.data.filter((c: Course) => c._id !== id),
-        };
+        return { ...old, data: old.data.filter((c: Course) => c._id !== id) };
       });
-
-      // 4. Return the snapshot for potential rollback
       return { previousCourses };
     },
-
-    // --- If the request fails ---
     onError: (err: any, _id, context) => {
-      // 5. Rollback to the snapshot
       if (context?.previousCourses) {
         queryClient.setQueryData(["courses"], context.previousCourses);
       }
@@ -232,26 +282,17 @@ export default function ManageCourses() {
         "Failed to delete: " + (err.response?.data?.message || err.message),
       );
     },
-
-    // --- Whether success or failure, after everything settles ---
     onSettled: () => {
-      // 6. Always re-fetch to ensure cache is in sync with server
-      //    - On success: confirms the deletion
-      //    - On error (after rollback): re-fetches the accurate state
       queryClient.invalidateQueries({ queryKey: ["courses"] });
       setOpenMenuId(null);
     },
   });
 
-  // ==================================================================
-  // ✅ Close dropdown on Escape key or outside click (scroll)
-  // ==================================================================
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpenMenuId(null);
     };
     const handleScroll = () => setOpenMenuId(null);
-
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("scroll", handleScroll, true);
     return () => {
@@ -260,7 +301,6 @@ export default function ManageCourses() {
     };
   }, []);
 
-  // --- Helpers ---
   const getText = (
     val: string | { en?: string; bn?: string } | undefined,
     fallback = "—",
@@ -270,16 +310,29 @@ export default function ManageCourses() {
     return val.en || val.bn || fallback;
   };
 
+  // ✅ Helper to get instructors list from course data
+  const getInstructors = (course: Course): CourseInstructor[] => {
+    if (course.content?.instructors?.length) return course.content.instructors;
+    if (course.content?.instructor) return [course.content.instructor];
+    if (course.instructorName) return [{ name: course.instructorName }];
+    return [];
+  };
+
   // --- Filtering & Pagination ---
   const filteredCourses = (data?.data || []).filter((c: Course) => {
     const s = searchTerm.toLowerCase();
     const titleStr = getText(c.title, "").toLowerCase();
     const instructorStr = (c.instructorName || "").toLowerCase();
     const categoryStr = (c.category || "").toLowerCase();
+    // ✅ Also search by instructor names in the instructors array
+    const instructorNames = getInstructors(c)
+      .map((i) => (i.name || "").toLowerCase())
+      .join(" ");
     const matchSearch =
       titleStr.includes(s) ||
       instructorStr.includes(s) ||
-      categoryStr.includes(s);
+      categoryStr.includes(s) ||
+      instructorNames.includes(s);
     const matchStatus =
       filterStatus === "all" ||
       (filterStatus === "published" && c.isPublished) ||
@@ -303,7 +356,6 @@ export default function ManageCourses() {
     0,
   );
 
-  // --- Modal handlers ---
   const openCreateModal = () => {
     setSelectedCourse(null);
     setIsModalOpen(true);
@@ -343,7 +395,6 @@ export default function ManageCourses() {
               <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
                 Manage Courses
               </h1>
-              {/* ✅ Background refetch indicator — subtle spinning icon */}
               {isFetching && !isLoading && (
                 <div className="ml-2 p-1.5 rounded-lg bg-blue-50 animate-spin">
                   <RefreshCw className="w-4 h-4 text-blue-500" />
@@ -439,7 +490,6 @@ export default function ManageCourses() {
         <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
           {/* --- Toolbar --- */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 p-5 border-b border-gray-100">
-            {/* Search */}
             <div className="relative flex-1 max-w-md">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Search className="w-4 h-4 text-gray-400" />
@@ -455,8 +505,6 @@ export default function ManageCourses() {
                 className="w-full pl-11 pr-4 py-2.5 bg-[#F5F6FA] border-0 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F3056D]/30 focus:bg-white transition-all"
               />
             </div>
-
-            {/* Filter Tabs */}
             <div className="flex items-center bg-[#F5F6FA] rounded-xl p-1">
               {(["all", "published", "draft"] as const).map((status) => (
                 <button
@@ -475,8 +523,6 @@ export default function ManageCourses() {
                 </button>
               ))}
             </div>
-
-            {/* Per Page */}
             <select
               value={itemsPerPage}
               onChange={(e) => {
@@ -497,7 +543,6 @@ export default function ManageCourses() {
             {isLoading ? (
               <TableSkeleton rows={itemsPerPage} />
             ) : isError ? (
-              /* ✅ ERROR STATE with retry button */
               <div className="text-center py-24">
                 <div className="w-20 h-20 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
                   <AlertCircle className="w-9 h-9 text-red-400" />
@@ -508,7 +553,7 @@ export default function ManageCourses() {
                 <p className="text-sm text-red-500 mb-6 max-w-md mx-auto">
                   {(error as any)?.response?.data?.message ||
                     (error as any)?.message ||
-                    "An unexpected error occurred. Please try again."}
+                    "An unexpected error occurred."}
                 </p>
                 <button
                   onClick={() => refetch()}
@@ -548,8 +593,8 @@ export default function ManageCourses() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] border-b border-gray-100">
-                    <th className="px-6 py-4 min-w-[350px]">Course</th>
-                    <th className="px-5 py-4 min-w-[100px]">Instructor</th>
+                    <th className="px-6 py-4 min-w-[320px]">Course</th>
+                    <th className="px-5 py-4 min-w-[160px]">Instructors</th>
                     <th className="px-5 py-4 min-w-[100px]">Price</th>
                     <th className="px-5 py-4 min-w-[110px]">Status</th>
                     <th className="px-5 py-4 min-w-[90px]">Category</th>
@@ -559,159 +604,158 @@ export default function ManageCourses() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {currentItems.map((course: Course) => (
-                    <tr
-                      key={course._id}
-                      className="group hover:bg-[#214187]/[0.02] transition-colors duration-150"
-                    >
-                      {/* Course */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#214187]/10 to-[#F3056D]/10 border border-gray-200/80 overflow-hidden flex-shrink-0 relative">
-                            {course.thumbnail ? (
-                              <img
-                                src={
-                                  course.thumbnail.startsWith("http")
-                                    ? course.thumbnail
-                                    : `https://${course.thumbnail}`
-                                }
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <ImageIcon className="w-5 h-5 text-gray-300" />
-                              </div>
-                            )}
-                            {course.isPublished && (
-                              <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white" />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <h4 className="font-bold text-gray-900 text-[15px] truncate max-w-[280px] group-hover:text-[#214187] transition-colors">
-                              {getText(course.title, "Untitled")}
-                            </h4>
-                            <p className="text-xs text-gray-400 truncate max-w-[280px] mt-0.5">
-                              {getText(course.heroSubtitle, "No subtitle")}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Instructor */}
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#214187] to-[#F3056D] flex items-center justify-center text-white text-[11px] font-extrabold shadow-sm flex-shrink-0">
-                            {course.instructorName?.charAt(0) || "U"}
-                          </div>
-                          <span className="text-sm text-gray-600 font-medium truncate max-w-[100px]">
-                            {course.instructorName || "—"}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Price */}
-                      <td className="px-5 py-4">
-                        <div className="flex flex-col">
-                          <span className="font-extrabold text-[#214187] text-base leading-none">
-                            {course.price
-                              ? `৳${course.price.toLocaleString()}`
-                              : "Free"}
-                          </span>
-                          {course.originalPrice &&
-                            course.originalPrice > course.price && (
-                              <span className="text-[11px] text-gray-400 line-through mt-1">
-                                ৳{course.originalPrice.toLocaleString()}
-                              </span>
-                            )}
-                        </div>
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-5 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${
-                            course.isPublished
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-amber-50 text-amber-700 border-amber-200"
-                          }`}
-                        >
-                          {course.isPublished ? (
-                            <>
-                              <Eye className="w-3 h-3" /> Live
-                            </>
-                          ) : (
-                            <>
-                              <EyeOff className="w-3 h-3" /> Draft
-                            </>
-                          )}
-                        </span>
-                      </td>
-
-                      {/* Category */}
-                      <td className="px-5 py-4">
-                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md">
-                          {course.category || course.level || "General"}
-                        </span>
-                      </td>
-
-                      {/* Actions */}
-                      <td className="px-5 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => openEditModal(course)}
-                            className="p-2.5 rounded-lg text-gray-400 hover:text-[#214187] hover:bg-[#214187]/10 transition-all"
-                            title="Edit"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-
-                          <div className="relative">
-                            <button
-                              onClick={() =>
-                                setOpenMenuId(
-                                  openMenuId === course._id ? null : course._id,
-                                )
-                              }
-                              className="p-2.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
-                            >
-                              <MoreVertical className="w-4 h-4" />
-                            </button>
-
-                            {openMenuId === course._id && (
-                              <>
-                                <div
-                                  className="fixed inset-0 z-40"
-                                  onClick={() => setOpenMenuId(null)}
+                  {currentItems.map((course: Course) => {
+                    const instructors = getInstructors(course);
+                    return (
+                      <tr
+                        key={course._id}
+                        className="group hover:bg-[#214187]/[0.02] transition-colors duration-150"
+                      >
+                        {/* Course */}
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#214187]/10 to-[#F3056D]/10 border border-gray-200/80 overflow-hidden flex-shrink-0 relative">
+                              {course.thumbnail ? (
+                                <img
+                                  src={
+                                    course.thumbnail.startsWith("http")
+                                      ? course.thumbnail
+                                      : `https://${course.thumbnail}`
+                                  }
+                                  alt=""
+                                  className="w-full h-full object-cover"
                                 />
-                                <div className="absolute right-0 top-11 z-50 w-48 bg-white rounded-xl border border-gray-200 shadow-xl py-2 animate-in fade-in slide-in-from-top-1 duration-150">
-                                  <button
-                                    onClick={() => openEditModal(course)}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
-                                  >
-                                    <Edit3 className="w-4 h-4 text-[#214187]" />
-                                    Edit Course
-                                  </button>
-                                  <button
-                                    onClick={() => handleDelete(course._id)}
-                                    disabled={deleteMutation.isPending}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition disabled:opacity-50"
-                                  >
-                                    {deleteMutation.isPending ? (
-                                      <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                      <Trash2 className="w-4 h-4" />
-                                    )}
-                                    Delete Course
-                                  </button>
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <ImageIcon className="w-5 h-5 text-gray-300" />
                                 </div>
+                              )}
+                              {course.isPublished && (
+                                <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="font-bold text-gray-900 text-[15px] truncate max-w-[250px] group-hover:text-[#214187] transition-colors">
+                                {getText(course.title, "Untitled")}
+                              </h4>
+                              <p className="text-xs text-gray-400 truncate max-w-[250px] mt-0.5">
+                                {getText(course.heroSubtitle, "No subtitle")}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* ✅ Instructors — stacked avatars for multiple */}
+                        <td className="px-5 py-4">
+                          <InstructorAvatars
+                            instructors={instructors}
+                            fallbackName={course.instructorName}
+                          />
+                        </td>
+
+                        {/* Price */}
+                        <td className="px-5 py-4">
+                          <div className="flex flex-col">
+                            <span className="font-extrabold text-[#214187] text-base leading-none">
+                              {course.price
+                                ? `৳${course.price.toLocaleString()}`
+                                : "Free"}
+                            </span>
+                            {course.originalPrice &&
+                              course.originalPrice > course.price && (
+                                <span className="text-[11px] text-gray-400 line-through mt-1">
+                                  ৳{course.originalPrice.toLocaleString()}
+                                </span>
+                              )}
+                          </div>
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-5 py-4">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${
+                              course.isPublished
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : "bg-amber-50 text-amber-700 border-amber-200"
+                            }`}
+                          >
+                            {course.isPublished ? (
+                              <>
+                                <Eye className="w-3 h-3" /> Live
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="w-3 h-3" /> Draft
                               </>
                             )}
+                          </span>
+                        </td>
+
+                        {/* Category */}
+                        <td className="px-5 py-4">
+                          <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md">
+                            {course.category || course.level || "General"}
+                          </span>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="px-5 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => openEditModal(course)}
+                              className="p-2.5 rounded-lg text-gray-400 hover:text-[#214187] hover:bg-[#214187]/10 transition-all"
+                              title="Edit"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                            <div className="relative">
+                              <button
+                                onClick={() =>
+                                  setOpenMenuId(
+                                    openMenuId === course._id
+                                      ? null
+                                      : course._id,
+                                  )
+                                }
+                                className="p-2.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+                              {openMenuId === course._id && (
+                                <>
+                                  <div
+                                    className="fixed inset-0 z-40"
+                                    onClick={() => setOpenMenuId(null)}
+                                  />
+                                  <div className="absolute right-0 top-11 z-50 w-48 bg-white rounded-xl border border-gray-200 shadow-xl py-2 animate-in fade-in slide-in-from-top-1 duration-150">
+                                    <button
+                                      onClick={() => openEditModal(course)}
+                                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                                    >
+                                      <Edit3 className="w-4 h-4 text-[#214187]" />{" "}
+                                      Edit Course
+                                    </button>
+                                    <button
+                                      onClick={() => handleDelete(course._id)}
+                                      disabled={deleteMutation.isPending}
+                                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition disabled:opacity-50"
+                                    >
+                                      {deleteMutation.isPending ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                      ) : (
+                                        <Trash2 className="w-4 h-4" />
+                                      )}
+                                      Delete Course
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -740,8 +784,6 @@ export default function ManageCourses() {
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-
-                {/* ✅ Smart pagination with ellipsis */}
                 {pageNumbers.map((page, idx) =>
                   page === "ellipsis" ? (
                     <span
@@ -764,7 +806,6 @@ export default function ManageCourses() {
                     </button>
                   ),
                 )}
-
                 <button
                   onClick={() =>
                     setCurrentPage((p) => Math.min(p + 1, totalPages))

@@ -22,6 +22,13 @@ import {
   Check,
   AlertCircle,
   RefreshCw,
+  ExternalLink,
+  Award,
+  GraduationCap,
+  Facebook,
+  Linkedin,
+  Youtube,
+  UserCircle,
 } from "lucide-react";
 import { FaSadCry } from "react-icons/fa";
 
@@ -89,6 +96,10 @@ interface SingleCourse {
     ctaBelow: string;
   };
   payment: { title: string; description: string };
+  // ✅ CHANGED: Single instructor → multiple instructors
+  instructorsTitle: string;
+  instructors: InstructorData[];
+  // Kept for backward compat — will be merged into instructors[]
   instructor: InstructorData;
   review: { title: string };
   faq: { title: string; items: Array<{ q: string; a: string }> };
@@ -102,6 +113,11 @@ const getLang = (obj: any, lang: "en" | "bn"): string => {
   if (!obj) return "";
   if (typeof obj === "string") return obj;
   return obj[lang] || "";
+};
+
+const fixUrl = (url: string | undefined): string => {
+  if (!url) return "";
+  return url.startsWith("http") ? url : `https://${url}`;
 };
 
 const flattenCourseData = (
@@ -123,28 +139,19 @@ const flattenCourseData = (
     if (contentAssets.length > 0) {
       return contentAssets.map((a: any) => ({
         type: (a.type as "image" | "video") || "image",
-        src: a.src.startsWith("http") ? a.src : `https://${a.src}`,
+        src: fixUrl(a.src),
         poster: a.poster,
       }));
     }
-
     const built: Array<{
       type: "image" | "video";
       src: string;
       poster?: string;
     }> = [];
-
-    if (course.thumbnail) {
-      const thumbSrc = course.thumbnail.startsWith("http")
-        ? course.thumbnail
-        : `https://${course.thumbnail}`;
-      built.push({ type: "image", src: thumbSrc });
-    }
-
-    if (course.videoUrl) {
-      built.push({ type: "video", src: course.videoUrl });
-    }
-
+    if (course.thumbnail)
+      built.push({ type: "image", src: fixUrl(course.thumbnail) });
+    if (course.videoUrl)
+      built.push({ type: "video", src: fixUrl(course.videoUrl) });
     return built;
   };
 
@@ -152,7 +159,6 @@ const flattenCourseData = (
     const quickPrice = getLang(c.quickInfo?.offerPrice, lang);
     if (quickPrice && quickPrice !== "0" && quickPrice.includes(" "))
       return quickPrice;
-
     const orig = course.originalPrice || 0;
     const curr = course.price || 0;
     if (orig > 0 && curr > 0 && orig !== curr) return `৳${orig} ৳${curr}`;
@@ -170,6 +176,55 @@ const flattenCourseData = (
     const val = getLang(field, lang);
     return val && val !== "0" ? val : fallback;
   };
+
+  // ====================================================================
+  // ✅ NEW: Build instructors array from new or legacy data
+  // ====================================================================
+  const buildInstructors = (): InstructorData[] => {
+    // NEW FORMAT: content.instructors is an array
+    if (c.instructors && c.instructors.length > 0) {
+      return c.instructors.map((inst: any) => ({
+        title: getLang(inst.title, lang),
+        name: inst.name || "",
+        designation: getLang(inst.designation, lang),
+        bio: getLang(inst.bio, lang),
+        experience: getLang(inst.experience, lang),
+        studentsCount: inst.studentsCount || 0,
+        rating: inst.rating || 0,
+        specializations: inst.specializations?.[lang] || [],
+        achievements: inst.achievements?.[lang] || [],
+        education: getLang(inst.education, lang),
+        image: fixUrl(inst.image),
+        social: inst.social || {},
+      }));
+    }
+    // LEGACY FORMAT: content.instructor is a single object
+    if (c.instructor) {
+      return [
+        {
+          title: getLang(c.instructor.title, lang),
+          name: c.instructor.name || course.instructorName || "",
+          designation: getLang(c.instructor.designation, lang),
+          bio: getLang(c.instructor.bio, lang),
+          experience: getLang(c.instructor.experience, lang),
+          studentsCount: c.instructor.studentsCount || 0,
+          rating: c.instructor.rating || 0,
+          specializations: c.instructor.specializations?.[lang] || [],
+          achievements: c.instructor.achievements?.[lang] || [],
+          education: getLang(c.instructor.education, lang),
+          image: fixUrl(c.instructor.image),
+          social: c.instructor.social || {},
+        },
+      ];
+    }
+    // ULTIMATE FALLBACK
+    if (course.instructorName) {
+      return [{ name: course.instructorName }];
+    }
+    return [];
+  };
+
+  const instructors = buildInstructors();
 
   return {
     slug: course.slug,
@@ -269,27 +324,14 @@ const flattenCourseData = (
       title: getLang(c.payment?.title, lang),
       description: getLang(c.payment?.description, lang),
     },
-    instructor: {
-      title: getLang(c.instructor?.title, lang),
-      name: c.instructor?.name || course.instructorName || "",
-      designation: getLang(c.instructor?.designation, lang),
-      bio: getLang(c.instructor?.bio, lang),
-      experience: getLang(c.instructor?.experience, lang),
-      studentsCount: c.instructor?.studentsCount || 0,
-      rating: c.instructor?.rating || 0,
-      specializations: c.instructor?.specializations?.[lang] || [],
-      achievements: c.instructor?.achievements?.[lang] || [],
-      education: getLang(c.instructor?.education, lang),
-      image: c.instructor?.image
-        ? c.instructor.image.startsWith("http")
-          ? c.instructor.image
-          : `https://${c.instructor.image}`
-        : "",
-      social: c.instructor?.social || {},
-    },
-    review: {
-      title: getLang(c.review?.title, lang),
-    },
+    // ✅ NEW
+    instructorsTitle:
+      getLang(c.instructorsTitle, lang) ||
+      (isBangla ? "কোর্স ইন্সট্রাক্টর" : "Course Instructors"),
+    instructors,
+    // Legacy compat
+    instructor: instructors[0] || {},
+    review: { title: getLang(c.review?.title, lang) },
     faq: {
       title: getLang(c.faq?.title, lang) || getLang(course.faqs?.title, lang),
       items: (c.faq?.items?.length
@@ -305,7 +347,7 @@ const flattenCourseData = (
 };
 
 /* ═══════════════════════════════════════════════════
-   SKELETON — pixel-perfect shimmer matching the layout
+   SKELETON
    ═══════════════════════════════════════════════════ */
 function Sk({ className, delay = 0 }: { className?: string; delay?: number }) {
   return (
@@ -321,7 +363,6 @@ function Sk({ className, delay = 0 }: { className?: string; delay?: number }) {
 function CourseDetailSkeleton() {
   return (
     <div className="min-h-screen mt-12 text-gray-900 font-sans bg-[#FAFAFA] skel-root">
-      {/* ── Breadcrumb ── */}
       <div className="py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
@@ -333,42 +374,22 @@ function CourseDetailSkeleton() {
           </div>
         </div>
       </div>
-
-      {/* ── Two-column body ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:py-12">
         <div className="flex flex-col lg:flex-row gap-10">
-          {/* ── LEFT COLUMN (65%) ── */}
           <div className="w-full lg:w-[65%] order-2 lg:order-1 space-y-10">
-            {/* Back link */}
             <Sk className="h-5 w-36 rounded" delay={0} />
-
-            {/* Hero title + subtitle */}
             <div className="space-y-4">
               <Sk className="h-10 md:h-14 w-full rounded-xl" delay={60} />
               <Sk className="h-10 md:h-14 w-4/5 rounded-xl" delay={100} />
               <Sk className="h-6 w-full rounded-lg" delay={140} />
               <Sk className="h-6 w-5/6 rounded-lg" delay={180} />
             </div>
-
-            {/* Mobile enrollment card (md:hidden) */}
             <div className="md:hidden">
               <div className="w-full rounded-[30px] border-2 border-gray-200 p-2 pb-5 space-y-4">
                 <Sk className="w-full aspect-video rounded-[25px]" delay={0} />
-                <div className="flex justify-center gap-2">
-                  <Sk className="h-6 w-16 rounded-full" delay={40} />
-                  <Sk className="h-6 w-20 rounded-full" delay={80} />
-                  <Sk className="h-6 w-14 rounded-full" delay={120} />
-                </div>
-                <Sk className="h-7 w-3/4 mx-auto rounded-lg" delay={60} />
-                <div className="flex justify-center gap-2">
-                  <Sk className="h-5 w-14 rounded-md" delay={80} />
-                  <Sk className="h-6 w-16 rounded-md" delay={100} />
-                </div>
                 <Sk className="h-12 w-40 mx-auto rounded-xl" delay={40} />
               </div>
             </div>
-
-            {/* Sticky tab bar */}
             <div className="rounded-2xl border border-gray-200 bg-white/95 p-2 space-y-0">
               <div className="flex gap-2 overflow-hidden">
                 <Sk className="h-10 w-28 rounded-xl flex-shrink-0" delay={0} />
@@ -387,8 +408,6 @@ function CourseDetailSkeleton() {
                 />
               </div>
             </div>
-
-            {/* ── Overview section ── */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Sk className="h-8 w-1 rounded-full" delay={0} />
@@ -396,8 +415,6 @@ function CourseDetailSkeleton() {
               </div>
               <Sk className="h-44 w-full rounded-2xl" delay={80} />
             </div>
-
-            {/* ── Features section (dark block) ── */}
             <div className="w-full bg-gray-300 rounded-2xl p-6 md:p-8 space-y-5">
               <Sk className="h-7 w-48 rounded-lg !bg-gray-400" delay={0} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -418,156 +435,130 @@ function CourseDetailSkeleton() {
                       className="h-4 w-full rounded !bg-gray-500"
                       delay={i * 60 + 80}
                     />
-                    <Sk
-                      className="h-4 w-5/6 rounded !bg-gray-500"
-                      delay={i * 60 + 120}
-                    />
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* ── Who is this for ── */}
             <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 space-y-5">
               <Sk className="h-8 w-44 rounded-lg" delay={0} />
               <Sk className="h-5 w-full rounded" delay={40} />
-              <Sk className="h-5 w-5/6 rounded" delay={80} />
-              <div className="space-y-3 pt-2">
-                {[0, 1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <Sk
-                      className="h-6 w-6 rounded-full flex-shrink-0"
-                      delay={i * 50}
-                    />
-                    <Sk className="h-5 w-full rounded" delay={i * 50 + 30} />
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50">
-                <Sk className="h-5 w-1 rounded-full flex-shrink-0" delay={0} />
-                <Sk className="h-6 w-3/4 rounded" delay={40} />
-              </div>
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Sk
+                    className="h-6 w-6 rounded-full flex-shrink-0"
+                    delay={i * 50}
+                  />
+                  <Sk className="h-5 w-full rounded" delay={i * 50 + 30} />
+                </div>
+              ))}
             </div>
-
-            {/* ── Syllabus / Levels ── */}
             <div className="space-y-5">
               <div className="flex items-center gap-3">
                 <Sk className="h-8 w-1 rounded-full" delay={0} />
                 <Sk className="h-8 w-52 rounded-lg" delay={40} />
               </div>
-              <Sk className="h-5 w-2/3 rounded" delay={80} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Level 1 */}
                 <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 space-y-4">
                   <Sk className="h-7 w-3/4 rounded-lg" delay={0} />
-                  <Sk className="h-5 w-1/2 rounded" delay={40} />
-                  <Sk className="h-5 w-full rounded" delay={80} />
-                  <div className="space-y-3 pt-2">
-                    {[0, 1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <Sk
-                          className="h-4 w-4 rounded flex-shrink-0"
-                          delay={i * 50}
-                        />
-                        <Sk
-                          className="h-4 w-full rounded"
-                          delay={i * 50 + 30}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Sk
+                        className="h-4 w-4 rounded flex-shrink-0"
+                        delay={i * 50}
+                      />
+                      <Sk className="h-4 w-full rounded" delay={i * 50 + 30} />
+                    </div>
+                  ))}
                 </div>
-                {/* Level 2 */}
                 <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 space-y-4">
                   <Sk className="h-7 w-3/4 rounded-lg" delay={20} />
-                  <Sk className="h-5 w-1/2 rounded" delay={60} />
-                  <Sk className="h-5 w-full rounded" delay={100} />
-                  <div className="space-y-3 pt-2">
-                    {[0, 1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center gap-2">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Sk
+                        className="h-4 w-4 rounded flex-shrink-0"
+                        delay={i * 50 + 20}
+                      />
+                      <Sk className="h-4 w-full rounded" delay={i * 50 + 50} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ✅ UPDATED: Multi-instructor skeleton */}
+            <div className="space-y-5">
+              <div className="flex items-center gap-3">
+                <Sk className="h-8 w-1 rounded-full" delay={0} />
+                <Sk className="h-8 w-48 rounded-lg" delay={40} />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[0, 1].map((i) => (
+                  <div
+                    key={i}
+                    className="bg-white p-6 rounded-2xl border border-gray-200 space-y-4"
+                  >
+                    <div className="flex items-center gap-4">
+                      <Sk
+                        className="w-20 h-20 rounded-2xl flex-shrink-0"
+                        delay={i * 60}
+                      />
+                      <div className="flex-1 space-y-2">
                         <Sk
-                          className="h-4 w-4 rounded flex-shrink-0"
-                          delay={i * 50 + 20}
+                          className="h-6 w-32 rounded-lg"
+                          delay={i * 60 + 20}
                         />
-                        <Sk
-                          className="h-4 w-full rounded"
-                          delay={i * 50 + 50}
-                        />
+                        <Sk className="h-4 w-24 rounded" delay={i * 60 + 40} />
+                        <Sk className="h-4 w-16 rounded" delay={i * 60 + 60} />
                       </div>
-                    ))}
+                    </div>
+                    <Sk className="h-4 w-full rounded" delay={i * 60 + 80} />
+                    <Sk className="h-4 w-5/6 rounded" delay={i * 60 + 100} />
+                    <div className="flex gap-2">
+                      <Sk
+                        className="h-6 w-16 rounded-full"
+                        delay={i * 60 + 120}
+                      />
+                      <Sk
+                        className="h-6 w-20 rounded-full"
+                        delay={i * 60 + 140}
+                      />
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* ── Instructor ── */}
-            <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 space-y-5">
-              <Sk className="h-6 w-32 rounded-full" delay={0} />
-              <div className="flex flex-col sm:flex-row gap-6 items-start">
-                <Sk
-                  className="w-24 h-24 md:w-28 md:h-28 rounded-2xl flex-shrink-0"
-                  delay={40}
-                />
-                <div className="flex-1 space-y-3 w-full">
-                  <Sk className="h-7 w-40 rounded-lg" delay={60} />
-                  <Sk className="h-5 w-32 rounded" delay={100} />
-                  <Sk className="h-5 w-full rounded" delay={140} />
-                </div>
-              </div>
-            </div>
-
-            {/* ── FAQ ── */}
             <div className="bg-gradient-to-br from-blue-50 to-pink-50/30 p-6 md:p-10 rounded-[32px] border border-white/60 space-y-5">
               <div className="flex items-center gap-3">
                 <Sk className="h-10 w-10 rounded-2xl" delay={0} />
                 <Sk className="h-7 w-52 rounded-lg" delay={40} />
               </div>
-              <div className="space-y-3">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="bg-white rounded-2xl border-2 border-gray-100 p-5 space-y-3"
-                  >
-                    <div className="flex items-center gap-4">
-                      <Sk
-                        className="h-9 w-9 rounded-xl flex-shrink-0"
-                        delay={i * 80}
-                      />
-                      <Sk className="h-5 w-3/4 rounded" delay={i * 80 + 30} />
-                    </div>
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-2xl border-2 border-gray-100 p-5 space-y-3"
+                >
+                  <div className="flex items-center gap-4">
                     <Sk
-                      className="h-4 w-2/3 rounded ml-[52px]"
-                      delay={i * 80 + 60}
+                      className="h-9 w-9 rounded-xl flex-shrink-0"
+                      delay={i * 80}
                     />
+                    <Sk className="h-5 w-3/4 rounded" delay={i * 80 + 30} />
                   </div>
-                ))}
-              </div>
+                  <Sk
+                    className="h-4 w-2/3 rounded ml-[52px]"
+                    delay={i * 80 + 60}
+                  />
+                </div>
+              ))}
             </div>
           </div>
-
-          {/* ── RIGHT COLUMN (35%) ── */}
           <div className="w-full lg:w-[35%] order-1 mt-0 lg:order-2 space-y-6">
-            {/* Desktop enrollment card */}
             <div className="hidden md:block">
               <div className="w-full rounded-[30px] border-2 border-gray-200 p-2 pb-5 space-y-4">
                 <Sk className="w-full aspect-video rounded-[25px]" delay={0} />
                 <div className="px-2 space-y-3">
                   <Sk className="h-7 w-3/4 rounded-lg" delay={40} />
-                  <div className="flex justify-center gap-2">
-                    <Sk className="h-6 w-16 rounded-full" delay={60} />
-                    <Sk className="h-6 w-20 rounded-full" delay={80} />
-                    <Sk className="h-6 w-14 rounded-full" delay={100} />
-                  </div>
-                  <div className="flex justify-center gap-2 pt-1">
-                    <Sk className="h-6 w-14 rounded-md" delay={80} />
-                    <Sk className="h-7 w-16 rounded-md" delay={100} />
-                  </div>
-                  <div className="space-y-2 pt-1">
-                    <Sk className="h-4 w-full rounded" delay={60} />
-                    <Sk className="h-4 w-5/6 rounded" delay={80} />
-                    <Sk className="h-4 w-4/6 rounded" delay={100} />
-                    <Sk className="h-4 w-full rounded" delay={120} />
-                  </div>
                   <Sk className="h-12 w-full rounded-xl mx-auto" delay={40} />
                   <Sk
                     className="h-10 w-full rounded-xl mx-auto !bg-gray-100"
@@ -579,27 +570,13 @@ function CourseDetailSkeleton() {
           </div>
         </div>
       </div>
-
-      {/* ── Final CTA ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-gray-300 rounded-3xl p-8 md:p-12 space-y-5 text-center">
           <Sk className="h-10 w-72 mx-auto rounded-xl !bg-gray-400" delay={0} />
-          <Sk
-            className="h-6 w-full max-w-3xl mx-auto rounded !bg-gray-400"
-            delay={40}
-          />
-          <Sk
-            className="h-6 w-2/3 max-w-3xl mx-auto rounded !bg-gray-400"
-            delay={80}
-          />
           <div className="flex justify-center gap-4 pt-2">
             <Sk className="h-14 w-48 rounded-xl !bg-gray-400" delay={60} />
             <Sk className="h-14 w-40 rounded-xl !bg-gray-400" delay={100} />
           </div>
-          <Sk
-            className="h-8 w-48 mx-auto rounded-full !bg-gray-400"
-            delay={40}
-          />
         </div>
       </div>
     </div>
@@ -607,7 +584,7 @@ function CourseDetailSkeleton() {
 }
 
 /* ═══════════════════════════════════════════════════
-   SUB-COMPONENTS
+   FAQ COMPONENT
    ═══════════════════════════════════════════════════ */
 const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
   const [activeFaq, setActiveFaq] = useState<string | null>(null);
@@ -658,19 +635,13 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
                       {idx + 1}
                     </span>
                     <span
-                      className={`font-semibold text-base md:text-lg pr-4 leading-tight transition-colors ${
-                        isOpen ? "text-[#F3056D]" : "text-gray-700"
-                      }`}
+                      className={`font-semibold text-base md:text-lg pr-4 leading-tight transition-colors ${isOpen ? "text-[#F3056D]" : "text-gray-700"}`}
                     >
                       {faq.q}
                     </span>
                   </div>
                   <div
-                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      isOpen
-                        ? "bg-[#F3056D] text-white rotate-180"
-                        : "bg-gray-50 text-gray-400 group-hover/btn:bg-pink-100 group-hover/btn:text-[#F3056D]"
-                    }`}
+                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isOpen ? "bg-[#F3056D] text-white rotate-180" : "bg-gray-50 text-gray-400 group-hover/btn:bg-pink-100 group-hover/btn:text-[#F3056D]"}`}
                   >
                     <ChevronDown className="w-5 h-5" strokeWidth={3} />
                   </div>
@@ -700,6 +671,9 @@ const FAQ = ({ faqs }: { faqs: Array<{ q: string; a: string }> }) => {
   );
 };
 
+/* ═══════════════════════════════════════════════════
+   FEATURES COMPONENT
+   ═══════════════════════════════════════════════════ */
 const CourseDecorate = ({
   cards,
   title,
@@ -743,45 +717,318 @@ const CourseDecorate = ({
   </section>
 );
 
-const InstructorSection = ({ instructor }: { instructor: InstructorData }) => {
-  const { isBangla } = useLanguage();
+/* ═══════════════════════════════════════════════════
+   ✅ NEW: MULTI-INSTRUCTOR SECTION
+   ═══════════════════════════════════════════════════ */
+const INSTRUCTOR_ACCENT_COLORS = [
+  {
+    border: "border-l-[#F3056D]",
+    bg: "from-[#F3056D]/5",
+    badge: "bg-[#F3056D]/10 text-[#F3056D]",
+    gradient: "from-[#F3056D] to-[#d9045c]",
+  },
+  {
+    border: "border-l-[#214187]",
+    bg: "from-[#214187]/5",
+    badge: "bg-[#214187]/10 text-[#214187]",
+    gradient: "from-[#214187] to-[#1a2f6e]",
+  },
+  {
+    border: "border-l-[#10B981]",
+    bg: "from-[#10B981]/5",
+    badge: "bg-[#10B981]/10 text-[#10B981]",
+    gradient: "from-[#10B981] to-[#059669]",
+  },
+  {
+    border: "border-l-[#F59E0B]",
+    bg: "from-[#F59E0B]/5",
+    badge: "bg-[#F59E0B]/10 text-[#F59E0B]",
+    gradient: "from-[#F59E0B] to-[#D97706]",
+  },
+  {
+    border: "border-l-[#8B5CF6]",
+    bg: "from-[#8B5CF6]/5",
+    badge: "bg-[#8B5CF6]/10 text-[#8B5CF6]",
+    gradient: "from-[#8B5CF6] to-[#7C3AED]",
+  },
+  {
+    border: "border-l-[#EC4899]",
+    bg: "from-[#EC4899]/5",
+    badge: "bg-[#EC4899]/10 text-[#EC4899]",
+    gradient: "from-[#EC4899] to-[#DB2777]",
+  },
+];
+
+function InstructorCard({
+  instructor,
+  index,
+  isBangla,
+}: {
+  instructor: InstructorData;
+  index: number;
+  isBangla: boolean;
+}) {
+  const colors =
+    INSTRUCTOR_ACCENT_COLORS[index % INSTRUCTOR_ACCENT_COLORS.length];
+  const [expanded, setExpanded] = useState(false);
+
+  const hasDetails =
+    instructor.bio ||
+    instructor.experience ||
+    instructor.education ||
+    (instructor.specializations && instructor.specializations.length > 0) ||
+    (instructor.achievements && instructor.achievements.length > 0);
+
+  const hasSocial =
+    instructor.social?.facebook ||
+    instructor.social?.linkedin ||
+    instructor.social?.youtube;
+
   return (
-    <div className="scroll-mt-36 md:scroll-mt-40 mb-12">
-      <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
-        <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-pink-100/40 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute bottom-[-20px] left-[-20px] w-24 h-24 bg-blue-100/40 rounded-full blur-2xl pointer-events-none" />
-        <div className="relative z-10">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[14px] font-semibold bg-[#F3056D]/10 text-[#F3056D] border border-[#F3056D]/20 mb-6">
-            <Star className="h-3.5 w-3.5 fill-[#F3056D] text-[#F3056D]" />
-            {instructor.title}
-          </span>
-          <div className="flex flex-col sm:flex-row gap-6 items-start">
-            <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-gradient-to-br from-[#214187] to-[#1e3a8a] flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-white/20 overflow-hidden">
-              {instructor.image ? (
-                <img
-                  src={instructor.image}
-                  alt={instructor.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Users className="h-10 w-10 text-white/70" />
-              )}
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
-                {isBangla ? "বিশেষজ্ঞ প্রশিক্ষক" : "Expert Instructor"}
-              </h3>
-              <p className="text-[16px] text-gray-600 leading-relaxed">
-                {instructor.name}
+    <div
+      className={`bg-white rounded-2xl border-2 border-gray-200 border-l-4 ${colors.border} overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group`}
+    >
+      {/* Top accent gradient bar */}
+      <div className={`h-1 bg-gradient-to-r ${colors.gradient}`} />
+
+      <div className="p-5 md:p-6 space-y-4">
+        {/* Header: Image + Name + Designation */}
+        <div className="flex items-start gap-4">
+          <div
+            className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-white/30 overflow-hidden group-hover:scale-[1.03] transition-transform duration-300`}
+          >
+            {instructor.image ? (
+              <img
+                src={instructor.image}
+                alt={instructor.name || "Instructor"}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <UserCircle className="h-10 w-10 text-white/60" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg md:text-xl font-bold text-gray-900 truncate">
+              {instructor.name || (isBangla ? "ইন্সট্রাক্টর" : "Instructor")}
+            </h3>
+            {instructor.designation && (
+              <p className="text-sm md:text-base text-[#F3056D] font-semibold mt-1">
+                {instructor.designation}
               </p>
+            )}
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
+              {instructor.rating > 0 && (
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                  <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                  {instructor.rating}
+                </span>
+              )}
+              {instructor.studentsCount > 0 && (
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                  <Users className="w-3 h-3" />
+                  {instructor.studentsCount.toLocaleString()}{" "}
+                  {isBangla ? "শিক্ষার্থী" : "students"}
+                </span>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Bio preview */}
+        {instructor.bio && (
+          <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+            {instructor.bio}
+          </p>
+        )}
+
+        {/* Quick stats row */}
+        <div className="flex flex-wrap gap-2">
+          {instructor.experience && (
+            <span
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full ${colors.badge}`}
+            >
+              <Award className="w-3.5 h-3.5" />
+              {instructor.experience}
+            </span>
+          )}
+          {instructor.education && (
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-100 text-gray-600">
+              <GraduationCap className="w-3.5 h-3.5" />
+              {instructor.education.length > 35
+                ? instructor.education.substring(0, 35) + "..."
+                : instructor.education}
+            </span>
+          )}
+        </div>
+
+        {/* Expandable details */}
+        {hasDetails && (
+          <div>
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs font-bold text-[#214187] hover:text-[#F3056D] transition-colors flex items-center gap-1"
+            >
+              {expanded
+                ? isBangla
+                  ? "কম দেখুন"
+                  : "Show Less"
+                : isBangla
+                  ? "আরও দেখুন"
+                  : "Show More"}
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+              />
+            </button>
+            {expanded && (
+              <div className="mt-4 space-y-4 animate-in slide-in-from-top-2 fade-in duration-300">
+                {/* Specializations */}
+                {instructor.specializations &&
+                  instructor.specializations.length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        {isBangla ? "বিশেষজ্ঞতা" : "Specializations"}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {instructor.specializations.map((s, i) => (
+                          <span
+                            key={i}
+                            className={`text-xs font-medium px-2.5 py-1 rounded-full ${colors.badge}`}
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                {/* Achievements */}
+                {instructor.achievements &&
+                  instructor.achievements.length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        {isBangla ? "অর্জনসমূহ" : "Achievements"}
+                      </p>
+                      <ul className="space-y-1.5">
+                        {instructor.achievements.map((a, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-2 text-sm text-gray-700"
+                          >
+                            <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                            <span>{a}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Social links */}
+        {hasSocial && (
+          <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+            {instructor.social?.facebook && (
+              <a
+                href={instructor.social.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-colors"
+              >
+                <Facebook className="w-4 h-4" />
+              </a>
+            )}
+            {instructor.social?.linkedin && (
+              <a
+                href={instructor.social.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 flex items-center justify-center transition-colors"
+              >
+                <Linkedin className="w-4 h-4" />
+              </a>
+            )}
+            {instructor.social?.youtube && (
+              <a
+                href={instructor.social.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-colors"
+              >
+                <Youtube className="w-4 h-4" />
+              </a>
+            )}
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+const InstructorsSection = ({
+  title,
+  instructors,
+}: {
+  title: string;
+  instructors: InstructorData[];
+}) => {
+  const { isBangla } = useLanguage();
+  const instructorRef = useRef<HTMLDivElement>(null);
+
+  if (!instructors || instructors.length === 0) return null;
+
+  return (
+    <div
+      ref={instructorRef}
+      id="instructors"
+      className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-1 h-8 rounded-full bg-[#F3056D]" />
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+          {title}
+        </h2>
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-[#F3056D]/10 text-[#F3056D]">
+          <Users className="w-3.5 h-3.5" />
+          {instructors.length}{" "}
+          {instructors.length === 1
+            ? isBangla
+              ? "জন"
+              : "Instructor"
+            : isBangla
+              ? "জন"
+              : "Instructors"}
+        </span>
+      </div>
+
+      {instructors.length === 1 ? (
+        /* Single instructor — wider card */
+        <InstructorCard
+          instructor={instructors[0]}
+          index={0}
+          isBangla={isBangla}
+        />
+      ) : (
+        /* Multiple instructors — grid */
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {instructors.map((inst, i) => (
+            <InstructorCard
+              key={i}
+              instructor={inst}
+              index={i}
+              isBangla={isBangla}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
+/* ═══════════════════════════════════════════════════
+   ERROR / NOT FOUND COMPONENTS
+   ═══════════════════════════════════════════════════ */
 function CourseNotFound({
   isBangla,
   slug,
@@ -836,8 +1083,8 @@ function CourseError({
         </h1>
         <p className="text-gray-500 mb-8 text-[15px] leading-relaxed">
           {isBangla
-            ? "দুঃখিত, কোর্সের তথ্য লোড করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।"
-            : "Sorry, something went wrong while loading the course. Please try again."}
+            ? "দুঃখিত, কোর্সের তথ্য লোড করতে সমস্যা হয়েছে।"
+            : "Sorry, something went wrong while loading the course."}
         </p>
         <button
           onClick={onRetry}
@@ -868,7 +1115,6 @@ export default function CoursesDetails({ slug }: { slug: string }) {
     isLoading,
     isFetching,
     isError,
-    error,
     refetch,
   } = useQuery({
     queryKey: ["course-detail", slug, isBangla],
@@ -889,10 +1135,8 @@ export default function CoursesDetails({ slug }: { slug: string }) {
   const data = courseData || null;
 
   const [activeTab, setActiveTab] = useState("overview");
-  const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
   const [showStickyCta, setShowStickyCta] = useState(false);
   const [showSideEnrollment, setShowSideEnrollment] = useState(false);
-  const [enrollmentSuccess, setEnrollmentSuccess] = useState(false);
 
   const featuresRef = useRef<HTMLDivElement>(null);
   const whoIsThisForRef = useRef<HTMLDivElement>(null);
@@ -958,9 +1202,7 @@ export default function CoursesDetails({ slug }: { slug: string }) {
   }, [data]);
 
   const scrollToSection = (id: string) => {
-    const refs: {
-      [key: string]: React.RefObject<HTMLDivElement | null>;
-    } = {
+    const refs: { [key: string]: React.RefObject<HTMLDivElement | null> } = {
       overview: overviewRef,
       features: featuresRef,
       whoIsThisFor: whoIsThisForRef,
@@ -972,39 +1214,13 @@ export default function CoursesDetails({ slug }: { slug: string }) {
       ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // ✅ MODIFIED: Now redirects directly to the checkout page when clicked
   const handleEnroll = () => {
-    setEnrollmentSuccess(false);
-    setShowEnrollmentModal(true);
+    router.push(`/${isBangla ? "bn" : "en"}/checkout?course=${slug}`);
   };
 
-  const handleEnrollmentSubmit = async (formData: {
-    name: string;
-    phone: string;
-  }) => {
-    try {
-      const result = await createEnrollment({
-        name: formData.name,
-        phone: formData.phone,
-        courseId: slug || "unknown",
-        courseTitle: data?.hero?.title || "Course",
-        amount: data?.quickInfo?.offerPrice || "0",
-      });
-      if (result.success) {
-        setEnrollmentSuccess(true);
-        setShowEnrollmentModal(false);
-      } else {
-        throw new Error(result.message || "Enrollment failed");
-      }
-    } catch (error: any) {
-      throw error;
-    }
-  };
-
-  if (isLoading) {
-    return <CourseDetailSkeleton />;
-  }
-
-  if (isError) {
+  if (isLoading) return <CourseDetailSkeleton />;
+  if (isError)
     return (
       <CourseError
         isBangla={isBangla}
@@ -1012,11 +1228,7 @@ export default function CoursesDetails({ slug }: { slug: string }) {
         isFetching={isFetching}
       />
     );
-  }
-
-  if (!data) {
-    return <CourseNotFound isBangla={isBangla} slug={slug} />;
-  }
+  if (!data) return <CourseNotFound isBangla={isBangla} slug={slug} />;
 
   const priceParts = data.quickInfo.offerPrice.split(" ");
   const displayPrice =
@@ -1025,8 +1237,6 @@ export default function CoursesDetails({ slug }: { slug: string }) {
       : data.quickInfo.offerPrice;
   const originalPrice =
     priceParts.length > 2 ? `${priceParts[0]} ${priceParts[1]}` : "";
-  const startDate = "10 Jan, 2025";
-  const endDate = "10 Jul, 2025";
 
   const breadcrumbItems = [
     {
@@ -1090,7 +1300,7 @@ export default function CoursesDetails({ slug }: { slug: string }) {
       <div className="relative bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:py-12">
           <div className="flex flex-col lg:flex-row gap-10">
-            {/* Left */}
+            {/* ── LEFT COLUMN ── */}
             <div className="w-full lg:w-[65%] order-2 lg:order-1">
               <div className="mb-10">
                 <Link
@@ -1116,6 +1326,7 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                 />
               </div>
 
+              {/* Sticky tab bar */}
               <div className="sticky top-28 md:top-18 lg:top-22 rounded-2xl z-30 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-sm mb-12 overflow-hidden">
                 <nav className="flex space-x-1 md:space-x-2 overflow-x-auto no-scrollbar py-2 px-2">
                   {sections.map((section) => {
@@ -1138,7 +1349,7 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                 </nav>
               </div>
 
-              {/* SECTIONS */}
+              {/* ── OVERVIEW ── */}
               <div
                 ref={overviewRef}
                 id="overview"
@@ -1154,6 +1365,7 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                 </div>
               </div>
 
+              {/* ── FEATURES ── */}
               <div
                 ref={featuresRef}
                 id="features"
@@ -1165,6 +1377,7 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                 />
               </div>
 
+              {/* ── WHO IS THIS FOR ── */}
               <div
                 ref={whoIsThisForRef}
                 id="whoIsThisFor"
@@ -1198,12 +1411,12 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                 </div>
               </div>
 
+              {/* ── SYLLABUS ── */}
               <div
                 ref={syllabusRef}
                 id="syllabus"
                 className="scroll-mt-36 md:scroll-mt-40 space-y-6 mb-12"
               >
-                {/* SYLLABUS CONTENT */}
                 <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 border-l-4 pl-4 border-[#F3056D]">
                   {data.syllabus.title}
                 </h2>
@@ -1226,7 +1439,7 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                   </ul>
                 </div>
 
-                {/* LEVELS CONTENT */}
+                {/* LEVELS */}
                 <h2 className="text-2xl md:text-3xl font-bold mb-6 mt-12 text-gray-900 border-l-4 pl-4 border-[#F3056D]">
                   {data.levels.title}
                 </h2>
@@ -1258,11 +1471,11 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                     </ul>
                   </div>
                   <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFD0CD] rounded-bl-full -mr-8 -mt-8 opacity-30 group-hover:opacity-50 transition-opacity" />
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFD6F0] rounded-bl-full -mr-8 -mt-8 opacity-30 group-hover:opacity-50 transition-opacity" />
                     <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-3 relative z-10">
                       {data.levels.level2.title}
                     </h3>
-                    <p className="text-base text-[#214187] font-semibold mb-4 relative z-10">
+                    <p className="text-base text-[#F3056D] font-semibold mb-4 relative z-10">
                       {data.levels.level2.for}
                     </p>
                     <p className="text-base text-gray-600 mb-6 relative z-10">
@@ -1274,7 +1487,7 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                           key={i}
                           className="flex items-start gap-2 text-base text-gray-700"
                         >
-                          <ChevronRight className="h-5 w-5 text-[#214187] mt-0.5 flex-shrink-0" />
+                          <ChevronRight className="h-5 w-5 text-[#F3056D] mt-0.5 flex-shrink-0" />
                           {item}
                         </li>
                       ))}
@@ -1283,8 +1496,15 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                 </div>
               </div>
 
-              <InstructorSection instructor={data.instructor} />
+              {/* ══════════════════════════════════════════════════ */}
+              {/* ✅ INSTRUCTORS SECTION (MULTIPLE) */}
+              {/* ══════════════════════════════════════════════════ */}
+              <InstructorsSection
+                title={data.instructorsTitle}
+                instructors={data.instructors}
+              />
 
+              {/* ── FAQ ── */}
               <div
                 ref={faqRef}
                 id="faq"
@@ -1292,9 +1512,23 @@ export default function CoursesDetails({ slug }: { slug: string }) {
               >
                 <FAQ faqs={data.faq.items} />
               </div>
+
+              {/* ── PAYMENT ── */}
+              {data.payment.title && (
+                <div className="scroll-mt-36 md:scroll-mt-40 mb-12">
+                  <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 border-l-4 pl-4 border-[#F3056D]">
+                      {data.payment.title}
+                    </h2>
+                    <p className="text-lg text-gray-600 leading-relaxed">
+                      {data.payment.description}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Right */}
+            {/* ── RIGHT COLUMN ── */}
             <div className="w-full lg:w-[35%] order-1 mt-0 lg:order-2 space-y-6">
               <div className="hidden md:block">
                 <EnrollmentCard
@@ -1303,108 +1537,86 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                   mediaAssets={data.mediaAssets || []}
                 />
               </div>
-              <div className="sticky hidden md:block top-28">
+              {showSideEnrollment && (
                 <EnrollmentSideSticky
-                  data={data}
                   onEnroll={handleEnroll}
+                  data={data}
                   isVisible={showSideEnrollment}
                 />
-              </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* FINAL CTA & MODALS */}
+      {/* ── FINAL CTA ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-gradient-to-r from-[#214187] to-[#1e3a8a] p-8 md:p-12 rounded-3xl shadow-2xl border border-white/10 text-center text-white relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+        <div className="bg-gradient-to-br from-[#214187] to-[#1a2f6e] rounded-3xl p-8 md:p-14 space-y-6 text-center relative overflow-hidden shadow-2xl">
+          <div className="absolute top-[-40px] right-[-40px] w-64 h-64 bg-[#F3056D]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-[-40px] left-[-40px] w-64 h-64 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">
               {data.finalCta.title}
             </h2>
-            <p className="text-gray-200 text-lg md:text-xl mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-blue-100/80 mb-4 max-w-3xl mx-auto leading-relaxed">
               {data.finalCta.body}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button
-                onClick={handleEnroll}
-                bgColor="#F3056D"
-                highlightColor="#FF8FCA"
-                darkShadowColor="#C6005F"
-                className="w-full sm:w-auto text-lg py-4"
-                px="px-10"
-              >
-                {data.finalCta.cta1}
-              </Button>
-              <div className="text-gray-300 font-medium flex items-center gap-2">
+            {data.finalCta.cta3 && (
+              <p className="text-base text-white/70 mb-8 flex items-center justify-center gap-2">
                 <span>{data.finalCta.cta3}</span>
-              </div>
+              </p>
+            )}
+            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
+              <button
+                onClick={handleEnroll}
+                className="px-10 py-4 bg-[#F3056D] hover:bg-[#d9045c] text-white font-bold text-base md:text-lg rounded-xl shadow-lg shadow-[#F3056D]/30 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-200"
+              >
+                {data.finalCta.cta1 ||
+                  (isBangla ? "এখনই ভর্তি হন" : "Enroll Now")}
+              </button>
+              {data.finalCta.cta2 && (
+                <button
+                  onClick={handleEnroll}
+                  className="px-10 py-4 bg-white/10 hover:bg-white/20 text-white font-bold text-base md:text-lg rounded-xl border-2 border-white/20 hover:border-white/40 transition-all duration-200"
+                >
+                  {data.finalCta.cta2}
+                </button>
+              )}
             </div>
-            <p className="mt-6 text-base text-gray-300 font-medium bg-white/10 inline-block px-4 py-1.5 rounded-full">
-              {data.finalCta.ctaBelow}
-            </p>
+            {data.finalCta.ctaBelow && (
+              <p className="text-sm text-white/50 mt-6">
+                {data.finalCta.ctaBelow}
+              </p>
+            )}
           </div>
         </div>
       </div>
 
+      {/* ── STICKY BOTTOM CTA (mobile) ── */}
       {showStickyCta && (
-        <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 z-[60] lg:hidden shadow-[0_-5px_20px_rgba(0,0,0,0.1)] animate-in slide-in-from-bottom-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
-                {isBangla ? "মূল্য" : "Price"}
-              </span>
-              <span className="text-2xl font-bold text-gray-900 leading-none mt-1">
-                {displayPrice}
-              </span>
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] p-3 md:hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <p className="text-xs text-gray-500">
+                {isBangla ? "কোর্সের মূল্য" : "Course Price"}
+              </p>
+              <div className="flex items-center gap-2">
+                {originalPrice && (
+                  <span className="text-sm text-gray-400 line-through">
+                    {originalPrice}
+                  </span>
+                )}
+                <span className="text-xl font-bold text-gray-900">
+                  {displayPrice}
+                </span>
+              </div>
             </div>
-            <Button
+            <button
               onClick={handleEnroll}
-              className="flex-1 py-3.5 text-lg"
-              px="px-6"
+              className="px-6 py-3 bg-[#F3056D] hover:bg-[#d9045c] text-white font-bold text-sm rounded-xl shadow-lg shadow-[#F3056D]/20 transition-all active:scale-95"
             >
-              {data.quickInfo.cta1}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <EnrollmentModal
-        isOpen={showEnrollmentModal}
-        onClose={() => setShowEnrollmentModal(false)}
-        courseTitle={data.hero.title}
-        coursePrice={displayPrice}
-        originalPrice={originalPrice || undefined}
-        startDate={startDate}
-        endDate={endDate}
-        onSubmit={handleEnrollmentSubmit}
-      />
-
-      {enrollmentSuccess && (
-        <div className="fixed top-6 right-6 z-[80] animate-in slide-in-from-right-full duration-500">
-          <div className="bg-white rounded-2xl shadow-2xl border border-green-100 p-5 max-w-sm">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-900 text-base">
-                  {isBangla ? "এনরোলমেন্ট সফল!" : "Enrollment Successful!"}
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  {isBangla
-                    ? "আপনার আবেদনটি গ্রহণ করা হয়েছে। আমরা শীঘ্রই যোগাযোগ করব।"
-                    : "Your application has been received. We will contact you soon."}
-                </p>
-              </div>
-              <button
-                onClick={() => setEnrollmentSuccess(false)}
-                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="h-4 w-4 text-gray-400" />
-              </button>
-            </div>
+              {isBangla ? "ভর্তি হন" : "Enroll Now"}
+            </button>
           </div>
         </div>
       )}

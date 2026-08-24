@@ -1,50 +1,46 @@
+// src/app/dashboard/mycourses/page.tsx
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
+import Link from "next/link"; // ✅ Import Link
 import { useTheme } from "@/app/context/ThemeContext";
 import { useAuth } from "@/app/hooks/useAuth";
+import { useLanguage } from "@/app/context/LanguageContext"; // ✅ Import useLanguage
 import gsap from "gsap";
+import Button from "@/app/ui/button/Button"; // ✅ Import your custom Button component
+
 import {
   BookOpen,
   Clock,
   Calendar,
   Award,
   Play,
-  ChevronRight,
   CheckCircle2,
   Star,
-  Trophy,
-  Flame,
   Target,
-  Crown,
-  Sparkles,
-  ArrowRight,
-  Lock,
-  Zap,
   Search,
-  Filter,
   BookMarked,
   Receipt,
-  CircleCheck,
-  CircleX,
-  Loader2,
   ShoppingBag,
   GraduationCap,
   X,
-  Gift,
   Eye,
-  Download,
-  ExternalLink,
   Palette,
   Microscope,
   Code2,
   Music,
-  Rocket,
   Pencil,
-  Gamepad2,
   Heart,
+  LayoutGrid,
+  List,
+  SlidersHorizontal,
+  ChevronDown,
+  FileText,
+  Timer,
+  TrendingUp,
+  Layers,
+  CircleCheck,
 } from "lucide-react";
 
 // ===================== TYPES =====================
@@ -62,18 +58,20 @@ interface PurchasedCourse {
   addons?: number[];
   createdAt: string;
   verifiedAt?: string;
-  // Enriched fields (from frontend join with courses API)
   category?: string;
   instructor?: string;
   description?: string;
   totalLessons?: number;
+  completedLessons?: number;
   image?: string;
   dates?: string;
   slug?: string;
+  progress?: number;
+  lastAccessed?: string;
+  rating?: number;
 }
 
-// ===================== FALLBACK DATA =====================
-
+// ===================== FALLBACK DATA (enriched) =====================
 const FALLBACK_COURSES: PurchasedCourse[] = [
   {
     _id: "enr_1",
@@ -87,10 +85,14 @@ const FALLBACK_COURSES: PurchasedCourse[] = [
     category: "Mathematics",
     instructor: "Ms. Sarah",
     totalLessons: 24,
+    completedLessons: 16,
     image:
-      "https://images.unsplash.com/photo-1596495578065-6e0763fa1178?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1596495578065-6e0763fa1178?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
     dates: "03 Mar, 2024 - 31 Dec, 2024",
     slug: "fun-with-numbers",
+    progress: 67,
+    lastAccessed: "2025-06-14T15:30:00Z",
+    rating: 4.8,
   },
   {
     _id: "enr_2",
@@ -104,10 +106,14 @@ const FALLBACK_COURSES: PurchasedCourse[] = [
     category: "Art & Craft",
     instructor: "Mr. David",
     totalLessons: 18,
+    completedLessons: 5,
     image:
-      "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
     dates: "01 Jan, 2025 - 30 Jun, 2025",
     slug: "color-and-shapes",
+    progress: 28,
+    lastAccessed: "2025-06-10T09:00:00Z",
+    rating: 4.6,
   },
   {
     _id: "enr_3",
@@ -121,10 +127,14 @@ const FALLBACK_COURSES: PurchasedCourse[] = [
     category: "Science",
     instructor: "Dr. Emily",
     totalLessons: 20,
+    completedLessons: 17,
     image:
-      "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
     dates: "15 Jan, 2025 - 15 Jul, 2025",
     slug: "science-explorers",
+    progress: 85,
+    lastAccessed: "2025-06-14T18:00:00Z",
+    rating: 4.9,
   },
   {
     _id: "enr_4",
@@ -138,10 +148,14 @@ const FALLBACK_COURSES: PurchasedCourse[] = [
     category: "Technology",
     instructor: "Mr. Alex",
     totalLessons: 15,
+    completedLessons: 2,
     image:
-      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
     dates: "01 Mar, 2025 - 31 Aug, 2025",
     slug: "coding-with-blocks",
+    progress: 13,
+    lastAccessed: "2025-06-08T11:00:00Z",
+    rating: 4.7,
   },
   {
     _id: "enr_5",
@@ -155,21 +169,45 @@ const FALLBACK_COURSES: PurchasedCourse[] = [
     category: "Creative Arts",
     instructor: "Ms. Lily",
     totalLessons: 12,
+    completedLessons: 0,
     image:
-      "https://images.unsplash.com/photo-1507838153414-b4b713384a76?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1507838153414-b4b713384a76?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
     dates: "10 Mar, 2025 - 10 Sep, 2025",
     slug: "music-and-rhythm",
+    progress: 0,
+    lastAccessed: null,
+    rating: 4.9,
+  },
+  {
+    _id: "enr_6",
+    courseId: "course_303",
+    courseTitle: "Space Adventures - Journey Through the Cosmos",
+    amount: "5500",
+    status: "pending",
+    paymentMethod: "bkash",
+    createdAt: "2025-06-13T20:00:00Z",
+    category: "Science",
+    instructor: "Dr. Emily",
+    totalLessons: 8,
+    completedLessons: 0,
+    image:
+      "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+    dates: "15 Jun, 2025 - 15 Dec, 2025",
+    slug: "space-adventures",
+    progress: 0,
+    lastAccessed: null,
+    rating: 4.9,
   },
 ];
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  Mathematics: <Target className="h-4 w-4" />,
-  "Art & Craft": <Palette className="h-4 w-4" />,
-  Science: <Microscope className="h-4 w-4" />,
-  Technology: <Code2 className="h-4 w-4" />,
-  "Creative Arts": <Music className="h-4 w-4" />,
-  Language: <Pencil className="h-4 w-4" />,
-  General: <BookOpen className="h-4 w-4" />,
+  Mathematics: <Target className="h-3.5 w-3.5" />,
+  "Art & Craft": <Palette className="h-3.5 w-3.5" />,
+  Science: <Microscope className="h-3.5 w-3.5" />,
+  Technology: <Code2 className="h-3.5 w-3.5" />,
+  "Creative Arts": <Music className="h-3.5 w-3.5" />,
+  Language: <Pencil className="h-3.5 w-3.5" />,
+  General: <BookOpen className="h-3.5 w-3.5" />,
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -182,26 +220,103 @@ const CATEGORY_COLORS: Record<string, string> = {
   General: "#F3056D",
 };
 
-type FilterTab = "all" | "active" | "completed";
+type FilterTab = "all" | "active" | "completed" | "notstarted";
+type ViewMode = "grid" | "list";
+type SortOption = "recent" | "progress" | "name" | "price";
 
-// ===================== COMPONENT =====================
+function SkeletonCard({ isList }: { isList: boolean }) {
+  const { isDarkMode } = useTheme();
+  const base = isDarkMode ? "rgba(255,255,255,0.04)" : "rgba(33,65,135,0.04)";
+  const shine = isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(33,65,135,0.08)";
+
+  if (isList) {
+    return (
+      <div
+        className="flex gap-4 p-4 rounded-2xl"
+        style={{
+          background: base,
+          border: isDarkMode
+            ? "1px solid rgba(255,255,255,0.04)"
+            : "1px solid rgba(33,65,135,0.04)",
+        }}
+      >
+        <div
+          className="w-28 h-20 rounded-xl flex-shrink-0 animate-pulse"
+          style={{ background: shine }}
+        />
+        <div className="flex-1 space-y-2.5 py-1">
+          <div
+            className="h-4 rounded-lg w-3/4 animate-pulse"
+            style={{ background: shine }}
+          />
+          <div
+            className="h-3 rounded-lg w-1/3 animate-pulse"
+            style={{ background: shine }}
+          />
+          <div
+            className="h-2 rounded-full w-full animate-pulse"
+            style={{ background: shine }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: base,
+        border: isDarkMode
+          ? "1px solid rgba(255,255,255,0.04)"
+          : "1px solid rgba(33,65,135,0.04)",
+      }}
+    >
+      <div className="h-44 animate-pulse" style={{ background: shine }} />
+      <div className="p-4 space-y-3">
+        <div
+          className="h-4 rounded-lg w-4/5 animate-pulse"
+          style={{ background: shine }}
+        />
+        <div
+          className="h-3 rounded-lg w-1/3 animate-pulse"
+          style={{ background: shine }}
+        />
+        <div
+          className="h-2 rounded-full w-full animate-pulse"
+          style={{ background: shine }}
+        />
+        <div className="flex gap-2 pt-1">
+          <div
+            className="h-9 rounded-xl flex-1 animate-pulse"
+            style={{ background: shine }}
+          />
+          <div
+            className="w-9 h-9 rounded-xl animate-pulse"
+            style={{ background: shine }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function MyCoursesPage() {
+  const router = useRouter();
   const { isDarkMode } = useTheme();
+  const { isBangla } = useLanguage(); // ✅ Get isBangla
   const { currentUser, appUser } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const [courses, setCourses] = useState<PurchasedCourse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
-  const [selectedCourse, setSelectedCourse] = useState<PurchasedCourse | null>(
-    null,
-  );
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [sortBy, setSortBy] = useState<SortOption>("recent");
+  const [showSortMenu, setShowSortMenu] = useState(false);
   const BACKEND_URL =
-    process.env.NEXT_PUBLIC_API_URL || "https://apichalakchamps.vercel.app";
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-  // --- Fetch purchased courses ---
-  // --- Fetch purchased courses ---
   useEffect(() => {
     const fetchCourses = async () => {
       if (!currentUser) {
@@ -223,35 +338,70 @@ export default function MyCoursesPage() {
         if (res.ok) {
           const data = await res.json();
           if (data.orders?.length > 0) {
-            const mapped: PurchasedCourse[] = data.orders.map(
-              (order: Record<string, unknown>) => ({
-                _id: order._id,
-                orderId: order.orderId,
-                tranId: order.tranId,
-                courseId: order.courseId,
-                courseTitle: order.courseTitle,
-                courseImage: order.courseImage,
-                amount: order.totalAmount,
-                status: "completed" as const,
-                paymentMethod: order.paymentMethod,
-                addons: order.addons,
-                createdAt: order.createdAt,
-                verifiedAt: order.verifiedAt,
+            // ✅ NEW: Fetch actual course slug using courseId for each order
+            const mapped: PurchasedCourse[] = await Promise.all(
+              data.orders.map(async (order: Record<string, unknown>) => {
+                let courseSlug = order.slug as string;
+                let courseTitle = order.courseTitle as string;
+                let courseImage = order.courseImage as string;
+
+                // If slug is missing or "undefined", fetch it from course API
+                if (!courseSlug || courseSlug === "undefined") {
+                  try {
+                    const courseRes = await fetch(
+                      `${BACKEND_URL}/api/courses/${order.courseId}`,
+                    );
+                    if (courseRes.ok) {
+                      const courseData = await courseRes.json();
+                      const fullCourse =
+                        courseData.course || courseData.data || courseData;
+                      courseSlug = fullCourse.slug;
+
+                      // Also fix title/image if they are messed up in order data
+                      if (courseTitle && courseTitle.startsWith("{")) {
+                        courseTitle =
+                          fullCourse.title?.en ||
+                          fullCourse.title?.bn ||
+                          courseTitle;
+                      }
+                      if (!courseImage || courseImage === "") {
+                        courseImage = fullCourse.thumbnail;
+                      }
+                    }
+                  } catch (e) {
+                    // Silent fail, fallback to courseId
+                  }
+                }
+
+                return {
+                  _id: order._id as string,
+                  orderId: order.orderId as string,
+                  tranId: order.tranId as string,
+                  courseId: order.courseId as string,
+                  courseTitle: courseTitle,
+                  courseImage: courseImage,
+                  amount: order.totalAmount as string,
+                  status: "completed" as const,
+                  paymentMethod: order.paymentMethod as string,
+                  addons: order.addons as number[],
+                  createdAt: order.createdAt as string,
+                  verifiedAt: order.verifiedAt as string,
+                  slug: courseSlug || order.courseId, // Use slug if found, else courseId
+                };
               }),
             );
+
             setCourses(mapped);
             setIsLoading(false);
             return;
           }
         }
 
-        // Fallback: try enrollments
         const identifier =
           currentUser.phoneNumber || currentUser.email || appUser?.email || "";
         if (identifier) {
           const enrController = new AbortController();
           const enrTimeout = setTimeout(() => enrController.abort(), 5000);
-
           const enrRes = await fetch(
             `${BACKEND_URL}/api/enrollments/user/${encodeURIComponent(identifier)}`,
             { signal: enrController.signal },
@@ -263,12 +413,17 @@ export default function MyCoursesPage() {
             if (enrData.enrollments?.length > 0) {
               const mapped: PurchasedCourse[] = enrData.enrollments.map(
                 (e: Record<string, unknown>) => ({
-                  _id: e._id,
-                  courseId: e.courseId,
-                  courseTitle: e.courseTitle,
-                  amount: e.amount,
-                  status: e.status,
-                  createdAt: e.createdAt,
+                  _id: e._id as string,
+                  courseId: e.courseId as string,
+                  courseTitle: e.courseTitle as string,
+                  amount: e.amount as string,
+                  status: e.status as any,
+                  createdAt: e.createdAt as string,
+                  slug:
+                    (e.courseSlug as string) ||
+                    (e.slug as string) ||
+                    (e.course?.slug as string) ||
+                    undefined,
                 }),
               );
               setCourses(mapped);
@@ -278,10 +433,8 @@ export default function MyCoursesPage() {
           }
         }
 
-        // Final fallback — silent, no console.error
         setCourses(FALLBACK_COURSES);
       } catch {
-        // Network error / timeout / backend not running — use fallback silently
         setCourses(FALLBACK_COURSES);
       } finally {
         setIsLoading(false);
@@ -289,11 +442,17 @@ export default function MyCoursesPage() {
     };
 
     fetchCourses();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
+  }, [currentUser, appUser]);
 
-  
-  // --- GSAP Animations ---
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-sort-menu]")) setShowSortMenu(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
   useEffect(() => {
     if (isLoading) return;
     const ctx = gsap.context(() => {
@@ -315,16 +474,9 @@ export default function MyCoursesPage() {
         },
       );
       gsap.fromTo(
-        ".filter-tab",
-        { y: 10, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.4,
-          stagger: 0.06,
-          ease: "power2.out",
-          delay: 0.25,
-        },
+        ".toolbar-row",
+        { y: 15, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: "power2.out", delay: 0.25 },
       );
       gsap.fromTo(
         ".course-item",
@@ -334,27 +486,29 @@ export default function MyCoursesPage() {
           opacity: 1,
           scale: 1,
           duration: 0.5,
-          stagger: 0.08,
+          stagger: 0.07,
           ease: "power2.out",
           delay: 0.35,
         },
       );
     }, containerRef);
     return () => ctx.revert();
-  }, [isLoading]);
+  }, [isLoading, viewMode]);
 
-  // --- Computed values ---
   const filteredCourses = useMemo(() => {
     let result = [...courses];
+    if (activeFilter === "active")
+      result = result.filter(
+        (c) =>
+          c.status === "completed" &&
+          (c.progress || 0) > 0 &&
+          (c.progress || 0) < 100,
+      );
+    else if (activeFilter === "completed")
+      result = result.filter((c) => (c.progress || 0) >= 100);
+    else if (activeFilter === "notstarted")
+      result = result.filter((c) => (c.progress || 0) === 0);
 
-    // Filter by tab
-    if (activeFilter === "active") {
-      result = result.filter((c) => c.status === "completed");
-    } else if (activeFilter === "completed") {
-      result = result.filter((c) => c.status === "completed");
-    }
-
-    // Filter by search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -365,8 +519,22 @@ export default function MyCoursesPage() {
       );
     }
 
+    if (sortBy === "recent")
+      result.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+    else if (sortBy === "progress")
+      result.sort((a, b) => (b.progress || 0) - (a.progress || 0));
+    else if (sortBy === "name")
+      result.sort((a, b) => a.courseTitle.localeCompare(b.courseTitle));
+    else if (sortBy === "price")
+      result.sort(
+        (a, b) => parseFloat(String(b.amount)) - parseFloat(String(a.amount)),
+      );
+
     return result;
-  }, [courses, activeFilter, searchQuery]);
+  }, [courses, activeFilter, searchQuery, sortBy]);
 
   const totalSpent = courses.reduce(
     (sum, c) =>
@@ -374,8 +542,12 @@ export default function MyCoursesPage() {
       (typeof c.amount === "number" ? c.amount : parseFloat(c.amount) || 0),
     0,
   );
+  const avgProgress = courses.length
+    ? Math.round(
+        courses.reduce((sum, c) => sum + (c.progress || 0), 0) / courses.length,
+      )
+    : 0;
 
-  // --- Theme tokens ---
   const cardBg = isDarkMode ? "rgba(26,16,53,0.6)" : "#fff";
   const cardBorder = isDarkMode
     ? "1px solid rgba(255,255,255,0.06)"
@@ -388,7 +560,6 @@ export default function MyCoursesPage() {
     ? "rgba(255,255,255,0.3)"
     : "rgba(33,65,135,0.35)";
 
-  // --- Format helpers ---
   const formatDate = (dateStr: string) => {
     try {
       return new Date(dateStr).toLocaleDateString("en-US", {
@@ -401,102 +572,207 @@ export default function MyCoursesPage() {
     }
   };
 
-  // =================== RENDER: Loading ===================
+  const getTimeAgo = (dateStr: string | null) => {
+    if (!dateStr) return "Never";
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "Just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return `${days}d ago`;
+    return formatDate(dateStr);
+  };
+
+  const getPaymentIcon = (method?: string) => {
+    const m = method?.toLowerCase() || "";
+    if (m.includes("bkash")) return "bKash";
+    if (m.includes("nagad")) return "Nagad";
+    if (m.includes("rocket")) return "Rocket";
+    if (m.includes("card")) return "Card";
+    return method || "—";
+  };
+
+  const getPaymentColor = (method?: string) => {
+    const m = method?.toLowerCase() || "";
+    if (m.includes("bkash")) return "#E2136E";
+    if (m.includes("nagad")) return "#F6921E";
+    if (m.includes("rocket")) return "#8C3494";
+    return textMuted;
+  };
+
+  // ✅ Helper to navigate to course learning page with language prefix
+  const goToCourse = (course: PurchasedCourse) => {
+    if (course.status === "pending") return;
+    const langPrefix = isBangla ? "bn" : "en";
+    const courseIdentifier = course.slug || course.courseId;
+    router.push(`/${langPrefix}/mycourses/${courseIdentifier}`);
+  };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
+      <div className="space-y-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-4">
           <div
-            className="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4 animate-pulse"
+            className="w-14 h-14 rounded-2xl animate-pulse"
             style={{
-              background: "linear-gradient(135deg, #F3056D, #ffd700)",
+              background: isDarkMode
+                ? "rgba(255,255,255,0.06)"
+                : "rgba(33,65,135,0.06)",
             }}
-          >
-            <BookOpen className="h-8 w-8 text-white" />
+          />
+          <div className="space-y-2">
+            <div
+              className="h-7 w-48 rounded-lg animate-pulse"
+              style={{
+                background: isDarkMode
+                  ? "rgba(255,255,255,0.06)"
+                  : "rgba(33,65,135,0.06)",
+              }}
+            />
+            <div
+              className="h-4 w-32 rounded-lg animate-pulse"
+              style={{
+                background: isDarkMode
+                  ? "rgba(255,255,255,0.04)"
+                  : "rgba(33,65,135,0.04)",
+              }}
+            />
           </div>
-          <p className="text-sm font-medium" style={{ color: textSecondary }}>
-            Loading your courses...
-          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="p-4 rounded-2xl space-y-3 animate-pulse"
+              style={{
+                background: isDarkMode
+                  ? "rgba(255,255,255,0.03)"
+                  : "rgba(33,65,135,0.03)",
+                border: isDarkMode
+                  ? "1px solid rgba(255,255,255,0.04)"
+                  : "1px solid rgba(33,65,135,0.04)",
+              }}
+            >
+              <div
+                className="h-8 w-8 rounded-xl"
+                style={{
+                  background: isDarkMode
+                    ? "rgba(255,255,255,0.06)"
+                    : "rgba(33,65,135,0.06)",
+                }}
+              />
+              <div
+                className="h-6 w-16 rounded-lg"
+                style={{
+                  background: isDarkMode
+                    ? "rgba(255,255,255,0.06)"
+                    : "rgba(33,65,135,0.06)",
+                }}
+              />
+              <div
+                className="h-3 w-20 rounded-lg"
+                style={{
+                  background: isDarkMode
+                    ? "rgba(255,255,255,0.04)"
+                    : "rgba(33,65,135,0.04)",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} isList={false} />
+          ))}
         </div>
       </div>
     );
   }
 
-  // =================== RENDER: Main ===================
-
   return (
     <div className="space-y-6 max-w-7xl mx-auto" ref={containerRef}>
-      {/* ==================== PAGE HEADER ==================== */}
-      <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center"
-            style={{
-              background: "linear-gradient(135deg, #F3056D 0%, #ff3d8f 100%)",
-              boxShadow: "0 6px 20px rgba(243,5,109,0.3)",
-            }}
-          >
-            <BookOpen className="h-7 w-7 text-white" />
-          </div>
-          <div>
-            <h1
-              className="text-2xl sm:text-3xl font-black tracking-tight"
-              style={{ color: textPrimary }}
+      {/* PAGE HEADER */}
+      <div className="page-header">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center relative overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, #F3056D 0%, #ff3d8f 100%)",
+                boxShadow: "0 6px 20px rgba(243,5,109,0.3)",
+              }}
             >
-              My Courses
-            </h1>
-            <p className="text-xs mt-0.5" style={{ color: textSecondary }}>
-              {courses.length} course{courses.length !== 1 ? "s" : ""} purchased
-            </p>
+              <BookOpen className="h-7 w-7 text-white relative z-10" />
+              <div
+                className="absolute inset-0 opacity-20"
+                style={{
+                  background:
+                    "linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.3))",
+                }}
+              />
+            </div>
+            <div>
+              <h1
+                className="text-2xl sm:text-3xl font-black tracking-tight"
+                style={{ color: textPrimary }}
+              >
+                My Courses
+              </h1>
+              <p className="text-xs mt-0.5" style={{ color: textSecondary }}>
+                {courses.length} course{courses.length !== 1 ? "s" : ""}{" "}
+                purchased · ৳{totalSpent.toLocaleString()} total invested
+              </p>
+            </div>
           </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative w-full sm:w-72">
-          <Search
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4"
-            style={{ color: textMuted }}
-          />
-          <input
-            type="text"
-            placeholder="Search courses..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-2.5 rounded-2xl text-sm outline-none transition-all duration-300"
-            style={{
-              background: isDarkMode
-                ? "rgba(255,255,255,0.05)"
-                : "rgba(33,65,135,0.04)",
-              border: isDarkMode
-                ? "1px solid rgba(255,255,255,0.08)"
-                : "1px solid rgba(33,65,135,0.1)",
-              color: textPrimary,
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = "#F3056D";
-              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(243,5,109,0.1)";
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = isDarkMode
-                ? "1px solid rgba(255,255,255,0.08)"
-                : "1px solid rgba(33,65,135,0.1)";
-              e.currentTarget.style.boxShadow = "none";
-            }}
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              <X className="h-3.5 w-3.5" style={{ color: textMuted }} />
-            </button>
-          )}
+          <div className="relative w-full sm:w-80">
+            <Search
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4"
+              style={{ color: textMuted }}
+            />
+            <input
+              type="text"
+              placeholder="Search by title, category, instructor..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-2.5 rounded-2xl text-sm outline-none transition-all duration-300"
+              style={{
+                background: isDarkMode
+                  ? "rgba(255,255,255,0.05)"
+                  : "rgba(33,65,135,0.04)",
+                border: isDarkMode
+                  ? "1px solid rgba(255,255,255,0.08)"
+                  : "1px solid rgba(33,65,135,0.1)",
+                color: textPrimary,
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#F3056D";
+                e.currentTarget.style.boxShadow =
+                  "0 0 0 3px rgba(243,5,109,0.1)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = isDarkMode
+                  ? "1px solid rgba(255,255,255,0.08)"
+                  : "1px solid rgba(33,65,135,0.1)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-md transition-colors"
+                style={{ color: textMuted }}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ==================== STATS ROW ==================== */}
-      <div className="stats-row grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* STATS ROW */}
+      <div className="stats-row grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
             label: "Purchased",
@@ -504,15 +780,17 @@ export default function MyCoursesPage() {
             icon: ShoppingBag,
             color: "#F3056D",
             bg: isDarkMode ? "rgba(243,5,109,0.1)" : "rgba(243,5,109,0.06)",
+            sub: `${courses.filter((c) => c.status === "pending").length} pending`,
           },
           {
-            label: "Active",
+            label: "In Progress",
             value: courses
-              .filter((c) => c.status === "completed")
+              .filter((c) => (c.progress || 0) > 0 && (c.progress || 0) < 100)
               .length.toString(),
             icon: Play,
             color: "#214187",
             bg: isDarkMode ? "rgba(33,65,135,0.15)" : "rgba(33,65,135,0.06)",
+            sub: `Avg ${avgProgress}% done`,
           },
           {
             label: "Total Spent",
@@ -520,31 +798,50 @@ export default function MyCoursesPage() {
             icon: Receipt,
             color: "#ffd700",
             bg: isDarkMode ? "rgba(255,215,0,0.1)" : "rgba(255,215,0,0.08)",
+            sub: `Avg ৳${courses.length ? Math.round(totalSpent / courses.length).toLocaleString() : 0}/course`,
           },
           {
-            label: "Certificates",
-            value: "02",
+            label: "Completed",
+            value: courses
+              .filter((c) => (c.progress || 0) >= 100)
+              .length.toString(),
             icon: Award,
-            color: "#F3056D",
-            bg: isDarkMode ? "rgba(243,5,109,0.1)" : "rgba(243,5,109,0.06)",
+            color: "#4ade80",
+            bg: isDarkMode ? "rgba(74,222,128,0.1)" : "rgba(74,222,128,0.06)",
+            sub: "Certificates earned",
           },
         ].map((stat) => (
           <div
             key={stat.label}
-            className="p-4 rounded-2xl transition-all duration-300 hover:-translate-y-1 cursor-default"
+            className="group p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:-translate-y-1 cursor-default relative overflow-hidden"
             style={{
               background: cardBg,
               border: cardBorder,
               boxShadow: isDarkMode
                 ? "0 4px 20px rgba(0,0,0,0.2)"
                 : "0 4px 20px rgba(33,65,135,0.06)",
-              backdropFilter: "blur(10px)",
             }}
           >
-            <div className="flex justify-between items-start mb-2.5">
-              <div className="p-2 rounded-xl" style={{ background: stat.bg }}>
-                <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
+            <div
+              className="absolute top-0 left-4 right-4 h-[2px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              style={{
+                background: `linear-gradient(90deg, ${stat.color}, transparent)`,
+              }}
+            />
+            <div className="flex justify-between items-start mb-3">
+              <div
+                className="p-2.5 rounded-xl transition-transform duration-300 group-hover:scale-110"
+                style={{ background: stat.bg }}
+              >
+                <stat.icon
+                  className="h-4.5 w-4.5"
+                  style={{ color: stat.color }}
+                />
               </div>
+              <TrendingUp
+                className="h-3.5 w-3.5 opacity-0 group-hover:opacity-40 transition-opacity duration-300"
+                style={{ color: stat.color }}
+              />
             </div>
             <h3
               className="text-xl sm:text-2xl font-black"
@@ -558,118 +855,269 @@ export default function MyCoursesPage() {
             >
               {stat.label}
             </p>
+            <p
+              className="text-[9px] mt-1 font-medium"
+              style={{ color: textMuted }}
+            >
+              {stat.sub}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* ==================== FILTER TABS ==================== */}
-      <div className="flex items-center gap-2">
-        {(
-          [
-            { key: "all", label: "All Courses", count: courses.length },
-            {
-              key: "active",
-              label: "Active",
-              count: courses.filter((c) => c.status === "completed").length,
-            },
-            { key: "completed", label: "Completed", count: 0 },
-          ] as const
-        ).map((tab) => {
-          const isActive = activeFilter === tab.key;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveFilter(tab.key)}
-              className="filter-tab flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-300"
-              style={{
-                background: isActive
-                  ? "linear-gradient(135deg, #F3056D 0%, #ff3d8f 100%)"
-                  : isDarkMode
-                    ? "rgba(255,255,255,0.05)"
-                    : "rgba(33,65,135,0.04)",
-                color: isActive ? "#fff" : textSecondary,
-                border: isActive
-                  ? "none"
-                  : isDarkMode
-                    ? "1px solid rgba(255,255,255,0.06)"
-                    : "1px solid rgba(33,65,135,0.08)",
-                boxShadow: isActive ? "0 4px 15px rgba(243,5,109,0.3)" : "none",
-              }}
-            >
-              {tab.label}
-              <span
-                className="text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[20px] text-center"
+      {/* TOOLBAR */}
+      <div className="toolbar-row flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          {(
+            [
+              { key: "all", label: "All", count: courses.length },
+              {
+                key: "active",
+                label: "In Progress",
+                count: courses.filter(
+                  (c) => (c.progress || 0) > 0 && (c.progress || 0) < 100,
+                ).length,
+              },
+              {
+                key: "completed",
+                label: "Completed",
+                count: courses.filter((c) => (c.progress || 0) >= 100).length,
+              },
+              {
+                key: "notstarted",
+                label: "Not Started",
+                count: courses.filter((c) => (c.progress || 0) === 0).length,
+              },
+            ] as const
+          ).map((tab) => {
+            const isActive = activeFilter === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveFilter(tab.key)}
+                className="filter-tab flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300"
                 style={{
                   background: isActive
-                    ? "rgba(255,255,255,0.2)"
+                    ? "linear-gradient(135deg, #F3056D 0%, #ff3d8f 100%)"
                     : isDarkMode
-                      ? "rgba(255,255,255,0.08)"
-                      : "rgba(33,65,135,0.08)",
-                  color: isActive ? "#fff" : textMuted,
+                      ? "rgba(255,255,255,0.05)"
+                      : "rgba(33,65,135,0.04)",
+                  color: isActive ? "#fff" : textSecondary,
+                  border: isActive
+                    ? "none"
+                    : isDarkMode
+                      ? "1px solid rgba(255,255,255,0.06)"
+                      : "1px solid rgba(33,65,135,0.08)",
+                  boxShadow: isActive
+                    ? "0 4px 15px rgba(243,5,109,0.3)"
+                    : "none",
                 }}
               >
-                {tab.count}
-              </span>
+                {tab.label}
+                <span
+                  className="text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center"
+                  style={{
+                    background: isActive
+                      ? "rgba(255,255,255,0.2)"
+                      : isDarkMode
+                        ? "rgba(255,255,255,0.08)"
+                        : "rgba(33,65,135,0.08)",
+                    color: isActive ? "#fff" : textMuted,
+                  }}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="relative" data-sort-menu>
+            <button
+              onClick={() => setShowSortMenu(!showSortMenu)}
+              className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200"
+              style={{
+                background: isDarkMode
+                  ? "rgba(255,255,255,0.05)"
+                  : "rgba(33,65,135,0.04)",
+                border: isDarkMode
+                  ? "1px solid rgba(255,255,255,0.08)"
+                  : "1px solid rgba(33,65,135,0.1)",
+                color: textSecondary,
+              }}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Sort</span>
+              <ChevronDown
+                className="h-3 w-3 transition-transform duration-200"
+                style={{
+                  transform: showSortMenu ? "rotate(180deg)" : "rotate(0)",
+                }}
+              />
             </button>
-          );
-        })}
-      </div>
-
-      {/* ==================== COURSE GRID ==================== */}
-      {filteredCourses.length === 0 ? (
-        /* --- Empty State --- */
-        <div className="text-center py-20">
+            {showSortMenu && (
+              <div
+                className="absolute right-0 mt-2 w-44 rounded-xl overflow-hidden z-50"
+                style={{
+                  background: isDarkMode ? "#1a1035" : "#fff",
+                  border: isDarkMode
+                    ? "1px solid rgba(255,255,255,0.08)"
+                    : "1px solid rgba(33,65,135,0.08)",
+                  boxShadow: isDarkMode
+                    ? "0 12px 40px rgba(0,0,0,0.5)"
+                    : "0 12px 40px rgba(33,65,135,0.12)",
+                }}
+              >
+                {[
+                  {
+                    key: "recent" as SortOption,
+                    label: "Most Recent",
+                    icon: Clock,
+                  },
+                  {
+                    key: "progress" as SortOption,
+                    label: "Progress",
+                    icon: TrendingUp,
+                  },
+                  {
+                    key: "name" as SortOption,
+                    label: "Name A-Z",
+                    icon: FileText,
+                  },
+                  {
+                    key: "price" as SortOption,
+                    label: "Price High-Low",
+                    icon: Receipt,
+                  },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => {
+                      setSortBy(opt.key);
+                      setShowSortMenu(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium transition-colors duration-150"
+                    style={{
+                      color: sortBy === opt.key ? "#F3056D" : textSecondary,
+                      background:
+                        sortBy === opt.key
+                          ? isDarkMode
+                            ? "rgba(243,5,109,0.08)"
+                            : "rgba(243,5,109,0.04)"
+                          : "transparent",
+                    }}
+                  >
+                    <opt.icon className="h-3.5 w-3.5" />
+                    {opt.label}
+                    {sortBy === opt.key && (
+                      <CheckCircle2 className="h-3.5 w-3.5 ml-auto" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <div
-            className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6"
+            className="flex rounded-xl overflow-hidden"
             style={{
               background: isDarkMode
                 ? "rgba(255,255,255,0.05)"
                 : "rgba(33,65,135,0.04)",
               border: isDarkMode
-                ? "1px solid rgba(255,255,255,0.06)"
-                : "1px solid rgba(33,65,135,0.08)",
+                ? "1px solid rgba(255,255,255,0.08)"
+                : "1px solid rgba(33,65,135,0.1)",
             }}
           >
-            <BookOpen className="h-10 w-10" style={{ color: textMuted }} />
+            {[
+              { mode: "grid" as ViewMode, icon: LayoutGrid },
+              { mode: "list" as ViewMode, icon: List },
+            ].map(({ mode, icon: Icon }) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className="p-2.5 transition-all duration-200"
+                style={{
+                  background:
+                    viewMode === mode
+                      ? isDarkMode
+                        ? "rgba(255,255,255,0.1)"
+                        : "rgba(33,65,135,0.08)"
+                      : "transparent",
+                  color: viewMode === mode ? textPrimary : textMuted,
+                }}
+              >
+                <Icon className="h-3.5 w-3.5" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* COURSE GRID / LIST */}
+      {filteredCourses.length === 0 ? (
+        <div className="text-center py-24">
+          <div
+            className="w-28 h-28 rounded-3xl flex items-center justify-center mx-auto mb-6 relative"
+            style={{
+              background: isDarkMode
+                ? "rgba(255,255,255,0.04)"
+                : "rgba(33,65,135,0.03)",
+              border: isDarkMode
+                ? "1px solid rgba(255,255,255,0.06)"
+                : "1px solid rgba(33,65,135,0.06)",
+            }}
+          >
+            <BookOpen className="h-12 w-12" style={{ color: textMuted }} />
           </div>
           <h3
             className="text-xl font-black mb-2"
             style={{ color: textPrimary }}
           >
-            {searchQuery ? "No courses found" : "No courses yet!"}
+            {searchQuery ? "No courses found" : "No courses in this view"}
           </h3>
           <p
             className="text-sm mb-6 max-w-sm mx-auto"
             style={{ color: textSecondary }}
           >
             {searchQuery
-              ? `No courses match "${searchQuery}". Try a different search.`
-              : "Start your learning journey by exploring our amazing courses!"}
+              ? `No courses match "${searchQuery}". Try a different search term.`
+              : "Try switching to a different filter tab to see your courses."}
           </p>
-          {!searchQuery && (
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm text-white transition-all duration-300 hover:-translate-y-0.5"
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-bold transition-all duration-300"
               style={{
-                background: "linear-gradient(135deg, #F3056D 0%, #ff3d8f 100%)",
-                boxShadow: "0 6px 20px rgba(243,5,109,0.3)",
+                background: isDarkMode
+                  ? "rgba(255,255,255,0.05)"
+                  : "rgba(33,65,135,0.04)",
+                border: isDarkMode
+                  ? "1px solid rgba(255,255,255,0.08)"
+                  : "1px solid rgba(33,65,135,0.1)",
+                color: textSecondary,
               }}
             >
-              <Sparkles className="h-4 w-4" />
-              Browse Courses
-            </Link>
+              <X className="h-3.5 w-3.5" />
+              Clear Search
+            </button>
           )}
         </div>
-      ) : (
+      ) : viewMode === "grid" ? (
+        /* ========== GRID VIEW ========== */
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filteredCourses.map((course) => {
             const category = course.category || "General";
             const catColor = CATEGORY_COLORS[category] || "#F3056D";
             const catIcon = CATEGORY_ICONS[category] || (
-              <BookOpen className="h-4 w-4" />
+              <BookOpen className="h-3.5 w-3.5" />
             );
             const courseImage =
               course.image || course.courseImage || "/signup.webp";
+            const progress = course.progress || 0;
+            const isNotStarted = progress === 0;
+            const isComplete = progress >= 100;
+            const isPending = course.status === "pending";
+            const isGold = catColor === "#ffd700";
 
             return (
               <div
@@ -682,73 +1130,49 @@ export default function MyCoursesPage() {
                     ? "0 4px 20px rgba(0,0,0,0.2)"
                     : "0 4px 20px rgba(33,65,135,0.06)",
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = `0 12px 40px ${catColor}18`;
-                  e.currentTarget.style.borderColor = `${catColor}30`;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = isDarkMode
-                    ? "0 4px 20px rgba(0,0,0,0.2)"
-                    : "0 4px 20px rgba(33,65,135,0.06)";
-                  e.currentTarget.style.borderColor = isDarkMode
-                    ? "1px solid rgba(255,255,255,0.06)"
-                    : "1px solid rgba(33,65,135,0.06)";
-                }}
+                onClick={() => goToCourse(course)}
               >
-                {/* --- Image Area --- */}
-                <div className="relative h-40 overflow-hidden">
+                <div className="relative h-44 overflow-hidden">
                   <img
                     src={courseImage}
                     alt={course.courseTitle}
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                    className="w-full h-full object-cover transform group-hover:scale-108 transition-transform duration-700"
                   />
                   <div
                     className="absolute inset-0"
                     style={{
-                      background: `linear-gradient(to top, ${isDarkMode ? "rgba(26,16,53,0.95)" : "rgba(33,65,135,0.9)"} 0%, transparent 60%)`,
+                      background: `linear-gradient(to top, ${isDarkMode ? "rgba(26,16,53,0.95)" : "rgba(33,65,135,0.9)"} 0%, ${isDarkMode ? "rgba(26,16,53,0.3)" : "rgba(33,65,135,0.3)"} 50%, transparent 100%)`,
                     }}
                   />
-
-                  {/* Status Badge */}
-                  <div className="absolute top-3 right-3">
-                    <div
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold text-white backdrop-blur-sm"
-                      style={{
-                        background:
-                          course.status === "completed"
-                            ? "rgba(34,197,94,0.85)"
-                            : course.status === "pending"
-                              ? "rgba(245,158,11,0.85)"
-                              : "rgba(239,68,68,0.85)",
-                      }}
-                    >
-                      {course.status === "completed" ? (
-                        <CircleCheck className="h-3 w-3" />
-                      ) : course.status === "pending" ? (
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
+                    {isPending && (
+                      <div
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold text-white backdrop-blur-md"
+                        style={{ background: "rgba(245,158,11,0.85)" }}
+                      >
                         <Clock className="h-3 w-3" />
-                      ) : (
-                        <CircleX className="h-3 w-3" />
-                      )}
-                      {course.status === "completed"
-                        ? "Active"
-                        : course.status === "pending"
-                          ? "Pending"
-                          : "Cancelled"}
-                    </div>
+                        Pending
+                      </div>
+                    )}
+                    {isComplete && (
+                      <div
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold text-white backdrop-blur-md"
+                        style={{ background: "rgba(74,222,128,0.85)" }}
+                      >
+                        <CircleCheck className="h-3 w-3" />
+                        Done
+                      </div>
+                    )}
                   </div>
-
-                  {/* Category Badge */}
                   <div className="absolute top-3 left-3">
                     <div
-                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider text-white backdrop-blur-sm"
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider text-white backdrop-blur-md"
                       style={{ background: `${catColor}cc` }}
                     >
                       {catIcon}
                       {category}
                     </div>
                   </div>
-
-                  {/* Play Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                     <div
                       className="w-14 h-14 rounded-full flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300"
@@ -760,33 +1184,96 @@ export default function MyCoursesPage() {
                       <Play className="h-6 w-6 text-white ml-1" fill="#fff" />
                     </div>
                   </div>
-
-                  {/* Bottom Info */}
                   <div className="absolute bottom-3 left-3 right-3">
                     <h3 className="text-sm font-bold text-white leading-snug line-clamp-2 mb-1">
                       {course.courseTitle}
                     </h3>
-                    {course.instructor && (
-                      <p className="text-[11px] text-white/60 flex items-center gap-1">
-                        <GraduationCap className="h-3 w-3" />
-                        {course.instructor}
-                      </p>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {course.instructor && (
+                        <span className="text-[10px] text-white/60 flex items-center gap-1">
+                          <GraduationCap className="h-3 w-3" />
+                          {course.instructor}
+                        </span>
+                      )}
+                      {course.rating && (
+                        <span className="text-[10px] text-white/60 flex items-center gap-0.5">
+                          <Star
+                            className="h-3 w-3"
+                            style={{ color: "#ffd700" }}
+                            fill="#ffd700"
+                          />
+                          {course.rating}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-
-                {/* --- Content Area --- */}
                 <div className="p-4">
-                  {/* Meta Row */}
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span
+                        className="text-[10px] font-bold"
+                        style={{
+                          color: isComplete
+                            ? "#4ade80"
+                            : progress > 0
+                              ? catColor
+                              : textMuted,
+                        }}
+                      >
+                        {isComplete
+                          ? "Course Complete!"
+                          : isNotStarted
+                            ? "Not started"
+                            : `${progress}% complete`}
+                      </span>
+                      <span
+                        className="text-[10px] font-medium"
+                        style={{ color: textMuted }}
+                      >
+                        {course.completedLessons || 0}/
+                        {course.totalLessons || 0} lessons
+                      </span>
+                    </div>
+                    <div
+                      className="h-1.5 rounded-full overflow-hidden"
+                      style={{
+                        background: isDarkMode
+                          ? "rgba(255,255,255,0.06)"
+                          : "rgba(33,65,135,0.08)",
+                      }}
+                    >
+                      <div
+                        className="h-full rounded-full relative overflow-hidden transition-all duration-1000"
+                        style={{
+                          width: `${progress}%`,
+                          background: isComplete
+                            ? "linear-gradient(90deg, #4ade80, #22c55e)"
+                            : `linear-gradient(90deg, ${catColor}, ${catColor}bb)`,
+                        }}
+                      >
+                        {!isNotStarted && (
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              background:
+                                "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                              animation: "shimmer 2s infinite",
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
                   <div
                     className="flex items-center justify-between mb-3 pb-3"
                     style={{
                       borderBottom: isDarkMode
-                        ? "1px solid rgba(255,255,255,0.05)"
-                        : "1px solid rgba(33,65,135,0.06)",
+                        ? "1px solid rgba(255,255,255,0.04)"
+                        : "1px solid rgba(33,65,135,0.05)",
                     }}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
                       {course.dates && (
                         <span
                           className="flex items-center gap-1 text-[10px] font-medium"
@@ -796,13 +1283,13 @@ export default function MyCoursesPage() {
                           {course.dates.split("-")[0]?.trim()}
                         </span>
                       )}
-                      {course.totalLessons && (
+                      {course.lastAccessed && (
                         <span
                           className="flex items-center gap-1 text-[10px] font-medium"
                           style={{ color: textMuted }}
                         >
-                          <BookMarked className="h-3 w-3" />
-                          {course.totalLessons} lessons
+                          <Timer className="h-3 w-3" />
+                          {getTimeAgo(course.lastAccessed)}
                         </span>
                       )}
                     </div>
@@ -816,35 +1303,66 @@ export default function MyCoursesPage() {
                         : course.amount}
                     </span>
                   </div>
-
-                  {/* Purchase Info */}
-                  <div
-                    className="flex items-center justify-between text-[10px] mb-3"
-                    style={{ color: textMuted }}
-                  >
-                    <span>Purchased: {formatDate(course.createdAt)}</span>
+                  <div className="flex items-center justify-between text-[10px] mb-3">
+                    <span style={{ color: textMuted }}>
+                      {formatDate(course.createdAt)}
+                    </span>
                     {course.paymentMethod && (
-                      <span className="font-medium capitalize">
-                        via {course.paymentMethod}
+                      <span
+                        className="font-bold text-[9px] px-2 py-0.5 rounded-md"
+                        style={{
+                          color: getPaymentColor(course.paymentMethod),
+                          background: `${getPaymentColor(course.paymentMethod)}12`,
+                        }}
+                      >
+                        {getPaymentIcon(course.paymentMethod)}
                       </span>
                     )}
                   </div>
 
-                  {/* Action Buttons */}
+                  {/* ✅ Action Buttons Area */}
                   <div className="flex gap-2">
+                    {isPending ? (
+                      <Button
+                        bgColor={
+                          isDarkMode
+                            ? "rgba(245,158,11,0.12)"
+                            : "rgba(245,158,11,0.08)"
+                        }
+                        highlightColor="rgba(245,158,11,0.2)"
+                        darkShadowColor="rgba(245,158,11,0.1)"
+                        textColor={isDarkMode ? "#f59e0b" : "#d97706"}
+                        className="flex-1 cursor-not-allowed border border-amber-500/20"
+                        px="px-4"
+                        py="py-2.5"
+                        textSize="text-xs"
+                        icon={<Clock className="h-3.5 w-3.5" />}
+                      >
+                        Pending
+                      </Button>
+                    ) : (
+                      <Link
+                        href={`/${isBangla ? "bn" : "en"}/dashboard/mycourses/${course.slug || course.courseId}`}
+                        className="flex-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          bgColor={catColor}
+                          highlightColor={isGold ? "#ffffff" : "#ff3d8f"}
+                          darkShadowColor={isGold ? "#d4a800" : "#C6005F"}
+                          textColor={isGold ? "#214187" : "#fff"}
+                          px="px-4"
+                          py="py-2.5"
+                          textSize="text-xs"
+                          fullWidth
+                          icon={<Eye className="h-3.5 w-3.5" />}
+                        >
+                          Continue
+                        </Button>
+                      </Link>
+                    )}
                     <button
-                      onClick={() => setSelectedCourse(course)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 hover:-translate-y-0.5"
-                      style={{
-                        background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
-                        color: "#fff",
-                        boxShadow: `0 4px 12px ${catColor}25`,
-                      }}
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                      View Details
-                    </button>
-                    <button
+                      onClick={(e) => e.stopPropagation()}
                       className="p-2.5 rounded-xl transition-all duration-200"
                       style={{
                         background: isDarkMode
@@ -854,55 +1372,9 @@ export default function MyCoursesPage() {
                           ? "1px solid rgba(255,255,255,0.08)"
                           : "1px solid rgba(33,65,135,0.1)",
                         color: textSecondary,
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.color = "#F3056D";
-                        e.currentTarget.style.borderColor =
-                          "rgba(243,5,109,0.3)";
-                        e.currentTarget.style.background =
-                          "rgba(243,5,109,0.06)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.color = textSecondary;
-                        e.currentTarget.style.borderColor = isDarkMode
-                          ? "1px solid rgba(255,255,255,0.08)"
-                          : "1px solid rgba(33,65,135,0.1)";
-                        e.currentTarget.style.background = isDarkMode
-                          ? "rgba(255,255,255,0.05)"
-                          : "rgba(33,65,135,0.04)";
                       }}
                     >
                       <Heart className="h-4 w-4" />
-                    </button>
-                    <button
-                      className="p-2.5 rounded-xl transition-all duration-200"
-                      style={{
-                        background: isDarkMode
-                          ? "rgba(255,255,255,0.05)"
-                          : "rgba(33,65,135,0.04)",
-                        border: isDarkMode
-                          ? "1px solid rgba(255,255,255,0.08)"
-                          : "1px solid rgba(33,65,135,0.1)",
-                        color: textSecondary,
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.color = "#214187";
-                        e.currentTarget.style.borderColor =
-                          "rgba(33,65,135,0.3)";
-                        e.currentTarget.style.background =
-                          "rgba(33,65,135,0.06)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.color = textSecondary;
-                        e.currentTarget.style.borderColor = isDarkMode
-                          ? "1px solid rgba(255,255,255,0.08)"
-                          : "1px solid rgba(33,65,135,0.1)";
-                        e.currentTarget.style.background = isDarkMode
-                          ? "rgba(255,255,255,0.05)"
-                          : "rgba(33,65,135,0.04)";
-                      }}
-                    >
-                      <Download className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
@@ -910,23 +1382,253 @@ export default function MyCoursesPage() {
             );
           })}
         </div>
+      ) : (
+        /* ========== LIST VIEW ========== */
+        <div className="space-y-3">
+          {filteredCourses.map((course) => {
+            const category = course.category || "General";
+            const catColor = CATEGORY_COLORS[category] || "#F3056D";
+            const catIcon = CATEGORY_ICONS[category] || (
+              <BookOpen className="h-3.5 w-3.5" />
+            );
+            const courseImage =
+              course.image || course.courseImage || "/signup.webp";
+            const progress = course.progress || 0;
+            const isNotStarted = progress === 0;
+            const isComplete = progress >= 100;
+            const isPending = course.status === "pending";
+            const isGold = catColor === "#ffd700";
+
+            return (
+              <div
+                key={course._id}
+                className="course-item group flex flex-col sm:flex-row gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
+                style={{
+                  background: cardBg,
+                  border: cardBorder,
+                  boxShadow: isDarkMode
+                    ? "0 2px 10px rgba(0,0,0,0.15)"
+                    : "0 2px 10px rgba(33,65,135,0.04)",
+                }}
+                onClick={() => goToCourse(course)}
+              >
+                <div
+                  className="relative w-full sm:w-48 h-28 rounded-xl overflow-hidden flex-shrink-0"
+                  style={{ boxShadow: `0 4px 15px ${catColor}10` }}
+                >
+                  <img
+                    src={courseImage}
+                    alt={course.courseTitle}
+                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{
+                        background: catColor,
+                        boxShadow: `0 4px 15px ${catColor}40`,
+                      }}
+                    >
+                      <Play className="h-4 w-4 text-white ml-0.5" fill="#fff" />
+                    </div>
+                  </div>
+                  {isPending && (
+                    <div
+                      className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-bold text-white backdrop-blur-md"
+                      style={{ background: "rgba(245,158,11,0.85)" }}
+                    >
+                      <Clock className="h-2.5 w-2.5" />
+                      Pending
+                    </div>
+                  )}
+                  {isComplete && (
+                    <div
+                      className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-bold text-white backdrop-blur-md"
+                      style={{ background: "rgba(74,222,128,0.85)" }}
+                    >
+                      <CircleCheck className="h-2.5 w-2.5" />
+                      Done
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 flex flex-col justify-center min-w-0">
+                  <div className="flex items-start justify-between gap-3 mb-1.5">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div
+                          className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider"
+                          style={{
+                            background: `${catColor}15`,
+                            color: catColor,
+                          }}
+                        >
+                          {catIcon}
+                          {category}
+                        </div>
+                        {course.rating && (
+                          <span
+                            className="flex items-center gap-0.5 text-[10px] font-medium"
+                            style={{ color: textMuted }}
+                          >
+                            <Star
+                              className="h-3 w-3"
+                              style={{ color: "#ffd700" }}
+                              fill="#ffd700"
+                            />
+                            {course.rating}
+                          </span>
+                        )}
+                      </div>
+                      <h3
+                        className="font-bold text-sm truncate"
+                        style={{ color: textPrimary }}
+                      >
+                        {course.courseTitle}
+                      </h3>
+                    </div>
+                    <span
+                      className="text-sm font-black flex-shrink-0"
+                      style={{ color: catColor }}
+                    >
+                      ৳
+                      {typeof course.amount === "number"
+                        ? course.amount.toLocaleString()
+                        : course.amount}
+                    </span>
+                  </div>
+                  {course.instructor && (
+                    <p
+                      className="text-[11px] mb-2 flex items-center gap-1"
+                      style={{ color: textSecondary }}
+                    >
+                      <GraduationCap className="h-3 w-3" />
+                      {course.instructor}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-3 mb-2">
+                    <div
+                      className="flex-1 h-1.5 rounded-full overflow-hidden"
+                      style={{
+                        background: isDarkMode
+                          ? "rgba(255,255,255,0.06)"
+                          : "rgba(33,65,135,0.08)",
+                      }}
+                    >
+                      <div
+                        className="h-full rounded-full relative overflow-hidden"
+                        style={{
+                          width: `${progress}%`,
+                          background: isComplete
+                            ? "linear-gradient(90deg, #4ade80, #22c55e)"
+                            : `linear-gradient(90deg, ${catColor}, ${catColor}bb)`,
+                        }}
+                      >
+                        {!isNotStarted && (
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              background:
+                                "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                              animation: "shimmer 2s infinite",
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <span
+                      className="text-[10px] font-black flex-shrink-0"
+                      style={{
+                        color: isComplete
+                          ? "#4ade80"
+                          : progress > 0
+                            ? catColor
+                            : textMuted,
+                      }}
+                    >
+                      {isComplete
+                        ? "Complete"
+                        : isNotStarted
+                          ? "0%"
+                          : `${progress}%`}
+                    </span>
+                  </div>
+                  <div
+                    className="flex items-center gap-3 text-[10px]"
+                    style={{ color: textMuted }}
+                  >
+                    {course.totalLessons && (
+                      <span className="flex items-center gap-1">
+                        <BookMarked className="h-3 w-3" />
+                        {course.completedLessons || 0}/{course.totalLessons}
+                      </span>
+                    )}
+                    {course.lastAccessed && (
+                      <span className="flex items-center gap-1">
+                        <Timer className="h-3 w-3" />
+                        {getTimeAgo(course.lastAccessed)}
+                      </span>
+                    )}
+                    <span>{formatDate(course.createdAt)}</span>
+                    {course.paymentMethod && (
+                      <span
+                        className="font-bold"
+                        style={{ color: getPaymentColor(course.paymentMethod) }}
+                      >
+                        {getPaymentIcon(course.paymentMethod)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* ✅ Action Buttons Area */}
+                <div className="flex sm:flex-col gap-2 flex-shrink-0 sm:justify-center">
+                  {isPending ? (
+                    <Button
+                      bgColor={
+                        isDarkMode
+                          ? "rgba(245,158,11,0.12)"
+                          : "rgba(245,158,11,0.08)"
+                      }
+                      highlightColor="rgba(245,158,11,0.2)"
+                      darkShadowColor="rgba(245,158,11,0.1)"
+                      textColor={isDarkMode ? "#f59e0b" : "#d97706"}
+                      className="flex-1 sm:flex-none cursor-not-allowed border border-amber-500/20"
+                      px="px-4"
+                      py="py-2.5"
+                      textSize="text-xs"
+                      icon={<Clock className="h-3.5 w-3.5" />}
+                    >
+                      <span className="sm:hidden">Pending</span>
+                    </Button>
+                  ) : (
+                    <Link
+                      href={`/${isBangla ? "bn" : "en"}/dashboard/mycourses/${course.slug || course.courseId}`}
+                      className="flex-1 sm:flex-none"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        bgColor={catColor}
+                        highlightColor={isGold ? "#ffffff" : "#ff3d8f"}
+                        darkShadowColor={isGold ? "#d4a800" : "#C6005F"}
+                        textColor={isGold ? "#214187" : "#fff"}
+                        px="px-4"
+                        py="py-2.5"
+                        textSize="text-xs"
+                        fullWidth
+                        className="sm:w-10 sm:h-10 sm:p-0"
+                        icon={<Eye className="h-3.5 w-3.5" />}
+                      >
+                        <span className="sm:hidden">View</span>
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
 
-      {/* ==================== COURSE DETAIL MODAL ==================== */}
-      {selectedCourse && (
-        <CourseDetailModal
-          course={selectedCourse}
-          isDarkMode={isDarkMode}
-          textPrimary={textPrimary}
-          textSecondary={textSecondary}
-          textMuted={textMuted}
-          cardBg={cardBg}
-          cardBorder={cardBorder}
-          onClose={() => setSelectedCourse(null)}
-        />
-      )}
-
-      {/* Shimmer animation */}
       <style jsx>{`
         @keyframes shimmer {
           0% {
@@ -937,330 +1639,6 @@ export default function MyCoursesPage() {
           }
         }
       `}</style>
-    </div>
-  );
-}
-
-// ===================== DETAIL MODAL COMPONENT =====================
-
-function CourseDetailModal({
-  course,
-  isDarkMode,
-  textPrimary,
-  textSecondary,
-  textMuted,
-  cardBg,
-  cardBorder,
-  onClose,
-}: {
-  course: PurchasedCourse;
-  isDarkMode: boolean;
-  textPrimary: string;
-  textSecondary: string;
-  textMuted: string;
-  cardBg: string;
-  cardBorder: string;
-  onClose: () => void;
-}) {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const category = course.category || "General";
-  const catColor = CATEGORY_COLORS[category] || "#F3056D";
-  const catIcon = CATEGORY_ICONS[category] || <BookOpen className="h-4 w-4" />;
-  const courseImage = course.image || course.courseImage || "/signup.webp";
-
-  // GSAP modal entrance
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        ".modal-backdrop",
-        { opacity: 0 },
-        { opacity: 1, duration: 0.3 },
-      );
-      gsap.fromTo(
-        ".modal-content",
-        { y: 40, opacity: 0, scale: 0.95 },
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 0.4,
-          ease: "back.out(1.5)",
-          delay: 0.1,
-        },
-      );
-      gsap.fromTo(
-        ".modal-detail-item",
-        { x: -15, opacity: 0 },
-        {
-          x: 0,
-          opacity: 1,
-          duration: 0.35,
-          stagger: 0.06,
-          ease: "power2.out",
-          delay: 0.25,
-        },
-      );
-    }, modalRef);
-    return () => ctx.revert();
-  }, []);
-
-  // Close on escape
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [onClose]);
-
-  const formatDate = (dateStr: string) => {
-    try {
-      return new Date(dateStr).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  return (
-    <div
-      ref={modalRef}
-      className="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        className="modal-content w-full max-w-lg rounded-3xl overflow-hidden"
-        style={{
-          background: isDarkMode ? "#1a1035" : "#fff",
-          border: isDarkMode
-            ? "1px solid rgba(255,255,255,0.08)"
-            : "1px solid rgba(33,65,135,0.08)",
-          boxShadow: isDarkMode
-            ? "0 30px 80px rgba(0,0,0,0.6)"
-            : "0 30px 80px rgba(33,65,135,0.2)",
-        }}
-      >
-        {/* Modal Header Image */}
-        <div className="relative h-48 overflow-hidden">
-          <img
-            src={courseImage}
-            alt={course.courseTitle}
-            className="w-full h-full object-cover"
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(to top, ${isDarkMode ? "#1a1035" : "#fff"} 0%, transparent 70%)`,
-            }}
-          />
-
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110"
-            style={{
-              background: "rgba(0,0,0,0.4)",
-              backdropFilter: "blur(10px)",
-              color: "#fff",
-              border: "1px solid rgba(255,255,255,0.1)",
-            }}
-          >
-            <X className="h-4 w-4" />
-          </button>
-
-          {/* Category Badge */}
-          <div className="absolute bottom-4 left-5">
-            <div
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-white"
-              style={{
-                background: `${catColor}cc`,
-                backdropFilter: "blur(10px)",
-              }}
-            >
-              {catIcon}
-              {category}
-            </div>
-          </div>
-
-          {/* Status */}
-          <div className="absolute bottom-4 right-5">
-            <div
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-bold text-white"
-              style={{
-                background:
-                  course.status === "completed"
-                    ? "rgba(34,197,94,0.85)"
-                    : "rgba(245,158,11,0.85)",
-              }}
-            >
-              {course.status === "completed" ? (
-                <CircleCheck className="h-3 w-3" />
-              ) : (
-                <Clock className="h-3 w-3" />
-              )}
-              {course.status === "completed" ? "Active" : "Pending"}
-            </div>
-          </div>
-        </div>
-
-        {/* Modal Body */}
-        <div className="p-6 -mt-2">
-          <h2
-            className="text-xl font-black mb-1 leading-snug"
-            style={{ color: textPrimary }}
-          >
-            {course.courseTitle}
-          </h2>
-          {course.instructor && (
-            <p
-              className="text-sm mb-5 flex items-center gap-1.5"
-              style={{ color: textSecondary }}
-            >
-              <GraduationCap className="h-4 w-4" />
-              {course.instructor}
-            </p>
-          )}
-
-          {/* Detail Items */}
-          <div className="space-y-3 mb-6">
-            {[
-              {
-                icon: <Receipt className="h-4 w-4" />,
-                label: "Amount Paid",
-                value: `৳${typeof course.amount === "number" ? course.amount.toLocaleString() : course.amount}`,
-                highlight: true,
-              },
-              {
-                icon: <Calendar className="h-4 w-4" />,
-                label: "Purchase Date",
-                value: formatDate(course.createdAt),
-              },
-              ...(course.verifiedAt
-                ? [
-                    {
-                      icon: <CheckCircle2 className="h-4 w-4" />,
-                      label: "Verified At",
-                      value: formatDate(course.verifiedAt),
-                    },
-                  ]
-                : []),
-              ...(course.paymentMethod
-                ? [
-                    {
-                      icon: <Star className="h-4 w-4" />,
-                      label: "Payment Method",
-                      value:
-                        course.paymentMethod.charAt(0).toUpperCase() +
-                        course.paymentMethod.slice(1),
-                    },
-                  ]
-                : []),
-              ...(course.orderId
-                ? [
-                    {
-                      icon: <BookMarked className="h-4 w-4" />,
-                      label: "Order ID",
-                      value: course.orderId,
-                    },
-                  ]
-                : []),
-              ...(course.tranId
-                ? [
-                    {
-                      icon: <Zap className="h-4 w-4" />,
-                      label: "Transaction ID",
-                      value: course.tranId,
-                    },
-                  ]
-                : []),
-              ...(course.dates
-                ? [
-                    {
-                      icon: <Clock className="h-4 w-4" />,
-                      label: "Course Period",
-                      value: course.dates,
-                    },
-                  ]
-                : []),
-              ...(course.totalLessons
-                ? [
-                    {
-                      icon: <BookOpen className="h-4 w-4" />,
-                      label: "Total Lessons",
-                      value: `${course.totalLessons} lessons`,
-                    },
-                  ]
-                : []),
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="modal-detail-item flex items-center justify-between py-3"
-                style={{
-                  borderBottom: isDarkMode
-                    ? "1px solid rgba(255,255,255,0.05)"
-                    : "1px solid rgba(33,65,135,0.06)",
-                }}
-              >
-                <span
-                  className="flex items-center gap-2.5 text-xs font-medium"
-                  style={{ color: textSecondary }}
-                >
-                  <span style={{ color: textMuted }}>{item.icon}</span>
-                  {item.label}
-                </span>
-                <span
-                  className="text-xs font-bold text-right max-w-[60%] truncate"
-                  style={{
-                    color:
-                      "highlight" in item && item.highlight
-                        ? catColor
-                        : textPrimary,
-                  }}
-                >
-                  {item.value}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <button
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold text-white transition-all duration-300 hover:-translate-y-0.5"
-              style={{
-                background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
-                boxShadow: `0 6px 20px ${catColor}30`,
-              }}
-            >
-              <Play className="h-4 w-4" fill="#fff" />
-              Continue Learning
-            </button>
-            <button
-              onClick={onClose}
-              className="px-5 py-3.5 rounded-2xl text-sm font-bold transition-all duration-200"
-              style={{
-                background: isDarkMode
-                  ? "rgba(255,255,255,0.05)"
-                  : "rgba(33,65,135,0.04)",
-                border: isDarkMode
-                  ? "1px solid rgba(255,255,255,0.08)"
-                  : "1px solid rgba(33,65,135,0.1)",
-                color: textSecondary,
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

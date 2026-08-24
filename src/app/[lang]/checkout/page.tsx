@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
+import { useLanguage } from "@/app/context/LanguageContext"; // ✅ Imported language context
 import {
   CreditCard,
   User,
@@ -29,18 +30,16 @@ import {
   FileText,
   Video,
   BadgeCheck,
-  Sparkles,
   Headphones,
   CircleCheck,
   CircleX,
-  Receipt,
   Copy,
   RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import { Addon, Course } from "./type";
 
 // ===================== TYPES =====================
-
 
 interface PricingResponse {
   course: Course;
@@ -48,46 +47,6 @@ interface PricingResponse {
 }
 
 type PaymentStatus = "idle" | "processing" | "success" | "failed" | "verifying";
-
-// ===================== FALLBACK DATA =====================
-
-const FALLBACK_COURSE: Course = {
-  id: "course_123",
-  title: "টিসিএফ A Unit + অন্যান্য সুবিধা (মাস - 2024)",
-  image: "/signup.webp",
-  dates: "03 Mar, 2024 - 31 Dec, 2024",
-  originalPrice: 5000,
-  offerPrice: 4000,
-  description:
-    "সম্পূর্ণ কোর্স প্রস্তুতি সহ লাইভ ক্লাস, পিডিএফ ম্যাটেরিয়াল এবং মডেল টেস্ট।",
-  instructor: "ড. কামরুল হাসান",
-  duration: "৬ মাস",
-  totalLectures: 120,
-};
-
-const FALLBACK_ADDONS: Addon[] = [
-  {
-    id: 1,
-    name: "Question Bank (PDF)",
-    price: 500,
-    icon: <FileText className="h-5 w-5" />,
-    description: "৫০০+ গুরুত্বপূর্ণ প্রশ্ন সহ পিডিএফ কালেকশন",
-  },
-  {
-    id: 2,
-    name: "Live Class Access",
-    price: 1000,
-    icon: <Video className="h-5 w-5" />,
-    description: "সরাসরি ইন্টারেক্টিভ লাইভ ক্লাসে অংশগ্রহণ",
-  },
-  {
-    id: 3,
-    name: "Model Test Pack",
-    price: 300,
-    icon: <BookOpen className="h-5 w-5" />,
-    description: "১০টি ফুল লেংথ মডেল টেস্ট",
-  },
-];
 
 const PAYMENT_METHODS = [
   { id: "bkash", label: "bKash", color: "#E2136E" },
@@ -109,6 +68,8 @@ export default function CheckoutPage() {
 function CheckoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isBangla } = useLanguage(); // ✅ Get current language
+
   const {
     currentUser,
     appUser,
@@ -128,9 +89,10 @@ function CheckoutPageContent() {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 
   // =================== DATA STATE ===================
-  const [course, setCourse] = useState<Course>(FALLBACK_COURSE);
-  const [addons, setAddons] = useState<Addon[]>(FALLBACK_ADDONS);
+  const [course, setCourse] = useState<Course | null>(null);
+  const [addons, setAddons] = useState<Addon[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [dataError, setDataError] = useState<string | null>(null);
 
   // =================== AUTH STATE ===================
   const [authView, setAuthView] = useState<
@@ -169,15 +131,23 @@ function CheckoutPageContent() {
 
   // =================== CONFIG ===================
   const BACKEND_URL =
-    process.env.NEXT_PUBLIC_API_URL || "https://apichalakchamps.vercel.app";
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+  // ✅ HELPER: Extract string from object if API returns { en: "...", bn: "..." }
+  const getLocalizedText = (value: any): string => {
+    if (!value) return "";
+    if (typeof value === "string") return value;
+    if (typeof value === "object") {
+      return isBangla ? value.bn || value.en || "" : value.en || value.bn || "";
+    }
+    return "";
+  };
 
   // =================== STEP 0: Auth Gate ===================
-  // Wait for Firebase to resolve, then auto-skip auth if already logged in.
   useEffect(() => {
     if (authLoading) return;
 
     if (currentUser && appUser) {
-      // Already authenticated → skip auth step entirely
       setActiveStep(3);
       setCompletedSteps(new Set([1, 2]));
     }
@@ -187,30 +157,46 @@ function CheckoutPageContent() {
   // --- Fetch Course Data ---
   useEffect(() => {
     const fetchCourseData = async () => {
+      setIsLoadingData(true);
+      setDataError(null);
       try {
-        const pathname = window.location.pathname;
-        const slugMatch = pathname.match(/checkout\/(.+)/);
-        const slug = slugMatch ? slugMatch[1] : null;
+        const slug = searchParams.get("course") || searchParams.get("slug");
 
-        if (slug) {
-          const response = await fetch(
-            `${BACKEND_URL}/api/courses/${slug}/pricing`,
-          );
-          if (response.ok) {
-            const data: PricingResponse = await response.json();
-            setCourse(data.course);
-            if (data.addons?.length > 0) setAddons(data.addons);
-          }
+        if (!slug) {
+          throw new Error("কোনো কোর্স নির্বাচন করা হয়নি।");
         }
-      } catch (error) {
-        console.error("Failed to fetch course data, using fallback:", error);
+
+        const response = await fetch(`${BACKEND_URL}/api/courses/slug/${slug}`);
+
+        if (!response.ok) {
+          throw new Error("কোর্সের তথ্য লোড করতে ব্যর্থ হয়েছে।");
+        }
+
+        const rawData = await response.json();
+
+        const courseData =
+          rawData.course || rawData.data?.course || rawData.data || rawData;
+
+        if (courseData) {
+          setCourse(courseData);
+        } else {
+          throw new Error("কোর্সের তথ্য পাওয়া যায়নি।");
+        }
+
+        const addonsData = rawData.addons || rawData.data?.addons || [];
+        if (addonsData && addonsData.length > 0) {
+          setAddons(addonsData);
+        }
+      } catch (error: any) {
+        console.error("Failed to fetch course data:", error);
+        setDataError(error.message || "তথ্য লোড করতে সমস্যা হয়েছে।");
       } finally {
         setIsLoadingData(false);
       }
     };
     fetchCourseData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [BACKEND_URL]);
+  }, [BACKEND_URL, searchParams]);
 
   // --- Handle Return From Payment Gateway ---
   useEffect(() => {
@@ -244,8 +230,14 @@ function CheckoutPageContent() {
     setCompletedSteps((prev) => new Set([...prev, 2]));
   }, []);
 
+  // ✅ FIXED: Price calculation logic to handle missing offerPrice
   const calculateTotal = () => {
-    let basePrice = course.offerPrice;
+    // Fallback to originalPrice if offerPrice is missing or 0
+    const basePrice =
+      course?.offerPrice && course.offerPrice > 0
+        ? course.offerPrice
+        : course?.originalPrice || 0;
+
     let addonTotal = selectedAddons.reduce((acc, id) => {
       const addon = addons.find((a) => a.id === id);
       return acc + (addon ? addon.price : 0);
@@ -263,7 +255,8 @@ function CheckoutPageContent() {
   };
 
   const totals = calculateTotal();
-  const savings = course.originalPrice - course.offerPrice + totals.discount;
+  const savings =
+    (course?.originalPrice || 0) - (totals.subtotal || 0) + totals.discount;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -414,7 +407,6 @@ function CheckoutPageContent() {
     const isEmail = /\S+@\S+\.\S+/.test(input);
 
     try {
-      // ★ KEY CHANGE: redirect: false — stay on checkout
       if (isEmail) {
         await signInWithEmail(input, password, {
           redirect: false,
@@ -468,7 +460,6 @@ function CheckoutPageContent() {
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
     try {
-      // ★ KEY CHANGE: redirect: false — stay on checkout
       await completeRegistration(
         {
           firstName,
@@ -536,7 +527,6 @@ function CheckoutPageContent() {
   const handleCheckoutLogout = async () => {
     setIsLoadingAuth(true);
     try {
-      // ★ KEY CHANGE: redirect: false — stay on checkout
       await logout({ redirect: false });
       setAuthView("input");
       setCompletedSteps((prev) => {
@@ -546,7 +536,7 @@ function CheckoutPageContent() {
       });
       setActiveStep(2);
     } catch {
-      // Silent fail — user stays on page
+      // Silent fail
     } finally {
       setIsLoadingAuth(false);
     }
@@ -561,27 +551,20 @@ function CheckoutPageContent() {
       const res = await fetch(`${BACKEND_URL}/api/promo/validate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: promoCode, courseId: course.id }),
+        body: JSON.stringify({
+          code: promoCode,
+          courseId: course?.id || course?._id,
+        }),
       });
       if (res.ok) {
         const data = await res.json();
         setPromoDiscount(data.discount);
         setPromoApplied(true);
       } else {
-        if (promoCode.toUpperCase() === "DEMO200") {
-          setPromoDiscount(200);
-          setPromoApplied(true);
-        } else {
-          alert("ভুল প্রোমো কোড।");
-        }
-      }
-    } catch {
-      if (promoCode.toUpperCase() === "DEMO200") {
-        setPromoDiscount(200);
-        setPromoApplied(true);
-      } else {
         alert("ভুল প্রোমো কোড।");
       }
+    } catch {
+      alert("প্রোমো কোড যাচাই করতে সমস্যা হয়েছে।");
     } finally {
       setIsCheckingPromo(false);
     }
@@ -590,14 +573,15 @@ function CheckoutPageContent() {
   // =================== PAYMENT ===================
 
   const handlePayment = async () => {
-    if (!currentUser) return;
+    if (!currentUser || !course) return;
 
     setPaymentError(null);
     setPaymentStatus("processing");
 
     try {
+      // ✅ FIXED: Safely extract courseId and userId
       const orderPayload = {
-        courseId: course.id,
+        courseId: course.id || course._id, // Fallback to _id for MongoDB
         userId: currentUser.uid,
         userName: appUser
           ? `${appUser.firstName} ${appUser.lastName}`
@@ -610,7 +594,7 @@ function CheckoutPageContent() {
         promoCode: promoApplied ? promoCode : null,
         subtotal: totals.subtotal,
         discount: totals.discount,
-        totalAmount: totals.total,
+        totalAmount: totals.total, // ✅ Will now correctly send the amount
         currency: "BDT",
         successUrl: `${window.location.origin}${window.location.pathname}`,
         failUrl: `${window.location.origin}${window.location.pathname}`,
@@ -664,7 +648,6 @@ function CheckoutPageContent() {
   };
 
   // =================== RENDER: Global Loading ===================
-  // Block everything until BOTH data and auth state are resolved
 
   if (isLoadingData || authLoading) {
     return (
@@ -680,6 +663,50 @@ function CheckoutPageContent() {
       </div>
     );
   }
+
+  // =================== RENDER: Data Fetch Error ===================
+
+  if (dataError || !course) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200/60 max-w-md w-full border border-gray-100 overflow-hidden">
+          <div className="bg-gradient-to-br from-red-500 to-rose-600 p-8 text-center relative overflow-hidden">
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white blur-2xl" />
+            </div>
+            <div className="relative z-10">
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-white/30">
+                <AlertCircle className="h-10 w-10 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-1">
+                তথ্য লোড করতে সমস্যা হয়েছে
+              </h2>
+              <p className="text-red-100 text-sm">দয়া করে আবার চেষ্টা করুন</p>
+            </div>
+          </div>
+          <div className="p-8">
+            <div className="bg-red-50 border border-red-100 text-red-600 text-sm p-4 rounded-xl mb-6">
+              {dataError || "কোর্সের তথ্য পাওয়া যায়নি।"}
+            </div>
+            <div className="space-y-3">
+              <button
+                onClick={() => router.push("/")}
+                className="w-full py-3.5 bg-[#F3056D] text-white font-bold rounded-xl hover:bg-[#d9045f] transition-all shadow-lg shadow-pink-200/40 flex items-center justify-center gap-2 text-sm"
+              >
+                <ArrowLeft className="h-4 w-4" /> হোমপেজে যান
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ Determine display price safely
+  const displayOfferPrice =
+    course.offerPrice && course.offerPrice > 0
+      ? course.offerPrice
+      : course.originalPrice || 0;
 
   const stepLabels = ["কোর্স তথ্য", "লগইন / রেজিস্টার", "পেমেন্ট"];
 
@@ -703,7 +730,7 @@ function CheckoutPageContent() {
             <div className="flex items-center justify-between text-sm mb-2">
               <span className="text-gray-400">পরিমাণ</span>
               <span className="font-bold text-gray-900">
-                ৳{totals.total.toLocaleString()}
+                ৳{(totals.total || 0).toLocaleString()}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -766,18 +793,19 @@ function CheckoutPageContent() {
             <div className="flex gap-4 p-4 bg-gray-50 rounded-2xl mb-6">
               <div className="w-16 h-16 bg-gray-200 rounded-xl relative overflow-hidden flex-shrink-0">
                 <Image
-                  src={course.image}
-                  alt={course.title}
+                  src={course.image || "/default-course.jpg"}
+                  alt={getLocalizedText(course.title) || "Course"}
                   fill
+                  sizes="64px"
                   className="object-cover"
                 />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">
-                  {course.title}
+                  {getLocalizedText(course.title)}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  তারিখ: {course.dates}
+                  তারিখ: {getLocalizedText(course.dates)}
                 </p>
               </div>
             </div>
@@ -817,7 +845,7 @@ function CheckoutPageContent() {
               <div className="flex items-center justify-between py-2.5 border-b border-gray-100">
                 <span className="text-sm text-gray-500">পরিশোধিত পরিমাণ</span>
                 <span className="text-lg font-extrabold text-[#F3056D]">
-                  ৳{totals.total.toLocaleString()}
+                  ৳{(totals.total || 0).toLocaleString()}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2.5">
@@ -840,7 +868,7 @@ function CheckoutPageContent() {
                         key={id}
                         className="inline-flex items-center gap-1.5 text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full font-medium"
                       >
-                        {addon.icon} {addon.name}
+                        {addon.icon} {getLocalizedText(addon.name)}
                       </span>
                     ) : null;
                   })}
@@ -852,8 +880,7 @@ function CheckoutPageContent() {
                 onClick={() => router.push("/dashboard/courses")}
                 className="w-full py-3.5 bg-[#00477C] text-white font-bold rounded-xl hover:bg-[#003a66] transition-all shadow-lg shadow-blue-200/50 flex items-center justify-center gap-2 text-sm"
               >
-                <BookOpen className="h-4 w-4" />
-                কোর্সে যান
+                <BookOpen className="h-4 w-4" /> কোর্সে যান{" "}
                 <ChevronRight className="h-4 w-4" />
               </button>
               <button
@@ -899,13 +926,13 @@ function CheckoutPageContent() {
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-400">কোর্স</span>
                 <span className="font-semibold text-gray-700 text-right max-w-[200px] truncate">
-                  {course.title}
+                  {getLocalizedText(course.title)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">পরিমাণ</span>
                 <span className="font-bold text-gray-900">
-                  ৳{totals.total.toLocaleString()}
+                  ৳{(totals.total || 0).toLocaleString()}
                 </span>
               </div>
             </div>
@@ -914,8 +941,7 @@ function CheckoutPageContent() {
                 onClick={handleRetryPayment}
                 className="w-full py-3.5 bg-[#F3056D] text-white font-bold rounded-xl hover:bg-[#d9045f] transition-all shadow-lg shadow-pink-200/40 flex items-center justify-center gap-2 text-sm"
               >
-                <RefreshCw className="h-4 w-4" />
-                আবার পেমেন্ট করুন
+                <RefreshCw className="h-4 w-4" /> আবার পেমেন্ট করুন
               </button>
               <button
                 onClick={() => {
@@ -946,19 +972,15 @@ function CheckoutPageContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 font-sans">
-      {/* Invisible reCAPTCHA anchor for phone OTP */}
       <div
         id="recaptcha-container"
         className="overflow-hidden h-0 w-0 absolute"
       />
-
       <div className="container mx-auto px-4 max-w-5xl py-8">
-        {/* ============ Progress Steps ============ */}
+        {/* Progress Steps */}
         <div className="mb-10">
           <div className="flex items-center justify-between relative max-w-xl mx-auto">
-            {/* Background track */}
             <div className="absolute top-5 left-[calc(12.5%+10px)] right-[calc(12.5%+10px)] h-[2px] bg-gray-200 rounded-full" />
-            {/* Filled track */}
             <div
               className="absolute top-5 left-[calc(12.5%+10px)] h-[2px] bg-gradient-to-r from-[#F3056D] to-[#00477C] rounded-full transition-all duration-700 ease-out"
               style={{
@@ -980,24 +1002,12 @@ function CheckoutPageContent() {
                 >
                   <button
                     onClick={() => handleStepChange(step as 1 | 2 | 3)}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 border-2 ${
-                      isActive
-                        ? "bg-[#F3056D] border-[#F3056D] text-white shadow-lg shadow-pink-200 scale-110"
-                        : isDone
-                          ? "bg-[#00477C] border-[#00477C] text-white shadow-md shadow-blue-100"
-                          : "bg-white border-gray-200 text-gray-400 hover:border-gray-300"
-                    }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 border-2 ${isActive ? "bg-[#F3056D] border-[#F3056D] text-white shadow-lg shadow-pink-200 scale-110" : isDone ? "bg-[#00477C] border-[#00477C] text-white shadow-md shadow-blue-100" : "bg-white border-gray-200 text-gray-400 hover:border-gray-300"}`}
                   >
                     {isDone ? <CheckCircle className="h-5 w-5" /> : step}
                   </button>
                   <span
-                    className={`text-xs font-semibold tracking-wide transition-colors ${
-                      isActive
-                        ? "text-[#F3056D]"
-                        : isDone
-                          ? "text-[#00477C]"
-                          : "text-gray-400"
-                    }`}
+                    className={`text-xs font-semibold tracking-wide transition-colors ${isActive ? "text-[#F3056D]" : isDone ? "text-[#00477C]" : "text-gray-400"}`}
                   >
                     {stepLabels[step - 1]}
                   </span>
@@ -1007,9 +1017,9 @@ function CheckoutPageContent() {
           </div>
         </div>
 
-        {/* ============ Main Card ============ */}
+        {/* Main Card */}
         <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100/80 overflow-hidden">
-          {/* ========== TAB 1: COURSE INFO ========== */}
+          {/* TAB 1: COURSE INFO */}
           {activeStep === 1 && (
             <div className="animate-[fadeIn_0.4s_ease-out]">
               <div className="p-6 sm:p-8 border-b border-gray-100">
@@ -1022,16 +1032,17 @@ function CheckoutPageContent() {
                 <div className="flex flex-col sm:flex-row gap-6 p-4 sm:p-5 bg-gradient-to-r from-blue-50/50 to-pink-50/30 rounded-2xl border border-blue-100/50">
                   <div className="w-full sm:w-44 h-32 sm:h-36 bg-gray-200 rounded-xl relative overflow-hidden flex-shrink-0 ring-1 ring-black/5">
                     <Image
-                      src={course.image}
-                      alt={course.title}
+                      src={course.image || "/default-course.jpg"}
+                      alt={getLocalizedText(course.title) || "Course"}
                       fill
+                      sizes="(max-width: 768px) 100vw, 176px"
                       className="object-cover"
                     />
-                    {course.originalPrice > course.offerPrice && (
+                    {(course.originalPrice || 0) > displayOfferPrice && (
                       <div className="absolute top-2 left-2 bg-[#F3056D] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                         {Math.round(
-                          ((course.originalPrice - course.offerPrice) /
-                            course.originalPrice) *
+                          (((course.originalPrice || 0) - displayOfferPrice) /
+                            (course.originalPrice || 1)) *
                             100,
                         )}
                         % OFF
@@ -1040,23 +1051,24 @@ function CheckoutPageContent() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 leading-snug">
-                      {course.title}
+                      {getLocalizedText(course.title)}
                     </h3>
                     {course.instructor && (
                       <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-2">
-                        <User className="h-3.5 w-3.5" />
-                        <span>{course.instructor}</span>
+                        <User className="h-3.5 w-3.5" />{" "}
+                        <span>{getLocalizedText(course.instructor)}</span>
                       </div>
                     )}
                     <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span>{course.dates}</span>
+                      <Calendar className="h-3.5 w-3.5" />{" "}
+                      <span>{getLocalizedText(course.dates)}</span>
                     </div>
                     {(course.duration || course.totalLectures) && (
                       <div className="flex gap-4 text-xs text-gray-400 mb-3">
                         {course.duration && (
                           <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> {course.duration}
+                            <Clock className="h-3 w-3" />{" "}
+                            {getLocalizedText(course.duration)}
                           </span>
                         )}
                         {course.totalLectures && (
@@ -1069,11 +1081,11 @@ function CheckoutPageContent() {
                     )}
                     <div className="flex items-baseline gap-3">
                       <span className="text-2xl sm:text-3xl font-extrabold text-[#F3056D]">
-                        ৳{course.offerPrice.toLocaleString()}
+                        ৳{(displayOfferPrice || 0).toLocaleString()}
                       </span>
-                      {course.originalPrice > course.offerPrice && (
+                      {(course.originalPrice || 0) > displayOfferPrice && (
                         <span className="text-base text-gray-400 line-through">
-                          ৳{course.originalPrice.toLocaleString()}
+                          ৳{(course.originalPrice || 0).toLocaleString()}
                         </span>
                       )}
                     </div>
@@ -1081,7 +1093,6 @@ function CheckoutPageContent() {
                 </div>
               </div>
 
-              {/* Addons */}
               <div className="p-6 sm:p-8 bg-gradient-to-b from-gray-50/80 to-white">
                 <div className="flex items-center gap-2 mb-5">
                   <Gift className="h-5 w-5 text-[#F3056D]" />
@@ -1092,82 +1103,87 @@ function CheckoutPageContent() {
                     (ঐচ্ছিক)
                   </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {addons.map((addon) => {
-                    const isSelected = selectedAddons.includes(addon.id);
-                    return (
-                      <label
-                        key={addon.id}
-                        className={`flex items-start gap-4 p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 group ${
-                          isSelected
-                            ? "border-[#F3056D] bg-pink-50/60 shadow-sm shadow-pink-100"
-                            : "border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm"
-                        }`}
-                      >
-                        <div className="mt-0.5">
-                          <div
-                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
-                              isSelected
-                                ? "bg-[#F3056D] border-[#F3056D]"
-                                : "border-gray-300 group-hover:border-gray-400"
-                            }`}
-                          >
-                            {isSelected && (
-                              <CheckCircle className="h-3.5 w-3.5 text-white" />
-                            )}
-                          </div>
-                        </div>
-                        <input
-                          type="checkbox"
-                          className="sr-only"
-                          checked={isSelected}
-                          onChange={(e) => {
-                            if (e.target.checked)
-                              setSelectedAddons([...selectedAddons, addon.id]);
-                            else
-                              setSelectedAddons(
-                                selectedAddons.filter((id) => id !== addon.id),
-                              );
-                          }}
-                        />
-                        <div
-                          className={`flex-1 min-w-0 ${isSelected ? "text-gray-900" : "text-gray-600"}`}
+
+                {addons.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {addons.map((addon) => {
+                      const isSelected = selectedAddons.includes(addon.id);
+                      return (
+                        <label
+                          key={addon.id}
+                          className={`flex items-start gap-4 p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 group ${isSelected ? "border-[#F3056D] bg-pink-50/60 shadow-sm shadow-pink-100" : "border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm"}`}
                         >
-                          <div className="flex items-center gap-2 mb-1">
-                            <span
-                              className={
-                                isSelected ? "text-[#F3056D]" : "text-gray-400"
-                              }
+                          <div className="mt-0.5">
+                            <div
+                              className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${isSelected ? "bg-[#F3056D] border-[#F3056D]" : "border-gray-300 group-hover:border-gray-400"}`}
                             >
-                              {addon.icon}
-                            </span>
-                            <span className="font-semibold text-sm">
-                              {addon.name}
+                              {isSelected && (
+                                <CheckCircle className="h-3.5 w-3.5 text-white" />
+                              )}
+                            </div>
+                          </div>
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              if (e.target.checked)
+                                setSelectedAddons([
+                                  ...selectedAddons,
+                                  addon.id,
+                                ]);
+                              else
+                                setSelectedAddons(
+                                  selectedAddons.filter(
+                                    (id) => id !== addon.id,
+                                  ),
+                                );
+                            }}
+                          />
+                          <div
+                            className={`flex-1 min-w-0 ${isSelected ? "text-gray-900" : "text-gray-600"}`}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <span
+                                className={
+                                  isSelected
+                                    ? "text-[#F3056D]"
+                                    : "text-gray-400"
+                                }
+                              >
+                                {addon.icon}
+                              </span>
+                              <span className="font-semibold text-sm">
+                                {getLocalizedText(addon.name)}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-400 leading-relaxed">
+                              {getLocalizedText(addon.description)}
+                            </p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <span className="font-bold text-sm text-gray-900">
+                              ৳{(addon.price || 0).toLocaleString()}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-400 leading-relaxed">
-                            {addon.description}
-                          </p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <span className="font-bold text-sm text-gray-900">
-                            ৳{addon.price}
-                          </span>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-400 text-sm">
+                    এই কোর্সের জন্য কোনো আড-অন সার্ভিস নেই।
+                  </div>
+                )}
               </div>
 
-              {/* Continue */}
               <div className="p-6 sm:p-8 bg-white border-t border-gray-100">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-6 text-sm">
                     <div>
                       <span className="text-gray-400">সাবটোটাল:</span>
                       <span className="font-bold text-gray-900 ml-1.5">
-                        ৳{totals.subtotal.toLocaleString()}
+                        ৳{(totals.subtotal || 0).toLocaleString()}
                       </span>
                     </div>
                     {selectedAddons.length > 0 && (
@@ -1180,7 +1196,7 @@ function CheckoutPageContent() {
                     onClick={() => handleStepChange(2)}
                     className="w-full sm:w-auto px-10 py-3.5 bg-[#00477C] text-white font-bold rounded-xl hover:bg-[#003a66] transition-all shadow-lg shadow-blue-200/50 hover:shadow-blue-300/50 flex items-center justify-center gap-2 group"
                   >
-                    এগিয়ে যান
+                    এগিয়ে যান{" "}
                     <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                   </button>
                 </div>
@@ -1188,11 +1204,10 @@ function CheckoutPageContent() {
             </div>
           )}
 
-          {/* ========== TAB 2: AUTH ========== */}
+          {/* TAB 2: AUTH */}
           {activeStep === 2 && (
             <div className="animate-[slideUp_0.4s_ease-out]">
               <div className="flex flex-col lg:flex-row min-h-[520px]">
-                {/* Left Visual Panel */}
                 <div className="hidden lg:flex lg:w-5/12 bg-gradient-to-br from-[#00477C] to-[#002d4d] p-10 flex-col justify-between relative overflow-hidden">
                   <div className="absolute inset-0 opacity-10">
                     <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-[#F3056D] blur-3xl" />
@@ -1239,10 +1254,8 @@ function CheckoutPageContent() {
                   </div>
                 </div>
 
-                {/* Right Form Panel */}
                 <div className="flex-1 p-6 sm:p-10 flex items-center justify-center">
                   <div className="w-full max-w-md">
-                    {/* Already Logged In State */}
                     {currentUser && appUser ? (
                       <div className="text-center py-8">
                         <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-50 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm border border-green-100">
@@ -1267,7 +1280,7 @@ function CheckoutPageContent() {
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                               <>
-                                <LogOut className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                                <LogOut className="h-4 w-4 inline mr-1.5 -mt-0.5" />{" "}
                                 লগআউট
                               </>
                             )}
@@ -1282,12 +1295,10 @@ function CheckoutPageContent() {
                         </div>
                       </div>
                     ) : (
-                      /* Auth Form */
                       <form
                         onSubmit={handleSubmitAuth(onAuthSubmit)}
                         className="flex flex-col gap-5"
                       >
-                        {/* Mobile Header */}
                         <div className="lg:hidden text-center mb-2">
                           <div className="w-12 h-12 bg-[#00477C] rounded-2xl flex items-center justify-center mx-auto mb-3">
                             <Lock className="h-5 w-5 text-white" />
@@ -1303,15 +1314,13 @@ function CheckoutPageContent() {
                           </h2>
                         </div>
 
-                        {/* Error Banner */}
                         {(authError || otpError) && (
                           <div className="bg-red-50 border border-red-100 text-red-600 text-sm p-3 rounded-xl flex items-start gap-2 animate-[fadeIn_0.2s_ease-out]">
-                            <X className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                            <X className="h-4 w-4 mt-0.5 flex-shrink-0" />{" "}
                             <span>{authError || otpError}</span>
                           </div>
                         )}
 
-                        {/* ---- VIEW: Input ---- */}
                         {authView === "input" && (
                           <div className="space-y-4">
                             <div className="hidden lg:block">
@@ -1344,13 +1353,12 @@ function CheckoutPageContent() {
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
                                 "এগিয়ে যান"
-                              )}
+                              )}{" "}
                               <ChevronRight className="h-4 w-4" />
                             </button>
                           </div>
                         )}
 
-                        {/* ---- VIEW: Password ---- */}
                         {authView === "password" && (
                           <div className="space-y-4">
                             <div className="hidden lg:block">
@@ -1362,7 +1370,7 @@ function CheckoutPageContent() {
                               </p>
                             </div>
                             <div className="p-3 bg-gray-50 rounded-xl text-sm text-gray-600 flex items-center gap-2">
-                              <Mail className="h-4 w-4 text-gray-400" />
+                              <Mail className="h-4 w-4 text-gray-400" />{" "}
                               {watchAuth("emailOrPhone")}
                               <button
                                 type="button"
@@ -1418,13 +1426,12 @@ function CheckoutPageContent() {
                               }}
                               className="w-full py-2.5 text-sm text-gray-500 hover:text-gray-700 font-medium"
                             >
-                              <ArrowLeft className="h-3.5 w-3.5 inline -mt-0.5 mr-1" />
+                              <ArrowLeft className="h-3.5 w-3.5 inline -mt-0.5 mr-1" />{" "}
                               ফিরে যান
                             </button>
                           </div>
                         )}
 
-                        {/* ---- VIEW: OTP ---- */}
                         {authView === "otp" && (
                           <div className="space-y-4">
                             <div className="hidden lg:block">
@@ -1436,7 +1443,7 @@ function CheckoutPageContent() {
                               </p>
                             </div>
                             <div className="p-3 bg-gray-50 rounded-xl text-sm text-gray-600 flex items-center gap-2">
-                              <Mail className="h-4 w-4 text-gray-400" />
+                              <Mail className="h-4 w-4 text-gray-400" />{" "}
                               {watchAuth("emailOrPhone")}
                               <button
                                 type="button"
@@ -1508,13 +1515,12 @@ function CheckoutPageContent() {
                               }}
                               className="w-full py-2.5 text-sm text-gray-500 hover:text-gray-700 font-medium"
                             >
-                              <ArrowLeft className="h-3.5 w-3.5 inline -mt-0.5 mr-1" />
+                              <ArrowLeft className="h-3.5 w-3.5 inline -mt-0.5 mr-1" />{" "}
                               ফিরে যান
                             </button>
                           </div>
                         )}
 
-                        {/* ---- VIEW: Details (Registration) ---- */}
                         {authView === "details" && (
                           <div className="space-y-4">
                             <div className="hidden lg:block">
@@ -1619,7 +1625,7 @@ function CheckoutPageContent() {
                               }}
                               className="w-full py-2.5 text-sm text-gray-500 hover:text-gray-700 font-medium"
                             >
-                              <ArrowLeft className="h-3.5 w-3.5 inline -mt-0.5 mr-1" />
+                              <ArrowLeft className="h-3.5 w-3.5 inline -mt-0.5 mr-1" />{" "}
                               ফিরে যান
                             </button>
                           </div>
@@ -1632,11 +1638,10 @@ function CheckoutPageContent() {
             </div>
           )}
 
-          {/* ========== TAB 3: PAYMENT ========== */}
+          {/* TAB 3: PAYMENT */}
           {activeStep === 3 && (
             <div className="animate-[fadeIn_0.4s_ease-out]">
               <div className="flex flex-col lg:flex-row">
-                {/* Left: Payment Options */}
                 <div className="flex-1 p-6 sm:p-8 border-b lg:border-b-0 lg:border-r border-gray-100">
                   <div className="flex items-center gap-2 mb-6">
                     <div className="w-1.5 h-6 bg-[#00477C] rounded-full" />
@@ -1645,7 +1650,6 @@ function CheckoutPageContent() {
                     </h2>
                   </div>
 
-                  {/* Payment Methods */}
                   <div className="grid grid-cols-2 gap-3 mb-8">
                     {PAYMENT_METHODS.map((method) => {
                       const isSelected = selectedPaymentMethod === method.id;
@@ -1653,17 +1657,11 @@ function CheckoutPageContent() {
                         <button
                           key={method.id}
                           onClick={() => setSelectedPaymentMethod(method.id)}
-                          className={`p-4 rounded-2xl border-2 text-left transition-all duration-200 ${
-                            isSelected
-                              ? "border-[#00477C] bg-blue-50/50 shadow-sm"
-                              : "border-gray-100 hover:border-gray-200 hover:shadow-sm"
-                          }`}
+                          className={`p-4 rounded-2xl border-2 text-left transition-all duration-200 ${isSelected ? "border-[#00477C] bg-blue-50/50 shadow-sm" : "border-gray-100 hover:border-gray-200 hover:shadow-sm"}`}
                         >
                           <div
                             className="w-10 h-10 rounded-xl flex items-center justify-center mb-2"
-                            style={{
-                              background: `${method.color}15`,
-                            }}
+                            style={{ background: `${method.color}15` }}
                           >
                             <CreditCard
                               className="h-5 w-5"
@@ -1671,9 +1669,7 @@ function CheckoutPageContent() {
                             />
                           </div>
                           <p
-                            className={`text-sm font-bold ${
-                              isSelected ? "text-[#00477C]" : "text-gray-700"
-                            }`}
+                            className={`text-sm font-bold ${isSelected ? "text-[#00477C]" : "text-gray-700"}`}
                           >
                             {method.label}
                           </p>
@@ -1687,7 +1683,6 @@ function CheckoutPageContent() {
                     })}
                   </div>
 
-                  {/* Payment Plan */}
                   <div className="mb-8">
                     <h3 className="font-bold text-gray-900 text-sm mb-3">
                       পেমেন্ট প্ল্যান
@@ -1698,13 +1693,13 @@ function CheckoutPageContent() {
                           {
                             id: "full",
                             label: "একবারে পরিশোধ",
-                            sublabel: `৳${totals.total.toLocaleString()}`,
+                            sublabel: `৳${(totals.total || 0).toLocaleString()}`,
                             badge: null,
                           },
                           {
                             id: "monthly",
                             label: "মাসিক কিস্তি",
-                            sublabel: `৳${Math.ceil(totals.total / 2).toLocaleString()}/মাস`,
+                            sublabel: `৳${Math.ceil((totals.total || 0) / 2).toLocaleString()}/মাস`,
                             badge: "২ মাস",
                           },
                         ] as const
@@ -1714,11 +1709,7 @@ function CheckoutPageContent() {
                           <button
                             key={plan.id}
                             onClick={() => setPaymentPlan(plan.id)}
-                            className={`p-4 rounded-2xl border-2 text-left transition-all duration-200 relative ${
-                              isSelected
-                                ? "border-[#F3056D] bg-pink-50/50"
-                                : "border-gray-100 hover:border-gray-200"
-                            }`}
+                            className={`p-4 rounded-2xl border-2 text-left transition-all duration-200 relative ${isSelected ? "border-[#F3056D] bg-pink-50/50" : "border-gray-100 hover:border-gray-200"}`}
                           >
                             {plan.badge && (
                               <span className="absolute -top-2 right-3 text-[9px] font-bold bg-[#F3056D] text-white px-2 py-0.5 rounded-full">
@@ -1726,9 +1717,7 @@ function CheckoutPageContent() {
                               </span>
                             )}
                             <p
-                              className={`text-sm font-bold ${
-                                isSelected ? "text-[#F3056D]" : "text-gray-700"
-                              }`}
+                              className={`text-sm font-bold ${isSelected ? "text-[#F3056D]" : "text-gray-700"}`}
                             >
                               {plan.label}
                             </p>
@@ -1741,7 +1730,6 @@ function CheckoutPageContent() {
                     </div>
                   </div>
 
-                  {/* Promo Code */}
                   <div>
                     <h3 className="font-bold text-gray-900 text-sm mb-3">
                       প্রোমো কোড
@@ -1766,8 +1754,7 @@ function CheckoutPageContent() {
                       </div>
                       {promoApplied ? (
                         <div className="px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm font-semibold flex items-center gap-1.5">
-                          <CheckCircle className="h-4 w-4" />
-                          প্রয়োগ হয়েছে
+                          <CheckCircle className="h-4 w-4" /> প্রয়োগ হয়েছে
                         </div>
                       ) : (
                         <button
@@ -1777,7 +1764,7 @@ function CheckoutPageContent() {
                         >
                           {isCheckingPromo && (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          )}
+                          )}{" "}
                           প্রয়োগ
                         </button>
                       )}
@@ -1785,33 +1772,30 @@ function CheckoutPageContent() {
                   </div>
                 </div>
 
-                {/* Right: Order Summary */}
                 <div className="lg:w-[380px] p-6 sm:p-8 bg-gradient-to-b from-gray-50/80 to-white">
                   <h3 className="font-bold text-gray-900 text-lg mb-5">
                     অর্ডার সামারি
                   </h3>
-
-                  {/* Course */}
                   <div className="flex gap-3 p-3 bg-white rounded-xl border border-gray-100 mb-5">
                     <div className="w-16 h-16 bg-gray-200 rounded-lg relative overflow-hidden flex-shrink-0">
                       <Image
-                        src={course.image}
-                        alt={course.title}
+                        src={course.image || "/default-course.jpg"}
+                        alt={getLocalizedText(course.title) || "Course"}
                         fill
+                        sizes="64px"
                         className="object-cover"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-2">
-                        {course.title}
+                        {getLocalizedText(course.title)}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
-                        {course.dates}
+                        {getLocalizedText(course.dates)}
                       </p>
                     </div>
                   </div>
 
-                  {/* Addons */}
                   {selectedAddons.length > 0 && (
                     <div className="mb-5">
                       <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-2">
@@ -1829,10 +1813,10 @@ function CheckoutPageContent() {
                               <span className="text-gray-400">
                                 {addon.icon}
                               </span>
-                              {addon.name}
+                              {getLocalizedText(addon.name)}
                             </span>
                             <span className="font-semibold text-gray-900">
-                              ৳{addon.price}
+                              ৳{(addon.price || 0).toLocaleString()}
                             </span>
                           </div>
                         );
@@ -1840,18 +1824,17 @@ function CheckoutPageContent() {
                     </div>
                   )}
 
-                  {/* Pricing Breakdown */}
                   <div className="space-y-2.5 pt-4 border-t border-gray-100 mb-5">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-400">কোর্সের মূল্য</span>
                       <span className="text-gray-600 line-through">
-                        ৳{course.originalPrice.toLocaleString()}
+                        ৳{(course.originalPrice || 0).toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-400">অফার মূল্য</span>
                       <span className="text-gray-900 font-semibold">
-                        ৳{course.offerPrice.toLocaleString()}
+                        ৳{(displayOfferPrice || 0).toLocaleString()}
                       </span>
                     </div>
                     {totals.discount > 0 && (
@@ -1860,7 +1843,7 @@ function CheckoutPageContent() {
                           প্রোমো ডিসকাউন্ট
                         </span>
                         <span className="text-green-600 font-bold">
-                          -৳{totals.discount.toLocaleString()}
+                          -৳{(totals.discount || 0).toLocaleString()}
                         </span>
                       </div>
                     )}
@@ -1870,13 +1853,12 @@ function CheckoutPageContent() {
                           মোট সাশ্রয়
                         </span>
                         <span className="text-green-700 font-bold">
-                          ৳{savings.toLocaleString()}
+                          ৳{(savings || 0).toLocaleString()}
                         </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Total */}
                   <div className="bg-gradient-to-r from-[#00477C] to-[#002d4d] rounded-2xl p-5 text-white mb-5">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-blue-200 text-sm">
@@ -1889,7 +1871,7 @@ function CheckoutPageContent() {
                       )}
                     </div>
                     <p className="text-3xl font-extrabold">
-                      ৳{totals.plan.toLocaleString()}
+                      ৳{(totals.plan || 0).toLocaleString()}
                       {totals.installments > 1 && (
                         <span className="text-base font-medium text-blue-200">
                           /মাস
@@ -1898,12 +1880,11 @@ function CheckoutPageContent() {
                     </p>
                     {totals.installments > 1 && (
                       <p className="text-xs text-blue-200 mt-1">
-                        মোট: ৳{totals.total.toLocaleString()}
+                        মোট: ৳{(totals.total || 0).toLocaleString()}
                       </p>
                     )}
                   </div>
 
-                  {/* Pay Button */}
                   <button
                     onClick={handlePayment}
                     disabled={!currentUser}
@@ -1911,11 +1892,10 @@ function CheckoutPageContent() {
                   >
                     <Shield className="h-4 w-4" />
                     {totals.installments > 1
-                      ? `৳${totals.plan.toLocaleString()} পেমেন্ট করুন`
-                      : `৳${totals.total.toLocaleString()} পেমেন্ট করুন`}
+                      ? `৳${(totals.plan || 0).toLocaleString()} পেমেন্ট করুন`
+                      : `৳${(totals.total || 0).toLocaleString()} পেমেন্ট করুন`}
                   </button>
 
-                  {/* Trust Badges */}
                   <div className="flex items-center justify-center gap-4 mt-4 text-[10px] text-gray-400">
                     <span className="flex items-center gap-1">
                       <Shield className="h-3 w-3" /> SSL Secured
@@ -1934,7 +1914,6 @@ function CheckoutPageContent() {
         </div>
       </div>
 
-      {/* Keyframe animations */}
       <style jsx>{`
         @keyframes fadeIn {
           from {
