@@ -5,18 +5,14 @@ import React, {
   useContext,
   useEffect,
   useState,
-  useRef,
   ReactNode,
   useCallback,
 } from "react";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signInWithPhoneNumber,
-  RecaptchaVerifier,
   onAuthStateChanged,
   User as FirebaseUser,
-  ConfirmationResult,
   signOut,
   updateProfile,
 } from "firebase/auth";
@@ -41,14 +37,6 @@ interface AppUser {
   role: "student" | "teacher" | "admin";
 }
 
-/**
- * Controls post-authentication navigation behavior.
- *
- * - `redirect: true`  (default) → navigate to /dashboard
- * - `redirect: false`             → stay on current page, do nothing
- * - `redirect: "/custom-path"`   → navigate to that specific path
- * - `onSuccess`                  → callback fired after auth + DB sync complete
- */
 interface AuthOptions {
   redirect?: boolean | string;
   onSuccess?: () => void;
@@ -90,8 +78,6 @@ interface AuthContextType {
 
   sendOtpEmail: (email: string) => Promise<void>;
   checkOtpEmail: (email: string, code: string) => Promise<void>;
-  sendOtpPhone: (phone: string, recaptchaContainer: string) => Promise<void>;
-  checkOtpPhone: (phone: string, code: string) => Promise<void>;
 
   completeRegistration: (
     data: {
@@ -107,10 +93,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// --- Centralized Redirect Handler ---
-// NOTE: This default is a plain path. Components that need language-prefixed
-// paths (like AuthPage) should pass `redirect: false` and handle routing themselves
-// using `getLink()` from LanguageContext.
 const DEFAULT_REDIRECT = "/dashboard";
 
 function resolveRedirect(options?: AuthOptions): string | null {
@@ -125,7 +107,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const confirmationResultRef = useRef<ConfirmationResult | null>(null);
 
   // --- Sync Firebase ↔ Backend ---
   useEffect(() => {
@@ -150,23 +131,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // --- Helper: Phone → Email Alias ---
+  // Converts 01XXXXXXXXX to 01XXXXXXXXX@chalakchamps.com for Firebase Auth
   const normalizePhoneToEmail = (phone: string) => {
     const clean = phone.replace(/[^0-9]/g, "");
-    return `${clean}@langual-academy.com`;
+    return `${clean}@chalakchamps.com`;
   };
 
-  // --- Helper: Setup Recaptcha ---
-  const setupRecaptcha = (container: string) => {
-    if (typeof window === "undefined") return null;
-    try {
-      return new RecaptchaVerifier(auth, container, { size: "invisible" });
-    } catch (error) {
-      console.error("Recaptcha error", error);
-      return null;
-    }
-  };
-
-  // --- Helper: Fetch profile after auth state change ---
   const refreshAppUser = useCallback(async (): Promise<AppUser | null> => {
     try {
       const res = await getProfile();
@@ -188,7 +158,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const cleanPassword = password.trim();
     await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
 
-    // Wait a short period then refresh the app user from backend and return it
     await new Promise((resolve) => setTimeout(resolve, 300));
     const loggedInUser = await refreshAppUser();
 
@@ -273,25 +242,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await verifyEmailCode(email, code);
   };
 
-  // --- Custom OTP: Phone Flow ---
-  const sendOtpPhone = async (phone: string, container: string) => {
-    const recaptchaVerifier = setupRecaptcha(container);
-    if (!recaptchaVerifier) throw new Error("Recaptcha failed");
-
-    confirmationResultRef.current = await signInWithPhoneNumber(
-      auth,
-      phone,
-      recaptchaVerifier,
-    );
-  };
-
-  const checkOtpPhone = async (phone: string, code: string) => {
-    if (!confirmationResultRef.current) {
-      throw new Error("No confirmation result available");
-    }
-    await confirmationResultRef.current.confirm(code);
-  };
-
   // --- Final Registration Step (after OTP verified) ---
   const completeRegistration = async (
     data: {
@@ -304,11 +254,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     options?: AuthOptions,
   ) => {
     let firebaseUser = auth?.currentUser || currentUser;
+    let emailForFirebase = data.emailOrPhone;
+    let phoneForDb: string | undefined = undefined;
 
-    if (data.method === "email" && data.emailOrPhone && data.password) {
+    // If registering with phone, convert to dummy email for Firebase
+    if (data.method === "phone" && data.emailOrPhone) {
+      emailForFirebase = normalizePhoneToEmail(data.emailOrPhone);
+      phoneForDb = data.emailOrPhone; // Keep real phone for MongoDB
+    }
+
+    if (emailForFirebase && data.password) {
       const cred = await createUserWithEmailAndPassword(
         auth!,
-        data.emailOrPhone,
+        emailForFirebase,
         data.password,
       );
       await updateProfile(cred.user, {
@@ -322,8 +280,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         uid: firebaseUser.uid,
         firstName: data.firstName,
         lastName: data.lastName,
-        email: firebaseUser.email || undefined,
-        phoneNumber: firebaseUser.phoneNumber || undefined,
+        email: emailForFirebase, // Stores dummy email for phone users
+        phoneNumber: phoneForDb, // Stores real phone number
         role: "student",
       });
 
@@ -354,8 +312,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         sendOtpEmail,
         checkOtpEmail,
-        sendOtpPhone,
-        checkOtpPhone,
         completeRegistration,
       }}
     >
@@ -380,8 +336,6 @@ export const useAuth = (): AuthContextType => {
       logout: async () => {},
       sendOtpEmail: async () => {},
       checkOtpEmail: async () => {},
-      sendOtpPhone: async () => {},
-      checkOtpPhone: async () => {},
       completeRegistration: async () => {},
     };
     return fallback;
