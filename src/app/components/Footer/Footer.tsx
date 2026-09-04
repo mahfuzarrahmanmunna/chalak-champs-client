@@ -228,7 +228,7 @@ const Footer = () => {
                   </li>
                   <li>
                     <Link
-                      href={comingSoonLink}
+                      href={isBangla ? "/bn/privacy-policy" : "/en/privacy-policy"}
                       className="hover:text-[#F3066E] transition-colors"
                     >
                       <span suppressHydrationWarning>

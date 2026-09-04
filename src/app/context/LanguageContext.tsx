@@ -55,14 +55,14 @@ import aboutUsBangla from "../data/translations/aboutus-bangla.json";
 import instructorsEnglish from "../data/translations/instructors-english.json";
 import instructorsBangla from "../data/translations/instructors-bangla.json";
 
-
+// --- NEW IMPORT FOR PRIVACY POLICY ---
+import privacyEnglish from "../data/translations/privacy-english.json";
+import privacyBangla from "../data/translations/privacy-bangla.json";
 
 // Types
 type Translations = {
   [key: string]: string | Translations;
 };
-
-
 
 interface MenuItem {
   title: string;
@@ -265,7 +265,6 @@ export interface AboutUsData {
       bangla: string;
       english: string;
     };
-    // Adding a 3rd card for balance based on content
     values: {
       title: string;
       bangla: string;
@@ -288,8 +287,6 @@ export interface AboutUsData {
   };
 }
 
-// --- NEW INTERFACE FOR SINGLE COURSE PAGE ---
-// Defining it exactly based on your provided JSON structure
 export interface SingleCourseData {
   breadcrumb: string;
   hero: {
@@ -378,7 +375,6 @@ export interface SingleCourseData {
   };
 }
 
-
 export interface InstructorsData {
   hero: {
     title: string;
@@ -398,12 +394,50 @@ export interface InstructorsData {
   }>;
 }
 
+// --- NEW INTERFACE FOR PRIVACY POLICY ---
+export interface PrivacyPolicyData {
+  hero: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    lastUpdated: string;
+  };
+  trustBar: {
+    items: { icon: string; text: string }[];
+  };
+  toc: {
+    title: string;
+    items: { id: string; label: string }[];
+  };
+  dataCollection: {
+    title: string;
+    description: string;
+    cards: { icon: string; title: string; description: string }[];
+  };
+  sections: {
+    id: string;
+    number: string;
+    title: string;
+    content: string;
+    items?: string[];
+  }[];
+  security: {
+    title: string;
+    description: string;
+    items: { icon: string; title: string }[];
+  };
+  contact: {
+    title: string;
+    description: string;
+    button: string;
+  };
+}
 
 type LanguageContextType = {
   isBangla: boolean;
   currentLang: "en" | "bn";
   toggleLanguage: () => void;
-  getLink: (path: string) => string; // NEW HELPER FOR LINKS
+  getLink: (path: string) => string;
   t: Record<string, string>;
   heroData: HeroData | null;
   isLoading: boolean;
@@ -416,10 +450,10 @@ type LanguageContextType = {
   offlineData: OfflineCoursesData;
   ctaData: CTAData;
   footerData: FooterData;
-  // Added singleCourseData to context type
   singleCourseData: SingleCourseData;
   aboutUsData: AboutUsData;
   instructorsData: InstructorsData;
+  privacyData: PrivacyPolicyData; // ✅ ADDED TO CONTEXT TYPE
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -436,10 +470,9 @@ const getLanguageData = (isBangla: boolean) => {
   const faq = isBangla ? faqBangla : faqEnglish;
   const mailchimp = isBangla ? mailchimpBangla : mailchimpEnglish;
   const cta = (isBangla ? ctaBangla : ctaEnglish) as CTAData;
-  // Extract featureCourses from common
+
   const { featureCourses, ...commonStrings } = common || {};
   const footer = (isBangla ? footerBangla : footerEnglish) as FooterData;
-  
 
   const features = (
     isBangla ? featuresBangla : featuresEnglish
@@ -460,12 +493,16 @@ const getLanguageData = (isBangla: boolean) => {
 
   const courses = (isBangla ? coursesBangla : coursesEnglish) as CoursesData;
 
-  // --- GET SINGLE COURSE DATA ---
-  const singleCourse = (
-    isBangla ? singlecourseBangla : singlecourseEnglish
-  ) as unknown as SingleCourseData;
+  const singleCourse = (isBangla
+    ? singlecourseBangla
+    : singlecourseEnglish) as unknown as SingleCourseData;
 
   const aboutUs = (isBangla ? aboutUsBangla : aboutUsEnglish) as AboutUsData;
+
+  // ✅ PARSE PRIVACY DATA
+  const privacy = (
+    isBangla ? privacyBangla : privacyEnglish
+  ) as PrivacyPolicyData;
 
   const merged = {
     ...(navbarStrings as unknown as Translations),
@@ -495,9 +532,10 @@ const getLanguageData = (isBangla: boolean) => {
     offline,
     cta,
     footer,
-    singleCourse, // Return single course data
+    singleCourse,
     aboutUs,
     instructors,
+    privacy, // ✅ RETURN PRIVACY DATA
   };
 };
 
@@ -530,15 +568,13 @@ export const LanguageProvider = ({
     singleCourse,
     aboutUs,
     instructors,
+    privacy, // ✅ DESTRUCTURE PRIVACY DATA
   } = useMemo(() => {
     return getLanguageData(isBangla);
   }, [isBangla]);
 
-  // Determine current language code
   const currentLang = isBangla ? "bn" : "en";
 
-  // --- NEW HELPER TO CREATE LINKS ---
-  // Usage: getLink("/courses") returns "/bn/courses" or "/en/courses"
   const getLink = (path: string) => {
     const cleanPath = path.startsWith("/") ? path : `/${path}`;
     return `/${currentLang}${cleanPath}`;
@@ -552,14 +588,10 @@ export const LanguageProvider = ({
     let newPath = "";
 
     if (pathname === "/" || pathname === "") {
-      // If on root, just go to /en or /bn
       newPath = `/${newLang}`;
     } else if (pathname.startsWith(`/${currentLangStr}`)) {
-      // If pathname starts with /en/ or /bn/, swap it
       newPath = pathname.replace(`/${currentLangStr}`, `/${newLang}`);
     } else {
-      // If pathname has no prefix (e.g. /about), assume we want to add prefix
-      // or replace default English
       newPath = `/${newLang}${pathname}`;
     }
 
@@ -576,7 +608,7 @@ export const LanguageProvider = ({
         isBangla,
         currentLang: currentLang as "en" | "bn",
         toggleLanguage,
-        getLink, // EXPOSE GET LINK
+        getLink,
         t: merged,
         heroData: hero,
         isLoading: false,
@@ -589,9 +621,10 @@ export const LanguageProvider = ({
         offlineData: offline || ({} as OfflineCoursesData),
         ctaData: cta || ({} as CTAData),
         footerData: footer || ({} as FooterData),
-        singleCourseData: singleCourse || ({} as SingleCourseData), // Provide to context
+        singleCourseData: singleCourse || ({} as SingleCourseData),
         aboutUsData: aboutUs || ({} as AboutUsData),
         instructorsData: instructors || ({} as InstructorsData),
+        privacyData: privacy || ({} as PrivacyPolicyData), // ✅ PROVIDE PRIVACY DATA
       }}
     >
       {children}
@@ -606,4 +639,3 @@ export const useLanguage = () => {
   }
   return context;
 };
-

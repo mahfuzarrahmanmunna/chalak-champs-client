@@ -34,8 +34,6 @@ interface Lesson {
   videoUrl?: string;
   content?: string;
   duration?: number;
-  isCompleted?: boolean;
-  isLocked?: boolean;
   isFreePreview?: boolean;
 }
 
@@ -51,8 +49,16 @@ interface CourseData {
   description?: string;
   thumbnail?: string;
   instructor?: string;
-  progress?: number;
   modules: Module[];
+}
+
+interface CourseProgress {
+  completedLessons: string[];
+  lastAccessedModule: string;
+  lastAccessedLesson: string;
+  progressPercentage: number;
+  completedLessonsCount: number;
+  totalLessons: number;
 }
 
 // Helpers
@@ -68,7 +74,6 @@ const getLessonTitle = (title: any) => {
   return title.en || title.bn || "Untitled Lesson";
 };
 
-// Extract YouTube Video ID for Embedding
 const getYouTubeEmbedUrl = (url?: string) => {
   if (!url) return null;
   const regex =
@@ -116,8 +121,11 @@ export default function CourseLearningPage() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [course, setCourse] = useState<CourseData | null>(null);
+  const [progress, setProgress] = useState<CourseProgress | null>(null);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
+  const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSavingProgress, setIsSavingProgress] = useState(false); // Prevents race conditions
   const [error, setError] = useState<string | null>(null);
   const [isEnrolled, setIsEnrolled] = useState(true);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(
@@ -131,6 +139,43 @@ export default function CourseLearningPage() {
   const BACKEND_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
+  const updateLastAccessed = async (
+    moduleId: string,
+    lessonId: string,
+    token: string,
+    courseId?: string,
+  ) => {
+    if (!courseId) return;
+
+    try {
+      setIsSavingProgress(true);
+      const res = await fetch(
+        `${BACKEND_URL}/api/courses/${courseId}/progress/last-accessed`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ moduleId, lessonId }),
+        },
+      );
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        console.warn(
+          "Failed to save last accessed lesson:",
+          errData.message || res.statusText,
+        );
+      }
+    } catch (err) {
+      console.warn("Error updating last accessed lesson:", err);
+    } finally {
+      setIsSavingProgress(false);
+    }
+  };
+
+  // 1. Fetch Course & Progress
   useEffect(() => {
     if (authLoading) return;
 
@@ -146,7 +191,7 @@ export default function CourseLearningPage() {
       try {
         const token = await currentUser.getIdToken();
 
-        // 1. Fetch Course Details
+        // Fetch Course Details
         const courseRes = await fetch(
           `${BACKEND_URL}/api/courses/slug/${slug}`,
           {
@@ -161,7 +206,7 @@ export default function CourseLearningPage() {
 
         if (!courseDetails) throw new Error("Course not found.");
 
-        // 2. Fetch Modules & Lessons
+        // Fetch Modules & Lessons
         const modulesRes = await fetch(
           `${BACKEND_URL}/api/courses/${courseDetails._id}/modules`,
           {
@@ -207,24 +252,46 @@ export default function CourseLearningPage() {
         setCourse(fullCourseData);
         setIsEnrolled(true);
 
-        if (fullCourseData.modules?.length > 0) {
-          const firstModule = fullCourseData.modules[0];
-          setExpandedModules(new Set([firstModule._id]));
+        // ✅ FETCH USER PROGRESS
+        const progressRes = await fetch(
+          `${BACKEND_URL}/api/courses/${courseDetails._id}/progress`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
 
-          let resumeLesson: Lesson | null = null;
-          for (const mod of fullCourseData.modules) {
-            const found = mod.lessons?.find(
-              (l) => !l.isCompleted && !l.isLocked,
-            );
-            if (found) {
-              resumeLesson = found;
-              break;
-            }
+        if (!progressRes.ok) throw new Error("Failed to load progress.");
+        const progressJson = await progressRes.json();
+        const userProgress: CourseProgress = progressJson.data;
+        setProgress(userProgress);
+
+        // ✅ RESUME LOGIC
+        if (fullCourseData.modules?.length > 0) {
+          const flatLessons = fullCourseData.modules.flatMap((m) => m.lessons);
+
+          // Find saved lesson
+          const savedLesson = flatLessons.find(
+            (l) => l._id === userProgress.lastAccessedLesson,
+          );
+          const savedModule = fullCourseData.modules.find(
+            (m) => m._id === userProgress.lastAccessedModule,
+          );
+
+          if (savedLesson && savedModule) {
+            setActiveLesson(savedLesson);
+            setActiveModuleId(savedModule._id);
+            setExpandedModules(new Set([savedModule._id]));
+          } else {
+            // Fallback to M1/L1 if no saved progress
+            const firstModule = fullCourseData.modules[0];
+            const firstLesson = firstModule.lessons[0];
+            setActiveLesson(firstLesson);
+            setActiveModuleId(firstModule._id);
+            setExpandedModules(new Set([firstModule._id]));
+
+            // Save initial progress to DB
+            updateLastAccessed(firstModule._id, firstLesson._id, token);
           }
-          if (!resumeLesson && firstModule.lessons?.length > 0) {
-            resumeLesson = firstModule.lessons[0];
-          }
-          setActiveLesson(resumeLesson);
         }
       } catch (err: any) {
         console.error("Error fetching course:", err);
@@ -268,7 +335,6 @@ export default function CourseLearningPage() {
     }
   }, [toast.show]);
 
-  // Flatten lessons for easy Next/Prev navigation
   const allLessons = course?.modules.flatMap((mod) => mod.lessons) || [];
   const currentIndex = activeLesson
     ? allLessons.findIndex((l) => l._id === activeLesson._id)
@@ -277,20 +343,28 @@ export default function CourseLearningPage() {
   const hasNextLesson =
     currentIndex !== -1 && currentIndex < allLessons.length - 1;
 
+  // ✅ Helper: Check completion state from DB source of truth
+  const isLessonCompleted = (lessonId: string) => {
+    return progress?.completedLessons.includes(lessonId) || false;
+  };
+
   // ✅ Helper: Check if a lesson is accessible based on sequential completion
   const isLessonAccessible = (lessonId: string) => {
     const index = allLessons.findIndex((l) => l._id === lessonId);
     if (index === -1) return false;
     if (index === 0) return true; // First lesson is always accessible
+
     // Accessible if the lesson itself is already completed OR the previous lesson is completed
-    return (
-      allLessons[index].isCompleted || allLessons[index - 1]?.isCompleted
-    );
+    const isThisCompleted = isLessonCompleted(lessonId);
+    const isPrevCompleted = isLessonCompleted(allLessons[index - 1]._id);
+    return isThisCompleted || isPrevCompleted;
   };
 
-  const handleSelectLesson = (module: Module, lesson: Lesson) => {
-    // ✅ Block if locked by backend OR blocked by sequential progression
-    if (lesson.isLocked || !isLessonAccessible(lesson._id)) {
+  const handleSelectLesson = async (module: Module, lesson: Lesson) => {
+    if (isSavingProgress) return; // Prevent race condition
+
+    // ✅ Block if sequential progression blocks it
+    if (!isLessonAccessible(lesson._id)) {
       setToast({
         show: true,
         message: "Please complete the previous lesson first!",
@@ -299,25 +373,30 @@ export default function CourseLearningPage() {
     }
 
     setActiveLesson(lesson);
+    setActiveModuleId(module._id);
     setExpandedModules((prev) => {
       const next = new Set(prev);
       next.add(module._id);
       return next;
     });
 
+    // ✅ Save position to DB whenever user opens a lesson
+    const token = await currentUser!.getIdToken();
+    await updateLastAccessed(module._id, lesson._id, token);
+
     if (window.innerWidth < 1024) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
-  const navigateLesson = (direction: "next" | "prev") => {
-    if (!course || !activeLesson) return;
+  const navigateLesson = async (direction: "next" | "prev") => {
+    if (!course || !activeLesson || isSavingProgress) return;
 
     // ✅ Prevent going next if current lesson is not completed
-    if (direction === "next" && !activeLesson.isCompleted) {
+    if (direction === "next" && !isLessonCompleted(activeLesson._id)) {
       setToast({
         show: true,
-        message: "Please complete the current video/lesson to proceed!",
+        message: "Please complete the current lesson to proceed!",
       });
       return;
     }
@@ -326,44 +405,23 @@ export default function CourseLearningPage() {
     if (newIndex < 0 || newIndex >= allLessons.length) return;
 
     const newLesson = allLessons[newIndex];
-    setActiveLesson(newLesson);
-
-    // Find and expand the module containing this new lesson
     const containingModule = course.modules.find((mod) =>
       mod.lessons.some((l) => l._id === newLesson._id),
     );
-    if (containingModule) {
-      setExpandedModules((prev) => {
-        const next = new Set(prev);
-        next.add(containingModule._id);
-        return next;
-      });
-    }
 
-    if (window.innerWidth < 1024) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (containingModule) {
+      // Reuse handleSelectLesson to ensure validation & DB saving occurs
+      handleSelectLesson(containingModule, newLesson);
     }
   };
 
   const handleMarkComplete = async () => {
-    if (!activeLesson || !course || !currentUser) return;
-
-    // Find the module containing the active lesson
-    const containingModule = course.modules.find((mod) =>
-      mod.lessons.some((l) => l._id === activeLesson._id),
-    );
-
-    if (!containingModule) {
-      setToast({ show: true, message: "Error: Could not find module." });
-      return;
-    }
+    if (!activeLesson || !course || !currentUser || !activeModuleId) return;
 
     try {
       const token = await currentUser.getIdToken();
-
-      // Send API request to backend to mark complete
       const res = await fetch(
-        `${BACKEND_URL}/api/courses/${course._id}/modules/${containingModule._id}/lessons/${activeLesson._id}/complete`,
+        `${BACKEND_URL}/api/courses/${course._id}/modules/${activeModuleId}/lessons/${activeLesson._id}/complete`,
         {
           method: "POST",
           headers: {
@@ -373,30 +431,20 @@ export default function CourseLearningPage() {
         },
       );
 
-      if (!res.ok) throw new Error("Failed to update progress on server.");
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(
+          errData.message || "Failed to update progress on server.",
+        );
+      }
 
       const data = await res.json();
 
-      // Update local state UI
-      const updatedModules = course.modules.map((mod) => ({
-        ...mod,
-        lessons: mod.lessons.map((lesson) =>
-          lesson._id === activeLesson._id
-            ? { ...lesson, isCompleted: true }
-            : lesson,
-        ),
-      }));
-
-      setCourse({
-        ...course,
-        modules: updatedModules,
-        progress: data.data.progressPercentage,
-      });
-      setActiveLesson({ ...activeLesson, isCompleted: true });
-
+      // ✅ Update progress state directly from DB response (Source of Truth)
+      setProgress(data.data);
       setToast({ show: true, message: "Lesson marked as complete!" });
 
-      // Automatically go to next lesson after a short delay
+      // ✅ Automatically determine and navigate to next lesson (unlocked, but not completed)
       if (hasNextLesson) {
         setTimeout(() => navigateLesson("next"), 1000);
       }
@@ -491,17 +539,9 @@ export default function CourseLearningPage() {
   }
 
   const courseModules = course.modules || [];
-  const totalLessons = courseModules.reduce(
-    (acc, m) => acc + (m.lessons?.length || 0),
-    0,
-  );
-  const completedLessons = courseModules.reduce(
-    (acc, m) => acc + (m.lessons?.filter((l) => l.isCompleted).length || 0),
-    0,
-  );
-  
-  // Dynamically calculate progress based on completed lessons
-  const overallProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const totalLessons = progress?.totalLessons || 0;
+  const completedCount = progress?.completedLessonsCount || 0;
+  const overallProgress = progress?.progressPercentage || 0;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 relative" ref={containerRef}>
@@ -532,16 +572,14 @@ export default function CourseLearningPage() {
               style={{ color: textSecondary }}
             >
               <span className="flex items-center gap-1">
-                <GraduationCap className="h-3.5 w-3.5" />
-                {course.instructor}
+                <GraduationCap className="h-3.5 w-3.5" /> {course.instructor}
               </span>
               <span className="flex items-center gap-1">
-                <Layers className="h-3.5 w-3.5" />
-                {courseModules.length} Modules
+                <Layers className="h-3.5 w-3.5" /> {courseModules.length}{" "}
+                Modules
               </span>
               <span className="flex items-center gap-1">
-                <BookOpen className="h-3.5 w-3.5" />
-                {totalLessons} Lessons
+                <BookOpen className="h-3.5 w-3.5" /> {totalLessons} Lessons
               </span>
             </div>
           </div>
@@ -559,7 +597,9 @@ export default function CourseLearningPage() {
               <path
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 fill="none"
-                stroke={isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(33,65,135,0.1)"}
+                stroke={
+                  isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(33,65,135,0.1)"
+                }
                 strokeWidth="3"
               />
               <path
@@ -572,17 +612,22 @@ export default function CourseLearningPage() {
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[11px] font-black" style={{ color: textPrimary }}>
+              <span
+                className="text-[11px] font-black"
+                style={{ color: textPrimary }}
+              >
                 {overallProgress}%
               </span>
             </div>
           </div>
           <div>
             <p className="text-xs font-bold" style={{ color: textPrimary }}>
-              {completedLessons}/{totalLessons} Done
+              {completedCount}/{totalLessons} Done
             </p>
             <p className="text-[10px] mt-0.5" style={{ color: textMuted }}>
-              {overallProgress === 100 ? "Course Completed!" : "Keep up the great work!"}
+              {overallProgress === 100
+                ? "Course Completed!"
+                : "Keep up the great work!"}
             </p>
           </div>
         </div>
@@ -598,7 +643,7 @@ export default function CourseLearningPage() {
           >
             {activeLesson ? (
               <>
-                {/* VIDEO TYPE (Supports YouTube & Direct Files) */}
+                {/* VIDEO TYPE (Removed onEnded Auto-complete) */}
                 {activeLesson.type === "video" && (
                   <div className="relative bg-black aspect-video w-full">
                     {(() => {
@@ -623,7 +668,6 @@ export default function CourseLearningPage() {
                             className="w-full h-full"
                             src={activeLesson.videoUrl}
                             poster={course.thumbnail}
-                            onEnded={handleMarkComplete} // ✅ Auto-complete when video finishes
                           />
                         );
                       } else {
@@ -759,7 +803,7 @@ export default function CourseLearningPage() {
                     {activeLesson.type}
                   </p>
                 </div>
-                {activeLesson.isCompleted && (
+                {isLessonCompleted(activeLesson._id) && (
                   <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold text-white bg-green-500">
                     <CheckCircle2 className="h-3 w-3" /> Completed
                   </div>
@@ -769,7 +813,7 @@ export default function CourseLearningPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <button
                   onClick={() => navigateLesson("prev")}
-                  disabled={!hasPrevLesson}
+                  disabled={!hasPrevLesson || isSavingProgress}
                   className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{
                     background: isDarkMode
@@ -784,15 +828,18 @@ export default function CourseLearningPage() {
 
                 <button
                   onClick={handleMarkComplete}
-                  disabled={activeLesson.isCompleted}
+                  disabled={
+                    isLessonCompleted(activeLesson._id) || isSavingProgress
+                  }
                   className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{
-                    background: "linear-gradient(135deg, #F3056D 0%, #ff3d8f 100%)",
+                    background:
+                      "linear-gradient(135deg, #F3056D 0%, #ff3d8f 100%)",
                     color: "#fff",
                     boxShadow: "0 4px 15px rgba(243,5,109,0.2)",
                   }}
                 >
-                  {activeLesson.isCompleted ? (
+                  {isLessonCompleted(activeLesson._id) ? (
                     <>
                       <CheckCircle2 className="h-4 w-4" /> Completed
                     </>
@@ -803,11 +850,18 @@ export default function CourseLearningPage() {
                   )}
                 </button>
 
-                {/* ✅ Next button is disabled if the current lesson isn't completed yet */}
                 <button
                   onClick={() => navigateLesson("next")}
-                  disabled={!hasNextLesson || !activeLesson.isCompleted}
-                  title={!activeLesson.isCompleted ? "Complete this lesson to proceed" : ""}
+                  disabled={
+                    !hasNextLesson ||
+                    !isLessonCompleted(activeLesson._id) ||
+                    isSavingProgress
+                  }
+                  title={
+                    !isLessonCompleted(activeLesson._id)
+                      ? "Complete this lesson to proceed"
+                      : ""
+                  }
                   className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{
                     background: isDarkMode
@@ -846,7 +900,10 @@ export default function CourseLearningPage() {
               }}
             >
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-black text-sm" style={{ color: textPrimary }}>
+                <h3
+                  className="font-black text-sm"
+                  style={{ color: textPrimary }}
+                >
                   Course Content
                 </h3>
                 <span
@@ -859,8 +916,6 @@ export default function CourseLearningPage() {
                   {overallProgress}% Complete
                 </span>
               </div>
-              
-              {/* Sleek Progress Bar */}
               <div
                 className="h-2 rounded-full overflow-hidden"
                 style={{
@@ -878,8 +933,11 @@ export default function CourseLearningPage() {
                   }}
                 />
               </div>
-              <p className="text-[10px] mt-2 text-left" style={{ color: textSecondary }}>
-                {completedLessons} of {totalLessons} lessons completed
+              <p
+                className="text-[10px] mt-2 text-left"
+                style={{ color: textSecondary }}
+              >
+                {completedCount} of {totalLessons} lessons completed
               </p>
             </div>
 
@@ -888,9 +946,14 @@ export default function CourseLearningPage() {
               {courseModules.map((module, index) => {
                 const isExpanded = expandedModules.has(module._id);
                 const moduleLessons = module.lessons || [];
-                const moduleCompleted = moduleLessons.filter(l => l.isCompleted).length;
+                const moduleCompleted = moduleLessons.filter((l) =>
+                  isLessonCompleted(l._id),
+                ).length;
                 const moduleTotal = moduleLessons.length;
-                const moduleProgress = moduleTotal > 0 ? Math.round((moduleCompleted / moduleTotal) * 100) : 0;
+                const moduleProgress =
+                  moduleTotal > 0
+                    ? Math.round((moduleCompleted / moduleTotal) * 100)
+                    : 0;
 
                 return (
                   <div
@@ -931,8 +994,7 @@ export default function CourseLearningPage() {
                           </p>
                         </div>
                       </div>
-                      
-                      {/* Module Completion Indicator */}
+
                       <div className="flex items-center gap-2">
                         {moduleProgress === 100 ? (
                           <div className="w-5 h-5 rounded-full bg-[#4ade80] flex items-center justify-center">
@@ -942,8 +1004,10 @@ export default function CourseLearningPage() {
                           <span
                             className="text-[10px] font-bold px-1.5 py-0.5 rounded"
                             style={{
-                              background: isDarkMode ? "rgba(255,255,255,0.05)" : "rgba(33,65,135,0.04)",
-                              color: textSecondary
+                              background: isDarkMode
+                                ? "rgba(255,255,255,0.05)"
+                                : "rgba(33,65,135,0.04)",
+                              color: textSecondary,
                             }}
                           >
                             {moduleCompleted}/{moduleTotal}
@@ -953,7 +1017,9 @@ export default function CourseLearningPage() {
                           className="h-4 w-4 transition-transform duration-300"
                           style={{
                             color: textSecondary,
-                            transform: isExpanded ? "rotate(180deg)" : "rotate(0)",
+                            transform: isExpanded
+                              ? "rotate(180deg)"
+                              : "rotate(0)",
                           }}
                         />
                       </div>
@@ -964,30 +1030,38 @@ export default function CourseLearningPage() {
                         {moduleLessons.map((lesson) => {
                           const isActive = activeLesson?._id === lesson._id;
                           const accessible = isLessonAccessible(lesson._id);
-                          // ✅ Locked if backend says locked OR sequential progression blocks it
-                          const isBlocked = lesson.isLocked || !accessible;
+                          const isCompleted = isLessonCompleted(lesson._id);
+                          const isBlocked = !accessible;
 
                           return (
                             <button
                               key={lesson._id}
                               onClick={() => handleSelectLesson(module, lesson)}
-                              disabled={isBlocked}
+                              disabled={isBlocked || isSavingProgress}
                               className="w-full flex items-center gap-3 p-2.5 pl-10 rounded-lg text-left transition-all duration-200 group"
                               style={{
-                                background: isActive ? highlightBg : "transparent",
+                                background: isActive
+                                  ? highlightBg
+                                  : "transparent",
                                 cursor: isBlocked ? "not-allowed" : "pointer",
                                 opacity: isBlocked ? 0.5 : 1,
                               }}
                             >
                               <div className="flex-shrink-0">
                                 {isBlocked ? (
-                                  <Lock className="h-4 w-4" style={{ color: textMuted }} />
-                                ) : lesson.isCompleted ? (
+                                  <Lock
+                                    className="h-4 w-4"
+                                    style={{ color: textMuted }}
+                                  />
+                                ) : isCompleted ? (
                                   <div className="w-5 h-5 rounded-full bg-[#4ade80] flex items-center justify-center">
                                     <CheckCircle2 className="h-3.5 w-3.5 text-white" />
                                   </div>
                                 ) : (
-                                  <LessonTypeIcon type={lesson.type} className="w-4 h-4" />
+                                  <LessonTypeIcon
+                                    type={lesson.type}
+                                    className="w-4 h-4"
+                                  />
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
@@ -1000,7 +1074,10 @@ export default function CourseLearningPage() {
                                   {getLessonTitle(lesson.title)}
                                 </h5>
                                 {lesson.duration && (
-                                  <p className="text-[10px] mt-0.5" style={{ color: textMuted }}>
+                                  <p
+                                    className="text-[10px] mt-0.5"
+                                    style={{ color: textMuted }}
+                                  >
                                     {lesson.duration} mins
                                   </p>
                                 )}
@@ -1014,7 +1091,10 @@ export default function CourseLearningPage() {
                 );
               })}
               {courseModules.length === 0 && (
-                <div className="p-8 text-center text-xs" style={{ color: textMuted }}>
+                <div
+                  className="p-8 text-center text-xs"
+                  style={{ color: textMuted }}
+                >
                   No modules or lessons found for this course yet.
                 </div>
               )}

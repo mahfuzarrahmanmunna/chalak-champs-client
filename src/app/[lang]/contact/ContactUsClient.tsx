@@ -196,10 +196,44 @@ export default function ContactUsClient() {
     setSearchTerm("");
   };
 
-  const onSubmit = (data: any) => {
-    const fullPhoneNumber = `${data.countryCode}${data.phone}`;
-    console.log("Form Submitted:", { ...data, fullPhoneNumber });
-  };
+    const onSubmit = async (data: any) => {
+      const fullPhoneNumber = `${data.countryCode}${data.phone}`;
+
+      try {
+        // Replace with your actual backend URL if not using a proxy
+        const BACKEND_URL =
+          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+
+        const response = await fetch(`${BACKEND_URL}/api/contact`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...data,
+            phone: fullPhoneNumber, // Send the combined phone number
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || "Something went wrong");
+        }
+
+        // Success logic here (e.g., show a success toast, reset form)
+        alert(isBangla ? "সফলভাবে সাবমিট হয়েছে!" : "Submitted successfully!");
+
+        // Optional: Reset form fields
+        setValue("studentName", "");
+        setValue("guardianName", "");
+        setValue("phone", "");
+        setValue("message", "");
+      } catch (error: any) {
+        console.error("Form Submission Error:", error);
+        alert(error.message || "Failed to submit form. Please try again.");
+      }
+    };
 
   const waUrl = `https://wa.me/8801740176774?text=${encodeURIComponent(t.waText)}`;
 

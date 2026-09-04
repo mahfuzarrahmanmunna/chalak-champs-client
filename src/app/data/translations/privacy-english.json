@@ -1,0 +1,172 @@
+{
+  "hero": {
+    "eyebrow": "Privacy & Trust",
+    "title": "Your Privacy Matters",
+    "description": "A clear explanation of how Chalak Champs collects, uses, and protects your data to deliver a secure learning experience.",
+    "lastUpdated": "Last updated: June 15, 2024"
+  },
+  "trustBar": {
+    "items": [
+      { "icon": "Lock", "text": "Secure by design" },
+      { "icon": "ShieldCheck", "text": "Privacy focused" },
+      { "icon": "FileText", "text": "Transparent policies" }
+    ]
+  },
+  "toc": {
+    "title": "On this page",
+    "items": [
+      { "id": "introduction", "label": "01. Introduction" },
+      { "id": "information-collection", "label": "02. Information We Collect" },
+      { "id": "data-usage", "label": "03. How We Use Information" },
+      { "id": "learning-data", "label": "04. Course Progress & Learning Data" },
+      { "id": "payments", "label": "05. Payments" },
+      { "id": "cookies", "label": "06. Cookies & Technologies" },
+      { "id": "security", "label": "07. Data Security" },
+      { "id": "data-sharing", "label": "08. Data Sharing" },
+      { "id": "children", "label": "09. Children's Privacy" },
+      { "id": "user-rights", "label": "10. User Rights" },
+      { "id": "retention", "label": "11. Data Retention" },
+      { "id": "third-party", "label": "12. Third-Party Links" },
+      { "id": "updates", "label": "13. Policy Updates" }
+    ]
+  },
+  "dataCollection": {
+    "title": "Information We Collect",
+    "description": "We collect information necessary to provide and improve our educational services. This includes:",
+    "cards": [
+      {
+        "icon": "UserCircle",
+        "title": "Account Information",
+        "description": "Name, email address, phone number, and profile details provided during registration."
+      },
+      {
+        "icon": "GraduationCap",
+        "title": "Learning Activity",
+        "description": "Enrolled courses, completed lessons, progress tracking, and assessment results."
+      },
+      {
+        "icon": "MonitorSmartphone",
+        "title": "Device & Usage Data",
+        "description": "IP address, browser type, operating system, and usage patterns while navigating our platform."
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "introduction",
+      "number": "01",
+      "title": "Introduction",
+      "content": "Welcome to Chalak Champs. We are committed to protecting your privacy and ensuring a secure learning environment. This Privacy Policy explains how we collect, use, and safeguard your information when you use our educational platform and services."
+    },
+    {
+      "id": "information-collection",
+      "number": "02",
+      "title": "Information We Collect",
+      "content": "We may collect various types of information to deliver our educational services effectively:",
+      "items": [
+        "Personal identification information (Name, email, phone number).",
+        "Account credentials and profile preferences.",
+        "Student educational background and course enrollment details.",
+        "Course progress, lesson completion status, and learning activity.",
+        "Device information, IP address, and browser type.",
+        "Communication records when you contact our support team."
+      ]
+    },
+    {
+      "id": "data-usage",
+      "number": "03",
+      "title": "How We Use Information",
+      "content": "The information we collect is used for legitimate educational and operational purposes, including:",
+      "items": [
+        "Providing access to courses and managing your student account.",
+        "Tracking course progress and maintaining learning records.",
+        "Processing enrollments and payment-related activities.",
+        "Communicating updates, announcements, and support responses.",
+        "Improving our platform's features, user interface, and performance.",
+        "Maintaining platform security and preventing fraudulent activities."
+      ]
+    },
+    {
+      "id": "learning-data",
+      "number": "04",
+      "title": "Course Progress & Learning Data",
+      "content": "As an LMS, Chalak Champs maintains information related to your learning journey. This includes enrolled courses, completed lessons, progress percentages, and assessment or exam results where applicable. This data is essential for delivering a personalized learning experience and issuing certificates or progress reports."
+    },
+    {
+      "id": "payments",
+      "number": "05",
+      "title": "Payments",
+      "content": "Payment transactions are processed through secure third-party payment providers. We do not store raw credit card or direct payment credentials on our servers. We may receive limited transaction-related information necessary to confirm and manage your enrollment."
+    },
+    {
+      "id": "cookies",
+      "number": "06",
+      "title": "Cookies & Similar Technologies",
+      "content": "We use cookies and similar technologies to maintain essential functionality, remember your preferences, track session states, and analyze platform usage. You can control cookie preferences through your browser settings, though disabling essential cookies may impact platform functionality."
+    },
+    {
+      "id": "data-sharing",
+      "number": "08",
+      "title": "Data Sharing",
+      "content": "We do not sell your personal information. Information may be shared with trusted third parties only when necessary, such as with:",
+      "items": [
+        "Service providers facilitating our platform infrastructure.",
+        "Payment processors handling transaction confirmations.",
+        "Analytics providers helping us understand platform usage.",
+        "Legal authorities when required by applicable law or to protect our rights."
+      ]
+    },
+    {
+      "id": "children",
+      "number": "09",
+      "title": "Children's Privacy",
+      "content": "Chalak Champs provides educational content that may be accessed by younger students. We handle all account information with care. If you are a parent or guardian and believe that a child has provided personal information in a way that requires parental consent or removal, please contact us immediately."
+    },
+    {
+      "id": "user-rights",
+      "number": "10",
+      "title": "User Rights",
+      "content": "Depending on applicable law, you may have certain rights regarding your personal data, including:",
+      "items": [
+        "The right to access the personal information we hold about you.",
+        "The right to request correction of inaccurate information.",
+        "The right to request deletion of your account and associated data.",
+        "The right to update your profile and communication preferences.",
+        "The right to ask questions about our data handling practices."
+      ]
+    },
+    {
+      "id": "retention",
+      "number": "11",
+      "title": "Data Retention",
+      "content": "We retain your information only for as long as reasonably necessary to provide our educational services, maintain accurate records, comply with legal obligations, resolve disputes, and enforce our agreements."
+    },
+    {
+      "id": "third-party",
+      "number": "12",
+      "title": "Third-Party Links",
+      "content": "Our platform may contain links to external websites or services not operated by us. We are not responsible for the privacy practices or content of these third-party sites. We encourage you to review their privacy policies."
+    },
+    {
+      "id": "updates",
+      "number": "13",
+      "title": "Policy Updates",
+      "content": "We may update this Privacy Policy periodically to reflect changes in our practices or legal requirements. We will notify you of significant changes by posting the updated policy on this page and updating the 'Last updated' date."
+    }
+  ],
+  "security": {
+    "title": "Privacy & Security",
+    "description": "We take reasonable technical and organizational measures to protect your information and maintain a secure learning environment.",
+    "items": [
+      { "icon": "Lock", "title": "Secure Authentication" },
+      { "icon": "KeyRound", "title": "Controlled Access" },
+      { "icon": "Database", "title": "Data Protection" },
+      { "icon": "Eye", "title": "Platform Monitoring" }
+    ]
+  },
+  "contact": {
+    "title": "Still have questions?",
+    "description": "We're happy to clarify how your information is handled. Reach out to our support team for any privacy-related inquiries.",
+    "button": "Contact Us"
+  }
+}

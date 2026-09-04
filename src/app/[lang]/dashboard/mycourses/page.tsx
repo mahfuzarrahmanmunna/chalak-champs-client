@@ -1,14 +1,13 @@
-// src/app/dashboard/mycourses/page.tsx
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link"; // ✅ Import Link
+import Link from "next/link";
 import { useTheme } from "@/app/context/ThemeContext";
 import { useAuth } from "@/app/hooks/useAuth";
-import { useLanguage } from "@/app/context/LanguageContext"; // ✅ Import useLanguage
+import { useLanguage } from "@/app/context/LanguageContext";
 import gsap from "gsap";
-import Button from "@/app/ui/button/Button"; // ✅ Import your custom Button component
+import Button from "@/app/ui/button/Button";
 
 import {
   BookOpen,
@@ -53,7 +52,7 @@ interface PurchasedCourse {
   courseTitle: string;
   courseImage?: string;
   amount: string | number;
-  status: "completed" | "pending" | "cancelled";
+  status: "completed" | "pending" | "cancelled" | "active";
   paymentMethod?: string;
   addons?: number[];
   createdAt: string;
@@ -69,19 +68,23 @@ interface PurchasedCourse {
   progress?: number;
   lastAccessed?: string;
   rating?: number;
+  // New fields from enrollment
+  enrolledAt?: string;
+  source?: "enrollment" | "order";
 }
 
-// ===================== FALLBACK DATA (enriched) =====================
+// ===================== FALLBACK DATA =====================
+
 const FALLBACK_COURSES: PurchasedCourse[] = [
   {
     _id: "enr_1",
-    courseId: "course_123",
+    courseId: "66a6a0ff65e48775759432f51",
     courseTitle: "Fun with Numbers - Complete Math Course",
     amount: "4000",
-    status: "completed",
+    status: "active",
     paymentMethod: "bkash",
     createdAt: "2024-11-15T10:30:00Z",
-    verifiedAt: "2024-11-15T10:31:00Z",
+    enrolledAt: "2024-11-15T10:31:00Z",
     category: "Mathematics",
     instructor: "Ms. Sarah",
     totalLessons: 24,
@@ -93,16 +96,17 @@ const FALLBACK_COURSES: PurchasedCourse[] = [
     progress: 67,
     lastAccessed: "2025-06-14T15:30:00Z",
     rating: 4.8,
+    source: "enrollment",
   },
   {
     _id: "enr_2",
-    courseId: "course_456",
+    courseId: "66a6a0ff65e48775759432f52",
     courseTitle: "Color & Shapes - Art Fundamentals",
     amount: "3500",
-    status: "completed",
+    status: "active",
     paymentMethod: "nagad",
     createdAt: "2024-12-01T14:20:00Z",
-    verifiedAt: "2024-12-01T14:22:00Z",
+    enrolledAt: "2024-12-01T14:22:00Z",
     category: "Art & Craft",
     instructor: "Mr. David",
     totalLessons: 18,
@@ -114,16 +118,17 @@ const FALLBACK_COURSES: PurchasedCourse[] = [
     progress: 28,
     lastAccessed: "2025-06-10T09:00:00Z",
     rating: 4.6,
+    source: "enrollment",
   },
   {
     _id: "enr_3",
-    courseId: "course_789",
+    courseId: "66a6a0ff65e48775759432f53",
     courseTitle: "Science Explorers - Lab Adventures",
     amount: "5000",
-    status: "completed",
+    status: "active",
     paymentMethod: "card",
     createdAt: "2025-01-10T09:00:00Z",
-    verifiedAt: "2025-01-10T09:05:00Z",
+    enrolledAt: "2025-01-10T09:05:00Z",
     category: "Science",
     instructor: "Dr. Emily",
     totalLessons: 20,
@@ -135,68 +140,7 @@ const FALLBACK_COURSES: PurchasedCourse[] = [
     progress: 85,
     lastAccessed: "2025-06-14T18:00:00Z",
     rating: 4.9,
-  },
-  {
-    _id: "enr_4",
-    courseId: "course_101",
-    courseTitle: "Coding with Blocks - Beginner Programming",
-    amount: "4500",
-    status: "completed",
-    paymentMethod: "bkash",
-    createdAt: "2025-02-20T16:45:00Z",
-    verifiedAt: "2025-02-20T16:47:00Z",
-    category: "Technology",
-    instructor: "Mr. Alex",
-    totalLessons: 15,
-    completedLessons: 2,
-    image:
-      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-    dates: "01 Mar, 2025 - 31 Aug, 2025",
-    slug: "coding-with-blocks",
-    progress: 13,
-    lastAccessed: "2025-06-08T11:00:00Z",
-    rating: 4.7,
-  },
-  {
-    _id: "enr_5",
-    courseId: "course_202",
-    courseTitle: "Music & Rhythm - Discover Sounds",
-    amount: "3000",
-    status: "completed",
-    paymentMethod: "rocket",
-    createdAt: "2025-03-05T11:30:00Z",
-    verifiedAt: "2025-03-05T11:32:00Z",
-    category: "Creative Arts",
-    instructor: "Ms. Lily",
-    totalLessons: 12,
-    completedLessons: 0,
-    image:
-      "https://images.unsplash.com/photo-1507838153414-b4b713384a76?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-    dates: "10 Mar, 2025 - 10 Sep, 2025",
-    slug: "music-and-rhythm",
-    progress: 0,
-    lastAccessed: null,
-    rating: 4.9,
-  },
-  {
-    _id: "enr_6",
-    courseId: "course_303",
-    courseTitle: "Space Adventures - Journey Through the Cosmos",
-    amount: "5500",
-    status: "pending",
-    paymentMethod: "bkash",
-    createdAt: "2025-06-13T20:00:00Z",
-    category: "Science",
-    instructor: "Dr. Emily",
-    totalLessons: 8,
-    completedLessons: 0,
-    image:
-      "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-    dates: "15 Jun, 2025 - 15 Dec, 2025",
-    slug: "space-adventures",
-    progress: 0,
-    lastAccessed: null,
-    rating: 4.9,
+    source: "enrollment",
   },
 ];
 
@@ -304,7 +248,7 @@ function SkeletonCard({ isList }: { isList: boolean }) {
 export default function MyCoursesPage() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
-  const { isBangla } = useLanguage(); // ✅ Get isBangla
+  const { isBangla } = useLanguage();
   const { currentUser, appUser } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const [courses, setCourses] = useState<PurchasedCourse[]>([]);
@@ -317,6 +261,7 @@ export default function MyCoursesPage() {
   const BACKEND_URL =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
+  // ===================== FETCH COURSES =====================
   useEffect(() => {
     const fetchCourses = async () => {
       if (!currentUser) {
@@ -326,115 +271,137 @@ export default function MyCoursesPage() {
       }
 
       try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
+        let mapped: PurchasedCourse[] = [];
 
-        const res = await fetch(
-          `${BACKEND_URL}/api/orders/user/${currentUser.uid}`,
-          { signal: controller.signal },
-        );
-        clearTimeout(timeout);
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data.orders?.length > 0) {
-            // ✅ NEW: Fetch actual course slug using courseId for each order
-            const mapped: PurchasedCourse[] = await Promise.all(
-              data.orders.map(async (order: Record<string, unknown>) => {
-                let courseSlug = order.slug as string;
-                let courseTitle = order.courseTitle as string;
-                let courseImage = order.courseImage as string;
-
-                // If slug is missing or "undefined", fetch it from course API
-                if (!courseSlug || courseSlug === "undefined") {
-                  try {
-                    const courseRes = await fetch(
-                      `${BACKEND_URL}/api/courses/${order.courseId}`,
-                    );
-                    if (courseRes.ok) {
-                      const courseData = await courseRes.json();
-                      const fullCourse =
-                        courseData.course || courseData.data || courseData;
-                      courseSlug = fullCourse.slug;
-
-                      // Also fix title/image if they are messed up in order data
-                      if (courseTitle && courseTitle.startsWith("{")) {
-                        courseTitle =
-                          fullCourse.title?.en ||
-                          fullCourse.title?.bn ||
-                          courseTitle;
-                      }
-                      if (!courseImage || courseImage === "") {
-                        courseImage = fullCourse.thumbnail;
-                      }
-                    }
-                  } catch (e) {
-                    // Silent fail, fallback to courseId
-                  }
-                }
-
-                return {
-                  _id: order._id as string,
-                  orderId: order.orderId as string,
-                  tranId: order.tranId as string,
-                  courseId: order.courseId as string,
-                  courseTitle: courseTitle,
-                  courseImage: courseImage,
-                  amount: order.totalAmount as string,
-                  status: "completed" as const,
-                  paymentMethod: order.paymentMethod as string,
-                  addons: order.addons as number[],
-                  createdAt: order.createdAt as string,
-                  verifiedAt: order.verifiedAt as string,
-                  slug: courseSlug || order.courseId, // Use slug if found, else courseId
-                };
-              }),
-            );
-
-            setCourses(mapped);
-            setIsLoading(false);
-            return;
-          }
-        }
-
-        const identifier =
-          currentUser.phoneNumber || currentUser.email || appUser?.email || "";
-        if (identifier) {
-          const enrController = new AbortController();
-          const enrTimeout = setTimeout(() => enrController.abort(), 5000);
-          const enrRes = await fetch(
-            `${BACKEND_URL}/api/enrollments/user/${encodeURIComponent(identifier)}`,
-            { signal: enrController.signal },
-          );
-          clearTimeout(enrTimeout);
+        // ========== PRIORITY 1: Fetch from NEW Enrollment API ==========
+        try {
+          const idToken = await currentUser.getIdToken();
+          const enrRes = await fetch(`${BACKEND_URL}/api/enrollments/my-enrollments`, {
+            headers: { Authorization: `Bearer ${idToken}` },
+          });
 
           if (enrRes.ok) {
             const enrData = await enrRes.json();
-            if (enrData.enrollments?.length > 0) {
-              const mapped: PurchasedCourse[] = enrData.enrollments.map(
-                (e: Record<string, unknown>) => ({
-                  _id: e._id as string,
-                  courseId: e.courseId as string,
-                  courseTitle: e.courseTitle as string,
-                  amount: e.amount as string,
-                  status: e.status as any,
-                  createdAt: e.createdAt as string,
-                  slug:
-                    (e.courseSlug as string) ||
-                    (e.slug as string) ||
-                    (e.course?.slug as string) ||
-                    undefined,
-                }),
-              );
-              setCourses(mapped);
-              setIsLoading(false);
-              return;
+            if (enrData.success && enrData.data?.length > 0) {
+              console.log(`✅ Loaded ${enrData.data.length} courses from Enrollment API`);
+              mapped = enrData.data.map((e: Record<string, any>) => {
+                const course = e.course || {};
+                const title = course.title?.en || course.title?.bn || course.title || "Untitled Course";
+                const image = course.thumbnail || "";
+
+                return {
+                  _id: e._id,
+                  courseId: course._id?.toString() || "",
+                  courseTitle: title,
+                  courseImage: image,
+                  amount: course.offerPrice || course.originalPrice || 0,
+                  status: "active" as const,
+                  paymentMethod: "manual",
+                  createdAt: e.enrolledAt || e.createdAt,
+                  verifiedAt: e.verifiedAt,
+                  category: course.category?.en || course.category?.bn || "General",
+                  instructor: course.instructorName || course.instructor?.firstName || "",
+                  slug: course.slug || "",
+                  progress: 0,
+                  lastAccessed: e.lastAccessed || null,
+                  source: "enrollment" as const,
+                };
+              });
             }
+          }
+        } catch (err) {
+          console.log("⚠️ Enrollment API failed, trying Orders API...", err.message);
+        }
+
+        // ========== FALLBACK 2: Fetch from OLD Orders API ==========
+        if (mapped.length === 0) {
+          try {
+            const idToken = await currentUser.getIdToken();
+            const orderRes = await fetch(
+              `${BACKEND_URL}/api/orders/user/${currentUser.uid}`,
+              {
+                headers: { Authorization: `Bearer ${idToken}` },
+              },
+            );
+
+            if (orderRes.ok) {
+              const orderData = await orderRes.json();
+              if (orderData.orders?.length > 0) {
+                console.log(`✅ Loaded ${orderData.orders.length} courses from Orders API`);
+
+                const validOrders = orderData.orders.filter(
+                  (order: Record<string, any>) => {
+                    const courseId = typeof order.courseId === "string" ? order.courseId : "";
+                    return courseId && /^[0-9a-fA-F]{24}$/.test(courseId);
+                  },
+                );
+
+                mapped = await Promise.all(
+                  validOrders.map(async (order: Record<string, any>) => {
+                    const courseId = order.courseId as string;
+                    let courseSlug = "";
+                    let courseTitle = "Untitled Course";
+                    let courseImage = "";
+
+                    try {
+                      const courseRes = await fetch(
+                        `${BACKEND_URL}/api/courses/${courseId}`,
+                        {
+                          headers: { Authorization: `Bearer ${idToken}` },
+                        },
+                      );
+
+                      if (courseRes.ok) {
+                        const courseData = await courseRes.json();
+                        const fullCourse =
+                          courseData.course || courseData.data || courseData;
+
+                        courseSlug = fullCourse?.slug || "";
+                        courseTitle =
+                          fullCourse?.title?.en ||
+                          fullCourse?.title?.bn ||
+                          fullCourse?.title ||
+                          courseTitle;
+                        courseImage = fullCourse?.thumbnail || "";
+                      }
+                    } catch {
+                      // Silent fail - skip this order detail fetch issue
+                    }
+
+                    return {
+                      _id: order._id as string,
+                      orderId: order.orderId as string,
+                      tranId: order.tranId as string,
+                      courseId,
+                      courseTitle,
+                      courseImage,
+                      amount: order.totalAmount as string,
+                      status: "completed" as const,
+                      paymentMethod: order.paymentMethod as string,
+                      createdAt: order.createdAt as string,
+                      verifiedAt: order.verifiedAt as string,
+                      slug: courseSlug,
+                      source: "order" as const,
+                    };
+                  }),
+                );
+              }
+            }
+          } catch (err) {
+            const message = err instanceof Error ? err.message : "Unknown error";
+            console.log("⚠️ Orders API also failed, using fallback data", message);
           }
         }
 
-        setCourses(FALLBACK_COURSES);
-      } catch {
+        // ========== FALLBACK 3: Use static fallback ==========
+        if (mapped.length === 0) {
+          console.log("⚠️ Both APIs failed, using fallback data");
+          mapped = FALLBACK_COURSES;
+        }
+
+        setCourses(mapped);
+      } catch (err) {
+        console.error("Fetch error:", err);
         setCourses(FALLBACK_COURSES);
       } finally {
         setIsLoading(false);
@@ -442,7 +409,7 @@ export default function MyCoursesPage() {
     };
 
     fetchCourses();
-  }, [currentUser, appUser]);
+  }, [currentUser]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -497,10 +464,11 @@ export default function MyCoursesPage() {
 
   const filteredCourses = useMemo(() => {
     let result = [...courses];
+
     if (activeFilter === "active")
       result = result.filter(
         (c) =>
-          c.status === "completed" &&
+          c.status === "active" &&
           (c.progress || 0) > 0 &&
           (c.progress || 0) < 100,
       );
@@ -602,12 +570,11 @@ export default function MyCoursesPage() {
     return textMuted;
   };
 
-  // ✅ Helper to navigate to course learning page with language prefix
   const goToCourse = (course: PurchasedCourse) => {
     if (course.status === "pending") return;
     const langPrefix = isBangla ? "bn" : "en";
     const courseIdentifier = course.slug || course.courseId;
-    router.push(`/${langPrefix}/mycourses/${courseIdentifier}`);
+    router.push(`/${langPrefix}/dashboard/mycourses/${courseIdentifier}`);
   };
 
   if (isLoading) {
@@ -656,7 +623,7 @@ export default function MyCoursesPage() {
               }}
             >
               <div
-                className="h-8 w-8 rounded-xl"
+                className="h-8 w-8 rounded-xl animate-pulse"
                 style={{
                   background: isDarkMode
                     ? "rgba(255,255,255,0.06)"
@@ -664,7 +631,7 @@ export default function MyCoursesPage() {
                 }}
               />
               <div
-                className="h-6 w-16 rounded-lg"
+                className="h-6 w-16 rounded-lg animate-pulse"
                 style={{
                   background: isDarkMode
                     ? "rgba(255,255,255,0.06)"
@@ -672,7 +639,7 @@ export default function MyCoursesPage() {
                 }}
               />
               <div
-                className="h-3 w-20 rounded-lg"
+                className="h-3 w-20 rounded-lg animate-pulse"
                 style={{
                   background: isDarkMode
                     ? "rgba(255,255,255,0.04)"
@@ -705,13 +672,6 @@ export default function MyCoursesPage() {
               }}
             >
               <BookOpen className="h-7 w-7 text-white relative z-10" />
-              <div
-                className="absolute inset-0 opacity-20"
-                style={{
-                  background:
-                    "linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.3))",
-                }}
-              />
             </div>
             <div>
               <h1
@@ -1173,17 +1133,6 @@ export default function MyCoursesPage() {
                       {category}
                     </div>
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <div
-                      className="w-14 h-14 rounded-full flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300"
-                      style={{
-                        background: catColor,
-                        boxShadow: `0 8px 25px ${catColor}50`,
-                      }}
-                    >
-                      <Play className="h-6 w-6 text-white ml-1" fill="#fff" />
-                    </div>
-                  </div>
                   <div className="absolute bottom-3 left-3 right-3">
                     <h3 className="text-sm font-bold text-white leading-snug line-clamp-2 mb-1">
                       {course.courseTitle}
@@ -1193,16 +1142,6 @@ export default function MyCoursesPage() {
                         <span className="text-[10px] text-white/60 flex items-center gap-1">
                           <GraduationCap className="h-3 w-3" />
                           {course.instructor}
-                        </span>
-                      )}
-                      {course.rating && (
-                        <span className="text-[10px] text-white/60 flex items-center gap-0.5">
-                          <Star
-                            className="h-3 w-3"
-                            style={{ color: "#ffd700" }}
-                            fill="#ffd700"
-                          />
-                          {course.rating}
                         </span>
                       )}
                     </div>
@@ -1280,7 +1219,7 @@ export default function MyCoursesPage() {
                           style={{ color: textMuted }}
                         >
                           <Calendar className="h-3 w-3" />
-                          {course.dates.split("-")[0]?.trim()}
+                          {formatDate(course.createdAt)}
                         </span>
                       )}
                       {course.lastAccessed && (
@@ -1320,7 +1259,7 @@ export default function MyCoursesPage() {
                     )}
                   </div>
 
-                  {/* ✅ Action Buttons Area */}
+                  {/* Action Buttons */}
                   <div className="flex gap-2">
                     {isPending ? (
                       <Button
@@ -1347,35 +1286,19 @@ export default function MyCoursesPage() {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Button
-                          bgColor={catColor}
-                          highlightColor={isGold ? "#ffffff" : "#ff3d8f"}
-                          darkShadowColor={isGold ? "#d4a800" : "#C6005F"}
-                          textColor={isGold ? "#214187" : "#fff"}
+                          bgColor="linear-gradient(135deg, #214187 0%, #002d4d 100%)"
+                          highlightColor="#003a66"
+                          textColor="#fff"
+                          className="flex-1 w-full"
                           px="px-4"
                           py="py-2.5"
                           textSize="text-xs"
-                          fullWidth
-                          icon={<Eye className="h-3.5 w-3.5" />}
+                          icon={<Play className="h-3.5 w-3.5" />}
                         >
-                          Continue
+                          {isComplete ? "View Course" : "Start Learning"}
                         </Button>
                       </Link>
                     )}
-                    <button
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-2.5 rounded-xl transition-all duration-200"
-                      style={{
-                        background: isDarkMode
-                          ? "rgba(255,255,255,0.05)"
-                          : "rgba(33,65,135,0.04)",
-                        border: isDarkMode
-                          ? "1px solid rgba(255,255,255,0.08)"
-                          : "1px solid rgba(33,65,135,0.1)",
-                        color: textSecondary,
-                      }}
-                    >
-                      <Heart className="h-4 w-4" />
-                    </button>
                   </div>
                 </div>
               </div>
@@ -1384,7 +1307,7 @@ export default function MyCoursesPage() {
         </div>
       ) : (
         /* ========== LIST VIEW ========== */
-        <div className="space-y-3">
+        <div className="space-y-4">
           {filteredCourses.map((course) => {
             const category = course.category || "General";
             const catColor = CATEGORY_COLORS[category] || "#F3056D";
@@ -1397,248 +1320,128 @@ export default function MyCoursesPage() {
             const isNotStarted = progress === 0;
             const isComplete = progress >= 100;
             const isPending = course.status === "pending";
-            const isGold = catColor === "#ffd700";
 
             return (
               <div
                 key={course._id}
-                className="course-item group flex flex-col sm:flex-row gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
-                style={{
-                  background: cardBg,
-                  border: cardBorder,
-                  boxShadow: isDarkMode
-                    ? "0 2px 10px rgba(0,0,0,0.15)"
-                    : "0 2px 10px rgba(33,65,135,0.04)",
-                }}
+                className="course-item group bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden group hover:shadow-md transition-shadow"
                 onClick={() => goToCourse(course)}
               >
-                <div
-                  className="relative w-full sm:w-48 h-28 rounded-xl overflow-hidden flex-shrink-0"
-                  style={{ boxShadow: `0 4px 15px ${catColor}10` }}
-                >
-                  <img
-                    src={courseImage}
-                    alt={course.courseTitle}
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
-                      style={{
-                        background: catColor,
-                        boxShadow: `0 4px 15px ${catColor}40`,
-                      }}
-                    >
-                      <Play className="h-4 w-4 text-white ml-0.5" fill="#fff" />
-                    </div>
+                <div className="flex gap-4 p-4">
+                  <div className="w-24 h-24 bg-gray-200 rounded-xl relative overflow-hidden flex-shrink-0 border border-gray-200">
+                    <img
+                      src={courseImage}
+                      alt={course.courseTitle}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  {isPending && (
-                    <div
-                      className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-bold text-white backdrop-blur-md"
-                      style={{ background: "rgba(245,158,11,0.85)" }}
-                    >
-                      <Clock className="h-2.5 w-2.5" />
-                      Pending
-                    </div>
-                  )}
-                  {isComplete && (
-                    <div
-                      className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-bold text-white backdrop-blur-md"
-                      style={{ background: "rgba(74,222,128,0.85)" }}
-                    >
-                      <CircleCheck className="h-2.5 w-2.5" />
-                      Done
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 flex flex-col justify-center min-w-0">
-                  <div className="flex items-start justify-between gap-3 mb-1.5">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div
-                          className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider"
-                          style={{
-                            background: `${catColor}15`,
-                            color: catColor,
-                          }}
-                        >
-                          {catIcon}
-                          {category}
-                        </div>
-                        {course.rating && (
-                          <span
-                            className="flex items-center gap-0.5 text-[10px] font-medium"
-                            style={{ color: textMuted }}
-                          >
-                            <Star
-                              className="h-3 w-3"
-                              style={{ color: "#ffd700" }}
-                              fill="#ffd700"
-                            />
-                            {course.rating}
-                          </span>
-                        )}
-                      </div>
-                      <h3
-                        className="font-bold text-sm truncate"
-                        style={{ color: textPrimary }}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider"
+                        style={{ background: `${catColor}15`, color: catColor }}
                       >
-                        {course.courseTitle}
-                      </h3>
+                        {catIcon}
+                      </span>
+                      {category}
                     </div>
-                    <span
-                      className="text-sm font-black flex-shrink-0"
-                      style={{ color: catColor }}
-                    >
-                      ৳
-                      {typeof course.amount === "number"
-                        ? course.amount.toLocaleString()
-                        : course.amount}
-                    </span>
+                    <h3 className="text-sm font-bold text-gray-900 leading-tight line-clamp-1">
+                      {course.courseTitle}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-[10px] font-medium text-gray-500">
+                        {course.instructor || "Instructor"}
+                      </span>
+                      <span
+                        className="text-xs font-black"
+                        style={{ color: catColor }}
+                      >
+                        ৳
+                        {typeof course.amount === "number"
+                          ? course.amount.toLocaleString()
+                          : course.amount}
+                      </span>
+                    </div>
                   </div>
-                  {course.instructor && (
-                    <p
-                      className="text-[11px] mb-2 flex items-center gap-1"
-                      style={{ color: textSecondary }}
-                    >
-                      <GraduationCap className="h-3 w-3" />
-                      {course.instructor}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-3 mb-2">
-                    <div
-                      className="flex-1 h-1.5 rounded-full overflow-hidden"
-                      style={{
-                        background: isDarkMode
-                          ? "rgba(255,255,255,0.06)"
-                          : "rgba(33,65,135,0.08)",
-                      }}
-                    >
+                  <div className="flex items-center justify-between mt-3 text-[10px] text-gray-400">
+                    <span>{formatDate(course.createdAt)}</span>
+                    {course.paymentMethod && (
+                      <span
+                        className="font-bold text-[9px] px-2 py-0.5 rounded-md"
+                        style={{
+                          color: getPaymentColor(course.paymentMethod),
+                          background: `${getPaymentColor(course.paymentMethod)}12`,
+                        }}
+                      >
+                        {getPaymentIcon(course.paymentMethod)}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span
+                        className="text-[10px] font-bold"
+                        style={{
+                          color: isComplete
+                            ? "#4ade80"
+                            : progress > 0
+                              ? catColor
+                              : textMuted,
+                        }}
+                      >
+                        {isComplete
+                          ? "Course Complete!"
+                          : isNotStarted
+                            ? "Not started"
+                            : `${progress}% complete`}
+                      </span>
+                      <span className="text-[10px] font-medium text-gray-400">
+                        {course.completedLessons || 0}/
+                        {course.totalLessons || 0} lessons
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
                       <div
-                        className="h-full rounded-full relative overflow-hidden"
+                        className="h-full rounded-full transition-all duration-1000"
                         style={{
                           width: `${progress}%`,
                           background: isComplete
                             ? "linear-gradient(90deg, #4ade80, #22c55e)"
                             : `linear-gradient(90deg, ${catColor}, ${catColor}bb)`,
                         }}
-                      >
-                        {!isNotStarted && (
-                          <div
-                            className="absolute inset-0"
-                            style={{
-                              background:
-                                "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
-                              animation: "shimmer 2s infinite",
-                            }}
-                          />
-                        )}
-                      </div>
+                      />
                     </div>
-                    <span
-                      className="text-[10px] font-black flex-shrink-0"
-                      style={{
-                        color: isComplete
-                          ? "#4ade80"
-                          : progress > 0
-                            ? catColor
-                            : textMuted,
-                      }}
-                    >
-                      {isComplete
-                        ? "Complete"
-                        : isNotStarted
-                          ? "0%"
-                          : `${progress}%`}
-                    </span>
                   </div>
-                  <div
-                    className="flex items-center gap-3 text-[10px]"
-                    style={{ color: textMuted }}
-                  >
-                    {course.totalLessons && (
-                      <span className="flex items-center gap-1">
-                        <BookMarked className="h-3 w-3" />
-                        {course.completedLessons || 0}/{course.totalLessons}
-                      </span>
-                    )}
-                    {course.lastAccessed && (
-                      <span className="flex items-center gap-1">
-                        <Timer className="h-3 w-3" />
-                        {getTimeAgo(course.lastAccessed)}
-                      </span>
-                    )}
-                    <span>{formatDate(course.createdAt)}</span>
-                    {course.paymentMethod && (
-                      <span
-                        className="font-bold"
-                        style={{ color: getPaymentColor(course.paymentMethod) }}
-                      >
-                        {getPaymentIcon(course.paymentMethod)}
-                      </span>
-                    )}
-                  </div>
-                </div>
 
-                {/* ✅ Action Buttons Area */}
-                <div className="flex sm:flex-col gap-2 flex-shrink-0 sm:justify-center">
-                  {isPending ? (
-                    <Button
-                      bgColor={
-                        isDarkMode
-                          ? "rgba(245,158,11,0.12)"
-                          : "rgba(245,158,11,0.08)"
-                      }
-                      highlightColor="rgba(245,158,11,0.2)"
-                      darkShadowColor="rgba(245,158,11,0.1)"
-                      textColor={isDarkMode ? "#f59e0b" : "#d97706"}
-                      className="flex-1 sm:flex-none cursor-not-allowed border border-amber-500/20"
-                      px="px-4"
-                      py="py-2.5"
-                      textSize="text-xs"
-                      icon={<Clock className="h-3.5 w-3.5" />}
-                    >
-                      <span className="sm:hidden">Pending</span>
-                    </Button>
-                  ) : (
-                    <Link
-                      href={`/${isBangla ? "bn" : "en"}/dashboard/mycourses/${course.slug || course.courseId}`}
-                      className="flex-1 sm:flex-none"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        bgColor={catColor}
-                        highlightColor={isGold ? "#ffffff" : "#ff3d8f"}
-                        darkShadowColor={isGold ? "#d4a800" : "#C6005F"}
-                        textColor={isGold ? "#214187" : "#fff"}
-                        px="px-4"
-                        py="py-2.5"
-                        textSize="text-xs"
-                        fullWidth
-                        className="sm:w-10 sm:h-10 sm:p-0"
-                        icon={<Eye className="h-3.5 w-3.5" />}
+                  {/* Status Badge */}
+                  <div className="flex items-center justify-end gap-2">
+                    {isPending && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-amber-700 border border-amber-200 bg-amber-50">
+                        Pending
+                      </span>
+                    )}
+                    {isComplete && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-emerald-700 border border-emerald-200 bg-emerald-50">
+                        Completed
+                      </span>
+                    )}
+                    {progress > 0 && !isComplete && (
+                      <Link
+                        href={`/${isBangla ? "bn" : "en"}/dashboard/mycourses/${course.slug || course.courseId}`}
+                        className="text-[10px] text-[#214187] font-semibold hover:underline inline-flex items-center gap-1"
                       >
-                        <span className="sm:hidden">View</span>
-                      </Button>
-                    </Link>
-                  )}
+                        Continue →
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-      `}</style>
     </div>
   );
 }

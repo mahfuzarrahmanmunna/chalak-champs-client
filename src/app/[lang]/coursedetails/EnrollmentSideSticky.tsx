@@ -33,7 +33,8 @@ const EnrollmentSideSticky = ({
   const pricingText = data?.quickInfo?.offerPrice || "";
   const parts = pricingText.split(" ").filter(Boolean);
   const originalPrice = parts.length > 2 ? `${parts[0]} ${parts[1]}` : null;
-  const currentPrice = parts.length > 2 ? `${parts[2]} ${parts[3] || ""}`.trim() : pricingText;
+  const currentPrice =
+    parts.length > 2 ? `${parts[2]} ${parts[3] || ""}`.trim() : pricingText;
 
   // --- ICON & COLOR CONFIGURATION ---
   // Maps specific index to a unique icon and a light background color
@@ -59,8 +60,12 @@ const EnrollmentSideSticky = ({
   return (
     <div
       className={`
-        transition-all duration-700 ease-out transform
-        ${isVisible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0 pointer-events-none"}
+        transition-all duration-700 ease-out transform overflow-hidden
+        ${
+          isVisible
+            ? "translate-y-0 opacity-100 max-h-[1000px]"
+            : "translate-y-20 opacity-0 pointer-events-none max-h-0"
+        }
       `}
     >
       <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
@@ -141,7 +146,9 @@ const EnrollmentSideSticky = ({
 
         {/* --- FOOTER NOTE --- */}
         <div className="bg-gray-50 px-6 py-3 text-center border-t border-gray-100">
-          <p className="text-xs text-gray-500">{data?.quickInfo?.ctaBelow || ""}</p>
+          <p className="text-xs text-gray-500">
+            {data?.quickInfo?.ctaBelow || ""}
+          </p>
         </div>
       </div>
     </div>

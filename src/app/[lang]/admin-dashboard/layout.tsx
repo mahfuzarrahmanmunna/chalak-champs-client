@@ -17,6 +17,7 @@ import {
   FileText,
   MessageSquare,
   Info,
+  Contact,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -261,6 +262,14 @@ export default function AdminDashboardLayout({
             current:
               pathname ===
               getLink("/admin-dashboard/leads/manage-courses-details-leads"),
+          },
+          {
+            name: "Contact Page",
+            href: getLink("/admin-dashboard/leads/manage-contact-info"),
+            icon: Contact,
+            current:
+              pathname ===
+              getLink("/admin-dashboard/leads/manage-contact-info"),
           },
         ],
       },

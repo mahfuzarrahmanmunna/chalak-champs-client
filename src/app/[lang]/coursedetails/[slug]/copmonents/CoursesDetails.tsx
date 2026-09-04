@@ -1143,6 +1143,7 @@ export default function CoursesDetails({ slug }: { slug: string }) {
   const syllabusRef = useRef<HTMLDivElement>(null);
   const overviewRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
+  const enrollmentCardRef = useRef<HTMLDivElement>(null);
 
   const sections = [
     {
@@ -1170,33 +1171,27 @@ export default function CoursesDetails({ slug }: { slug: string }) {
 
   useEffect(() => {
     if (!data) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) setActiveTab(entry.target.id);
-        });
-      },
-      { threshold: 0.3 },
-    );
-    const refs = [
-      { current: overviewRef.current, id: "overview" },
-      { current: featuresRef.current, id: "features" },
-      { current: whoIsThisForRef.current, id: "whoIsThisFor" },
-      { current: syllabusRef.current, id: "syllabus" },
-      { current: faqRef.current, id: "faq" },
-    ];
-    refs.forEach((ref) => {
-      if (ref.current) observer.observe(ref.current);
-    });
+
     const handleScroll = () => {
       setShowStickyCta(window.scrollY > 300);
-      setShowSideEnrollment(window.scrollY > 1500);
+
+      // Trigger sticky enrollment when the main card is scrolled out of view
+      if (enrollmentCardRef.current) {
+        const rect = enrollmentCardRef.current.getBoundingClientRect();
+        if (rect.bottom < 100) {
+          setShowSideEnrollment(true);
+        } else {
+          setShowSideEnrollment(false);
+        }
+      }
     };
-    window.addEventListener("scroll", handleScroll);
+
+    // Check immediately on mount
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
     return () => {
-      refs.forEach((ref) => {
-        if (ref.current) observer.unobserve(ref.current);
-      });
       window.removeEventListener("scroll", handleScroll);
     };
   }, [data]);
@@ -1530,20 +1525,22 @@ export default function CoursesDetails({ slug }: { slug: string }) {
 
             {/* ── RIGHT COLUMN ── */}
             <div className="w-full lg:w-[35%] order-1 mt-0 lg:order-2 space-y-6">
-              <div className="hidden md:block">
+              <div className="hidden md:block" ref={enrollmentCardRef}>
                 <EnrollmentCard
                   data={data}
                   onEnroll={handleEnroll}
                   mediaAssets={data.mediaAssets || []}
                 />
               </div>
-              {showSideEnrollment && (
+
+              {/* ✅ FIXED: Always rendered, positioned sticky, visibility toggled by CSS */}
+              <div className="hidden md:block sticky top-28 z-30">
                 <EnrollmentSideSticky
                   onEnroll={handleEnroll}
                   data={data}
                   isVisible={showSideEnrollment}
                 />
-              )}
+              </div>
             </div>
           </div>
         </div>

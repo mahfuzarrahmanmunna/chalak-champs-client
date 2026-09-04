@@ -737,8 +737,7 @@ console.log(
                 ) : (
                   <img
                     src={
-                      profileData.photoURL ||
-                      "https://cdn.chalakchamps.com/profile/9808be93-a7b9-4a37-a591-57927049b383.jpg"
+                      profileData.photoURL
                     }
                     alt="Profile"
                     className="w-full h-full rounded-[21px] object-cover"
