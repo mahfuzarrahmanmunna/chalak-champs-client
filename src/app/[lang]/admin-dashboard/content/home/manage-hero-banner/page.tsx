@@ -22,6 +22,8 @@ interface LangData {
   cta2: string;
   cta2Btn: string;
   kingImage: string;
+  kingImageClass: string;
+  videoId: string; // NEW: YouTube Video ID
 }
 
 const initialLangState: LangData = {
@@ -32,6 +34,8 @@ const initialLangState: LangData = {
   cta2: "",
   cta2Btn: "",
   kingImage: "",
+  kingImageClass: "",
+  videoId: "", // NEW
 };
 
 export default function ManageHero() {
@@ -124,9 +128,11 @@ export default function ManageHero() {
     if (lang === "en") {
       setEnFile(null);
       setEnPreview(null);
+      setFormData((prev) => ({ ...prev, en: { ...prev.en, kingImage: "" } }));
     } else {
       setBnFile(null);
       setBnPreview(null);
+      setFormData((prev) => ({ ...prev, bn: { ...prev.bn, kingImage: "" } }));
     }
   };
 
@@ -153,10 +159,12 @@ export default function ManageHero() {
       enFormData.append("secondaryLink", formData.en.secondaryLink);
       enFormData.append("cta2", formData.en.cta2);
       enFormData.append("cta2Btn", formData.en.cta2Btn);
+      enFormData.append("kingImageClass", formData.en.kingImageClass);
+      enFormData.append("videoId", formData.en.videoId); // Append Video ID
       if (enFile) {
         enFormData.append("kingImage", enFile);
       } else if (formData.en.kingImage) {
-        enFormData.append("kingImage", formData.en.kingImage); // Fallback to existing URL if no new file selected
+        enFormData.append("kingImage", formData.en.kingImage); 
       }
 
       // Construct BN FormData
@@ -168,6 +176,8 @@ export default function ManageHero() {
       bnFormData.append("secondaryLink", formData.bn.secondaryLink);
       bnFormData.append("cta2", formData.bn.cta2);
       bnFormData.append("cta2Btn", formData.bn.cta2Btn);
+      bnFormData.append("kingImageClass", formData.bn.kingImageClass);
+      bnFormData.append("videoId", formData.bn.videoId); // Append Video ID
       if (bnFile) {
         bnFormData.append("kingImage", bnFile);
       } else if (formData.bn.kingImage) {
@@ -508,6 +518,30 @@ export default function ManageHero() {
                       onChange={(e) => handleFileChange(e, "en")}
                       className={fileClass}
                     />
+                    <div className="space-y-2 mt-4">
+                      <label className="text-sm font-bold text-gray-700">
+                        King Image Position Class (EN)
+                      </label>
+                      <input
+                        name="kingImageClass"
+                        value={formData.en.kingImageClass}
+                        onChange={(e) => handleChange(e, "en")}
+                        className={inputClass}
+                        placeholder="e.g. absolute md:-top-8 z-0 right-[62%] -bottom-7"
+                      />
+                    </div>
+                    <div className="space-y-2 mt-4">
+                      <label className="text-sm font-bold text-gray-700">
+                        YouTube Video ID (EN)
+                      </label>
+                      <input
+                        name="videoId"
+                        value={formData.en.videoId}
+                        onChange={(e) => handleChange(e, "en")}
+                        className={inputClass}
+                        placeholder="e.g. pPcNHH20e5U"
+                      />
+                    </div>
                   </div>
 
                   {/* BANGLA UPLOAD */}
@@ -547,12 +581,36 @@ export default function ManageHero() {
                       onChange={(e) => handleFileChange(e, "bn")}
                       className={fileClass}
                     />
+                    <div className="space-y-2 mt-4">
+                      <label className="text-sm font-bold text-gray-700">
+                        King Image Position Class (BN)
+                      </label>
+                      <input
+                        name="kingImageClass"
+                        value={formData.bn.kingImageClass}
+                        onChange={(e) => handleChange(e, "bn")}
+                        className={inputClass}
+                        placeholder="e.g. absolute md:-top-8 z-0 right-[62%] -bottom-7"
+                      />
+                    </div>
+                    <div className="space-y-2 mt-4">
+                      <label className="text-sm font-bold text-gray-700">
+                        YouTube Video ID (BN)
+                      </label>
+                      <input
+                        name="videoId"
+                        value={formData.bn.videoId}
+                        onChange={(e) => handleChange(e, "bn")}
+                        className={inputClass}
+                        placeholder="যেমন: pPcNHH20e5U"
+                      />
+                    </div>
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
                   <strong>Note:</strong> Recommended 1:1 aspect ratio (Square),
-                  min 100x100px. Leaving this blank will use the default crown
-                  image.
+                  min 100x100px. Leaving the image blank will use the default crown
+                  image. Video ID should be the string after "v=" in a YouTube URL.
                 </p>
               </section>
 
