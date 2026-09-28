@@ -1,6 +1,18 @@
 "use client";
 
-import React, { Suspense, useState, useEffect, useCallback } from "react";
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
+
+import React, {
+  Suspense,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import { useForm } from "react-hook-form";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -36,12 +48,55 @@ const PAYMENT_NUMBERS = [
   { id: "rocket", label: "Rocket", number: "017XXXXXXX3", color: "#8C3494" },
 ];
 
-// ===================== HELPER =====================
-// Using 'any' to avoid TypeScript conflict between FieldError and Merge types
+// ===================== GTM HELPERS =====================
+
+async function sha256Hex(input: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(input);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function normalizePhone(rawPhone: string, countryCode: string): string {
+  let p = (rawPhone || "").replace(/[\s\-()]/g, "");
+  const cc = (countryCode || "").replace("+", "");
+  if (p.startsWith("+")) {
+    p = p.slice(1);
+  } else if (p.startsWith("00")) {
+    p = p.slice(2);
+  } else if (p.startsWith("0")) {
+    p = cc + p.slice(1);
+  } else if (!p.startsWith(cc)) {
+    p = cc + p;
+  }
+  return p.toLowerCase();
+}
+
+function normalizeName(rawName: string): string {
+  return (rawName || "").toLowerCase().trim();
+}
+
+// ===================== FORM ERROR HELPER =====================
+// Top-level function — avoids recursive const reference issues.
+// Handles react-hook-form's FieldError / Merge<...> types.
 
 function getErrorMessage(error: any): string {
   if (!error) return "";
+  if (typeof error === "string") return error;
   if (typeof error.message === "string") return error.message;
+  if (Array.isArray(error)) {
+    for (const item of error) {
+      const msg = getErrorMessage(item);
+      if (msg) return msg;
+    }
+  }
+  if (typeof error === "object") {
+    for (const key of Object.keys(error)) {
+      const msg = getErrorMessage(error[key]);
+      if (msg) return msg;
+    }
+  }
   return "";
 }
 
@@ -107,6 +162,8 @@ function CheckoutPageContent() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<string | null>(null);
+
+  const isNewCustomerRef = useRef(false);
 
   const {
     register: registerAuth,
@@ -185,6 +242,7 @@ function CheckoutPageContent() {
     if (authLoading) return;
 
     if (currentUser && appUser) {
+      isNewCustomerRef.current = false;
       setActiveStep(3);
       setCompletedSteps(new Set([1, 2]));
       setPayValue("userName", `${appUser.firstName} ${appUser.lastName}`);
@@ -195,6 +253,13 @@ function CheckoutPageContent() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, currentUser, appUser]);
+
+  // --- GTM: Initialize dataLayer on mount ---
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+    }
+  }, []);
 
   // --- Check Enrollment when user and course are ready ---
   useEffect(() => {
@@ -394,6 +459,7 @@ function CheckoutPageContent() {
 
   const handlePasswordSubmit = async (data: Record<string, any>) => {
     setIsLoadingAuth(true);
+    isNewCustomerRef.current = false;
     const input = watchAuth("emailOrPhone");
     const password = data.password;
     const isEmail = /\S+@\S+\.\S+/.test(input);
@@ -449,6 +515,7 @@ function CheckoutPageContent() {
 
   const handleDetailsSubmit = async (data: Record<string, any>) => {
     setIsLoadingAuth(true);
+    isNewCustomerRef.current = true;
     const input = watchAuth("emailOrPhone");
     const isEmail = /\S+@\S+\.\S+/.test(input);
     const nameParts = data.name?.trim().split(" ") || [];
@@ -530,11 +597,50 @@ function CheckoutPageContent() {
       setActiveStep(2);
       setIsAlreadyEnrolled(false);
       setHasPendingPayment(false);
+      isNewCustomerRef.current = false;
     } catch {
       // Silent fail
     } finally {
       setIsLoadingAuth(false);
     }
+  };
+
+  // ============================================================
+  // GTM: Push generate_lead — fires ONLY after backend confirms
+  // ============================================================
+  const pushGenerateLead = async (paymentData: any) => {
+    if (typeof window === "undefined") return;
+    if (!course) return;
+
+    const courseId = course._id || course.id;
+    const sessionStorageKey = `checkout_lead_fired_${courseId}`;
+
+    if (sessionStorage.getItem(sessionStorageKey) === "1") return;
+
+    window.dataLayer = window.dataLayer || [];
+
+    const phoneHash = await sha256Hex(
+      normalizePhone(paymentData.userPhone, "+880"),
+    );
+    const childNameHash = await sha256Hex(
+      normalizeName(paymentData.userName),
+    );
+
+    window.dataLayer.push({
+      event: "generate_lead",
+      new_customer: isNewCustomerRef.current,
+      form_name: "Course Checkout",
+      course_id: courseId,
+      course_name: getLocalizedText(course.title) || "",
+      class_level: course.level || course.classLevel || "",
+      customer: {
+        phone_hash: phoneHash,
+        child_name_hash: childNameHash,
+        country: "BD",
+      },
+    });
+
+    sessionStorage.setItem(sessionStorageKey, "1");
   };
 
   // =================== MANUAL PAYMENT SUBMIT ===================
@@ -603,6 +709,8 @@ function CheckoutPageContent() {
 
       setPaymentStatus("success");
       setCompletedSteps((prev) => new Set(prev).add(3));
+
+      await pushGenerateLead(data);
     } catch (error: any) {
       setPaymentStatus("failed");
       setPaymentError(error.message || "পেমেন্ট তথ্য জমা দিতে সমস্যা হয়েছে।");
@@ -1589,4 +1697,3 @@ function CheckoutPageContent() {
     </div>
   );
 }
-

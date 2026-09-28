@@ -19,7 +19,7 @@ export default function HomeContent() {
 
   return (
     <div className="overflow-hidden bg-white space-y-20 md:space-y-25 tracking-normal px-2 leading-5 min-h-[calc(100vh-500px)]">
-      <Banner />
+      {/* <Banner /> */}
       <BannerHero/>
       <FeatureCourses />8520/
       <PopularCourse />

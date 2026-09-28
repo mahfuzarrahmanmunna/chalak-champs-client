@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useTheme } from "@/app/context/ThemeContext";
-import { taskService } from "@/services/taskService";
+import { taskService } from "../../../services/taskService";
 import { Task } from "@/types/task";
 import { CheckCircleIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 

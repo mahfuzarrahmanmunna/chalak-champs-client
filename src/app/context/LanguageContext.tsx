@@ -114,15 +114,17 @@ interface HeroStats {
   languages: string;
 }
 
-interface HeroData {
+// Inside your LanguageContext.tsx or types file
+export interface HeroData {
   title: string;
   subtitle: string;
   ctaButton: string;
   secondaryLink: string;
-  features: HeroFeature[];
-  stats: HeroStats;
   cta2: string;
   cta2Btn: string;
+  kingImage?: string;       
+  kingImageClass?: string;  
+  videoId?: string;         
 }
 
 interface CoursesData {
@@ -453,7 +455,7 @@ type LanguageContextType = {
   singleCourseData: SingleCourseData;
   aboutUsData: AboutUsData;
   instructorsData: InstructorsData;
-  privacyData: PrivacyPolicyData; // ✅ ADDED TO CONTEXT TYPE
+  privacyData: PrivacyPolicyData;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -461,7 +463,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 );
 
 const getLanguageData = (isBangla: boolean) => {
-  const hero = (isBangla ? heroBangla : heroEnglish) as HeroData;
+  const staticHero = (isBangla ? heroBangla : heroEnglish) as HeroData;
   const navbarFull = isBangla ? navbarBangla : navbarEnglish;
 
   const { menus, ...navbarStrings } = navbarFull || {};
@@ -499,7 +501,6 @@ const getLanguageData = (isBangla: boolean) => {
 
   const aboutUs = (isBangla ? aboutUsBangla : aboutUsEnglish) as AboutUsData;
 
-  // ✅ PARSE PRIVACY DATA
   const privacy = (
     isBangla ? privacyBangla : privacyEnglish
   ) as PrivacyPolicyData;
@@ -521,7 +522,7 @@ const getLanguageData = (isBangla: boolean) => {
   const menu = { ...defaultMenu, ...(menus as MenuData) };
 
   return {
-    hero,
+    staticHero, // Return as staticHero to be used as a fallback
     merged,
     menu,
     featureCourses,
@@ -535,7 +536,7 @@ const getLanguageData = (isBangla: boolean) => {
     singleCourse,
     aboutUs,
     instructors,
-    privacy, // ✅ RETURN PRIVACY DATA
+    privacy,
   };
 };
 
@@ -552,9 +553,10 @@ export const LanguageProvider = ({
   const pathname = usePathname();
 
   const isBangla = initialLang === "bn";
+  const currentLang = isBangla ? "bn" : "en";
 
   const {
-    hero,
+    staticHero,
     merged,
     menu,
     featureCourses,
@@ -568,12 +570,38 @@ export const LanguageProvider = ({
     singleCourse,
     aboutUs,
     instructors,
-    privacy, // ✅ DESTRUCTURE PRIVACY DATA
+    privacy,
   } = useMemo(() => {
     return getLanguageData(isBangla);
   }, [isBangla]);
 
-  const currentLang = isBangla ? "bn" : "en";
+  // ==========================================
+  // FIX: ACTUALLY FETCH DYNAMIC HERO DATA HERE
+  // ==========================================
+  const [dynamicHeroData, setDynamicHeroData] = useState<HeroData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadDynamicHero = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchHeroData(currentLang);
+        if (data) {
+          // Merge static fallback with dynamic DB data
+          setDynamicHeroData({ ...staticHero, ...data });
+        } else {
+          setDynamicHeroData(staticHero);
+        }
+      } catch (error) {
+        console.error("Failed to fetch dynamic hero data", error);
+        setDynamicHeroData(staticHero);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDynamicHero();
+  }, [currentLang, staticHero]);
 
   const getLink = (path: string) => {
     const cleanPath = path.startsWith("/") ? path : `/${path}`;
@@ -610,8 +638,8 @@ export const LanguageProvider = ({
         toggleLanguage,
         getLink,
         t: merged,
-        heroData: hero,
-        isLoading: false,
+        heroData: dynamicHeroData, // Use the dynamic state here!
+        isLoading: isLoading,      // Use the dynamic loading state here!
         menuData: menu,
         featureCourses: featureCourses || ({} as FeatureCoursesData),
         featuresData: features || ({} as FeaturesData),
@@ -624,7 +652,7 @@ export const LanguageProvider = ({
         singleCourseData: singleCourse || ({} as SingleCourseData),
         aboutUsData: aboutUs || ({} as AboutUsData),
         instructorsData: instructors || ({} as InstructorsData),
-        privacyData: privacy || ({} as PrivacyPolicyData), // ✅ PROVIDE PRIVACY DATA
+        privacyData: privacy || ({} as PrivacyPolicyData),
       }}
     >
       {children}

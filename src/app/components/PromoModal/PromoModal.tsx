@@ -39,14 +39,52 @@ const PromoModal = () => {
       "(display-mode: standalone)",
     ).matches;
 
-    if (!isStandalone && pathname === "/") {
-      // delay দিলে UX smooth হয়
-      const timer = setTimeout(() => {
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      const installPromptEvent = event as BeforeInstallPromptEvent;
+      setDeferredPrompt(installPromptEvent);
+      (window as any).deferredInstallPrompt = installPromptEvent;
+
+      const hasSeenModal = localStorage.getItem("hasSeenDownloadModal");
+      if (!hasSeenModal && pathname === "/") {
         setIsOpen(true);
+      }
+    };
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      (window as any).deferredInstallPrompt = null;
+      setIsOpen(false);
+      localStorage.setItem("hasSeenDownloadModal", "true");
+    };
+
+    const existingPrompt = (window as any).deferredInstallPrompt as BeforeInstallPromptEvent | undefined;
+    if (existingPrompt) {
+      setDeferredPrompt(existingPrompt);
+    }
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    if (!isStandalone && pathname === "/") {
+      const timer = setTimeout(() => {
+        const hasSeenModal = localStorage.getItem("hasSeenDownloadModal");
+        if (!hasSeenModal) {
+          setIsOpen(true);
+        }
       }, 1000);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+        window.removeEventListener("appinstalled", handleAppInstalled);
+      };
     }
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
   }, [pathname]);
 
   const shouldShowModal = isOpen && pathname === "/";
@@ -58,23 +96,26 @@ const PromoModal = () => {
 
   const handleDownload = async () => {
     if (deferredPrompt) {
-      // Show the native browser install prompt
-      deferredPrompt.prompt();
-      // Wait for the user to respond to the prompt
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") {
-        console.log("User accepted the install prompt");
+      try {
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === "accepted") {
+          console.log("User accepted the install prompt");
+        }
+      } catch (error) {
+        console.error("Install prompt failed:", error);
+      } finally {
+        setDeferredPrompt(null);
+        (window as any).deferredInstallPrompt = null;
+        handleClose();
       }
-      setDeferredPrompt(null);
-      handleClose();
-    } else {
-      // Fallback for desktop browsers that don't support the prompt easily
-      // or if the prompt was already dismissed by the user in the past
-      alert(
-        "To install our app on iOS: Tap Share > Add to Home Screen.\n\nOn Android: Tap menu > Install App.",
-      );
-      handleClose();
+      return;
     }
+
+    alert(
+      "To install our app on iOS: Tap Share > Add to Home Screen.\n\nOn Android: Tap menu > Install App.",
+    );
+    handleClose();
   };
 
   if (!isOpen) return null;
