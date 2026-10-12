@@ -138,13 +138,14 @@
 
 
 
-
 "use client";
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, FreeMode } from "swiper/modules";
+import api from "@/lib/api";
+import { normalizeImageUrl } from "@/lib/normalizeImageUrl";
 
 // --- CSS IMPORTS ---
 // @ts-ignore
@@ -159,6 +160,13 @@ interface GalleryImage {
   alt: string;
 }
 
+const configuredApiBaseUrl = (
+  process.env.NEXT_PUBLIC_API_BASE_URL || ""
+).replace(/\/+$/, "");
+const galleryEndpoint = /\/api$/i.test(configuredApiBaseUrl)
+  ? "/gallery"
+  : "/api/gallery";
+
 const ImageSlider: React.FC = () => {
   const [rowOneImages, setRowOneImages] = useState<GalleryImage[]>([]);
   const [rowTwoImages, setRowTwoImages] = useState<GalleryImage[]>([]);
@@ -167,11 +175,13 @@ const ImageSlider: React.FC = () => {
   useEffect(() => {
     const fetchGallery = async () => {
       try {
-        const res = await fetch(`/api/gallery`);
-        const data = await res.json();
+        const res = await api.get(galleryEndpoint);
+        const data = res.data;
         if (data.success && data.data) {
           setRowOneImages(data.data.rowOneImages || []);
           setRowTwoImages(data.data.rowTwoImages || []);
+        } else {
+          throw new Error(data.message || "Invalid gallery response");
         }
       } catch (error) {
         console.error("Failed to fetch gallery images", error);
@@ -191,14 +201,12 @@ const ImageSlider: React.FC = () => {
     );
   }
 
-  // If no images are uploaded yet, don't render the sliders
   if (rowOneImages.length === 0 && rowTwoImages.length === 0) {
-    return null; 
+    return null;
   }
 
   return (
     <div className="flex flex-col gap-8 container mx-auto rounded-4xl overflow-hidden">
-      {/* --- ROW 1: LEFT TO RIGHT (Reversed via dir="rtl") --- */}
       {rowOneImages.length > 0 && (
         <div dir="rtl" className="w-full rounded-4xl">
           <Swiper
@@ -226,7 +234,7 @@ const ImageSlider: React.FC = () => {
               <SwiperSlide key={`r1-${index}`} className="!h-auto py-2 rounded-2xl">
                 <div className="relative h-64 w-full rounded-[10px] overflow-hidden p-0 m-0 shadow-md border-1 border-[#FF8FCA]/15 bg-pink-100">
                   <Image
-                    src={item.url}
+                    src={normalizeImageUrl(item.url)}
                     alt={item.alt}
                     fill
                     className="object-cover"
@@ -239,7 +247,6 @@ const ImageSlider: React.FC = () => {
         </div>
       )}
 
-      {/* --- ROW 2: RIGHT TO LEFT (Standard) --- */}
       {rowTwoImages.length > 0 && (
         <div className="w-full">
           <Swiper
@@ -267,7 +274,7 @@ const ImageSlider: React.FC = () => {
               <SwiperSlide key={`r2-${index}`} className="h-auto">
                 <div className="relative h-64 w-full rounded-[10px] overflow-hidden shadow-md border-1 border-[#FF8FCA]/15 bg-pink-100">
                   <Image
-                    src={item.url}
+                    src={normalizeImageUrl(item.url)}
                     alt={item.alt}
                     fill
                     className="object-cover"

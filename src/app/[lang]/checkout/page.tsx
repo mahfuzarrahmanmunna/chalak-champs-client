@@ -78,8 +78,7 @@ function normalizeName(rawName: string): string {
 }
 
 // ===================== FORM ERROR HELPER =====================
-// Top-level function — avoids recursive const reference issues.
-// Handles react-hook-form's FieldError / Merge<...> types.
+// Single top-level function — no duplicate inside component.
 
 function getErrorMessage(error: any): string {
   if (!error) return "";
@@ -174,6 +173,7 @@ function CheckoutPageContent() {
   } = useForm({ mode: "onTouched" });
 
   // =================== MANUAL PAYMENT STATE ===================
+  // transactionId removed — no longer needed
   const {
     register: registerPay,
     handleSubmit: handleSubmitPay,
@@ -185,7 +185,6 @@ function CheckoutPageContent() {
       userName: "",
       userPhone: "",
       paymentMethod: "bkash",
-      transactionId: "",
       amount: "",
     },
   });
@@ -197,7 +196,7 @@ function CheckoutPageContent() {
 
   // =================== CONFIG ===================
   const BACKEND_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    process.env.NEXT_PUBLIC_API_URL || "https://apichalakchamps.vercel.app";
   const isPaymentInProgress = paymentStatus === "processing";
 
   const getLocalizedText = (value: any): string => {
@@ -254,21 +253,18 @@ function CheckoutPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, currentUser, appUser]);
 
-  // --- GTM: Initialize dataLayer on mount ---
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.dataLayer = window.dataLayer || [];
     }
   }, []);
 
-  // --- Check Enrollment when user and course are ready ---
   useEffect(() => {
     if (currentUser && appUser && course) {
       checkEnrollmentStatus();
     }
   }, [currentUser, appUser, course, checkEnrollmentStatus]);
 
-  // --- Fetch Course Data ---
   useEffect(() => {
     const fetchCourseData = async () => {
       setIsLoadingData(true);
@@ -303,7 +299,6 @@ function CheckoutPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [BACKEND_URL, searchParams]);
 
-  // --- OTP Timer ---
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (authView === "otp" && timeLeft > 0) {
@@ -606,7 +601,7 @@ function CheckoutPageContent() {
   };
 
   // ============================================================
-  // GTM: Push generate_lead — fires ONLY after backend confirms
+  // GTM: Push generate_lead
   // ============================================================
   const pushGenerateLead = async (paymentData: any) => {
     if (typeof window === "undefined") return;
@@ -644,6 +639,7 @@ function CheckoutPageContent() {
   };
 
   // =================== MANUAL PAYMENT SUBMIT ===================
+  // transactionId removed — no longer sent to backend
 
   const onPaymentSubmit = async (data: any) => {
     if (!currentUser || !course) {
@@ -680,7 +676,6 @@ function CheckoutPageContent() {
           userName: data.userName,
           userPhone: data.userPhone,
           paymentMethod: data.paymentMethod,
-          transactionId: data.transactionId,
           amount: Number(data.amount),
         }),
       });
@@ -700,9 +695,6 @@ function CheckoutPageContent() {
           throw new Error(
             "আপনার আগের পেমেন্ট রিভিউ হচ্ছে। অনুগ্রহ করে অপেক্ষা করুন।",
           );
-        }
-        if (result.code === "DUPLICATE_TRANSACTION") {
-          throw new Error("এই ট্রানজাকশন আইডি আগে ব্যবহার করা হয়েছে।");
         }
         throw new Error(result.message || "Failed to submit payment info.");
       }
@@ -1517,8 +1509,7 @@ function CheckoutPageContent() {
                       1
                     </div>
                     <h2 className="text-xl font-bold text-[#00477C]">
-                      {" "}
-                      Send Money To{" "}
+                      Send Money To
                     </h2>
                   </div>
 
@@ -1566,8 +1557,7 @@ function CheckoutPageContent() {
                   <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm p-4 rounded-xl flex items-start gap-2">
                     <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                     <span>
-                      অনুগ্রহ করে উপরের যেকোনো একটি নাম্বারে টাকা পাঠান এবং
-                      ট্রানজাকশন আইডি সংগ্রহ করুন।
+                      অনুগ্রহ করে উপরের যেকোনো একটি নাম্বারে টাকা পাঠান।
                     </span>
                   </div>
                 </div>
@@ -1578,15 +1568,15 @@ function CheckoutPageContent() {
                       2
                     </div>
                     <h2 className="text-xl font-bold text-[#00477C]">
-                      {" "}
-                      Submit Payment Info{" "}
+                      Submit Payment Info
                     </h2>
                   </div>
 
                   <div className="space-y-4">
+                    {/* Your Name — required */}
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        Your Name
+                        Your Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -1603,9 +1593,10 @@ function CheckoutPageContent() {
                       )}
                     </div>
 
+                    {/* Phone Number — required */}
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        Phone Number
+                        Phone Number <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -1622,28 +1613,10 @@ function CheckoutPageContent() {
                       )}
                     </div>
 
+                    {/* Amount — required, readonly */}
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        Transaction ID
-                      </label>
-                      <input
-                        type="text"
-                        {...registerPay("transactionId", {
-                          required: "Transaction ID is required",
-                        })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-[#00477C] focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                        placeholder="Enter transaction ID"
-                      />
-                      {getErrorMessage(payErrors.transactionId) && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {getErrorMessage(payErrors.transactionId)}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        Amount (৳)
+                        Amount (৳) <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"

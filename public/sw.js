@@ -44,6 +44,10 @@ self.addEventListener("message", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const { request } = event;
+  const url = new URL(request.url);
+
+  // Browser extensions and other non-web schemes cannot be stored in Cache.
+  if (url.protocol !== "http:" && url.protocol !== "https:") return;
 
   // 1. Non-GET requests: ALWAYS pass through to network
   if (request.method !== "GET") {
@@ -62,7 +66,6 @@ self.addEventListener("fetch", (event) => {
 
   // 3. API ROUTES: ALWAYS use network, NEVER cache
   // This prevents serving stale course/product data
-  const url = new URL(request.url, self.location.origin);
   const isApiRequest = url.pathname.startsWith("/api/");
 
   if (isApiRequest) {

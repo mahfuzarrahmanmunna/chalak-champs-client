@@ -19,10 +19,11 @@ import {
 import {
   getAllEnrollments,
   deleteEnrollment,
+  updateEnrollmentStatus,
 } from "@/app/services/enrollmentAdminService";
 import PhoneActionModal from "../components/PhoneActionModal";
 
-// Define Enrollment Type matching your DB
+// Updated Interface to include status
 interface Enrollment {
   _id: string;
   name: string;
@@ -31,6 +32,7 @@ interface Enrollment {
   courseId: string;
   courseTitle: string;
   amount: string;
+  status: "active" | "expired" | "revoked";
   createdAt: string;
 }
 
@@ -38,22 +40,17 @@ type FilterType = "all" | "today" | "week" | "month" | "year";
 
 const CourseDetailsLeads = () => {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
-  const [filteredEnrollments, setFilteredEnrollments] = useState<Enrollment[]>(
-    [],
-  );
+  const [filteredEnrollments, setFilteredEnrollments] = useState<Enrollment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Filter State
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
 
-  // Phone Modal State
   const [phoneModal, setPhoneModal] = useState({
     isOpen: false,
     number: "",
   });
 
-  // Fetch Enrollments
   const fetchEnrollments = async () => {
     setLoading(true);
     try {
@@ -71,7 +68,6 @@ const CourseDetailsLeads = () => {
     }
   };
 
-  // Apply Filter Logic
   useEffect(() => {
     const now = new Date();
     let filtered = enrollments;
@@ -109,10 +105,8 @@ const CourseDetailsLeads = () => {
     setFilteredEnrollments(filtered);
   }, [enrollments, activeFilter]);
 
-  // Handle Delete
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this enrollment record?"))
-      return;
+    if (!confirm("Are you sure you want to delete this enrollment record?")) return;
     try {
       const res = await deleteEnrollment(id);
       if (res.success) fetchEnrollments();
@@ -121,7 +115,19 @@ const CourseDetailsLeads = () => {
     }
   };
 
-  // Handle PDF Download
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      const res = await updateEnrollmentStatus(id, newStatus);
+      if (res.success) {
+        fetchEnrollments();
+      } else {
+        alert("Failed to update status.");
+      }
+    } catch (err) {
+      alert("Failed to update status.");
+    }
+  };
+
   const downloadPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(18);
@@ -144,18 +150,19 @@ const CourseDetailsLeads = () => {
     doc.text(`Generated: ${format(new Date(), "PPpp")}`, 14, 36);
 
     autoTable(doc, {
-      head: [["Name", "Phone", "Email", "Course", "Amount", "Date"]],
+      head: [["Name", "Phone", "Email", "Course", "Amount", "Status", "Date"]],
       body: filteredEnrollments.map((enrollment) => [
         enrollment.name,
         enrollment.phone,
         enrollment.email || "N/A",
         enrollment.courseTitle,
         enrollment.amount,
+        enrollment.status.toUpperCase(),
         format(new Date(enrollment.createdAt), "yyyy-MM-dd"),
       ]),
       startY: 44,
       theme: "grid",
-      headStyles: { fillColor: [0, 71, 124] }, // Using your #00477C color
+      headStyles: { fillColor: [0, 71, 124] },
     });
 
     doc.save(`enrollments-report-${activeFilter}.pdf`);
@@ -172,18 +179,11 @@ const CourseDetailsLeads = () => {
         <div className="border-b border-gray-200 p-6 bg-gray-50">
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                Course Enrollments
-              </h1>
+              <h1 className="text-2xl font-bold text-gray-800">Course Enrollments</h1>
               <p className="text-sm text-gray-500 mt-1">
                 Total Enrollments:{" "}
-                <span className="font-semibold text-gray-700">
-                  {enrollments.length}
-                </span>{" "}
-                | Showing:{" "}
-                <span className="font-semibold text-[#00477C]">
-                  {filteredEnrollments.length}
-                </span>
+                <span className="font-semibold text-gray-700">{enrollments.length}</span> | 
+                Showing: <span className="font-semibold text-[#00477C]">{filteredEnrollments.length}</span>
               </p>
             </div>
 
@@ -231,13 +231,9 @@ const CourseDetailsLeads = () => {
         {/* Table Section */}
         <div className="p-6">
           {loading ? (
-            <div className="flex justify-center py-20 text-gray-500">
-              Loading enrollments...
-            </div>
+            <div className="flex justify-center py-20 text-gray-500">Loading enrollments...</div>
           ) : error ? (
-            <div className="text-center py-20 text-red-500 font-medium">
-              {error}
-            </div>
+            <div className="text-center py-20 text-red-500 font-medium">{error}</div>
           ) : filteredEnrollments.length === 0 ? (
             <div className="text-center py-20 text-gray-400 flex flex-col items-center">
               <Calendar size={48} className="mb-4 opacity-20" />
@@ -253,27 +249,18 @@ const CourseDetailsLeads = () => {
                     <th className="p-4 border-b">Email</th>
                     <th className="p-4 border-b">Course</th>
                     <th className="p-4 border-b">Amount</th>
+                    <th className="p-4 border-b">Status</th>
                     <th className="p-4 border-b">Date</th>
                     <th className="p-4 border-b text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-sm">
                   {filteredEnrollments.map((enrollment) => (
-                    <tr
-                      key={enrollment._id}
-                      className="hover:bg-blue-50/50 transition-colors"
-                    >
-                      <td className="p-4 font-medium text-gray-900">
-                        {enrollment.name}
-                      </td>
+                    <tr key={enrollment._id} className="hover:bg-blue-50/50 transition-colors">
+                      <td className="p-4 font-medium text-gray-900">{enrollment.name}</td>
                       <td className="p-4">
                         <button
-                          onClick={() =>
-                            setPhoneModal({
-                              isOpen: true,
-                              number: enrollment.phone,
-                            })
-                          }
+                          onClick={() => setPhoneModal({ isOpen: true, number: enrollment.phone })}
                           className="text-blue-600 hover:underline font-medium flex items-center gap-1 w-max"
                         >
                           <Phone size={14} /> {enrollment.phone}
@@ -285,22 +272,34 @@ const CourseDetailsLeads = () => {
                             href={`mailto:${enrollment.email}`}
                             className="flex items-center gap-1 text-gray-600 hover:text-[#00477C] w-max"
                           >
-                            <Mail size={14} className="opacity-50" />{" "}
-                            {enrollment.email}
+                            <Mail size={14} className="opacity-50" /> {enrollment.email}
                           </a>
                         ) : (
-                          <span className="text-gray-300 italic text-xs">
-                            Not provided
-                          </span>
+                          <span className="text-gray-300 italic text-xs">Not provided</span>
                         )}
                       </td>
-                      <td className="p-4 text-gray-600 max-w-[200px] truncate">
-                        {enrollment.courseTitle}
-                      </td>
+                      <td className="p-4 text-gray-600 max-w-[200px] truncate">{enrollment.courseTitle}</td>
                       <td className="p-4">
                         <span className="bg-green-50 text-green-700 text-xs px-2.5 py-1 rounded-md border border-green-100 font-bold">
                           ৳ {enrollment.amount}
                         </span>
+                      </td>
+                      <td className="p-4">
+                        <select
+                          value={enrollment.status}
+                          onChange={(e) => handleStatusChange(enrollment._id, e.target.value)}
+                          className={`text-xs px-2 py-1 rounded-md border font-bold uppercase outline-none cursor-pointer ${
+                            enrollment.status === "active"
+                              ? "bg-green-50 text-green-700 border-green-100"
+                              : enrollment.status === "expired"
+                                ? "bg-yellow-50 text-yellow-700 border-yellow-100"
+                                : "bg-red-50 text-red-700 border-red-100"
+                          }`}
+                        >
+                          <option value="active">Active</option>
+                          <option value="expired">Expired</option>
+                          <option value="revoked">Revoked</option>
+                        </select>
                       </td>
                       <td className="p-4 text-gray-500">
                         {format(new Date(enrollment.createdAt), "dd MMM yyyy")}

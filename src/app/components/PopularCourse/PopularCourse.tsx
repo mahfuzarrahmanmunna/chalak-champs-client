@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { useLanguage } from "@/app/context/LanguageContext"; // Adjust path as needed
-import Button from "@/app/ui/button/Button";
 import Link from "next/link";
+import { useLanguage } from "@/app/context/LanguageContext";
+import Button from "@/app/ui/button/Button";
+import api from "@/lib/api"; // Make sure this points to your axios instance
 
 const PopularCourse = () => {
   // 1. Get bilingual data from context
@@ -16,7 +17,39 @@ const PopularCourse = () => {
   const isBangla = context?.isBangla || false;
 
   // 2. Destructure specific fields for cleaner code
-  const { titlePrefix, titleSuffix, cards, cta } = featuresData;
+  const { titlePrefix, titleSuffix, cta } = featuresData;
+
+  // State for dynamic courses
+  const [dynamicCourses, setDynamicCourses] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        // Fetch courses from your API (adjust the endpoint if needed)
+        const res = await api.get("/api/courses", { params: { limit: 4 } });
+        
+        if (res.data.success && res.data.data?.courses) {
+          // Map the API response to match the static card structure
+          const mapped = res.data.data.courses.map((c: any) => ({
+            id: c._id,
+            title: c.title,
+            subtitle: c.shortDescription || c.description || "",
+            image: c.thumbnail || c.image || "",
+            slug: c.slug,
+          }));
+          setDynamicCourses(mapped);
+        }
+      } catch (error) {
+        console.error("Failed to fetch popular courses:", error);
+        // If it fails, the component will automatically fall back to static data
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  // Fallback to static data if dynamic data is not available
+  const displayCourses = dynamicCourses.length > 0 ? dynamicCourses : featuresData.cards;
 
   return (
     <section className="px-4">
@@ -48,41 +81,48 @@ const PopularCourse = () => {
         <div className="flex justify-center w-full">
           {/* Inline-grid allows the container to shrink to fit the content (1, 2, 3, or 4 cards) */}
           <div className="flex grid-cols-2 col-span-1-span-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-8 ">
-            {cards.map((course) => (
-              <Link key={course.id} href={"/en/coursedetails"}>
-                <div className="relative w-77.75 h-88.75  rounded-[35px] bg-linear-to-b p-1 from-[#F3066EBF] to-white ">
-                  {/* Inner White Content Area */}
-                  <div className="bg-white rounded-4xl md:p-6 p-3 flex flex-col items-center h-full">
-                    {/* Image Wrapper with Light Pink Background/Border */}
-                    <div className="relative w-60.5 h-60.5 shadow-[0_4px_27px_4px_rgba(243,6,110,0.2)] aspect-square md:rounded-2xl rounded-3xl overflow-hidden bg-linear-to-b from-[#F3066E] to-[#FF8FCA] mt-5 md:mt-0">
-                      <Image
-                        src={course.image}
-                        alt={course.title}
-                        fill
-                        className="object-cover w-60.5 h-60.5 p-0.5 rounded-[22px] md:rounded-2xl"
-                      />
-                    </div>
+            {displayCourses.map((course) => {
+              // Determine link path based on whether it's dynamic or static
+              const linkHref = dynamicCourses.length > 0 
+                ? `${isBangla ? "/bn" : "/en"}/coursedetails/${course.slug || course.id}`
+                : `${isBangla ? "/bn" : "/en"}/coursedetails`;
 
-                    {/* Text Content */}
-                    <div className="mt-6 text-center">
-                      <h3 className="text-[#E91E63] tracking-[-2%] text-base md:text-[20px] font-semibold leading-tight">
-                        {course.title}
-                      </h3>
-                      <p
-                        className="text-gray-800 text-sm tracking-[-2%] md:text-sm font-semibold mt-1"
-                        dangerouslySetInnerHTML={{ __html: course.subtitle }}
-                      />
+              return (
+                <Link key={course.id} href={linkHref}>
+                  <div className="relative w-77.75 h-88.75 rounded-[35px] bg-linear-to-b p-1 from-[#F3066EBF] to-white ">
+                    {/* Inner White Content Area */}
+                    <div className="bg-white rounded-4xl md:p-6 p-3 flex flex-col items-center h-full">
+                      {/* Image Wrapper with Light Pink Background/Border */}
+                      <div className="relative w-60.5 h-60.5 shadow-[0_4px_27px_4px_rgba(243,6,110,0.2)] aspect-square md:rounded-2xl rounded-3xl overflow-hidden bg-linear-to-b from-[#F3066E] to-[#FF8FCA] mt-5 md:mt-0">
+                        <Image
+                          src={course.image}
+                          alt={course.title}
+                          fill
+                          className="object-cover w-60.5 h-60.5 p-0.5 rounded-[22px] md:rounded-2xl"
+                        />
+                      </div>
+
+                      {/* Text Content */}
+                      <div className="mt-6 text-center">
+                        <h3 className="text-[#E91E63] tracking-[-2%] text-base md:text-[20px] font-semibold leading-tight">
+                          {course.title}
+                        </h3>
+                        <p
+                          className="text-gray-800 text-sm tracking-[-2%] md:text-sm font-semibold mt-1"
+                          dangerouslySetInnerHTML={{ __html: course.subtitle }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>
 
       <div className="flex items-center justify-center mt-14">
-        <Link href={`${isBangla ? "/bn/courses": "/en/courses"}`}>
+        <Link href={`${isBangla ? "/bn/courses" : "/en/courses"}`}>
           <Button
             bgColor="#F3056D"
             darkShadowColor="#F3066E"

@@ -117,7 +117,7 @@ export default function MyProfilePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://apichalakchamps.vercel.app";
 
   // --- Profile Data State ---
   const [profileData, setProfileData] = useState<ProfileData>({

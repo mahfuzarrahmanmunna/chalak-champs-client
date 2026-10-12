@@ -4,10 +4,13 @@ import app from "./firebase"; // Ensure this path points to your initialized fir
 
 // Use environment variable, fallback to localhost for development
 const rawApiBaseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://apichalakchamps.vercel.app";
 
-// Clean up trailing slashes to prevent // in URLs
-const apiBaseUrl = rawApiBaseUrl.replace(/\/+$/, "");
+// Normalize the API prefix so origin-only environment values reach backend routes.
+const normalizedApiBaseUrl = rawApiBaseUrl.replace(/\/+$/, "");
+const apiBaseUrl = /\/api$/i.test(normalizedApiBaseUrl)
+  ? normalizedApiBaseUrl
+  : `${normalizedApiBaseUrl}/`;
 
 const api = axios.create({
   baseURL: apiBaseUrl,

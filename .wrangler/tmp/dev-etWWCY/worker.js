@@ -41135,7 +41135,7 @@ attempted value: ${f2}
         let d = (0, c(47408).A)("list-checks", [["path", { d: "M13 5h8", key: "a7qcls" }], ["path", { d: "M13 12h8", key: "h98zly" }], ["path", { d: "M13 19h8", key: "c3s6r1" }], ["path", { d: "m3 17 2 2 4-4", key: "1jhpwq" }], ["path", { d: "m3 7 2 2 4-4", key: "1obspn" }]]);
       }, 38739: (a, b, c) => {
         c.d(b, { createEnrollment: /* @__PURE__ */ __name(() => f, "createEnrollment") });
-        let d = "http://localhost:5000".replace(/\/+$|\/$/, ""), e = d.endsWith("/api") ? d : `${d}/api`;
+        let d = "https://apichalakchamps.vercel.app".replace(/\/+$|\/$/, ""), e = d.endsWith("/api") ? d : `${d}/api`;
         async function f(a2) {
           return await (await fetch(`${e}/enrollments`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(a2) })).json();
         }
@@ -68035,7 +68035,7 @@ This typically indicates that your device does not have a healthy Internet conne
         c.d(b, { A: /* @__PURE__ */ __name(() => f, "A") });
         var d = c(49172);
         c(85573), c(12670);
-        let e = d.A.create({ baseURL: "http://localhost:5000" });
+        let e = d.A.create({ baseURL: "https://apichalakchamps.vercel.app" });
         e.interceptors.request.use(async (a2) => a2, (a2) => Promise.reject(a2)), e.interceptors.response.use((a2) => a2, (a2) => (a2.response?.status, Promise.reject(a2)));
         let f = e;
       }, 96487: () => {
@@ -131462,7 +131462,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           "use strict";
           c2.r(b2), c2.d(b2, { default: /* @__PURE__ */ __name(() => n, "default") });
           var d = c2(48249), e = c2(67484), f = c2(81220);
-          let g = "http://localhost:5000".replace(/\/+$/, ""), h = g.endsWith("/api") ? g : `${g}/api`;
+          let g = "https://apichalakchamps.vercel.app".replace(/\/+$/, ""), h = g.endsWith("/api") ? g : `${g}/api`;
           async function i() {
             let a3 = await fetch(`${h}/feature-courses-banner/admin/list`);
             if (!a3.ok) throw Error(`HTTP ${a3.status}`);
@@ -131878,7 +131878,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           "use strict";
           c2.r(b2), c2.d(b2, { default: /* @__PURE__ */ __name(() => G, "default") });
           var d = c2(48249), e = c2(67484), f = c2(34311), g = c2(84248), h = c2(75154), i = c2(25378), j = c2(28147), k = c2(59347), l = c2(37847), m = c2(42582), n = c2(77246), o = c2(88629), p = c2(72066), q = c2(90087), r = c2(76842), s = c2(17441), t = c2(94354), u = c2(20894), v = c2(93663), w = c2(45060);
-          let x = "http://localhost:5000".replace(/\/+$/, ""), y = x.endsWith("/api") ? x : `${x}/api`;
+          let x = "https://apichalakchamps.vercel.app".replace(/\/+$/, ""), y = x.endsWith("/api") ? x : `${x}/api`;
           async function z() {
             let a3 = await fetch(`${y}/enrollments`, {});
             if (!a3.ok) throw Error("Failed to fetch enrollments");
@@ -132393,7 +132393,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           "use strict";
           c2.d(b2, { A: /* @__PURE__ */ __name(() => j, "A") });
           var d = c2(49172), e = c2(85573), f = c2(12670);
-          let g = "http://localhost:5000", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
+          let g = "https://apichalakchamps.vercel.app", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
           i.interceptors.request.use(async (a3) => {
             try {
               let b3 = (0, e.xI)(f.Ay), c3 = null, d2 = b3.currentUser;
@@ -133146,7 +133146,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           c2.r(b2), c2.d(b2, { default: /* @__PURE__ */ __name(() => p, "default") });
           var d = c2(48249), e = c2(67484), f = c2(81220), g = c2(40560), h = c2(6079), i = c2(41023), j = c2(46674), k = c2(42257), l = c2(89165), m = c2(53549);
           async function n(a3) {
-            return (await fetch("http://localhost:5000/api/hero", { method: "POST", body: a3 })).json();
+            return (await fetch("https://apichalakchamps.vercel.app/api/hero", { method: "POST", body: a3 })).json();
           }
           __name(n, "n");
           let o = { title: "", subtitle: "", ctaButton: "", secondaryLink: "", cta2: "", cta2Btn: "", kingImage: "" };
@@ -137027,10 +137027,10 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
                 Object.entries(m).forEach(([b4, c5]) => {
                   Array.isArray(c5) ? a5.append(b4, JSON.stringify(c5)) : a5.append(b4, c5.toString());
                 }), o && a5.append("thumbnail", o), q && a5.append("video", q);
-                let c4 = await fetch("http://localhost:5000/api/courses", { method: "POST", body: a5, credentials: "include" }), d2 = await c4.json();
+                let c4 = await fetch("https://apichalakchamps.vercel.app/api/courses", { method: "POST", body: a5, credentials: "include" }), d2 = await c4.json();
                 if (!c4.ok) throw Error(d2.message || "Failed to create course");
                 l("Course created successfully!"), setTimeout(() => {
-                  b3.push(`http://localhost:5000/courses/${d2.data._id}`);
+                  b3.push(`https://apichalakchamps.vercel.app/courses/${d2.data._id}`);
                 }, 2e3);
               } catch (a5) {
                 j(a5 instanceof Error ? a5.message : "An error occurred while creating the course");
@@ -137884,7 +137884,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           "use strict";
           c2.d(b2, { A: /* @__PURE__ */ __name(() => j, "A") });
           var d = c2(49172), e = c2(85573), f = c2(12670);
-          let g = "http://localhost:5000", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
+          let g = "https://apichalakchamps.vercel.app", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
           i.interceptors.request.use(async (a3) => {
             try {
               let b3 = (0, e.xI)(f.Ay), c3 = null, d2 = b3.currentUser;
@@ -139843,7 +139843,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           let f = "force-dynamic", g = 0;
           async function h(a3) {
             try {
-              let b3 = await fetch(`http://localhost:5000/api/courses/slug/${a3}`, { cache: "no-store" });
+              let b3 = await fetch(`https://apichalakchamps.vercel.app/api/courses/slug/${a3}`, { cache: "no-store" });
               return b3.ok && (await b3.json())?.data || null;
             } catch {
               return null;
@@ -141629,7 +141629,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           var d = c2(5735), e = c2(22679);
           let f = "force-dynamic", g = 0;
           async function h(a3) {
-            let b3 = "http://localhost:5000";
+            let b3 = "https://apichalakchamps.vercel.app";
             try {
               let c3 = /^[0-9a-fA-F]{24}$/.test(a3) ? `${b3}/api/products/${a3}` : `${b3}/api/products/slug/${a3}`, d2 = await fetch(c3, { cache: "no-store" });
               return d2.ok && (await d2.json())?.data || null;
@@ -141948,7 +141948,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           "use strict";
           c2.d(b2, { A: /* @__PURE__ */ __name(() => j, "A") });
           var d = c2(49172), e = c2(85573), f = c2(12670);
-          let g = "http://localhost:5000", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
+          let g = "https://apichalakchamps.vercel.app", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
           i.interceptors.request.use(async (a3) => {
             try {
               let b3 = (0, e.xI)(f.Ay), c3 = null, d2 = b3.currentUser;
@@ -145423,7 +145423,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           function S() {
             let a3, b3 = (0, j.useRouter)();
             (0, j.useSearchParams)();
-            let { currentUser: c3, appUser: e2, loading: l2, signInWithEmail: C2, signInWithPhone: R2, logout: S2, sendOtpEmail: T2, checkOtpEmail: U, sendOtpPhone: V, checkOtpPhone: W, completeRegistration: X } = (0, k.A)(), [Y, Z] = (0, g.useState)(1), [$, _] = (0, g.useState)(/* @__PURE__ */ new Set()), [aa, ab] = (0, g.useState)(O), [ac, ad] = (0, g.useState)(P), [ae, af] = (0, g.useState)(true), [ag, ah] = (0, g.useState)("input"), [ai, aj] = (0, g.useState)(false), [ak, al] = (0, g.useState)(90), [am, an] = (0, g.useState)(false), [ao, ap] = (0, g.useState)(false), [aq, ar] = (0, g.useState)(null), [as, at] = (0, g.useState)(null), { register: au, handleSubmit: av, formState: { errors: aw }, watch: ax, setValue: ay } = (0, h.mN)({ mode: "onTouched" }), [az, aA] = (0, g.useState)("full"), [aB, aC] = (0, g.useState)([]), [aD, aE] = (0, g.useState)("bkash"), [aF, aG] = (0, g.useState)(""), [aH, aI] = (0, g.useState)(false), [aJ, aK] = (0, g.useState)(0), [aL, aM] = (0, g.useState)(false), [aN, aO] = (0, g.useState)("idle"), [aP, aQ] = (0, g.useState)(null), [aR, aS] = (0, g.useState)(null), [aT, aU] = (0, g.useState)(null), aV = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", aW = (0, g.useCallback)(() => {
+            let { currentUser: c3, appUser: e2, loading: l2, signInWithEmail: C2, signInWithPhone: R2, logout: S2, sendOtpEmail: T2, checkOtpEmail: U, sendOtpPhone: V, checkOtpPhone: W, completeRegistration: X } = (0, k.A)(), [Y, Z] = (0, g.useState)(1), [$, _] = (0, g.useState)(/* @__PURE__ */ new Set()), [aa, ab] = (0, g.useState)(O), [ac, ad] = (0, g.useState)(P), [ae, af] = (0, g.useState)(true), [ag, ah] = (0, g.useState)("input"), [ai, aj] = (0, g.useState)(false), [ak, al] = (0, g.useState)(90), [am, an] = (0, g.useState)(false), [ao, ap] = (0, g.useState)(false), [aq, ar] = (0, g.useState)(null), [as, at] = (0, g.useState)(null), { register: au, handleSubmit: av, formState: { errors: aw }, watch: ax, setValue: ay } = (0, h.mN)({ mode: "onTouched" }), [az, aA] = (0, g.useState)("full"), [aB, aC] = (0, g.useState)([]), [aD, aE] = (0, g.useState)("bkash"), [aF, aG] = (0, g.useState)(""), [aH, aI] = (0, g.useState)(false), [aJ, aK] = (0, g.useState)(0), [aL, aM] = (0, g.useState)(false), [aN, aO] = (0, g.useState)("idle"), [aP, aQ] = (0, g.useState)(null), [aR, aS] = (0, g.useState)(null), [aT, aU] = (0, g.useState)(null), aV = process.env.NEXT_PUBLIC_API_URL || "https://apichalakchamps.vercel.app", aW = (0, g.useCallback)(() => {
               Z(3), _((a10) => /* @__PURE__ */ new Set([...a10, 2]));
             }, []), aX = (() => {
               let a10 = aa.offerPrice + aB.reduce((a11, b5) => {
@@ -147468,7 +147468,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           "use strict";
           c2.d(b2, { A: /* @__PURE__ */ __name(() => j, "A") });
           var d = c2(49172), e = c2(85573), f = c2(12670);
-          let g = "http://localhost:5000", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
+          let g = "https://apichalakchamps.vercel.app", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
           i.interceptors.request.use(async (a3) => {
             try {
               let b3 = (0, e.xI)(f.Ay), c3 = null, d2 = b3.currentUser;
@@ -149460,7 +149460,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           c2.r(b2), c2.d(b2, { default: /* @__PURE__ */ __name(() => o, "default") });
           var d = c2(48249), e = c2(67484), f = c2.n(e), g = c2(52099), h = c2(81220), i = c2(2116), j = c2.n(i), k = c2(19099), l = c2(97299), m = c2(59421), n = c2(63009);
           let o = /* @__PURE__ */ __name(() => {
-            let a3, { signInWithEmail: b3, signInWithPhone: c3, sendOtpEmail: i2, checkOtpEmail: o2, sendOtpPhone: p, checkOtpPhone: q, completeRegistration: r, appUser: s } = (0, l.A)(), t = (0, k.useRouter)(), { isBangla: u, currentLang: v, getLink: w } = (0, n.o)(), x = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", [y, z] = (0, e.useState)("input"), [A, B] = (0, e.useState)(false), [C, D] = (0, e.useState)(90), { register: E, handleSubmit: F, formState: { errors: G }, watch: H, setValue: I, trigger: J } = (0, g.mN)(), K = /* @__PURE__ */ __name((a4 = "student") => {
+            let a3, { signInWithEmail: b3, signInWithPhone: c3, sendOtpEmail: i2, checkOtpEmail: o2, sendOtpPhone: p, checkOtpPhone: q, completeRegistration: r, appUser: s } = (0, l.A)(), t = (0, k.useRouter)(), { isBangla: u, currentLang: v, getLink: w } = (0, n.o)(), x = process.env.NEXT_PUBLIC_API_URL || "https://apichalakchamps.vercel.app", [y, z] = (0, e.useState)("input"), [A, B] = (0, e.useState)(false), [C, D] = (0, e.useState)(90), { register: E, handleSubmit: F, formState: { errors: G }, watch: H, setValue: I, trigger: J } = (0, g.mN)(), K = /* @__PURE__ */ __name((a4 = "student") => {
               a4 === "admin" ? t.push(w("/admin-dashboard")) : t.push(w("/dashboard"));
             }, "K"), L = /* @__PURE__ */ __name(async (a4) => {
               try {
@@ -152301,7 +152301,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           "use strict";
           c2.d(b2, { A: /* @__PURE__ */ __name(() => j, "A") });
           var d = c2(49172), e = c2(85573), f = c2(12670);
-          let g = "http://localhost:5000", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
+          let g = "https://apichalakchamps.vercel.app", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
           i.interceptors.request.use(async (a3) => {
             try {
               let b3 = (0, e.xI)(f.Ay), c3 = null, d2 = b3.currentUser;
@@ -152791,7 +152791,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           "use strict";
           c2.d(b2, { A: /* @__PURE__ */ __name(() => j, "A") });
           var d = c2(49172), e = c2(85573), f = c2(12670);
-          let g = "http://localhost:5000", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
+          let g = "https://apichalakchamps.vercel.app", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
           i.interceptors.request.use(async (a3) => {
             try {
               let b3 = (0, e.xI)(f.Ay), c3 = null, d2 = b3.currentUser;
@@ -153217,7 +153217,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           "use strict";
           c2.d(b2, { A: /* @__PURE__ */ __name(() => j, "A") });
           var d = c2(49172), e = c2(85573), f = c2(12670);
-          let g = "http://localhost:5000", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
+          let g = "https://apichalakchamps.vercel.app", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
           i.interceptors.request.use(async (a3) => {
             try {
               let b3 = (0, e.xI)(f.Ay), c3 = null, d2 = b3.currentUser;
@@ -156144,7 +156144,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
           "use strict";
           c2.d(b2, { A: /* @__PURE__ */ __name(() => j, "A") });
           var d = c2(49172), e = c2(85573), f = c2(12670);
-          let g = "http://localhost:5000", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
+          let g = "https://apichalakchamps.vercel.app", h = g.endsWith("/api") ? g.replace(/\/+$/, "") : g.replace(/\/+$/, "") + "/api", i = d.A.create({ baseURL: h, headers: { "Content-Type": "application/json" } });
           i.interceptors.request.use(async (a3) => {
             try {
               let b3 = (0, e.xI)(f.Ay), c3 = null, d2 = b3.currentUser;
@@ -156466,7 +156466,7 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`), "_
             let [a3, b3] = (0, e.useState)(""), [c3, f2] = (0, e.useState)(""), [n2, o] = (0, e.useState)(false), [p, q] = (0, e.useState)(false), [r, s] = (0, e.useState)(""), [t, u] = (0, e.useState)(1), [v, w] = (0, e.useState)(""), x = (0, i.useRouter)(), { currentUser: y } = (() => {
               let [a4, b4] = (0, e.useState)(null), [c4, d2] = (0, e.useState)(null), [f3, g2] = (0, e.useState)(true), [h2, i2] = (0, e.useState)(null), l2 = (0, e.useCallback)(async (a5) => {
                 try {
-                  let c5 = await (0, j.p9)(a5), d3 = "http://localhost:5000", e2 = d3.endsWith("/api") ? d3.replace(/\/+$/, "") : d3.replace(/\/+$/, "") + "/api", f4 = await m.A.get(`${e2}/auth/profile`, { headers: { Authorization: `Bearer ${c5}` } });
+                  let c5 = await (0, j.p9)(a5), d3 = "https://apichalakchamps.vercel.app", e2 = d3.endsWith("/api") ? d3.replace(/\/+$/, "") : d3.replace(/\/+$/, "") + "/api", f4 = await m.A.get(`${e2}/auth/profile`, { headers: { Authorization: `Bearer ${c5}` } });
                   if (f4.data.success) b4(f4.data.user), i2(null);
                   else throw Error(f4.data.message || "Failed to fetch user data");
                 } catch (a6) {
@@ -167389,9 +167389,9 @@ init_modules_watch_stub();
 init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_process();
 init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
 init_performance2();
-var production = { "NEXT_PUBLIC_API_BASE_URL": "http://localhost:5000", "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyAruFpkA9mDckJVMQjMxQNGm6N335hQe8s", "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "chalak-champs-4fd30.firebaseapp.com", "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "chalak-champs-4fd30", "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "chalak-champs-4fd30.firebasestorage.app", "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "44158795932", "NEXT_PUBLIC_FIREBASE_APP_ID": "1:44158795932:web:a5142011eb150575386d59", "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-E6NJDJT477" };
-var development = { "NEXT_PUBLIC_API_BASE_URL": "http://localhost:5000", "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyAruFpkA9mDckJVMQjMxQNGm6N335hQe8s", "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "chalak-champs-4fd30.firebaseapp.com", "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "chalak-champs-4fd30", "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "chalak-champs-4fd30.firebasestorage.app", "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "44158795932", "NEXT_PUBLIC_FIREBASE_APP_ID": "1:44158795932:web:a5142011eb150575386d59", "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-E6NJDJT477" };
-var test = { "NEXT_PUBLIC_API_BASE_URL": "http://localhost:5000", "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyAruFpkA9mDckJVMQjMxQNGm6N335hQe8s", "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "chalak-champs-4fd30.firebaseapp.com", "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "chalak-champs-4fd30", "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "chalak-champs-4fd30.firebasestorage.app", "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "44158795932", "NEXT_PUBLIC_FIREBASE_APP_ID": "1:44158795932:web:a5142011eb150575386d59", "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-E6NJDJT477" };
+var production = { "NEXT_PUBLIC_API_BASE_URL": "https://apichalakchamps.vercel.app", "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyAruFpkA9mDckJVMQjMxQNGm6N335hQe8s", "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "chalak-champs-4fd30.firebaseapp.com", "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "chalak-champs-4fd30", "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "chalak-champs-4fd30.firebasestorage.app", "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "44158795932", "NEXT_PUBLIC_FIREBASE_APP_ID": "1:44158795932:web:a5142011eb150575386d59", "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-E6NJDJT477" };
+var development = { "NEXT_PUBLIC_API_BASE_URL": "https://apichalakchamps.vercel.app", "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyAruFpkA9mDckJVMQjMxQNGm6N335hQe8s", "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "chalak-champs-4fd30.firebaseapp.com", "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "chalak-champs-4fd30", "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "chalak-champs-4fd30.firebasestorage.app", "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "44158795932", "NEXT_PUBLIC_FIREBASE_APP_ID": "1:44158795932:web:a5142011eb150575386d59", "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-E6NJDJT477" };
+var test = { "NEXT_PUBLIC_API_BASE_URL": "https://apichalakchamps.vercel.app", "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyAruFpkA9mDckJVMQjMxQNGm6N335hQe8s", "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "chalak-champs-4fd30.firebaseapp.com", "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "chalak-champs-4fd30", "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "chalak-champs-4fd30.firebasestorage.app", "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "44158795932", "NEXT_PUBLIC_FIREBASE_APP_ID": "1:44158795932:web:a5142011eb150575386d59", "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-E6NJDJT477" };
 
 // .open-next/cloudflare/init.js
 var cloudflareContextALS = new AsyncLocalStorage();

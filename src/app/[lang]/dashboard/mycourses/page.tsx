@@ -259,7 +259,7 @@ export default function MyCoursesPage() {
   const [sortBy, setSortBy] = useState<SortOption>("recent");
   const [showSortMenu, setShowSortMenu] = useState(false);
   const BACKEND_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    process.env.NEXT_PUBLIC_API_URL || "https://apichalakchamps.vercel.app";
 
   // ===================== FETCH COURSES =====================
   useEffect(() => {

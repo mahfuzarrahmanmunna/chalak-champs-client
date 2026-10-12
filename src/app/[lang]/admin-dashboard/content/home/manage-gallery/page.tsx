@@ -2,17 +2,25 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Save, Loader2, Trash2, UploadCloud } from "lucide-react";
+import { Save, Loader2, Trash2 } from "lucide-react";
+import { normalizeImageUrl } from "@/lib/normalizeImageUrl";
 
 const inputClass = "w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F3056D]/10 file:text-[#F3056D] hover:file:bg-[#F3056D]/20 cursor-pointer";
 
-// Define your backend URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://apichalakchamps.vercel.app";
+const normalizedApiBaseUrl = API_BASE_URL.replace(/\/+$/, "");
+const GALLERY_API_URL = /\/api$/i.test(normalizedApiBaseUrl)
+  ? `${normalizedApiBaseUrl}/gallery`
+  : `${normalizedApiBaseUrl}/api/gallery`;
 
 export default function ManageGallery() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const [rowOne, setRowOne] = useState<{ url: string; alt: string }[]>([]);
   const [rowTwo, setRowTwo] = useState<{ url: string; alt: string }[]>([]);
@@ -23,15 +31,33 @@ export default function ManageGallery() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // ✅ FIX: Use absolute URL to Express backend
-        const res = await fetch(`${API_BASE_URL}/api/gallery`);
+        const res = await fetch(GALLERY_API_URL);
+        if (!res.ok) {
+          throw new Error(`Gallery request failed (${res.status})`);
+        }
+
         const data = await res.json();
         if (data.success) {
-          setRowOne(data.data.rowOneImages || []);
-          setRowTwo(data.data.rowTwoImages || []);
+          setRowOne(
+            (data.data.rowOneImages || []).map((image: { url: string; alt: string }) => ({
+              ...image,
+              url: normalizeImageUrl(image.url),
+            })),
+          );
+          setRowTwo(
+            (data.data.rowTwoImages || []).map((image: { url: string; alt: string }) => ({
+              ...image,
+              url: normalizeImageUrl(image.url),
+            })),
+          );
+        } else {
+          throw new Error(data.message || "Invalid gallery response");
         }
       } catch (err) {
         console.error("Failed to load gallery", err);
+        setErrorMsg(
+          err instanceof Error ? err.message : "Failed to load gallery images.",
+        );
       } finally {
         setLoading(false);
       }
@@ -59,6 +85,7 @@ export default function ManageGallery() {
     e.preventDefault();
     setSaving(true);
     setSuccessMsg("");
+    setErrorMsg("");
 
     try {
       const formData = new FormData();
@@ -68,24 +95,42 @@ export default function ManageGallery() {
       newRowOneFiles.forEach((file) => formData.append("rowOneImages", file));
       newRowTwoFiles.forEach((file) => formData.append("rowTwoImages", file));
 
-      // ✅ FIX: Use absolute URL to Express backend
-      const res = await fetch(`${API_BASE_URL}/api/gallery`, {
+      const res = await fetch(GALLERY_API_URL, {
         method: "POST",
         body: formData,
       });
 
-      const data = await res.json();
-      if (data.success) {
-        setSuccessMsg("Gallery updated successfully!");
-        setRowOne(data.data.rowOneImages);
-        setRowTwo(data.data.rowTwoImages);
-        setNewRowOneFiles([]);
-        setNewRowTwoFiles([]);
-      } else {
-        alert("Failed to save gallery.");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(
+          errorData?.message || `Gallery save failed (${res.status})`,
+        );
       }
+
+      const data = await res.json();
+      if (!data.success || !data.data) {
+        throw new Error(data.message || "The server did not save the gallery.");
+      }
+      setSuccessMsg("Gallery updated successfully!");
+      setRowOne(
+        (data.data.rowOneImages || []).map((image: { url: string; alt: string }) => ({
+          ...image,
+          url: normalizeImageUrl(image.url),
+        })),
+      );
+      setRowTwo(
+        (data.data.rowTwoImages || []).map((image: { url: string; alt: string }) => ({
+          ...image,
+          url: normalizeImageUrl(image.url),
+        })),
+      );
+      setNewRowOneFiles([]);
+      setNewRowTwoFiles([]);
     } catch (error) {
-      alert("Server error while saving.");
+      console.error("Failed to save gallery", error);
+      setErrorMsg(
+        error instanceof Error ? error.message : "Server error while saving.",
+      );
     } finally {
       setSaving(false);
     }
@@ -108,6 +153,11 @@ export default function ManageGallery() {
           {successMsg}
         </div>
       )}
+      {errorMsg && (
+        <div role="alert" className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+          {errorMsg}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-12 bg-white p-8 rounded-2xl shadow-sm">
         
@@ -117,7 +167,7 @@ export default function ManageGallery() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {rowOne.map((img, index) => (
               <div key={index} className="relative h-32 rounded-xl overflow-hidden border">
-                <Image src={img.url} alt={img.alt} fill className="object-cover" />
+                <Image src={normalizeImageUrl(img.url)} alt={img.alt} fill className="object-cover" />
                 <button type="button" onClick={() => removeExistingImage(index, 1)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600">
                   <Trash2 className="w-3 h-3" />
                 </button>
@@ -141,7 +191,7 @@ export default function ManageGallery() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {rowTwo.map((img, index) => (
               <div key={index} className="relative h-32 rounded-xl overflow-hidden border">
-                <Image src={img.url} alt={img.alt} fill className="object-cover" />
+                <Image src={normalizeImageUrl(img.url)} alt={img.alt} fill className="object-cover" />
                 <button type="button" onClick={() => removeExistingImage(index, 2)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600">
                   <Trash2 className="w-3 h-3" />
                 </button>

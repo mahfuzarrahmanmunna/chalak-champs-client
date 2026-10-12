@@ -63,7 +63,7 @@ export default function ManageVideoGallery() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const res = await api.get("/video-gallery");
+        const res = await api.get("/api/video-gallery");
         if (res.data.success && res.data.data) {
           const data = res.data.data;
           setSectionTitle({ en: data.title || "", bn: data.subtitle || "" });
@@ -120,7 +120,7 @@ export default function ManageVideoGallery() {
     if (video.youtubeId) {
       if (!confirm(`Delete this video permanently from the database?`)) return;
       try {
-        await api.delete(`/video-gallery/${video.youtubeId}`);
+        await api.delete(`/api/video-gallery/${video.youtubeId}`);
       } catch (err) {
         alert("Failed to delete from server.");
         return;
@@ -219,7 +219,7 @@ export default function ManageVideoGallery() {
         }
       });
 
-      const res = await api.post("/video-gallery", fd, {
+      const res = await api.post("/api/video-gallery", fd, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 120000, // Give it time to upload to R2
       });

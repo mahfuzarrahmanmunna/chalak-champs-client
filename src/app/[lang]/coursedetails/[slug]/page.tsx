@@ -11,7 +11,7 @@ export const revalidate = 0;
 async function getCourseDataForSEO(slug: string) {
   const apiUrl =
     process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "http://localhost:5000";
+    "https://apichalakchamps.vercel.app";
 
   try {
     const res = await fetch(`${apiUrl}/api/courses/slug/${slug}`, {

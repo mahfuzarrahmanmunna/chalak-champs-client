@@ -391,7 +391,7 @@ export default function ManageHero() {
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <strong>Note:</strong> If you leave Image, Class, or Video ID blank, the system will automatically fallback to the default English values to ensure the design doesn't break.
+                  <strong>Note:</strong> If you leave Image, Class, or Video ID blank, the system will automatically fallback to the default English values to ensure the design doesn&apos;t break.
                 </p>
               </section>
 
