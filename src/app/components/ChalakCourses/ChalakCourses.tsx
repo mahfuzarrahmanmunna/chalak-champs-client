@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import api from "@/lib/api";
 import {
   ChevronLeft,
   ChevronRight,
@@ -17,6 +15,7 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import { FaBell } from "react-icons/fa6";
 import Link from "next/link";
 import ChalakCourseCard from "./ChalakCourseCard";
+import { usePublicCourses } from "@/app/hooks/usePublicCourses";
 
 const ChalakCourses = () => {
   const { coursesData } = useLanguage();
@@ -40,15 +39,10 @@ const ChalakCourses = () => {
 
   const activeTab = coursesData.tabs?.[activeTabIndex] || "";
 
-  const { data: apiResponse, isLoading: isCoursesLoading } = useQuery({
-    queryKey: ["public-courses"],
-    queryFn: async () => {
-      const res = await api.get("/api/courses?published=true");
-      return res.data;
-    },
-  });
+  const { data: apiCourses = [], isLoading: isCoursesLoading } =
+    usePublicCourses();
 
-  const dbCourses = (apiResponse?.data || []).map((course: any) => ({
+  const dbCourses = apiCourses.map((course: any) => ({
     id: course._id,
     _id: course._id,
     slug: course.slug,

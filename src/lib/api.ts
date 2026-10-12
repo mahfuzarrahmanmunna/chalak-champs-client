@@ -19,6 +19,11 @@ const api = axios.create({
   },
 });
 
+// Public reads should not wait for Firebase auth or trigger an auth preflight.
+export const publicApi = axios.create({
+  baseURL: apiBaseUrl,
+});
+
 // Request Interceptor
 api.interceptors.request.use(
   async (config) => {

@@ -17,15 +17,15 @@ import { useLanguage } from "@/app/context/LanguageContext";
 
 interface Course {
   _id: string;
-  slug: string;
-  title: { en: string; bn: string } | string;
+  slug?: string;
+  title: { en?: string; bn?: string } | string;
   thumbnail?: string;
   category?: string;
   price?: number;
   originalPrice?: number;
   content?: {
     quickInfo?: {
-      items?: { en: string[]; bn: string[] };
+      items?: { en?: string[]; bn?: string[] };
     };
   };
 }
@@ -176,7 +176,9 @@ const ChalakCourseCard: React.FC<ChalakCourseCardProps> = ({
       )}
 
       {/* CTA Button */}
-      <Link href={`/${isBangla ? "bn" : "en"}/coursedetails/${course.slug}`}>
+      <Link
+        href={`/${isBangla ? "bn" : "en"}/coursedetails/${course.slug || course._id}`}
+      >
         <Button
           bgColor="#F3056D"
           highlightColor="#FF8FCA"

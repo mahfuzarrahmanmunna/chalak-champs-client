@@ -15,9 +15,10 @@ const SLUG_BN = "/bn/aboutus";
 export async function generateMetadata({
   params,
 }: {
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
-  const isBangla = params.lang === "bn";
+  const { lang } = await params;
+  const isBangla = lang === "bn";
   const t = isBangla ? aboutUsBangla : aboutUsEnglish;
 
   // Safely extract text with optional chaining (?.) and fallback strings
@@ -62,8 +63,13 @@ export async function generateMetadata({
 }
 
 // --- PAGE COMPONENT ---
-const AboutUsPage = ({ params }: { params: { lang: string } }) => {
-  const isBangla = params.lang === "bn";
+const AboutUsPage = async ({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) => {
+  const { lang } = await params;
+  const isBangla = lang === "bn";
   const t = isBangla ? aboutUsBangla : aboutUsEnglish;
 
   // JSON-LD Structured Data (Highly recommended for modern SEO)

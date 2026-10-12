@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
 import Button from "@/app/ui/button/Button";
-import api from "@/lib/api"; // Make sure this points to your axios instance
 
 const PopularCourse = () => {
   // 1. Get bilingual data from context
@@ -19,37 +17,7 @@ const PopularCourse = () => {
   // 2. Destructure specific fields for cleaner code
   const { titlePrefix, titleSuffix, cta } = featuresData;
 
-  // State for dynamic courses
-  const [dynamicCourses, setDynamicCourses] = useState<any[]>([]);
-
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        // Fetch courses from your API (adjust the endpoint if needed)
-        const res = await api.get("/api/courses", { params: { limit: 4 } });
-        
-        if (res.data.success && res.data.data?.courses) {
-          // Map the API response to match the static card structure
-          const mapped = res.data.data.courses.map((c: any) => ({
-            id: c._id,
-            title: c.title,
-            subtitle: c.shortDescription || c.description || "",
-            image: c.thumbnail || c.image || "",
-            slug: c.slug,
-          }));
-          setDynamicCourses(mapped);
-        }
-      } catch (error) {
-        console.error("Failed to fetch popular courses:", error);
-        // If it fails, the component will automatically fall back to static data
-      }
-    };
-
-    fetchCourses();
-  }, []);
-
-  // Fallback to static data if dynamic data is not available
-  const displayCourses = dynamicCourses.length > 0 ? dynamicCourses : featuresData.cards;
+  const displayCourses = featuresData.cards;
 
   return (
     <section className="px-4">
@@ -82,10 +50,7 @@ const PopularCourse = () => {
           {/* Inline-grid allows the container to shrink to fit the content (1, 2, 3, or 4 cards) */}
           <div className="flex grid-cols-2 col-span-1-span-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-8 ">
             {displayCourses.map((course) => {
-              // Determine link path based on whether it's dynamic or static
-              const linkHref = dynamicCourses.length > 0 
-                ? `${isBangla ? "/bn" : "/en"}/coursedetails/${course.slug || course.id}`
-                : `${isBangla ? "/bn" : "/en"}/coursedetails`;
+              const linkHref = `${isBangla ? "/bn" : "/en"}/coursedetails`;
 
               return (
                 <Link key={course.id} href={linkHref}>

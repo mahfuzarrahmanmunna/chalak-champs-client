@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Search, BookOpen, Clock, AlertCircle, RefreshCw } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import ChalakCourseCard from "@/app/components/ChalakCourses/ChalakCourseCard";
-import api from "@/lib/api";
+import { usePublicCourses } from "@/app/hooks/usePublicCourses";
 
 // ✅ SKELETON COMPONENTS
 const SkeletonPulse = ({ className }: { className?: string }) => (
@@ -122,36 +121,8 @@ export default function CoursesContent() {
     isLoading,
     isFetching, // true during background refetches (not initial load)
     isError,
-    error,
     refetch,
-  } = useQuery({
-    queryKey: ["public-courses"],
-    queryFn: async () => {
-      const response = await api.get("/api/courses");
-      // Handle various possible response shapes defensively
-      const payload = response?.data ?? response;
-
-      if (Array.isArray(payload)) return payload;
-      if (Array.isArray(payload?.data)) return payload.data;
-      if (Array.isArray(payload?.data?.data)) return payload.data.data;
-      if (Array.isArray(payload?.data?.courses)) return payload.data.courses;
-
-      return [];
-    },
-    // Data considered fresh for 2 minutes   no refetch within this window
-    staleTime: 1000 * 60 * 2,
-    // Keep unused data in cache for 10 minutes
-    gcTime: 1000 * 60 * 10,
-    // Re-fetch when user returns to this tab
-    refetchOnWindowFocus: true,
-    // ✅ Show previous data while background-refetching
-    // Prevents skeleton flash when stale data is refreshed
-    placeholderData: (previousData) => previousData,
-    // Retry 2 times on failure before showing error state
-    retry: 2,
-    // Don't retry on 4xx errors (client errors won't fix themselves)
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-  });
+  } = usePublicCourses();
 
   // --- Derived category tabs from course data ---
   const tabs = useMemo(() => {
@@ -160,6 +131,15 @@ export default function CoursesContent() {
     return [...new Set(categories)];
   }, [courses]);
 
+  const searchTokens = useMemo(
+    () =>
+      searchTerm
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((token) => token.length > 0),
+    [searchTerm],
+  );
+
   // --- Client-side filtering (search + category) ---
   const filteredCourses = useMemo(() => {
     if (!Array.isArray(courses)) return []; // Guard against non-array responses
@@ -167,31 +147,23 @@ export default function CoursesContent() {
       const matchesCategory =
         activeCategory === "all" || course.category === activeCategory;
 
-      let matchesSearch = true;
+      if (!matchesCategory) return false;
+      if (searchTokens.length === 0) return true;
 
-      if (searchTerm.trim() !== "") {
-        const searchTokens = searchTerm
-          .toLowerCase()
-          .split(/\s+/)
-          .filter((token) => token.length > 0);
+      const titleEn = (course.title?.en || "").toLowerCase();
+      const titleBn = (course.title?.bn || "").toLowerCase();
+      const courseCategory = (course.category || "").toLowerCase();
+      const instructorName = (course.instructorName || "").toLowerCase();
 
-        const titleEn = (course.title?.en || "").toLowerCase();
-        const titleBn = (course.title?.bn || "").toLowerCase();
-        const courseCategory = (course.category || "").toLowerCase();
-        const instructorName = (course.instructorName || "").toLowerCase();
-
-        matchesSearch = searchTokens.some(
-          (token) =>
-            titleEn.includes(token) ||
-            titleBn.includes(token) ||
-            courseCategory.includes(token) ||
-            instructorName.includes(token),
-        );
-      }
-
-      return matchesCategory && matchesSearch;
+      return searchTokens.some(
+        (token) =>
+          titleEn.includes(token) ||
+          titleBn.includes(token) ||
+          courseCategory.includes(token) ||
+          instructorName.includes(token),
+      );
     });
-  }, [courses, searchTerm, activeCategory]);
+  }, [courses, searchTokens, activeCategory]);
 
   const uiText = {
     heroTitle: isBangla ? "আমাদের কোর্স" : "Our Courses",

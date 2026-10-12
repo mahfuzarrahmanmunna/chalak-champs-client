@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Script from "next/script";
 import Providers from "../providers/Providers";
 
@@ -109,6 +110,9 @@ export default async function LocaleLayout({
   params: Promise<{ lang: string }>;
 }) {
   const { lang } = await params;
+  if (lang !== "bn" && lang !== "en") {
+    notFound();
+  }
 
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.com";

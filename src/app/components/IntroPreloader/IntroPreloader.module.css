@@ -1,0 +1,75 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse at 50% 48%,
+      rgba(255, 143, 202, 0.16),
+      transparent 48%
+    ),
+    #fffafd;
+  animation: intro-exit 780ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.logo {
+  width: min(420px, 82vw);
+  max-width: 82vw;
+  transform-origin: center;
+  animation: logo-reveal 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.logo > div {
+  width: 100%;
+}
+
+.logo svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+@keyframes logo-reveal {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translateY(8px) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes intro-exit {
+  0%,
+  72% {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  100% {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    width: 78vw;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .logo {
+    animation-duration: 80ms;
+  }
+}

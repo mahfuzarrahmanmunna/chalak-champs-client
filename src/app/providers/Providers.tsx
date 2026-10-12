@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 import { AuthProvider } from "../context/AuthContext";
 import { BookingProvider } from "./BookingProvider";
 import MobileBottomNav from "../components/MobileBottomNav/MobileBottomNav";
+import IntroPreloader from "../components/IntroPreloader/IntroPreloader";
 
 import {
   QueryClient,
@@ -132,6 +133,7 @@ const Providers: React.FC<{
 
   return (
     <section className="min-h-screen bg-white">
+      <IntroPreloader />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <LoadingProvider>
