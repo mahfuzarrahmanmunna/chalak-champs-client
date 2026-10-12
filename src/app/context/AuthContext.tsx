@@ -24,6 +24,7 @@ import {
   sendEmailVerificationCode,
   verifyEmailCode,
 } from "../services/authService";
+import { pushTrackingEvent } from "@/lib/trackingSettings";
 
 // --- Types ---
 
@@ -222,6 +223,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       email: cred.user.email || undefined,
       role: "student",
     });
+    pushTrackingEvent("sign_up", { method: "email" });
 
     await refreshAppUser();
 
@@ -283,6 +285,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: emailForFirebase, // Stores dummy email for phone users
         phoneNumber: phoneForDb, // Stores real phone number
         role: "student",
+      });
+      pushTrackingEvent("sign_up", {
+        method: data.method || "email",
       });
 
       await refreshAppUser();

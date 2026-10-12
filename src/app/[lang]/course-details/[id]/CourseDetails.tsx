@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { pushTrackingEvent } from "@/lib/trackingSettings";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -154,6 +155,7 @@ export default function CourseDetailsPage() {
   const [activeFaq, setActiveFaq] = useState<string | null>(null);
 
   const [course, setCourse] = useState<Course | null>(null);
+  const trackedCourseView = useRef<string | null>(null);
 
   // Updated Tabs with Icons
   const [activeTab, setActiveTab] = useState("overview");
@@ -357,6 +359,14 @@ export default function CourseDetailsPage() {
             installment: foundRaw.installment,
           };
           setCourse(transformedCourse);
+          if (trackedCourseView.current !== transformedCourse.id) {
+            const eventSent = pushTrackingEvent(
+              "course_view",
+              { course_id: transformedCourse.id },
+              "analytics",
+            );
+            if (eventSent) trackedCourseView.current = transformedCourse.id;
+          }
         } else {
           router.push("/courses");
         }

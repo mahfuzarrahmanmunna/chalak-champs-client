@@ -18,6 +18,7 @@ import {
   MessageSquare,
   Info,
   Contact,
+  TrainTrackIcon,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -194,6 +195,14 @@ export default function AdminDashboardLayout({
               getLink("/admin-dashboard/content/home/manage-video-gallery"),
           },
           {
+            name: "Image Gallery",
+            href: getLink("/admin-dashboard/content/home/manage-gallery"),
+            icon: Sparkles,
+            current:
+              pathname ===
+              getLink("/admin-dashboard/content/home/manage-gallery"),
+          },
+          {
             name: "CTA Section",
             href: getLink("/admin-dashboard/content/home/manage-cta-section"),
             icon: MessageSquare,
@@ -280,6 +289,12 @@ export default function AdminDashboardLayout({
         current: pathname === getLink("/admin-dashboard/analytics"),
       },
       {
+        name: t.analytics || "Tracking & Marketing",
+        href: getLink("/admin-dashboard/manage-tracking"),
+        icon: TrainTrackIcon,
+        current: pathname === getLink("/admin-dashboard/manage-tracking"),
+      },
+      {
         name: t.payments || "Payments",
         href: getLink("/admin-dashboard/payments"),
         icon: BsCurrencyDollar,
@@ -293,7 +308,7 @@ export default function AdminDashboardLayout({
           pathname.includes(getLink("/admin-dashboard/help")),
         children: [
           {
-            name: t.settings || "Settings",
+            name: "Tracking / Marketing",
             href: getLink("/admin-dashboard/settings"),
             icon: CogIcon,
             current: pathname === getLink("/admin-dashboard/settings"),

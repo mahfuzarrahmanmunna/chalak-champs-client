@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { pushTrackingEvent } from "@/lib/trackingSettings";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -1144,6 +1145,20 @@ export default function CoursesDetails({ slug }: { slug: string }) {
   const overviewRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
   const enrollmentCardRef = useRef<HTMLDivElement>(null);
+  const trackedCourseView = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!data || trackedCourseView.current === slug) return;
+    if (
+      pushTrackingEvent(
+        "course_view",
+        { course_id: slug },
+        "analytics",
+      )
+    ) {
+      trackedCourseView.current = slug;
+    }
+  }, [data, slug]);
 
   const sections = [
     {

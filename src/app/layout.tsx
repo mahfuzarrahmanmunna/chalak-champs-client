@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import { Hind_Siliguri, Open_Sans } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import TrackingAndConsent from "./components/Tracking/TrackingAndConsent";
+import {
+  DEFAULT_TRACKING_SETTINGS,
+  normalizeTrackingSettings,
+  type TrackingSettings,
+} from "@/lib/trackingSettings";
 
 // --- Configure Fonts ---
 const hindSiliguri = Hind_Siliguri({
@@ -101,11 +107,41 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+async function getPublicTrackingSettings(): Promise<TrackingSettings> {
+  const apiBase = (
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "https://apichalakchamps.vercel.app"
+  ).replace(/\/+$/, "");
+  const apiUrl = /\/api$/i.test(apiBase) ? apiBase : `${apiBase}/api`;
+
+  try {
+    const response = await fetch(`${apiUrl}/tracking-settings/public`, {
+      next: { revalidate: 60 },
+    });
+    if (!response.ok) {
+      throw new Error(`Tracking settings request failed (${response.status}).`);
+    }
+    const payload = (await response.json()) as {
+      success?: boolean;
+      settings?: TrackingSettings;
+    };
+    if (!payload.success || !payload.settings) {
+      throw new Error("Tracking settings response was invalid.");
+    }
+    return normalizeTrackingSettings(payload.settings);
+  } catch (error) {
+    console.error("Unable to load public tracking settings; tracking is disabled.", error);
+    return DEFAULT_TRACKING_SETTINGS;
+  }
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const trackingSettings = await getPublicTrackingSettings();
   // --- Root Level Structured Data ---
   const jsonLd = {
     "@context": "https://schema.org",
@@ -127,34 +163,15 @@ export default function RootLayout({
 
   return (
     <html lang="bn" data-theme="light">
-      <head>
-        {/* Google Tag Manager */}
-        <Script id="google-tag-manager" strategy="afterInteractive">
-          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','GTM-NLH37DMN');`}
-        </Script>
-      </head>
       <body
         className={`${hindSiliguri.variable} ${googleSans.variable} font-sans antialiased`}
       >
-        {/* Google Tag Manager (noscript) */}
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-NLH37DMN"
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          ></iframe>
-        </noscript>
-
         <Script
           id="structured-data-root"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <TrackingAndConsent settings={trackingSettings} />
         {children}
       </body>
     </html>

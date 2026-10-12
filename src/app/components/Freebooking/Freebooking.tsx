@@ -1,17 +1,12 @@
 "use client";
 
-declare global {
-  interface Window {
-    dataLayer: any[];
-  }
-}
-
 import React, { useState, useEffect } from "react";
 import { useTheme } from "@/app/context/ThemeContext";
 import { Phone, User, ChevronDown, Search } from "lucide-react";
 import Image from "next/image";
 import { createBooking, verifyOtp } from "@/app/services/freeBookingService";
 import { useBooking } from "@/app/providers/BookingProvider";
+import { hasTrackingConsent, pushTrackingEvent } from "@/lib/trackingSettings";
 
 interface Country {
   name: string;
@@ -72,38 +67,6 @@ const STATIC_COUNTRIES: Country[] = [
   { name: "Argentina", flag: "https://flagcdn.com/ar.svg", code: "+54", cca2: "AR" },
   { name: "Israel", flag: "https://flagcdn.com/il.svg", code: "+972", cca2: "IL" },
 ];
-
-/* ============================================================
-   HELPER FUNCTIONS — SHA-256 hashing + phone/name normalization
-   Never send plain-text PII to dataLayer. Only hashes.
-   ============================================================ */
-
-async function sha256Hex(input: string): Promise<string> {
-  const msgBuffer = new TextEncoder().encode(input);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-function normalizePhone(rawPhone: string, countryCode: string): string {
-  let p = (rawPhone || "").replace(/[\s\-()]/g, "");
-  const cc = (countryCode || "").replace("+", "");
-  if (p.startsWith("+")) {
-    p = p.slice(1);
-  } else if (p.startsWith("00")) {
-    p = p.slice(2);
-  } else if (p.startsWith("0")) {
-    p = cc + p.slice(1);
-  } else if (!p.startsWith(cc)) {
-    p = cc + p;
-  }
-  return p.toLowerCase();
-}
-
-function normalizeName(rawName: string): string {
-  return (rawName || "").toLowerCase().trim();
-}
 
 /* ============================================================
    COMPONENT
@@ -297,40 +260,29 @@ const Freebooking: React.FC = () => {
   /* ============================================================
      STEP 3: Push generate_lead — fires ONLY after OTP success
      Uses sessionStorage guard to prevent duplicate fires.
-     Never sends plain-text PII. Only SHA-256 hashes.
+     Sends only course and form metadata, never contact details.
      ============================================================ */
   const pushGenerateLead = async (data: any) => {
     if (typeof window === "undefined") return;
+    if (!hasTrackingConsent("marketing")) return;
 
     // Guard: fire only once per session
     if (sessionStorage.getItem("kids_eng_lead_fired") === "1") return;
 
-    // Ensure dataLayer exists
-    window.dataLayer = window.dataLayer || [];
-
-    // Normalize + hash PII (never send plain-text)
-    const phoneHash = await sha256Hex(
-      normalizePhone(data.phone, data.country.code),
-    );
-    const childNameHash = await sha256Hex(normalizeName(data.studentName));
-
-    // Push single event — exact field names per spec
-    window.dataLayer.push({
-      event: "generate_lead",
-      new_customer: !!data.newCustomer,
-      form_name: "Kids English Lead Form",
-      course_id: "KIDS-ENG",
-      course_name: "Kids English Course",
-      class_level: data.studentClass,
-      customer: {
-        phone_hash: phoneHash,
-        child_name_hash: childNameHash,
-        country: data.country.cca2,
+    const eventSent = pushTrackingEvent(
+      "generate_lead",
+      {
+        new_customer: !!data.newCustomer,
+        form_name: "Kids English Lead Form",
+        course_id: "KIDS-ENG",
+        course_name: "Kids English Course",
+        class_level: data.studentClass,
       },
-    });
+      "marketing",
+    );
 
     // Lock against re-fire on refresh / duplicate callback
-    sessionStorage.setItem("kids_eng_lead_fired", "1");
+    if (eventSent) sessionStorage.setItem("kids_eng_lead_fired", "1");
   };
 
   /* --- OTP Input Handler (numeric only, max 4) --- */
