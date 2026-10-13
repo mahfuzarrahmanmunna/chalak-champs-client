@@ -71,7 +71,7 @@ function UsersPageContent() {
       if (filterPhoneVerified !== "all")
         params.append("isPhoneVerified", filterPhoneVerified);
 
-      const response = await api.get(`/admin/users?${params}`);
+      const response = await api.get(`/api/admin/users?${params}`);
 
       if (response.data.users) {
         setUsers(response.data.users);
@@ -108,7 +108,7 @@ function UsersPageContent() {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      await api.delete(`/admin/users/${userId}`);
+      await api.delete(`/api/admin/users/${userId}`);
       setUsers(users.filter((user) => user._id !== userId));
       setShowDeleteModal(false);
     } catch (error) {
@@ -119,7 +119,7 @@ function UsersPageContent() {
   const handleBulkDelete = async () => {
     if (selectedUsers.length === 0) return;
     try {
-      await api.delete("/admin/users/bulk", {
+      await api.delete("/api/admin/users/bulk", {
         data: { userIds: selectedUsers },
       });
       setUsers(users.filter((user) => !selectedUsers.includes(user._id)));
@@ -138,7 +138,7 @@ function UsersPageContent() {
   const handleUpdateUser = async () => {
     try {
       setSavingUser(true);
-      const res = await api.put(`/admin/users/${editFormData._id}`, {
+      const res = await api.put(`/api/admin/users/${editFormData._id}`, {
         firstName: editFormData.firstName,
         lastName: editFormData.lastName,
         email: editFormData.email,
