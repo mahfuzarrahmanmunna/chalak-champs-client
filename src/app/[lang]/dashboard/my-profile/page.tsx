@@ -117,7 +117,7 @@ export default function MyProfilePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://apichalakchamps.vercel.app";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
   // --- Profile Data State ---
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -130,7 +130,7 @@ export default function MyProfilePage() {
     uid: "",
   });
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-console.log(profileData)
+// console.log(profileData)
   // --- Edit State ---
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -182,7 +182,7 @@ console.log(profileData)
         email: appUser?.email || "",
         phoneNumber: appUser?.phoneNumber || "",
         role: appUser?.role || "student",
-        photoURL: appUser?.photoURL || "",
+        photoURL: appUser?.profileImageUrl || appUser?.photoURL || "",
         uid: "",
       });
       setEditForm((prev) => ({
@@ -214,7 +214,12 @@ console.log(profileData)
           email: user.email || currentUser?.email || "",
           phoneNumber: user.phoneNumber || currentUser?.phoneNumber || "",
           role: user.role || "student",
-          photoURL: user.photoURL || user.avatar || currentUser?.photoURL || "",
+          photoURL:
+            user.profileImageUrl ||
+            user.photoURL ||
+            user.avatar ||
+            currentUser?.photoURL ||
+            "",
           uid: user.uid || currentUser.uid,
           createdAt: user.createdAt,
         };
@@ -231,7 +236,11 @@ console.log(profileData)
           email: appUser?.email || currentUser?.email || "",
           phoneNumber: appUser?.phoneNumber || currentUser?.phoneNumber || "",
           role: appUser?.role || "student",
-          photoURL: appUser?.photoURL || currentUser?.photoURL || "",
+          photoURL:
+            appUser?.profileImageUrl ||
+            appUser?.photoURL ||
+            currentUser?.photoURL ||
+            "",
           uid: currentUser.uid,
         };
         setProfileData(fallbackData);
@@ -248,7 +257,11 @@ console.log(profileData)
         email: appUser?.email || currentUser?.email || "",
         phoneNumber: appUser?.phoneNumber || currentUser?.phoneNumber || "",
         role: appUser?.role || "student",
-        photoURL: appUser?.photoURL || currentUser?.photoURL || "",
+        photoURL:
+          appUser?.profileImageUrl ||
+          appUser?.photoURL ||
+          currentUser?.photoURL ||
+          "",
         uid: currentUser.uid,
       };
       setProfileData(fallbackData);
@@ -261,9 +274,9 @@ console.log(profileData)
       setIsLoadingProfile(false);
     }
   }, [currentUser, appUser, BACKEND_URL]);
-console.log(
-  currentUser
-)
+// console.log(
+//   currentUser
+// )
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);

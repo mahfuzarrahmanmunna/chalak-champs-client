@@ -4,7 +4,7 @@ import app from "./firebase"; // Ensure this path points to your initialized fir
 
 // Use environment variable, fallback to localhost for development
 const rawApiBaseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://apichalakchamps.vercel.app";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
 // Normalize the API prefix so origin-only environment values reach backend routes.
 const normalizedApiBaseUrl = rawApiBaseUrl.replace(/\/+$/, "");
@@ -38,7 +38,7 @@ api.interceptors.request.use(
         token = localStorage.getItem("token");
       }
 
-      if (token) {
+      if (token && !config.headers.Authorization) {
         config.headers["Authorization"] = `Bearer ${token}`;
       }
     } catch (error) {
@@ -57,7 +57,11 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       console.error("Unauthorized - Redirecting to login...");
       if (typeof window !== "undefined") {
-        window.location.href = "/signin";
+        const currentPath = window.location.pathname;
+        if (!currentPath.endsWith("/signin")) {
+          const locale = currentPath.split("/")[1] === "bn" ? "bn" : "en";
+          window.location.href = `/${locale}/signin`;
+        }
       }
     }
     return Promise.reject(error);

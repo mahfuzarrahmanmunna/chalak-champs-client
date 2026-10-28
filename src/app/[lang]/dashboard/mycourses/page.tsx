@@ -8,6 +8,7 @@ import { useAuth } from "@/app/hooks/useAuth";
 import { useLanguage } from "@/app/context/LanguageContext";
 import gsap from "gsap";
 import Button from "@/app/ui/button/Button";
+import { normalizeImageUrl } from "@/lib/normalizeImageUrl";
 
 import {
   BookOpen,
@@ -259,7 +260,7 @@ export default function MyCoursesPage() {
   const [sortBy, setSortBy] = useState<SortOption>("recent");
   const [showSortMenu, setShowSortMenu] = useState(false);
   const BACKEND_URL =
-    process.env.NEXT_PUBLIC_API_URL || "https://apichalakchamps.vercel.app";
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   // ===================== FETCH COURSES =====================
   useEffect(() => {
@@ -1072,7 +1073,9 @@ export default function MyCoursesPage() {
               <BookOpen className="h-3.5 w-3.5" />
             );
             const courseImage =
-              course.image || course.courseImage || "/signup.webp";
+              normalizeImageUrl(
+                course.image || course.courseImage || "/signup.webp",
+              );
             const progress = course.progress || 0;
             const isNotStarted = progress === 0;
             const isComplete = progress >= 100;
@@ -1315,7 +1318,9 @@ export default function MyCoursesPage() {
               <BookOpen className="h-3.5 w-3.5" />
             );
             const courseImage =
-              course.image || course.courseImage || "/signup.webp";
+              normalizeImageUrl(
+                course.image || course.courseImage || "/signup.webp",
+              );
             const progress = course.progress || 0;
             const isNotStarted = progress === 0;
             const isComplete = progress >= 100;

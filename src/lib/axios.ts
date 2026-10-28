@@ -3,7 +3,7 @@ import axios from "axios";
 import { getAuth } from "firebase/auth";
 import app from "./firebase";
 
-const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://apichalakchamps.vercel.app";
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
 const axiosInstance = axios.create({
   baseURL,

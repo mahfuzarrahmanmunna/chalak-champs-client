@@ -22,7 +22,7 @@ import {
   Inbox,
 } from "lucide-react";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://apichalakchamps.vercel.app";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Helper to fix missing https:// in image URLs
 const formatImageUrl = (url?: string) => {

@@ -107,9 +107,15 @@ export default function AdminDashboardLayout({
         children: [
           {
             name: "All Users",
-            href: getLink("/admin-dashboard/manage-users"),
+            href: getLink("/admin-dashboard/users/manage-users"),
             icon: FaUserGroup,
-            current: pathname === getLink("/admin-dashboard/manage-users"),
+            current: pathname === getLink("/admin-dashboard/users/manage-users"),
+          },
+          {
+            name: "Teachers",
+            href: getLink("/admin-dashboard/users/teachers"),
+            icon: FaUserGroup,
+            current: pathname === getLink("/admin-dashboard/users/teachers"),
           },
         ],
       },
@@ -139,6 +145,13 @@ export default function AdminDashboardLayout({
               pathname === getLink("/admin-dashboard/courses/manage-lessons"),
           },
         ],
+      },
+      {
+        name: "Student Admission",
+        href: getLink("/admin-dashboard/student-admission"),
+        icon: FileText,
+        current:
+          pathname === getLink("/admin-dashboard/student-admission"),
       },
       {
         name: "Products",

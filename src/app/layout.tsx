@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 
   // CORE SEO
-  title: "চালক Champs | Every child is a champ hobe",
+  title: "চালক Champs | Every child is a champ ",
   description:
     "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
 
@@ -85,7 +85,7 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: "Chalak Champs",
     locale: "bn_BD",
-    title: "চালক Champs | Every child is a champ hobe",
+    title: "চালক Champs | Every child is a champ ",
     description:
       "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
     images: [
@@ -100,7 +100,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "চালক Champs | Every child is a champ hobe",
+    title: "চালক Champs | Every child is a champ ",
     description:
       "আমরা ৩-১৫ বছর বয়সী শিশুদের জন্য আনন্দময় পরিবেশে ভাষা, গণিত, জীবন দক্ষতাসহ সার্বিক বিকাশে কাজ করি।",
     images: [`${siteUrl}/homecover.jpg`],
@@ -111,7 +111,7 @@ async function getPublicTrackingSettings(): Promise<TrackingSettings> {
   const apiBase = (
     process.env.NEXT_PUBLIC_API_BASE_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
-    "https://apichalakchamps.vercel.app"
+    "http://localhost:5000"
   ).replace(/\/+$/, "");
   const apiUrl = /\/api$/i.test(apiBase) ? apiBase : `${apiBase}/api`;
 

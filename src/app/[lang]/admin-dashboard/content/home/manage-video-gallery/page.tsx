@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import axios from "axios";
 import {
   Save,
   Loader2,
@@ -43,6 +44,15 @@ const extractYoutubeId = (input: string): string => {
   return "";
 };
 
+const normalizeThumbnailUrl = (thumbnail: string): string => {
+  const trimmed = thumbnail.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+};
+
 export default function ManageVideoGallery() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -67,15 +77,18 @@ export default function ManageVideoGallery() {
         if (res.data.success && res.data.data) {
           const data = res.data.data;
           setSectionTitle({ en: data.title || "", bn: data.subtitle || "" });
-          const mappedVideos = (data.videos || []).map((v: any, index: number) => ({
-            _tempId: `vid-${Date.now()}-${index}`,
-            youtubeId: v.youtubeId,
-            rawInput: v.youtubeId,
-            thumbnail: v.thumbnail || "",
-            file: null,
-            preview: v.thumbnail || null,
-            isActive: v.isActive !== false,
-          }));
+          const mappedVideos = (data.videos || []).map((v: any, index: number) => {
+            const thumbnail = normalizeThumbnailUrl(v.thumbnail || "");
+            return {
+              _tempId: `vid-${Date.now()}-${index}`,
+              youtubeId: v.youtubeId,
+              rawInput: v.youtubeId,
+              thumbnail: v.thumbnail || "",
+              file: null,
+              preview: thumbnail || null,
+              isActive: v.isActive !== false,
+            };
+          });
           setVideos(mappedVideos);
         }
       } catch (err) {
@@ -230,7 +243,12 @@ export default function ManageVideoGallery() {
         alert("Failed to save video gallery.");
       }
     } catch (error) {
-      alert("Server error while saving.");
+      console.error("Failed to save video gallery", error);
+      const message =
+        axios.isAxiosError<{ message?: string }>(error)
+          ? error.response?.data?.message || error.message
+          : "Server error while saving.";
+      alert(message);
     } finally {
       setSaving(false);
     }

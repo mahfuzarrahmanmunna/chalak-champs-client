@@ -14,6 +14,11 @@ import {
   Activity,
   Eye,
   EyeOff,
+  ClipboardCheck,
+  Clock3,
+  SearchCheck,
+  XCircle,
+  Layers3,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -51,6 +56,27 @@ interface DashboardStats {
   totalLessons: number;
   newUsersThisMonth: number;
   activeCourses: number;
+}
+
+interface AdmissionDashboardData {
+  stats: {
+    total: number;
+    submitted: number;
+    underReview: number;
+    additionalInformation: number;
+    approved: number;
+    rejected: number;
+    enrolled: number;
+  };
+  recentApplications: {
+    _id: string;
+    applicationNumber: string;
+    student: { fullName: string };
+    courseTitle: string;
+    status: string;
+    createdAt: string;
+  }[];
+  courseStats: { _id: string; count: number }[];
 }
 
 // --- PROFESSIONAL SKELETON LOADING UI ---
@@ -178,6 +204,20 @@ export default function AdminDashboardPage() {
   >([]);
   // ✅ FIXED: Updated type to match actual database response
   const [recentCourses, setRecentCourses] = useState<any[]>([]);
+  const [admissionData, setAdmissionData] = useState<AdmissionDashboardData>({
+    stats: {
+      total: 0,
+      submitted: 0,
+      underReview: 0,
+      additionalInformation: 0,
+      approved: 0,
+      rejected: 0,
+      enrolled: 0,
+    },
+    recentApplications: [],
+    courseStats: [],
+  });
+  const [admissionError, setAdmissionError] = useState("");
 
   async function fetchDashboardData() {
     try {
@@ -193,6 +233,29 @@ export default function AdminDashboardPage() {
       // ✅ FIXED: Changed "courses" to "data" to match the new API response
       if (coursesResponse.data.success && coursesResponse.data.data) {
         setRecentCourses(coursesResponse.data.data);
+      }
+
+      try {
+        const admissionsResponse = await api.get(
+          "/api/admin/admissions/dashboard",
+        );
+        if (!admissionsResponse.data.success) {
+          throw new Error(
+            admissionsResponse.data.message ||
+              "Admission dashboard request failed",
+          );
+        }
+        setAdmissionData({
+          stats: admissionsResponse.data.stats,
+          recentApplications: admissionsResponse.data.recentApplications,
+          courseStats: admissionsResponse.data.courseStats,
+        });
+        setAdmissionError("");
+      } catch (error) {
+        console.error("Error fetching admission dashboard data:", error);
+        setAdmissionError(
+          "Admission data could not be loaded. Please try again later.",
+        );
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -249,6 +312,54 @@ export default function AdminDashboardPage() {
       bgColor: "bg-orange-100",
     },
   ];
+
+  const admissionCards = [
+    {
+      name: "Total applications",
+      value: admissionData.stats.total,
+      change: "All time",
+      icon: ClipboardCheck,
+      color: "text-[#214187]",
+      bgColor: "bg-[#214187]/10",
+    },
+    {
+      name: "Pending",
+      value: admissionData.stats.submitted,
+      change: "Submitted",
+      icon: Clock3,
+      color: "text-[#F3056D]",
+      bgColor: "bg-[#F3056D]/10",
+    },
+    {
+      name: "Under review",
+      value: admissionData.stats.underReview,
+      change: "In progress",
+      icon: SearchCheck,
+      color: "text-amber-600",
+      bgColor: "bg-amber-100",
+    },
+    {
+      name: "Approved",
+      value: admissionData.stats.approved,
+      change: "Approved",
+      icon: UserCheck,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-100",
+    },
+    {
+      name: "Rejected",
+      value: admissionData.stats.rejected,
+      change: "Rejected",
+      icon: XCircle,
+      color: "text-rose-600",
+      bgColor: "bg-rose-100",
+    },
+  ];
+
+  const maxCourseApplications = Math.max(
+    ...admissionData.courseStats.map((course) => course.count),
+    1,
+  );
 
   // --- RENDER SKELETON WHILE LOADING ---
   if (isLoading) {
@@ -320,6 +431,222 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      <div
+        className="rounded-xl border bg-card p-6 shadow-sm"
+        style={{
+          backgroundColor: "var(--color-card)",
+          borderColor: "var(--color-border)",
+        }}
+      >
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#F3056D]">
+              Admission management
+            </p>
+            <h2
+              className="mt-2 text-xl font-bold"
+              style={{ color: "var(--color-foreground)" }}
+            >
+              Admissions overview
+            </h2>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <Layers3 className="h-4 w-4 text-[#214187]" />
+            <span>Application pipeline</span>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          {admissionCards.map((card) => (
+            <div
+              key={card.name}
+              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-300">
+                  {card.name}
+                </p>
+                <div className={`rounded-lg p-2 ${card.bgColor}`}>
+                  <card.icon className={`h-4 w-4 ${card.color}`} />
+                </div>
+              </div>
+              <div className="mt-5 flex items-end justify-between">
+                <span className="text-2xl font-black text-slate-900 dark:text-white">
+                  {card.value}
+                </span>
+                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  {card.change}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6 grid gap-6 xl:grid-cols-[1.7fr_1fr]">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800">
+              <div>
+                <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+                  Recently submitted
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Latest application activity
+                </p>
+              </div>
+              <Link
+                href={`/${lang}/admin-dashboard/student-admission`}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[#214187] dark:text-[#7eb7ff]"
+              >
+                New application <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead className="bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold">Student</th>
+                    <th className="px-4 py-3 font-semibold">Course</th>
+                    <th className="px-4 py-3 font-semibold">Status</th>
+                    <th className="px-4 py-3 font-semibold">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {admissionData.recentApplications.map((entry) => (
+                    <tr
+                      key={entry._id}
+                      className="border-t border-slate-200 dark:border-slate-700"
+                    >
+                      <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-100">
+                        {entry.student.fullName}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                        {entry.courseTitle}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                            entry.status === "Approved"
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+                              : entry.status === "Under Review"
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
+                                : entry.status === "Rejected"
+                                  ? "bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300"
+                                  : "bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300"
+                          }`}
+                        >
+                          {entry.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                        {new Date(entry.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                  {!admissionError &&
+                    admissionData.recentApplications.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
+                        >
+                          No admission applications yet.
+                        </td>
+                      </tr>
+                    )}
+                </tbody>
+              </table>
+              {admissionError && (
+                <p role="alert" className="border-t border-slate-200 px-4 py-3 text-sm text-rose-600 dark:border-slate-700 dark:text-rose-300">
+                  {admissionError}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+              Recent admission activity
+            </h3>
+            <div className="mt-4 space-y-3">
+              {admissionData.recentApplications.map((application) => (
+                <div
+                  key={`activity-${application._id}`}
+                  className="flex gap-3 rounded-xl bg-white p-3 shadow-sm dark:bg-slate-900"
+                >
+                  <span className="mt-1.5 h-2.5 w-2.5 rounded-full bg-[#F3056D]" />
+                  <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    {application.applicationNumber} submitted by{" "}
+                    {application.student.fullName} for {application.courseTitle}.
+                  </p>
+                </div>
+              ))}
+              {!admissionError &&
+                admissionData.recentApplications.length === 0 && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    New application activity will appear here.
+                  </p>
+                )}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+                Applications by course
+              </h3>
+              <TrendingUp className="h-4 w-4 text-[#214187]" />
+            </div>
+
+            <div className="space-y-5">
+              {admissionData.courseStats.map((item) => (
+                <div key={item._id}>
+                  <div className="mb-2 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+                    <span className="font-medium">{item._id || "Other"}</span>
+                    <span>{item.count} apps</span>
+                  </div>
+                  <div className="h-2.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                    <div
+                      className="h-full rounded-full bg-linear-to-r from-[#214187] via-[#214187] to-[#F3056D]"
+                      style={{
+                        width: `${Math.max(
+                          8,
+                          Math.round(
+                            (item.count / maxCourseApplications) * 100,
+                          ),
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+              {!admissionError && admissionData.courseStats.length === 0 && (
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Application counts will appear when students apply.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+              Quick actions
+            </h3>
+            <div className="mt-4 space-y-3">
+              <Link
+                href={`/${lang}/admin-dashboard/student-admission`}
+                className="flex items-center justify-between rounded-xl bg-white p-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-700"
+              >
+                <span>Create student application</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-7">

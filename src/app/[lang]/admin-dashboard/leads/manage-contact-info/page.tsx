@@ -66,7 +66,7 @@ const AdminContactsPage = () => {
   });
 
   const BACKEND_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "https://apichalakchamps.vercel.app";
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
   // Fetch Contacts
   const fetchContacts = async () => {

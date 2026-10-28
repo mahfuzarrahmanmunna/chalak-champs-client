@@ -35,6 +35,7 @@ interface AppUser {
   email?: string;
   phoneNumber?: string;
   photoURL?: string;
+  profileImageUrl?: string;
   role: "student" | "teacher" | "admin";
 }
 
