@@ -6,6 +6,7 @@ import Link from "next/link";
 import api from "@/lib/axios";
 import { useTheme } from "@/app/context/ThemeContext";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { useAuth } from "@/app/context/AuthContext";
 import {
   ArrowLeftIcon, PlusIcon, TrashIcon, XMarkIcon, CheckIcon,
   ArrowPathIcon, UserCircleIcon, PhotoIcon,
@@ -124,7 +125,7 @@ function ProfilePhotoUploader({
       setError(e?.response?.data?.message || e.message || "Upload failed");
     } finally {
       setUploading(false);
-      e.target.value = ""; // reset so the same file can be re-picked
+      e.target.value = "";
       setTimeout(() => setProgress(0), 1500);
     }
   };
@@ -140,7 +141,6 @@ function ProfilePhotoUploader({
         Profile Photo
       </label>
       <div className="flex items-start gap-4">
-        {/* Preview */}
         <div
           className="w-24 h-24 rounded-xl border-2 border-dashed overflow-hidden flex-shrink-0 flex items-center justify-center"
           style={{ borderColor: colors.border, backgroundColor: colors.background }}
@@ -154,7 +154,6 @@ function ProfilePhotoUploader({
         </div>
 
         <div className="flex-1 space-y-2">
-          {/* File input — styled as a button */}
           <label
             className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed cursor-pointer text-sm font-medium transition-colors"
             style={{
@@ -182,7 +181,6 @@ function ProfilePhotoUploader({
             />
           </label>
 
-          {/* Progress bar */}
           {uploading && (
             <div
               className="w-full h-1.5 rounded-full overflow-hidden"
@@ -195,14 +193,12 @@ function ProfilePhotoUploader({
             </div>
           )}
 
-          {/* Error */}
           {error && (
             <p className="text-xs" style={{ color: colors.destructive }}>
               {error}
             </p>
           )}
 
-          {/* Success + remove */}
           {photoUrl && !uploading && (
             <div className="flex items-center gap-3">
               <p
@@ -226,7 +222,6 @@ function ProfilePhotoUploader({
             JPG, PNG, WEBP, or GIF. Max 5MB. Square images work best.
           </p>
 
-          {/* Optional: also allow pasting a URL manually */}
           <details className="text-xs">
             <summary className="cursor-pointer" style={{ color: colors.muted }}>
               Or paste a URL manually
@@ -257,6 +252,8 @@ export default function TeacherForm({ mode }: { mode: "new" | "edit" }) {
   const routeParams = useParams();
   const { colors } = useTheme();
   const { t } = useLanguage();
+  // ✅ NEW: wait for Firebase auth to be ready before loading the profile
+  const { currentUser, loading: authLoading } = useAuth();
 
   // Get lang from URL — needed for internal redirects (admin routes live under [lang])
   const lang = (routeParams?.lang as string) || "bn";
@@ -296,7 +293,20 @@ export default function TeacherForm({ mode }: { mode: "new" | "edit" }) {
     }
   }, [mode, profileId, userName]);
 
-  useEffect(() => { load(); }, [load]);
+  // ✅ NEW: Wait for Firebase auth to initialize before loading the profile
+  // This prevents "Unauthorized: No token provided" on direct page refresh
+  useEffect(() => {
+    if (authLoading) return; // Wait for Firebase to restore the session
+
+    if (mode === "edit" && !currentUser) {
+      setMsg({ type: "err", text: "Please log in to view this profile." });
+      setLoading(false);
+      return;
+    }
+
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, currentUser, mode]);
 
   // ── helpers ──────────────────────────────────────────────────
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -374,7 +384,8 @@ export default function TeacherForm({ mode }: { mode: "new" | "edit" }) {
     }
   };
 
-  if (loading) return (
+  // ✅ Show spinner while either auth OR profile data is loading
+  if (authLoading || loading) return (
     <div className="flex justify-center items-center h-64" style={{ backgroundColor: colors.background }}>
       <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: colors.primary }} />
     </div>
@@ -483,7 +494,7 @@ export default function TeacherForm({ mode }: { mode: "new" | "edit" }) {
                   onChange={(e) => setField("professionalTitle", e.target.value)} />
               </div>
 
-              {/* ✅ NEW: Profile Photo Uploader (replaces the URL text input) */}
+              {/* ✅ Profile Photo Uploader (replaces the URL text input) */}
               <div className="md:col-span-2">
                 <ProfilePhotoUploader
                   photoUrl={form.profilePhotoUrl}

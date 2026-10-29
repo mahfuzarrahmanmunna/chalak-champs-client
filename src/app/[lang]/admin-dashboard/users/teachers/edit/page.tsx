@@ -1,3 +1,5 @@
+// app/[lang]/admin-dashboard/users/teachers/edit/page.tsx
+
 "use client";
 
 import { Suspense } from "react";
