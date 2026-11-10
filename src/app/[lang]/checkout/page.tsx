@@ -163,7 +163,7 @@ function CheckoutPageContent() {
 
   // =================== CONFIG ===================
   const BACKEND_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    process.env.NEXT_PUBLIC_API_URL || "https://chalakchampsbackend.vercel.app";
   const isPaymentInProgress = paymentStatus === "processing";
 
   const getLocalizedText = (value: any): string => {

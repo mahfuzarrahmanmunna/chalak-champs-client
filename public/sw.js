@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "chalakchamps-cache-";
 // ✅ BUMP VERSION to instantly wipe old stale caches on user's device
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 
 // Install: pre-cache PWA shell assets
@@ -48,6 +48,17 @@ self.addEventListener("fetch", (event) => {
 
   // Browser extensions and other non-web schemes cannot be stored in Cache.
   if (url.protocol !== "http:" && url.protocol !== "https:") return;
+
+  // 0. Next.js data (RSC) requests and non-hashed /_next/ files must never be
+  //    served from cache, or users see stale pages after a deploy.
+  if (
+    url.searchParams.has("_rsc") ||
+    request.headers.get("RSC") === "1" ||
+    (url.pathname.startsWith("/_next/") &&
+      !url.pathname.startsWith("/_next/static/"))
+  ) {
+    return;
+  }
 
   // 1. Non-GET requests: ALWAYS pass through to network
   if (request.method !== "GET") {

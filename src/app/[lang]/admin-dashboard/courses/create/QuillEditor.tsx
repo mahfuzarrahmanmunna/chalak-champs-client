@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import "quill/dist/quill.snow.css";
+// @ts-expect-error quill-better-table does not provide declarations for its stylesheet.
 import "quill-better-table/dist/quill-better-table.css";
 import type { Quill as QuillType } from "quill";
 

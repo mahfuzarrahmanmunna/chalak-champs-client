@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Script from "next/script";
 import Providers from "../providers/Providers";
+import { fetchStatic } from "@/lib/staticApi";
 
 // NOTE: If you are using Next.js 15, params is a Promise.
 // You will need to use: const { lang } = await params;
@@ -98,6 +99,9 @@ export async function generateMetadata({
   };
 }
 
+// Every page under /[lang] is server-rendered per request (live API data).
+export const dynamic = "force-dynamic";
+
 export async function generateStaticParams() {
   return [{ lang: "en" }, { lang: "bn" }];
 }
@@ -116,6 +120,21 @@ export default async function LocaleLayout({
 
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://chalakchamps.com";
+
+  // Hero content fetched live on every request.
+  const heroJson = await fetchStatic<{ success?: boolean; data?: any }>(
+    `/api/hero/${lang}`,
+  );
+  // Base64 images (e.g. the unused kingImage, ~500 KB) are left out so the HTML
+  // stays small; the client refresh still loads the full record.
+  const initialHeroData =
+    heroJson?.success && heroJson.data
+      ? Object.fromEntries(
+          Object.entries(heroJson.data).filter(
+            ([, v]) => !(typeof v === "string" && v.startsWith("data:")),
+          ),
+        )
+      : null;
 
   // --- Dynamic Structured Data (JSON-LD) ---
   const jsonLd = {
@@ -159,7 +178,9 @@ export default async function LocaleLayout({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Providers initialLang={lang}>{children}</Providers>
+      <Providers initialLang={lang} initialHeroData={initialHeroData}>
+        {children}
+      </Providers>
     </>
   );
 }

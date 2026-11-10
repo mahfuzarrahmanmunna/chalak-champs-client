@@ -107,17 +107,22 @@ export const metadata: Metadata = {
   },
 };
 
+// Render every route per request so live API data (tracking settings, hero,
+// courses, ...) is always current on Cloudflare Workers.
+export const dynamic = "force-dynamic";
+
 async function getPublicTrackingSettings(): Promise<TrackingSettings> {
   const apiBase = (
     process.env.NEXT_PUBLIC_API_BASE_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:5000"
+    "https://chalakchampsbackend.vercel.app"
   ).replace(/\/+$/, "");
   const apiUrl = /\/api$/i.test(apiBase) ? apiBase : `${apiBase}/api`;
 
   try {
+    // Fetched live on every request.
     const response = await fetch(`${apiUrl}/tracking-settings/public`, {
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!response.ok) {
       throw new Error(`Tracking settings request failed (${response.status}).`);

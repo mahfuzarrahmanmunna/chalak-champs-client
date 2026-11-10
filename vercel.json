@@ -1,7 +1,6 @@
 {
-  "buildCommand": "pnpm run build",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "env": {
-    "NODE_OPTIONS": "--max_old_space_size=4096"
-  }
+  "buildCommand": "npm run build",
+  "installCommand": "npm install"
 }

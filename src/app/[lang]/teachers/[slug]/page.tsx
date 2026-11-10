@@ -1,11 +1,12 @@
 import { Metadata } from "next";
 import TeacherDetailClient from "./TeacherDetailClient";
+import { fetchStatic } from "@/lib/staticApi";
 
+// Server-rendered on every request so data is always live.
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 async function getTeacherForSEO(slug: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://chalakchampsbackend.vercel.app";
   try {
     const res = await fetch(`${apiUrl}/api/teachers/${slug}`, { cache: "no-store" });
     if (!res.ok) return null;

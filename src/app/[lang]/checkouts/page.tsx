@@ -131,7 +131,7 @@ function CheckoutPageContent() {
 
   // =================== CONFIG ===================
   const BACKEND_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    process.env.NEXT_PUBLIC_API_URL || "https://chalakchampsbackend.vercel.app";
 
   // ✅ HELPER: Extract string from object if API returns { en: "...", bn: "..." }
   const getLocalizedText = (value: any): string => {

@@ -202,7 +202,7 @@ export default function ContactUsClient() {
       try {
         // Replace with your actual backend URL if not using a proxy
         const BACKEND_URL =
-          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+          process.env.NEXT_PUBLIC_API_BASE_URL || "https://chalakchampsbackend.vercel.app";
 
         const response = await fetch(`${BACKEND_URL}/api/contact`, {
           method: "POST",

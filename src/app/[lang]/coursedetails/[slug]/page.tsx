@@ -1,17 +1,18 @@
 import { Metadata } from "next";
 import CoursesDetails from "./copmonents/CoursesDetails";
+import { fetchStatic } from "@/lib/staticApi";
 
 type PageProps = {
   params: Promise<{ lang: string; slug: string }>;
 };
 
+// Server-rendered on every request so data is always live.
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 async function getCourseDataForSEO(slug: string) {
   const apiUrl =
     process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "http://localhost:5000";
+    "https://chalakchampsbackend.vercel.app";
 
   try {
     const res = await fetch(`${apiUrl}/api/courses/slug/${slug}`, {
@@ -76,5 +77,10 @@ export async function generateMetadata({
 export default async function Page({ params }: PageProps) {
   const { slug } = await params;
 
-  return <CoursesDetails slug={slug} />;
+  // Fetched live on every request.
+  const initialResponse = await fetchStatic<any>(
+    `/api/courses/slug/${encodeURIComponent(slug)}`,
+  );
+
+  return <CoursesDetails slug={slug} initialResponse={initialResponse} />;
 }

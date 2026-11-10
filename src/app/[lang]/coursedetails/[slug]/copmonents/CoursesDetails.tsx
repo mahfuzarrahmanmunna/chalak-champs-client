@@ -30,6 +30,8 @@ import {
   Linkedin,
   Youtube,
   UserCircle,
+  Play,
+  PlayCircle,
 } from "lucide-react";
 import { FaSadCry } from "react-icons/fa";
 
@@ -293,33 +295,95 @@ const flattenCourseData = (
 /* ═══════════════════════════════════════════════════
    ✅ NEW: YouTube Embed Component
    ═══════════════════════════════════════════════════ */
-function YouTubeEmbed({ url }: { url: string }) {
-  const getYouTubeId = (url: string): string | null => {
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([^&?\/\s]+)/,
-      /youtube\.com\/watch\?.*v=([^&]+)/,
-    ];
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match && match[1]) return match[1];
-    }
-    return null;
-  };
+function getYouTubeId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|youtube\.com\/shorts\/)([^&?\/\s]+)/,
+    /youtube\.com\/watch\?.*v=([^&]+)/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) return match[1];
+  }
+  return null;
+}
+
+function YouTubeEmbed({ url, title, isBangla }: { url: string; title?: string; isBangla?: boolean }) {
+  const [playing, setPlaying] = useState(false);
+  const [thumbSrc, setThumbSrc] = useState<string | null>(null);
 
   const videoId = getYouTubeId(url);
   if (!videoId) return null;
 
+  const thumbnail = thumbSrc ?? `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+
   return (
-    <div className="w-full rounded-2xl overflow-hidden shadow-lg border-2 border-gray-100 bg-black">
-      <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-        <iframe
-          className="absolute top-0 left-0 w-full h-full"
-          src={`https://www.youtube.com/embed/${videoId}`}
-          title="Course Preview Video"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          frameBorder="0"
-        />
+    <div className="relative rounded-[28px] p-[3px] bg-gradient-to-br from-[#F3056D] via-[#a63bb0] to-[#214187] shadow-xl shadow-[#214187]/10">
+      <div className="rounded-[25px] bg-white overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3 px-4 md:px-5 py-3 border-b border-gray-100">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="flex-shrink-0 w-9 h-9 rounded-xl bg-[#F3056D]/10 text-[#F3056D] flex items-center justify-center">
+              <PlayCircle className="w-5 h-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm md:text-base font-bold text-gray-900 leading-tight">
+                {isBangla ? "কোর্স প্রিভিউ" : "Course Preview"}
+              </p>
+              {title && <p className="text-xs md:text-sm text-gray-500 truncate">{title}</p>}
+            </div>
+          </div>
+          <span className="flex-shrink-0 inline-flex items-center gap-1.5 text-[11px] md:text-xs font-semibold text-red-600 bg-red-50 px-2.5 py-1 rounded-full">
+            <Youtube className="w-3.5 h-3.5" /> YouTube
+          </span>
+        </div>
+
+        {/* Player */}
+        <div className="relative w-full aspect-video bg-black">
+          {playing ? (
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`}
+              title={title || "Course Preview Video"}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setPlaying(true)}
+              aria-label={isBangla ? "ভিডিও চালান" : "Play video"}
+              className="group absolute inset-0 w-full h-full cursor-pointer"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={thumbnail}
+                alt={title || "Course preview"}
+                loading="lazy"
+                onLoad={(e) => {
+                  // maxresdefault returns a 120px placeholder when missing
+                  if (!thumbSrc && (e.currentTarget as HTMLImageElement).naturalWidth <= 120) {
+                    setThumbSrc(`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`);
+                  }
+                }}
+                onError={() => setThumbSrc(`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`)}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/20" />
+              <span className="absolute inset-0 flex items-center justify-center">
+                <span className="relative flex items-center justify-center">
+                  <span className="absolute w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#F3056D]/40 animate-ping" />
+                  <span className="relative w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#F3056D] text-white flex items-center justify-center shadow-2xl transition-transform duration-300 group-hover:scale-110">
+                    <Play className="w-7 h-7 md:w-9 md:h-9 ml-1" fill="currentColor" />
+                  </span>
+                </span>
+              </span>
+              <span className="absolute bottom-3 left-4 right-4 text-left text-white text-sm md:text-base font-semibold drop-shadow">
+                {isBangla ? "ভিডিওটি দেখতে ক্লিক করুন" : "Click to watch the preview"}
+              </span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -393,6 +457,7 @@ function CourseDetailSkeleton() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:py-12">
         <div className="flex flex-col lg:flex-row gap-10">
           <div className="w-full lg:w-[65%] order-2 lg:order-1 space-y-10">
+            <Sk className="w-full aspect-video rounded-[28px]" delay={0} />
             <Sk className="h-5 w-36 rounded" delay={0} />
             <div className="space-y-4">
               <Sk className="h-10 md:h-14 w-full rounded-xl" delay={60} />
@@ -797,27 +862,37 @@ function CourseError({ isBangla, onRetry, isFetching }: { isBangla: boolean; onR
 /* ═══════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════ */
-export default function CoursesDetails({ slug }: { slug: string }) {
+export default function CoursesDetails({
+  slug,
+  initialResponse,
+}: {
+  slug: string;
+  // Raw API response fetched at build time (SSG). Rendered instantly, no spinner.
+  initialResponse?: any;
+}) {
   const router = useRouter();
   const { isBangla, getLink } = useLanguage();
 
   const { data: courseData, isLoading, isFetching, isError, refetch } = useQuery({
-    queryKey: ["course-detail", slug, isBangla],
+    // Raw API response is cached per slug (not per language), so switching
+    // EN <-> BN is instant and never triggers a new network request.
+    queryKey: ["course-detail", slug],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/api/courses/slug/${slug}`);
-      return flattenCourseData(response.data, isBangla);
+      const response = await axiosInstance.get(`/api/courses/slug/${slug}`, { timeout: 10000 });
+      return response.data;
     },
+    select: (raw: any) => flattenCourseData(raw, isBangla),
     enabled: !!slug,
-    staleTime: 1000 * 60 * 2,
-    gcTime: 1000 * 60 * 10,
-    refetchOnWindowFocus: true,
-    placeholderData: (previousData: any, previousQuery: any) =>
-      previousQuery?.queryKey?.[1] === slug ? previousData : undefined,
-    retry: 2,
-    retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    // Build-time (SSG) data renders immediately with no skeleton.
+    initialData: initialResponse?.data ? initialResponse : undefined,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    refetchOnWindowFocus: false,
+    retry: 1,
+    retryDelay: 500,
   });
 
-  const data = courseData || null;
+  const data: SingleCourse | null = (courseData as SingleCourse | null | undefined) || null;
   const [activeTab, setActiveTab] = useState("overview");
   const [showStickyCta, setShowStickyCta] = useState(false);
   const [showSideEnrollment, setShowSideEnrollment] = useState(false);
@@ -915,10 +990,17 @@ export default function CoursesDetails({ slug }: { slug: string }) {
 
       {/* HERO + MAIN */}
       <div className="relative bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:pt-4 md:pb-12">
           <div className="flex flex-col lg:flex-row gap-10">
             {/* ── LEFT COLUMN ── */}
             <div className="w-full lg:w-[65%] order-2 lg:order-1">
+              {/* ✅ YouTube preview — top of left column, right under the breadcrumb */}
+              {data.youtubeVideoUrl && (
+                <div className="mb-8 md:mb-10">
+                  <YouTubeEmbed url={data.youtubeVideoUrl} title={data.hero.title} isBangla={isBangla} />
+                </div>
+              )}
+
               <div className="mb-10">
                 <Link href={getLink("/courses")} className="inline-flex items-center text-sm md:text-base font-medium mb-4 text-gray-500 hover:text-[#F3056D] transition-colors group">
                   <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
@@ -927,13 +1009,6 @@ export default function CoursesDetails({ slug }: { slug: string }) {
                 <h1 className="text-3xl md:text-5xl font-bold mb-6 text-gray-900 leading-tight tracking-tight">{data.hero.title}</h1>
                 <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">{data.hero.subtitle}</p>
               </div>
-
-              {/* ✅ Mobile YouTube video */}
-              {data.youtubeVideoUrl && (
-                <div className="md:hidden mb-6">
-                  <YouTubeEmbed url={data.youtubeVideoUrl} />
-                </div>
-              )}
 
               <div className="md:hidden mb-6 block">
                 <EnrollmentCard data={data} onEnroll={handleEnroll} mediaAssets={data.mediaAssets || []} />
@@ -1040,13 +1115,6 @@ export default function CoursesDetails({ slug }: { slug: string }) {
 
             {/* ── RIGHT COLUMN ── */}
             <div className="w-full lg:w-[35%] order-1 mt-0 lg:order-2 space-y-6">
-              {/* ✅ NEW: YouTube video at the top of the right column */}
-              {data.youtubeVideoUrl && (
-                <div className="hidden md:block">
-                  <YouTubeEmbed url={data.youtubeVideoUrl} />
-                </div>
-              )}
-
               <div className="hidden md:block" ref={enrollmentCardRef}>
                 <EnrollmentCard data={data} onEnroll={handleEnroll} mediaAssets={data.mediaAssets || []} />
               </div>

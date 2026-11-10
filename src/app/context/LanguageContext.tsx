@@ -543,11 +543,13 @@ const getLanguageData = (isBangla: boolean) => {
 interface LanguageProviderProps {
   children: ReactNode;
   initialLang: string;
+  initialHeroData?: Partial<HeroData> | null;
 }
 
 export const LanguageProvider = ({
   children,
   initialLang,
+  initialHeroData,
 }: LanguageProviderProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -578,23 +580,29 @@ export const LanguageProvider = ({
   // ==========================================
   // FIX: ACTUALLY FETCH DYNAMIC HERO DATA HERE
   // ==========================================
-  const [dynamicHeroData, setDynamicHeroData] = useState<HeroData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // SSG: start with hero data baked in at build time, so it renders instantly.
+  const [dynamicHeroData, setDynamicHeroData] = useState<HeroData | null>(() =>
+    initialHeroData
+      ? ({ ...staticHero, ...initialHeroData } as HeroData)
+      : null,
+  );
+  const [isLoading, setIsLoading] = useState(!initialHeroData);
 
   useEffect(() => {
     const loadDynamicHero = async () => {
-      setIsLoading(true);
+      // Silent background refresh when build-time data already exists.
+      if (!initialHeroData) setIsLoading(true);
       try {
         const data = await fetchHeroData(currentLang);
         if (data) {
           // Merge static fallback with dynamic DB data
           setDynamicHeroData({ ...staticHero, ...data });
-        } else {
+        } else if (!initialHeroData) {
           setDynamicHeroData(staticHero);
         }
       } catch (error) {
         console.error("Failed to fetch dynamic hero data", error);
-        setDynamicHeroData(staticHero);
+        if (!initialHeroData) setDynamicHeroData(staticHero);
       } finally {
         setIsLoading(false);
       }

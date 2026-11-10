@@ -4,7 +4,7 @@ import app from "./firebase"; // Ensure this path points to your initialized fir
 
 // Use environment variable, fallback to localhost for development
 const rawApiBaseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://chalakchampsbackend.vercel.app";
 
 // Normalize the API prefix so origin-only environment values reach backend routes.
 const normalizedApiBaseUrl = rawApiBaseUrl.replace(/\/+$/, "");

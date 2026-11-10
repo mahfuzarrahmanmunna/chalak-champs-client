@@ -8,7 +8,7 @@ import useAuth from "./useAuth";
 
 // Create the Axios instance once
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: "http://localhost:5000/api", // Ensure this matches your backend URL
+  baseURL: "https://chalakchampsbackend.vercel.app/api", // Ensure this matches your backend URL
   withCredentials: true,
   timeout: 10000,
 });

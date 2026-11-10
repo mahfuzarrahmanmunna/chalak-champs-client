@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 const AddsCard = () => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
     const context = useLanguage();
   
       // Fallback values in case context is undefined
@@ -16,8 +16,8 @@ const AddsCard = () => {
 
   useEffect(() => {
     const isClosed = localStorage.getItem("adClosed");
-    if (!isClosed) {
-      setIsVisible(true);
+    if (isClosed) {
+      setIsVisible(false);
     }
   }, []);
 

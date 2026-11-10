@@ -6,8 +6,8 @@ type PageProps = {
   params: Promise<{ lang: string }>;
 };
 
+// Server-rendered on every request so data is always live.
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export async function generateMetadata({
   params,

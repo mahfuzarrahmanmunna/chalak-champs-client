@@ -1,7 +1,6 @@
 // lib/firebase.ts
 import { initializeApp } from "firebase/app";
 import { getAuth, Auth, RecaptchaVerifier, updateProfile } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
 import { getAnalytics, Analytics } from "firebase/analytics"; // Import Analytics type
 
 // Define the Firebase configuration interface
@@ -39,7 +38,6 @@ export const auth: Auth =
   typeof window !== "undefined"
     ? getAuth(app)
     : (null as unknown as Auth);
-export const db = getFirestore(app);
 
 // Initialize Analytics (only in browser environment)
 // Fix: Add type annotation and handle the undefined case

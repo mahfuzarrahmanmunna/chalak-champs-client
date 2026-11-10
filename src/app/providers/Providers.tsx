@@ -27,7 +27,8 @@ interface BeforeInstallPromptEvent extends Event {
 const Providers: React.FC<{
   children: React.ReactNode;
   initialLang: string;
-}> = ({ children, initialLang }) => {
+  initialHeroData?: any;
+}> = ({ children, initialLang, initialHeroData }) => {
   const pathname = usePathname();
 
   // Query Client
@@ -41,12 +42,22 @@ const Providers: React.FC<{
     if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator)) return;
 
-    // Check environment
-    const isLocalhost =
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1";
-
-    if (window.location.protocol === "https:" || isLocalhost) {
+    // Dev: never use the service worker. Its cache serves stale dev chunks
+    // ("module factory is not available"). Remove any old registration + caches.
+    if (process.env.NODE_ENV !== "production") {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((regs) => regs.forEach((r) => r.unregister()));
+      if ("caches" in window) {
+        caches
+          .keys()
+          .then((keys) =>
+            keys
+              .filter((k) => k.startsWith("chalakchamps-cache-"))
+              .forEach((k) => caches.delete(k)),
+          );
+      }
+    } else if (window.location.protocol === "https:") {
       navigator.serviceWorker
         .register("/sw.js")
         .then((registration) => {
@@ -138,7 +149,7 @@ const Providers: React.FC<{
         <AuthProvider>
           <LoadingProvider>
             <ThemeProvider>
-              <LanguageProvider initialLang={initialLang}>
+              <LanguageProvider initialLang={initialLang} initialHeroData={initialHeroData}>
                 <BookingProvider>
                   {!isDashboard &&
                     !isStDashboard && <NavHeader />}

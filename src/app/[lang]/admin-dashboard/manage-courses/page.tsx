@@ -159,7 +159,7 @@ const CourseCreationForm: React.FC = () => {
         formDataToSend.append("video", videoFile);
       }
 
-      const response = await fetch("http://localhost:5000/api/courses", {
+      const response = await fetch("https://chalakchampsbackend.vercel.app/api/courses", {
         method: "POST",
         body: formDataToSend,
         credentials: "include",
@@ -173,7 +173,7 @@ const CourseCreationForm: React.FC = () => {
 
       setSuccess("Course created successfully!");
       setTimeout(() => {
-        router.push(`http://localhost:5000/courses/${data.data._id}`);
+        router.push(`https://chalakchampsbackend.vercel.app/courses/${data.data._id}`);
       }, 2000);
     } catch (err: unknown) {
       setError(

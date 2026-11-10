@@ -1,18 +1,27 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import videojs from "video.js";
+// video.js is loaded on demand (when play is clicked) to keep the first load light.
 import type { Player } from "video.js"; // ✅ FIX: Import the Player type
 import "video.js/dist/video-js.css";
-import "videojs-youtube";
+
+// Accepts a plain YouTube ID or any YouTube URL (watch?v=, youtu.be/, embed/, shorts/).
+function toYouTubeId(value?: string): string | undefined {
+  if (!value) return undefined;
+  const match = value.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/,
+  );
+  return match ? match[1] : value.trim();
+}
 
 export function VideoImg1Component({
-  videoId = "pPcNHH20e5U",
+  videoId: rawVideoId = "pPcNHH20e5U",
   customThumbnail = "",
 }: {
   videoId?: string;
   customThumbnail?: string;
 }) {
+  const videoId = toYouTubeId(rawVideoId) || "pPcNHH20e5U";
   const [isPlaying, setIsPlaying] = useState(false);
   
   // ✅ FIX: Explicitly type the refs
@@ -23,7 +32,12 @@ export function VideoImg1Component({
 
   // Initialize Video.js only when isPlaying is true
   useEffect(() => {
-    if (isPlaying && videoNode.current && !playerRef.current) {
+    if (!isPlaying || !videoNode.current || playerRef.current) return;
+    let cancelled = false;
+    (async () => {
+      const videojs = (await import("video.js")).default;
+      await import("videojs-youtube");
+      if (cancelled || !videoNode.current || playerRef.current) return;
       const player = videojs(videoNode.current, {
         controls: true,
         autoplay: true,
@@ -49,7 +63,10 @@ export function VideoImg1Component({
           player.play().catch((e) => console.log("Autoplay blocked by browser:", e));
         }
       });
-    }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [isPlaying, videoId]);
 
   // Update player source dynamically if videoId changes
