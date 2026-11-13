@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   Save,
@@ -10,6 +10,8 @@ import {
   RotateCcw,
   UploadCloud,
   X,
+  PlayCircle,
+  ImagePlus,
 } from "lucide-react";
 import { upsertHeroFormData, fetchHeroData } from "@/app/services/heroService";
 // ⚠️ IMPORT YOUR QUILL EDITOR COMPONENT HERE
@@ -27,7 +29,18 @@ interface LangData {
   kingImage: string;
   kingImageClass: string;
   videoId: string;
+  videoThumbnail: string; // Cloudflare R2 public URL
 }
+
+type Lang = "en" | "bn";
+
+// Accepted thumbnail formats (must match the backend whitelist)
+const THUMBNAIL_ACCEPT = "image/jpeg,image/png,image/webp,image/gif,image/avif";
+const THUMBNAIL_MIME_TYPES = THUMBNAIL_ACCEPT.split(",");
+const THUMBNAIL_MAX_BYTES = 5 * 1024 * 1024; // 5MB
+
+const formatBytes = (bytes: number) =>
+  bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 
 const initialLangState: LangData = {
   title: "",
@@ -39,6 +52,7 @@ const initialLangState: LangData = {
   kingImage: "",
   kingImageClass: "",
   videoId: "",
+  videoThumbnail: "",
 };
 
 export default function ManageHero() {
@@ -55,6 +69,13 @@ export default function ManageHero() {
   const [bnFile, setBnFile] = useState<File | null>(null);
   const [enPreview, setEnPreview] = useState<string | null>(null);
   const [bnPreview, setBnPreview] = useState<string | null>(null);
+
+  // Video thumbnail (uploaded to Cloudflare R2 on save)
+  const [thumbFiles, setThumbFiles] = useState<Record<Lang, File | null>>({ en: null, bn: null });
+  const [thumbPreviews, setThumbPreviews] = useState<Record<Lang, string | null>>({ en: null, bn: null });
+  const [thumbErrors, setThumbErrors] = useState<Record<Lang, string>>({ en: "", bn: "" });
+  const [dragOver, setDragOver] = useState<Lang | null>(null);
+  const thumbInputRefs = useRef<Record<Lang, HTMLInputElement | null>>({ en: null, bn: null });
 
   const inputClass = "w-full border border-gray-300 p-3 rounded-xl text-gray-800 placeholder:text-gray-500 focus:ring-2 focus:ring-[#F3056D]/20 focus:border-[#F3056D] outline-none transition-shadow bg-white";
   const textareaClass = "w-full border border-gray-300 p-3 rounded-xl text-gray-800 placeholder:text-gray-500 focus:ring-2 focus:ring-[#F3056D]/20 focus:border-[#F3056D] outline-none transition-shadow bg-white resize-none";
@@ -75,6 +96,7 @@ export default function ManageHero() {
 
         if (en.kingImage) setEnPreview(en.kingImage);
         if (bn.kingImage) setBnPreview(bn.kingImage);
+        setThumbPreviews({ en: en.videoThumbnail || null, bn: bn.videoThumbnail || null });
       } catch (err) {
         console.error("Failed to load hero data", err);
       } finally {
@@ -128,12 +150,51 @@ export default function ManageHero() {
     }
   };
 
+  // Release blob URLs created for local previews (on replace and on unmount)
+  const latestThumbPreviews = useRef(thumbPreviews);
+  useEffect(() => {
+    latestThumbPreviews.current = thumbPreviews;
+  }, [thumbPreviews]);
+  const revokeBlob = (url?: string | null) => {
+    if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
+  };
+  useEffect(() => () => Object.values(latestThumbPreviews.current).forEach(revokeBlob), []);
+
+  const selectThumbnail = (file: File | undefined, lang: Lang) => {
+    if (!file) return;
+    if (!THUMBNAIL_MIME_TYPES.includes(file.type)) {
+      setThumbErrors((p) => ({ ...p, [lang]: "Unsupported format. Use JPG, PNG, WEBP, GIF or AVIF." }));
+      return;
+    }
+    if (file.size > THUMBNAIL_MAX_BYTES) {
+      setThumbErrors((p) => ({ ...p, [lang]: `File is ${formatBytes(file.size)}. Max allowed is ${formatBytes(THUMBNAIL_MAX_BYTES)}.` }));
+      return;
+    }
+    setThumbErrors((p) => ({ ...p, [lang]: "" }));
+    setThumbFiles((p) => ({ ...p, [lang]: file }));
+    revokeBlob(thumbPreviews[lang]);
+    setThumbPreviews((p) => ({ ...p, [lang]: URL.createObjectURL(file) }));
+    if (successMsg) setSuccessMsg("");
+  };
+
+  const removeThumbnail = (lang: Lang) => {
+    setThumbFiles((p) => ({ ...p, [lang]: null }));
+    revokeBlob(thumbPreviews[lang]);
+    setThumbPreviews((p) => ({ ...p, [lang]: null }));
+    setThumbErrors((p) => ({ ...p, [lang]: "" }));
+    setFormData((prev) => ({ ...prev, [lang]: { ...prev[lang], videoThumbnail: "" } }));
+    if (thumbInputRefs.current[lang]) thumbInputRefs.current[lang]!.value = "";
+  };
+
   const handleReset = () => {
     setFormData({ en: { ...initialLangState }, bn: { ...initialLangState } });
     setEnFile(null);
     setBnFile(null);
     setEnPreview(null);
     setBnPreview(null);
+    setThumbFiles({ en: null, bn: null });
+    setThumbPreviews({ en: null, bn: null });
+    setThumbErrors({ en: "", bn: "" });
     setSuccessMsg("");
   };
 
@@ -154,6 +215,8 @@ export default function ManageHero() {
       enFormData.append("videoId", formData.en.videoId);
       if (enFile) enFormData.append("kingImage", enFile);
       else if (formData.en.kingImage) enFormData.append("kingImage", formData.en.kingImage);
+      if (thumbFiles.en) enFormData.append("videoThumbnail", thumbFiles.en);
+      else enFormData.append("videoThumbnail", formData.en.videoThumbnail || "");
 
       const bnFormData = new FormData();
       bnFormData.append("lang", "bn");
@@ -167,6 +230,8 @@ export default function ManageHero() {
       bnFormData.append("videoId", formData.bn.videoId);
       if (bnFile) bnFormData.append("kingImage", bnFile);
       else if (formData.bn.kingImage) bnFormData.append("kingImage", formData.bn.kingImage);
+      if (thumbFiles.bn) bnFormData.append("videoThumbnail", thumbFiles.bn);
+      else bnFormData.append("videoThumbnail", formData.bn.videoThumbnail || "");
 
       const [resEn, resBn] = await Promise.all([
         upsertHeroFormData(enFormData),
@@ -174,9 +239,18 @@ export default function ManageHero() {
       ]);
 
       if (resEn.success && resBn.success) {
+        // Sync with saved R2 URLs so a re-save doesn't re-upload
+        const savedEn = resEn.data?.videoThumbnail || "";
+        const savedBn = resBn.data?.videoThumbnail || "";
+        setFormData((prev) => ({
+          en: { ...prev.en, videoThumbnail: savedEn },
+          bn: { ...prev.bn, videoThumbnail: savedBn },
+        }));
+        setThumbFiles({ en: null, bn: null });
+        setThumbPreviews({ en: savedEn || null, bn: savedBn || null });
         setSuccessMsg("Hero section updated successfully for both languages!");
       } else {
-        alert("Failed to save one or both languages.");
+        alert(resEn.message || resBn.message || "Failed to save one or both languages.");
       }
     } catch (error) {
       alert("Server error while saving.");
@@ -357,6 +431,59 @@ export default function ManageHero() {
                       <label className="text-sm font-bold text-gray-700">YouTube Video ID (EN)</label>
                       <input name="videoId" value={formData.en.videoId} onChange={(e) => handleChange(e, "en")} className={inputClass} placeholder="e.g. pPcNHH20e5U" />
                     </div>
+                    <div className="space-y-2 mt-4">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-bold text-gray-700">Video Thumbnail (EN)</label>
+                        <span className="text-[11px] text-gray-400">16:9 · 1280×720 recommended</span>
+                      </div>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => thumbInputRefs.current.en?.click()}
+                        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && thumbInputRefs.current.en?.click()}
+                        onDragOver={(e) => { e.preventDefault(); setDragOver("en"); }}
+                        onDragLeave={() => setDragOver(null)}
+                        onDrop={(e) => { e.preventDefault(); setDragOver(null); selectThumbnail(e.dataTransfer.files?.[0], "en"); }}
+                        className={`group relative w-full aspect-video rounded-xl overflow-hidden border-2 border-dashed cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#F3056D]/40 ${dragOver === "en" ? "border-[#F3056D] bg-[#F3056D]/5" : "border-gray-300 bg-gray-50 hover:bg-gray-100"}`}
+                      >
+                        {thumbPreviews.en ? (
+                          <>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={thumbPreviews.en} alt="Video thumbnail preview" className="absolute inset-0 w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                              <PlayCircle className="w-12 h-12 text-white/90 drop-shadow" />
+                            </div>
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2 text-[11px] text-white flex justify-between">
+                              <span className="truncate">{thumbFiles.en ? thumbFiles.en.name : "Saved on Cloudflare"}</span>
+                              <span className="opacity-0 group-hover:opacity-100 transition">Click to replace</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); removeThumbnail("en"); }}
+                              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition shadow"
+                              aria-label="Remove thumbnail"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-gray-400 p-4">
+                            <ImagePlus className="w-10 h-10 mb-2 text-gray-300" />
+                            <p className="text-sm font-medium">Drag & drop or <span className="text-[#F3056D] font-semibold">browse</span></p>
+                            <p className="text-[11px] mt-1">JPG, PNG, WEBP, GIF, AVIF · max 5MB</p>
+                            <p className="text-[11px] mt-1 text-gray-400/80">Empty = YouTube default thumbnail</p>
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        ref={(el) => { thumbInputRefs.current.en = el; }}
+                        type="file"
+                        accept={THUMBNAIL_ACCEPT}
+                        onChange={(e) => selectThumbnail(e.target.files?.[0], "en")}
+                        className="hidden"
+                      />
+                      {thumbErrors.en && <p className="text-xs text-red-600 font-medium">{thumbErrors.en}</p>}
+                    </div>
                   </div>
 
                   {/* BANGLA UPLOAD */}
@@ -388,10 +515,63 @@ export default function ManageHero() {
                       <label className="text-sm font-bold text-gray-700">YouTube Video ID (BN)</label>
                       <input name="videoId" value={formData.bn.videoId} onChange={(e) => handleChange(e, "bn")} className={inputClass} placeholder="যেমন: pPcNHH20e5U" />
                     </div>
+                    <div className="space-y-2 mt-4">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-bold text-gray-700">ভিডিও থাম্বনেইল (BN)</label>
+                        <span className="text-[11px] text-gray-400">16:9 · 1280×720 recommended</span>
+                      </div>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => thumbInputRefs.current.bn?.click()}
+                        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && thumbInputRefs.current.bn?.click()}
+                        onDragOver={(e) => { e.preventDefault(); setDragOver("bn"); }}
+                        onDragLeave={() => setDragOver(null)}
+                        onDrop={(e) => { e.preventDefault(); setDragOver(null); selectThumbnail(e.dataTransfer.files?.[0], "bn"); }}
+                        className={`group relative w-full aspect-video rounded-xl overflow-hidden border-2 border-dashed cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#F3056D]/40 ${dragOver === "bn" ? "border-[#F3056D] bg-[#F3056D]/5" : "border-gray-300 bg-gray-50 hover:bg-gray-100"}`}
+                      >
+                        {thumbPreviews.bn ? (
+                          <>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={thumbPreviews.bn} alt="Video thumbnail preview" className="absolute inset-0 w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                              <PlayCircle className="w-12 h-12 text-white/90 drop-shadow" />
+                            </div>
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2 text-[11px] text-white flex justify-between">
+                              <span className="truncate">{thumbFiles.bn ? thumbFiles.bn.name : "Saved on Cloudflare"}</span>
+                              <span className="opacity-0 group-hover:opacity-100 transition">Click to replace</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); removeThumbnail("bn"); }}
+                              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition shadow"
+                              aria-label="Remove thumbnail"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-gray-400 p-4">
+                            <ImagePlus className="w-10 h-10 mb-2 text-gray-300" />
+                            <p className="text-sm font-medium">ড্র্যাগ করে ছাড়ুন অথবা <span className="text-[#F3056D] font-semibold">ব্রাউজ করুন</span></p>
+                            <p className="text-[11px] mt-1">JPG, PNG, WEBP, GIF, AVIF · max 5MB</p>
+                            <p className="text-[11px] mt-1 text-gray-400/80">Empty = YouTube default thumbnail</p>
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        ref={(el) => { thumbInputRefs.current.bn = el; }}
+                        type="file"
+                        accept={THUMBNAIL_ACCEPT}
+                        onChange={(e) => selectThumbnail(e.target.files?.[0], "bn")}
+                        className="hidden"
+                      />
+                      {thumbErrors.bn && <p className="text-xs text-red-600 font-medium">{thumbErrors.bn}</p>}
+                    </div>
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <strong>Note:</strong> If you leave Image, Class, or Video ID blank, the system will automatically fallback to the default English values to ensure the design doesn&apos;t break.
+                  <strong>Note:</strong> If you leave Image, Class, Video ID or Thumbnail blank, the system will automatically fallback to the default English values to ensure the design doesn&apos;t break.
                 </p>
               </section>
 

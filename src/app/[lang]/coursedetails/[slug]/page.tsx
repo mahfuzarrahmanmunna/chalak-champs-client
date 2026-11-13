@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 async function getCourseDataForSEO(slug: string) {
   const apiUrl =
     process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "https://chalakchampsbackend.vercel.app";
+    "http://localhost:5000";
 
   try {
     const res = await fetch(`${apiUrl}/api/courses/slug/${slug}`, {

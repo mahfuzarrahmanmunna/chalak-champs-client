@@ -115,7 +115,7 @@ async function getPublicTrackingSettings(): Promise<TrackingSettings> {
   const apiBase = (
     process.env.NEXT_PUBLIC_API_BASE_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
-    "https://chalakchampsbackend.vercel.app"
+    "http://localhost:5000"
   ).replace(/\/+$/, "");
   const apiUrl = /\/api$/i.test(apiBase) ? apiBase : `${apiBase}/api`;
 

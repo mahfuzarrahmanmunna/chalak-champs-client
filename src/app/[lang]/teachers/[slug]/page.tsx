@@ -6,7 +6,7 @@ import { fetchStatic } from "@/lib/staticApi";
 export const dynamic = "force-dynamic";
 
 async function getTeacherForSEO(slug: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://chalakchampsbackend.vercel.app";
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
   try {
     const res = await fetch(`${apiUrl}/api/teachers/${slug}`, { cache: "no-store" });
     if (!res.ok) return null;

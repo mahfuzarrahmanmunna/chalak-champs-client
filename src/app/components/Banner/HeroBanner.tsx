@@ -114,7 +114,7 @@ const BannerHero = () => {
 
       {/* Dynamic Video Component */}
       <div>
-        <VideoImg1 videoId={heroData?.videoId} />
+        <VideoImg1 videoId={heroData?.videoId} customThumbnail={heroData?.videoThumbnail} />
       </div>
     </div>
   );

@@ -570,10 +570,9 @@ export default function VideoGallerySlider1() {
   const isPointerDragging = useRef(false);
   const isAnimating = useRef(false);
 
-  // Create infinite array (3 copies)
+  // Keep one card per video.
   const renderItems = useMemo(() => {
-    if (videos.length === 0) return [];
-    return [...videos, ...videos, ...videos];
+    return videos;
   }, [videos]);
 
   const getSpacing = useCallback(() => {
@@ -590,8 +589,12 @@ export default function VideoGallerySlider1() {
           const activeVideos = res.data.data.videos
             .filter((v: VideoData) => v.isActive)
             .sort((a: VideoData, b: VideoData) => a.order - b.order);
-          setVideos(activeVideos);
-          setActiveIndex(activeVideos.length);
+          const uniqueVideos = activeVideos.filter(
+            (video: VideoData, index: number, list: VideoData[]) =>
+              list.findIndex((item) => item.youtubeId === video.youtubeId) === index
+          );
+          setVideos(uniqueVideos);
+          setActiveIndex(0);
         }
       } catch (error) {
         console.error("Failed to load video gallery:", error);
@@ -658,27 +661,17 @@ export default function VideoGallerySlider1() {
 
       const goToSlide = (index: number) => {
         if (isAnimating.current) return;
+        const boundedIndex = Math.max(0, Math.min(index, videos.length - 1));
         isAnimating.current = true;
 
         gsap.to(track, {
-          x: getTargetX(index),
+          x: getTargetX(boundedIndex),
           duration: 0.6,
           ease: "power3.out",
           onUpdate: updateVisuals,
           onComplete: () => {
             isAnimating.current = false;
-
-            let newIndex = index;
-            // Infinite loop wrap
-            if (index < videos.length) {
-              newIndex = index + videos.length;
-              gsap.set(track, { x: getTargetX(newIndex) });
-            } else if (index >= videos.length * 2) {
-              newIndex = index - videos.length;
-              gsap.set(track, { x: getTargetX(newIndex) });
-            }
-
-            setActiveIndex(newIndex);
+            setActiveIndex(boundedIndex);
             updateVisuals();
           }
         });

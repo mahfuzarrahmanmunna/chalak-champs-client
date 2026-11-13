@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 async function getProductDataForSEO(slug: string) {
   const apiUrl =
     process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "https://chalakchampsbackend.vercel.app";
+    "http://localhost:5000";
 
   try {
     const isObjectId = /^[0-9a-fA-F]{24}$/.test(slug);

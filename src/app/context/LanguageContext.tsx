@@ -125,6 +125,7 @@ export interface HeroData {
   kingImage?: string;       
   kingImageClass?: string;  
   videoId?: string;         
+  videoThumbnail?: string;
 }
 
 interface CoursesData {

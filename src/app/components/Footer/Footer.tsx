@@ -308,7 +308,7 @@ const Footer = () => {
                   </svg>
                 </div>
                 <a
-                  href="https://maps.app.goo.gl/y91UcDooycaHRaWE9"
+                  href="https://maps.app.goo.gl/TVn7KAttbrRxFNUL8"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:underline cursor-pointer"

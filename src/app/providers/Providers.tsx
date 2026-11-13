@@ -144,7 +144,7 @@ const Providers: React.FC<{
 
   return (
     <section className="min-h-screen bg-white">
-      <IntroPreloader />
+      {!isDashboard && !isStDashboard && <IntroPreloader />}
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <LoadingProvider>

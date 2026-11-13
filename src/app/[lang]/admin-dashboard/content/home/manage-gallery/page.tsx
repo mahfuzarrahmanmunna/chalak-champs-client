@@ -11,7 +11,7 @@ const inputClass =
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://chalakchampsbackend.vercel.app";
+  "http://localhost:5000";
 const normalizedApiBaseUrl = API_BASE_URL.replace(/\/+$/, "");
 const GALLERY_API_URL = /\/api$/i.test(normalizedApiBaseUrl)
   ? `${normalizedApiBaseUrl}/gallery`
